@@ -1,0 +1,30 @@
+{
+    "name": "mateusjunges/laravel-kafka",
+    "description": "A kafka driver for laravel",
+    "type": "library",
+    "require": {
+        "php": "^8.0",
+        "phpunit/phpunit": "^9.5"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^6.20",
+        "predis/predis": "^1.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Junges\\Kafka\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Junges\\Kafka\\Tests\\": "tests"
+        }
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "mateusjunges",
+            "email": "mateus@junges.dev"
+        }
+    ]
+}
