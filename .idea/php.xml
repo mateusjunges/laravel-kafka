@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="PhpIncludePathManager">
-    <include_path>
-      <path value="$USER_HOME$/apps/php-rdkafka-stubs" />
-    </include_path>
-  </component>
-  <component name="PhpProjectSharedConfiguration" php_language_level="8.0" />
-</project>
