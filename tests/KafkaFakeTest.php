@@ -99,6 +99,32 @@ class KafkaFakeTest extends TestCase
         }
     }
 
+    public function testICanPerformAssertionsUsingAssertPublishedOn()
+    {
+        $producer = $this->fake->publishOn('broker', 'topic')
+            ->withMessageKey('test', ['test'])
+            ->withHeaders(['custom' => 'header'])
+            ->withKey($uuid = Str::uuid()->toString());
+
+        $producer->send();
+
+        $this->fake->assertPublished($producer->getMessage());
+
+        $this->fake->assertPublishedOn('topic', $producer->getMessage());
+
+        try {
+            $this->fake->assertPublishedOn('topic', $producer->getMessage(), function ($message) {
+                return $message->getKey() === 'different-key';
+            });
+        } catch (ExpectationFailedException $exception) {
+            $this->assertThat($exception, new ExceptionMessage('The expected message was not published.'));
+        }
+
+        $this->fake->assertPublishedOn('topic', $producer->getMessage(), function ($message) use ($uuid) {
+            return $message->getKey() === $uuid;
+        });
+    }
+
     public function testNothingPublished()
     {
         $this->fake->assertNothingPublished();

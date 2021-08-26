@@ -59,7 +59,7 @@ class KafkaFake implements CanPublishMessagesToKafka
      * @param Message $message
      * @param null $callback
      */
-    public function assertPublishedOn(string $topic, Message $message, $callback = null)
+    public function assertPublishedOn(string $topic, Message $message, callable $callback = null)
     {
         $this->assertPublished($message, function ($messageArray, $publishedTopic) use ($callback, $topic, $message) {
             if ($publishedTopic !== $topic) {

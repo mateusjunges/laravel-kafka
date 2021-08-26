@@ -42,7 +42,7 @@ class KafkaTest extends TestCase
 
         $producer->send();
 
-        Kafka::assertPublishedOn('test-topic', $producer->getMessage(), function ($messages) use ($uuid) {
+        Kafka::assertPublishedOn('test-topic', $producer->getMessage(), function (Message $messages) use ($uuid) {
             return $messages->getKey() === $uuid;
         });
     }
