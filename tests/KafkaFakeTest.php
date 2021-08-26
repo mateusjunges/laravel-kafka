@@ -31,7 +31,7 @@ class KafkaFakeTest extends TestCase
         $producer = $this->fake->publishOn('broker', 'test_topic_1')
             ->withMessageKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
-            ->withKey($uuid = Str::uuid()->toString());
+            ->withKey(Str::uuid()->toString());
 
         $producer->send();
 
@@ -49,7 +49,7 @@ class KafkaFakeTest extends TestCase
         $producer = $this->fake->publishOn('broker', 'topic')
             ->withMessageKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
-            ->withKey($uuid = Str::uuid()->toString());
+            ->withKey(Str::uuid()->toString());
         $producer->send();
 
         $this->fake->assertPublished($producer->getMessage());
@@ -84,7 +84,7 @@ class KafkaFakeTest extends TestCase
         $producer = $this->fake->publishOn('broker', 'topic')
             ->withMessageKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
-            ->withKey($uuid = Str::uuid()->toString());
+            ->withKey(Str::uuid()->toString());
 
         $producer->send();
 
