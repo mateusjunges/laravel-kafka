@@ -24,3 +24,4 @@ Homestead.json
 .idea
 
 tests/reports
+.php-cs-fixer.cache

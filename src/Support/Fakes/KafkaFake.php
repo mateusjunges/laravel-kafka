@@ -1,10 +1,12 @@
 <?php
 
-namespace Junges\Kafka;
+namespace Junges\Kafka\Support\Fakes;
 
 use Illuminate\Support\Collection;
 use Junges\Kafka\Contracts\CanPublishMessagesToKafka;
+use Junges\Kafka\Message;
 use PHPUnit\Framework\Assert as PHPUnit;
+use function collect;
 
 class KafkaFake implements CanPublishMessagesToKafka
 {

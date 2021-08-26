@@ -1,8 +1,10 @@
 <?php
 
-namespace Junges\Kafka;
+namespace Junges\Kafka\Config;
 
 use Junges\Kafka\Contracts\Consumer;
+use Junges\Kafka\Sasl;
+use function config;
 
 class Config
 {

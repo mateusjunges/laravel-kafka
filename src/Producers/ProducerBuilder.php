@@ -2,7 +2,7 @@
 
 namespace Junges\Kafka\Producers;
 
-use Junges\Kafka\Config;
+use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\CanProduceMessages;
 use Junges\Kafka\Message;
 

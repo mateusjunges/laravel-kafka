@@ -2,7 +2,7 @@
 
 namespace Junges\Kafka\Producers;
 
-use Junges\Kafka\Config;
+use Junges\Kafka\Config\Config;
 use Junges\Kafka\Message;
 use Mockery\Exception;
 use RdKafka\Conf;

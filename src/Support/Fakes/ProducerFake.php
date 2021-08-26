@@ -1,7 +1,9 @@
 <?php
 
-namespace Junges\Kafka;
+namespace Junges\Kafka\Support\Fakes;
 
+use Junges\Kafka\Config\Config;
+use Junges\Kafka\Message;
 use PHPUnit\Framework\Assert as PHPUnit;
 use RdKafka\Conf;
 
