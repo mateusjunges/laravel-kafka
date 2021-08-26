@@ -10,7 +10,8 @@ class Message implements Arrayable
         protected array $headers = [],
         protected array $message = [],
         protected ?string $key = null
-    ){}
+    ) {
+    }
 
     /**
      * Set a key in the message array.

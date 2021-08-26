@@ -2,7 +2,6 @@
 
 namespace Junges\Kafka;
 
-
 use Junges\Kafka\Contracts\Consumer;
 
 class Config
@@ -20,7 +19,8 @@ class Config
         private int $maxCommitRetries = 6,
         private bool $autoCommit = true,
         private array $customOptions = []
-    ) {}
+    ) {
+    }
 
     public function getCommit(): int
     {
@@ -62,7 +62,7 @@ class Config
         $options = [
             'metadata.broker.list' => $this->broker,
             'auto.offset.reset' => config('kafka.offset_reset', 'latest'),
-            'enable.auto.commit' => config('kafka.auto_commit','true'),
+            'enable.auto.commit' => config('kafka.auto_commit', 'true'),
             'compression.codec' => config('kafka.compression', 'snappy'),
             'group.id' => $this->groupId,
             'bootstrap.servers' => $this->broker,
@@ -80,7 +80,7 @@ class Config
         $config = [
             'compression.codec' => 'snappy',
             'bootstrap.servers' => $this->broker,
-            'metadata.broker.list' => $this->broker
+            'metadata.broker.list' => $this->broker,
         ];
 
         return array_merge($config, $this->getSaslOptions());

@@ -12,8 +12,8 @@ class ProducerFake
     public function __construct(
         private Config $config,
         private string $topic
-    )
-    {}
+    ) {
+    }
 
     public function setConf(array $options = []): Conf
     {

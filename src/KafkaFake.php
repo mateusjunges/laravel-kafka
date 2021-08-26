@@ -77,10 +77,9 @@ class KafkaFake implements CanPublishMessagesToKafka
         };
 
 
-        return collect($this->getPublishedMessages())->filter(function($message, $topic) use ($callback) {
+        return collect($this->getPublishedMessages())->filter(function ($message, $topic) use ($callback) {
             return $callback($message, $topic);
         });
-
     }
 
     /**
@@ -103,7 +102,7 @@ class KafkaFake implements CanPublishMessagesToKafka
      */
     public function assertPublishedOn(string $topic, Message $message, $callback = null)
     {
-        $this->assertPublished($message, function($message, $publishedTopic) use ($callback, $topic) {
+        $this->assertPublished($message, function ($message, $publishedTopic) use ($callback, $topic) {
             if ($publishedTopic !== $topic) {
                 return false;
             }
@@ -121,5 +120,4 @@ class KafkaFake implements CanPublishMessagesToKafka
     {
         return $this->producerBuilderFake->getProducer()->getPublishedMessages();
     }
-
 }

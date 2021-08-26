@@ -9,7 +9,8 @@
     },
     "require-dev": {
         "orchestra/testbench": "^6.20",
-        "predis/predis": "^1.1"
+        "predis/predis": "^1.1",
+        "friendsofphp/php-cs-fixer": "^3.0"
     },
     "autoload": {
         "psr-4": {
@@ -18,7 +19,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Junges\\Kafka\\Tests\\": "tests"
+            "Junges\\Kafka\\Tests\\": "tests/"
         }
     },
     "license": "MIT",
@@ -27,5 +28,9 @@
             "name": "mateusjunges",
             "email": "mateus@junges.dev"
         }
-    ]
+    ],
+    "scripts": {
+        "test": "vendor/bin/phpunit tests",
+        "format": "vendor/bin/php-cs-fixer fix --allow-risky=yes --config=.php_cs.dist.php"
+    }
 }

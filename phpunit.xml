@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit backupGlobals="false"
+         backupStaticAttributes="false"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         processIsolation="false"
+         stopOnFailure="false">
+    <coverage cacheDirectory="/tmp">
+        <include>
+            <directory suffix=".php">src/</directory>
+        </include>
+        <report>
+            <clover outputFile="./tests/reports/clover.xml"/>
+            <html outputDirectory="./tests/reports/" lowUpperBound="35" highLowerBound="70"/>
+            <text outputFile="php://stdout"/>
+        </report>
+    </coverage>
+    <testsuites>
+        <testsuite name="Laravel Kafka Unit Tests">
+            <directory suffix="Test.php">tests</directory>
+        </testsuite>
+    </testsuites>
+    <php>
+    </php>
+</phpunit>

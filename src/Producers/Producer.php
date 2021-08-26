@@ -15,10 +15,9 @@ class Producer
     public function __construct(
         private Config $config,
         private string $topic
-    )
-    {
+    ) {
         $this->producer = app(KafkaProducer::class, [
-            'conf' => $this->setConf($this->config->getProducerOptions())
+            'conf' => $this->setConf($this->config->getProducerOptions()),
         ]);
     }
 
@@ -47,7 +46,7 @@ class Producer
 
         $this->producer->poll(0);
 
-        return retry(10, function() {
+        return retry(10, function () {
             $result = $this->producer->flush(1000);
 
             if (RD_KAFKA_RESP_ERR_NO_ERROR === $result) {

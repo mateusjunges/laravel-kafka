@@ -13,7 +13,7 @@ class ProducerBuilderFake implements CanProduceMessages
     public function __construct(
         private string $broker,
         private string $topic,
-    ){
+    ) {
         $this->message = new Message();
 
         $conf = new Config(
@@ -24,7 +24,7 @@ class ProducerBuilderFake implements CanProduceMessages
 
         $this->producerFake = app(ProducerFake::class, [
             'config' => $conf,
-            'topic' => $this->topic
+            'topic' => $this->topic,
         ]);
     }
 
@@ -175,7 +175,7 @@ class ProducerBuilderFake implements CanProduceMessages
 
         $this->producerFake = app(ProducerFake::class, [
             'config' => $conf,
-            'topic' => $this->topic
+            'topic' => $this->topic,
         ]);
 
         return $this->producerFake;

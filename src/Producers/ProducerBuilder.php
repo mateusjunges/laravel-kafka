@@ -14,7 +14,7 @@ class ProducerBuilder implements CanProduceMessages
     public function __construct(
         private string $broker,
         private string $topic,
-    ){
+    ) {
         $this->message = new Message();
     }
 
@@ -131,7 +131,7 @@ class ProducerBuilder implements CanProduceMessages
 
         return app(Producer::class, [
             'config' => $conf,
-            'topic' => $this->topic
+            'topic' => $this->topic,
         ]);
     }
 }

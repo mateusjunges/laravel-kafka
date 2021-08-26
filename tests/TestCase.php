@@ -10,7 +10,7 @@ class TestCase extends Orchestra
     protected function getPackageProviders($app): array
     {
         return [
-            LaravelKafkaServiceProvider::class
+            LaravelKafkaServiceProvider::class,
         ];
     }
 }
