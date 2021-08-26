@@ -53,6 +53,24 @@ class KafkaFake implements CanPublishMessagesToKafka
     }
 
     /**
+     * Assert that a message was published on a specific topic.
+     *
+     * @param string $topic
+     * @param Message $message
+     * @param null $callback
+     */
+    public function assertPublishedOn(string $topic, Message $message, $callback = null)
+    {
+        $this->assertPublished($message, function ($message, $publishedTopic) use ($callback, $topic) {
+            if ($publishedTopic !== $topic) {
+                return false;
+            }
+
+            return $callback ? $callback(...func_get_args()) : true;
+        });
+    }
+
+    /**
      * Assert that no messages were published.
      */
     public function assertNothingPublished()
@@ -92,24 +110,6 @@ class KafkaFake implements CanPublishMessagesToKafka
     private function hasPublished($message): bool
     {
         return ! empty($this->getPublishedMessages());
-    }
-
-    /**
-     * Assert that a message was published on a specific topic.
-     *
-     * @param string $topic
-     * @param Message $message
-     * @param null $callback
-     */
-    public function assertPublishedOn(string $topic, Message $message, $callback = null)
-    {
-        $this->assertPublished($message, function ($message, $publishedTopic) use ($callback, $topic) {
-            if ($publishedTopic !== $topic) {
-                return false;
-            }
-
-            return $callback ? $callback(...func_get_args()) : true;
-        });
     }
 
     /**
