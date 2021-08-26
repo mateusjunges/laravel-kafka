@@ -67,12 +67,12 @@ class KafkaFakeTest extends TestCase
         $this->fake->assertPublished($producer->getMessage());
 
         $this->fake->assertPublished($message = $producer->getMessage(), function () use ($message, $uuid) {
-            return $message->toArray()['key'] === $uuid;
+            return $message->getKey() === $uuid;
         });
 
         try {
             $this->fake->assertPublished($message = $producer->getMessage(), function () use ($message, $uuid) {
-                return $message->toArray()['key'] === 'not-published-uuid';
+                return $message->getKey() === 'not-published-uuid';
             });
         } catch (ExpectationFailedException $exception) {
             $this->assertThat($exception, new ExceptionMessage('The expected message was not published.'));
