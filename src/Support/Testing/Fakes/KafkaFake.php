@@ -66,7 +66,9 @@ class KafkaFake implements CanPublishMessagesToKafka
                 return false;
             }
 
-            return $callback ? $callback($message, $messageArray) : true;
+            return $callback
+                ? $callback($message, $messageArray)
+                : true;
         });
     }
 
