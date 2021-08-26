@@ -1,6 +1,6 @@
 <?php
 
-namespace Junges\Kafka\Support\Fakes;
+namespace Junges\Kafka\Support\Testing\Fakes;
 
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Message;

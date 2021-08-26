@@ -1,6 +1,6 @@
 <?php
 
-namespace Junges\Kafka\Support\Fakes;
+namespace Junges\Kafka\Support\Testing\Fakes;
 
 use Illuminate\Support\Collection;
 use Junges\Kafka\Contracts\CanPublishMessagesToKafka;

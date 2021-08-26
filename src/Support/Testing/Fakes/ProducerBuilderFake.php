@@ -1,11 +1,10 @@
 <?php
 
-namespace Junges\Kafka\Support\Fakes;
+namespace Junges\Kafka\Support\Testing\Fakes;
 
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\CanProduceMessages;
 use Junges\Kafka\Message;
-use Junges\Kafka\Support\Fakes\ProducerFake;
 
 class ProducerBuilderFake implements CanProduceMessages
 {
