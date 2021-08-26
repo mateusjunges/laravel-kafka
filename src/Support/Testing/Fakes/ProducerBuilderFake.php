@@ -41,9 +41,9 @@ class ProducerBuilderFake implements CanProduceMessages
         return new ProducerBuilderFake($broker, $topic);
     }
 
-    public function withConfigOption(string $name, string $value): self
+    public function withConfigOption(string $name, string $option): self
     {
-        $this->options[$name] = $value;
+        $this->options[$name] = $option;
 
         return $this;
     }
