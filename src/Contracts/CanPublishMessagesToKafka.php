@@ -2,9 +2,9 @@
 
 namespace Junges\Kafka\Contracts;
 
-use Junges\Kafka\Message;
+use Junges\Kafka\Producers\ProducerBuilder;
 
 interface CanPublishMessagesToKafka
 {
-    public function publish(Message $message, string $topic, $key = null): self;
+    public function publishOn(string $broker, string $topic): CanProduceMessages;
 }

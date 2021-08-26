@@ -2,19 +2,36 @@
 
 namespace Junges\Kafka;
 
-class Message
+use Illuminate\Contracts\Support\Arrayable;
+
+class Message implements Arrayable
 {
-    public array $headers =  [];
+    public function __construct(
+        protected array $headers = [],
+        protected array $message = [],
+        protected ?string $key = null
+    ){}
 
-    public array $message = [];
-
-    public function setMessageKey(string $key, mixed $message): Message
+    /**
+     * Set a key in the message array.
+     *
+     * @param string $key
+     * @param mixed $message
+     * @return $this
+     */
+    public function withMessageKey(string $key, mixed $message): Message
     {
         $this->message[$key] = $message;
 
         return $this;
     }
 
+    /**
+     * Unset a key in the message array.
+     *
+     * @param string $key
+     * @return $this
+     */
     public function forgetMessageKey(string $key): Message
     {
         unset($this->message[$key]);
@@ -22,11 +39,67 @@ class Message
         return $this;
     }
 
+    /**
+     * Set the message headers.
+     *
+     * @param array $headers
+     * @return $this
+     */
+    public function withHeaders(array $headers): Message
+    {
+        $this->headers = $headers;
+
+        return $this;
+    }
+
+    /**
+     * Set the kafka message key.
+     *
+     * @param string $key
+     * @return $this
+     */
+    public function withKey(string $key): Message
+    {
+        $this->key = $key;
+
+        return $this;
+    }
+
+    /**
+     * Get the payload that should be sent to kafka.
+     *
+     * @return string
+     */
     public function getPayload(): string
     {
-        return json_encode([
-            'body' => $this->message,
-            'headers' => $this->headers
-        ]);
+        return json_encode($this->message);
+    }
+
+    /**
+     * Get the kafka message key.
+     *
+     * @return string
+     */
+    public function getKey(): string
+    {
+        return $this->key;
+    }
+
+    /**
+     * Get the message headers.
+     * @return array
+     */
+    public function getHeaders(): array
+    {
+        return $this->headers;
+    }
+
+    public function toArray()
+    {
+        return [
+            'payload' => $this->message,
+            'key' => $this->key,
+            'headers' => $this->headers,
+        ];
     }
 }

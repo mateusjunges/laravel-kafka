@@ -1,0 +1,106 @@
+<?php
+
+namespace Junges\Kafka;
+
+
+use Junges\Kafka\Contracts\Consumer;
+
+class Config
+{
+    public function __construct(
+        private string $broker,
+        private array $topics,
+        private ?string $securityProtocol = null,
+        private ?int $commit = null,
+        private ?string $groupId = null,
+        private ?Consumer $consumer = null,
+        private ?Sasl $sasl = null,
+        private ?string $dlq = null,
+        private int $maxMessages = -1,
+        private int $maxCommitRetries = 6,
+        private bool $autoCommit = true,
+        private array $customOptions = []
+    ) {}
+
+    public function getCommit(): int
+    {
+        return $this->commit;
+    }
+
+    public function getMaxCommitRetries(): int
+    {
+        return $this->maxCommitRetries;
+    }
+
+    public function getTopics(): array
+    {
+        return $this->topics;
+    }
+
+    public function getConsumer(): Consumer
+    {
+        return $this->consumer;
+    }
+
+    public function getDlq(): ?string
+    {
+        return $this->dlq;
+    }
+
+    public function getMaxMessages(): int
+    {
+        return $this->maxMessages;
+    }
+
+    public function isAutoCommit(): bool
+    {
+        return $this->autoCommit;
+    }
+
+    public function getConsumerOptions(): array
+    {
+        $options = [
+            'metadata.broker.list' => $this->broker,
+            'auto.offset.reset' => config('kafka.offset_reset', 'latest'),
+            'enable.auto.commit' => config('kafka.auto_commit','true'),
+            'compression.codec' => config('kafka.compression', 'snappy'),
+            'group.id' => $this->groupId,
+            'bootstrap.servers' => $this->broker,
+        ];
+
+        if ($this->autoCommit) {
+            $options['enable.auto.commit'] = 'true';
+        }
+
+        return array_merge($options, $this->customOptions);
+    }
+
+    public function getProducerOptions(): array
+    {
+        $config = [
+            'compression.codec' => 'snappy',
+            'bootstrap.servers' => $this->broker,
+            'metadata.broker.list' => $this->broker
+        ];
+
+        return array_merge($config, $this->getSaslOptions());
+    }
+
+    private function getSaslOptions(): array
+    {
+        if ($this->isPlainText() && $this->sasl !== null) {
+            return [
+                'sasl.username' => $this->sasl->getUsername(),
+                'sasl.password' => $this->sasl->getPassword(),
+                'sasl.mechanisms' => $this->sasl->getMechanisms(),
+            ];
+        }
+
+        return [];
+    }
+
+    private function isPlainText(): bool
+    {
+        return $this->securityProtocol == 'SASL_PLAINTEXT';
+    }
+}

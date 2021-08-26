@@ -4,6 +4,7 @@
     "type": "library",
     "require": {
         "php": "^8.0",
+        "ext-rdkafka": "^5.0|^4.0",
         "phpunit/phpunit": "^9.5"
     },
     "require-dev": {

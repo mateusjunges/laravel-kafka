@@ -2,37 +2,22 @@
 
 namespace Junges\Kafka;
 
-use Mockery\Exception;
-use RdKafka\Producer;
+use Junges\Kafka\Contracts\CanProduceMessages;
+use Junges\Kafka\Contracts\CanPublishMessagesToKafka;
+use Junges\Kafka\Producers\ProducerBuilder;
 
-class Kafka
+class Kafka implements CanPublishMessagesToKafka
 {
     /**
-     * @param Producer $producer
+     * @param string $broker
+     * @param string $topic
+     * @return CanProduceMessages
      */
-    public function __construct(
-        private Producer $producer
-    ){}
-
-    /**
-     * @throws \Exception
-     */
-    public function publish(Message $message, string $topic, $key = null): bool
+    public function publishOn(string $broker, string $topic): CanProduceMessages
     {
-        $topic = $this->producer->newTopic($topic);
-
-        $topic->produce(RD_KAFKA_PARTITION_UA, 0, $message->getPayload(), $key);
-
-        $this->producer->poll(0);
-
-        return retry(10, function() {
-           $result = $this->producer->flush(1000);
-
-           if (RD_KAFKA_RESP_ERR_NO_ERROR === $result) {
-               return true;
-           }
-
-           throw new Exception();
-        });
+        return new ProducerBuilder(
+            broker: $broker,
+            topic: $topic
+        );
     }
 }

@@ -5,9 +5,11 @@ namespace Junges\Kafka\Facades;
 use Illuminate\Support\Facades\Facade;
 use Junges\Kafka\KafkaFake;
 use Junges\Kafka\Message;
+use Junges\Kafka\Producers\ProducerBuilder;
 
 /**
- * @method static bool publish(Message $message, string $topic, $key = null)
+ * @method static ProducerBuilder publishOn(string $broker, string $topic);
+ * @method static void assertPublished(Message $message);
  */
 class Kafka extends Facade
 {
