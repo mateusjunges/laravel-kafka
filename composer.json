@@ -26,11 +26,19 @@
     "authors": [
         {
             "name": "mateusjunges",
-            "email": "mateus@junges.dev"
+            "email": "mateus@junges.dev",
+            "role": "Backend Software Engineer"
         }
     ],
     "scripts": {
         "test": "vendor/bin/phpunit tests",
         "format": "vendor/bin/php-cs-fixer fix --allow-risky=yes --config=.php_cs.dist.php"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Junges\\Kafka\\Providers\\LaravelKafkaServiceProvider"
+            ]
+        }
     }
 }
