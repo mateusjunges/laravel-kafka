@@ -68,7 +68,7 @@ class KafkaFake implements CanPublishMessagesToKafka
      * @param null $callback
      * @return \Illuminate\Support\Collection
      */
-    public function published($message, $callback = null): Collection
+    private function published($message, $callback = null): Collection
     {
         if (! $this->hasPublished($message)) {
             return collect();
@@ -90,7 +90,7 @@ class KafkaFake implements CanPublishMessagesToKafka
      * @param $message
      * @return bool
      */
-    public function hasPublished($message): bool
+    private function hasPublished($message): bool
     {
         return ! empty($this->getPublishedMessages());
     }
