@@ -10,8 +10,8 @@ use Junges\Kafka\Support\Testing\Fakes\KafkaFake;
 /**
  * @method static ProducerBuilder publishOn(string $broker, string $topic);
  * @method static void assertPublished(Message $message);
- * @method static void assertNothingPublished()
  * @method static void assertPublishedOn(string $topic, Message $message, $callback = null)
+ * @method static void assertNothingPublished()
  */
 class Kafka extends Facade
 {
