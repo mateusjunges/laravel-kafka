@@ -4,6 +4,7 @@ namespace Junges\Kafka\Tests;
 
 use Illuminate\Support\Str;
 use Junges\Kafka\Facades\Kafka;
+use Junges\Kafka\Message;
 use Mockery as m;
 use RdKafka\Producer;
 
@@ -27,5 +28,22 @@ class KafkaTest extends TestCase
             ->send();
 
         $this->assertTrue($test);
+    }
+
+    public function test1()
+    {
+        Kafka::fake();
+
+        $producer = Kafka::publishOn('localhost:9092', 'test-topic')
+            ->withKey($uuid = Str::uuid()->toString())
+            ->withMessageKey('test', ['test'])
+            ->withHeaders(['custom' => 'header'])
+            ->withDebugEnabled();
+
+        $producer->send();
+
+        Kafka::assertPublishedOn('test-topic', $producer->getMessage(), function ($messages) use ($uuid) {
+            return $messages->getKey() === $uuid;
+        });
     }
 }
