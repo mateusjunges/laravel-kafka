@@ -4,8 +4,8 @@ namespace Junges\Kafka\Tests;
 
 use Illuminate\Support\Str;
 use Junges\Kafka\Facades\Kafka;
-use Junges\Kafka\Support\Testing\Fakes\KafkaFake;
 use Junges\Kafka\Message;
+use Junges\Kafka\Support\Testing\Fakes\KafkaFake;
 use PHPUnit\Framework\Constraint\ExceptionMessage;
 use PHPUnit\Framework\ExpectationFailedException;
 

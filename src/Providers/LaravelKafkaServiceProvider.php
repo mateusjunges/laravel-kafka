@@ -23,7 +23,7 @@ class LaravelKafkaServiceProvider extends ServiceProvider
     private function publishesConfiguration()
     {
         $this->publishes([
-            __DIR__."/../../config/kafka.php" => config_path('kafka.php')
+            __DIR__."/../../config/kafka.php" => config_path('kafka.php'),
         ]);
     }
 }

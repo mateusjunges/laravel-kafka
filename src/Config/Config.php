@@ -3,7 +3,6 @@
 namespace Junges\Kafka\Config;
 
 use Junges\Kafka\Contracts\Consumer;
-use Junges\Kafka\Config\Sasl;
 
 class Config
 {
