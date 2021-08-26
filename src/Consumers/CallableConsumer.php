@@ -1,6 +1,6 @@
 <?php
 
-namespace Junges\Kafka;
+namespace Junges\Kafka\Consumers;
 
 use Closure;
 use Junges\Kafka\Contracts\Consumer;
