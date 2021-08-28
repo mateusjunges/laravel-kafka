@@ -22,7 +22,7 @@ class KafkaTest extends TestCase
             ->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
             ->getMock();
 
-        $this->app->bind(Producer::class, function() use ($mockedProducer) {
+        $this->app->bind(Producer::class, function () use ($mockedProducer) {
             return $mockedProducer;
         });
 
