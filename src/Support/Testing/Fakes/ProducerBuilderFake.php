@@ -31,7 +31,7 @@ class ProducerBuilderFake implements CanProduceMessages
     }
 
     /**
-     * Return a new Junges\Kafka\ProducerBuilder instance
+     * Return a new Junges\Commit\ProducerBuilder instance
      * @param string $broker
      * @param string $topic
      * @return static
@@ -79,7 +79,7 @@ class ProducerBuilderFake implements CanProduceMessages
      * @param string $key
      * @return $this
      */
-    public function withKey(string $key): self
+    public function withKafkaMessageKey(string $key): self
     {
         $this->message->withKey($key);
 
