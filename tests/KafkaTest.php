@@ -27,7 +27,7 @@ class KafkaTest extends TestCase
         });
 
         $test = Kafka::publishOn('localhost:9092', 'test-topic')
-            ->withKey(Str::uuid()->toString())
+            ->withKafkaMessageKey(Str::uuid()->toString())
             ->withMessageKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
             ->withDebugEnabled()
