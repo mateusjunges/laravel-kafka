@@ -4,14 +4,16 @@ namespace Junges\Kafka\Facades;
 
 use Illuminate\Support\Facades\Facade;
 use Junges\Kafka\Message;
-use Junges\Kafka\Producers\ProducerBuilder;
 use Junges\Kafka\Support\Testing\Fakes\KafkaFake;
 
 /**
- * @method static ProducerBuilder publishOn(string $broker, string $topic);
+ * @method static \Junges\Kafka\Contracts\CanProduceMessages publishOn(string $broker, string $topic);
+ * @method static \Junges\Kafka\Consumers\ConsumerBuilder createConsumer(string $brokers, string $groupId, array $topics);
  * @method static void assertPublished(Message $message);
  * @method static void assertPublishedOn(string $topic, Message $message, $callback = null)
  * @method static void assertNothingPublished()
+ * @see \Junges\Kafka\Kafka
+ * @mixin \Junges\Kafka\Kafka
  */
 class Kafka extends Facade
 {
