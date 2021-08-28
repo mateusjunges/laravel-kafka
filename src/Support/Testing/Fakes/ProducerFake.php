@@ -4,7 +4,6 @@ namespace Junges\Kafka\Support\Testing\Fakes;
 
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Message;
-use PHPUnit\Framework\Assert as PHPUnit;
 use RdKafka\Conf;
 
 class ProducerFake
@@ -27,11 +26,6 @@ class ProducerFake
         $this->messages[$this->topic][] = json_encode($message->toArray());
 
         return true;
-    }
-
-    public function assertPublished(Message $message)
-    {
-        PHPUnit::assertContains($message, $this->messages);
     }
 
     public function getPublishedMessages(): array
