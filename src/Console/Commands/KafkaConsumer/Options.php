@@ -29,7 +29,7 @@ class Options
 
     public function getTopics(): array
     {
-        return (is_array($this->topics) && !empty($this->topics)) ? $this->topics : [];
+        return (is_array($this->topics) && ! empty($this->topics)) ? $this->topics : [];
     }
 
     public function getConsumer(): ?string
@@ -58,5 +58,4 @@ class Options
     {
         return (is_int($this->maxMessage) && $this->maxMessage >= 1) ? $this->maxMessage : -1;
     }
-
 }

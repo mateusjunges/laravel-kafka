@@ -33,7 +33,7 @@ class KafkaConsumerCommand extends Command
                 'mechanisms' => config('kafka.sasl.mechanisms'),
                 'username' => config('kafka.sasl.username'),
                 'password' => config('kafka.sasl.password'),
-            ]
+            ],
         ];
     }
 

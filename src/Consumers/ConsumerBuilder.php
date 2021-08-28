@@ -42,7 +42,8 @@ class ConsumerBuilder
         $this->topics = $topics;
 
         $this->commit = 1;
-        $this->handler = function () {};
+        $this->handler = function () {
+        };
         $this->maxMessages = -1;
         $this->maxCommitRetries = 6;
         $this->middlewares = [];

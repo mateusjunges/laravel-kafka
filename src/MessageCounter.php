@@ -15,6 +15,7 @@ class MessageCounter
     public function add(): self
     {
         $this->messageCount++;
+
         return $this;
     }
 

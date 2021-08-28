@@ -18,6 +18,13 @@ class Retryable
         $this->retryableErrors = $retryableErrors;
     }
 
+    /**
+     * @param callable $function
+     * @param int $currentRetries
+     * @param int $delayInSeconds
+     * @param bool $exponentially
+     * @throws \Carbon\Exceptions\Exception
+     */
     public function retry(
         callable $function,
         int $currentRetries = 0,
@@ -34,6 +41,7 @@ class Retryable
                     ++$currentRetries,
                     $exponentially == true ? $delayInSeconds * 2 : $delayInSeconds
                 );
+
                 return;
             }
 

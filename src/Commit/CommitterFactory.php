@@ -9,7 +9,9 @@ use RdKafka\KafkaConsumer;
 
 class CommitterFactory
 {
-    public function __construct(private MessageCounter $messageCounter){}
+    public function __construct(private MessageCounter $messageCounter)
+    {
+    }
 
     public function make(KafkaConsumer $kafkaConsumer, Config $config): Committer
     {
