@@ -21,6 +21,11 @@ class CallableConsumer extends Consumer
         });
     }
 
+    /**
+     * Handle the received message.
+     *
+     * @param \RdKafka\Message $message
+     */
     public function handle(Message $message): void
     {
         $middlewares = array_reverse($this->middlewares);
@@ -33,6 +38,12 @@ class CallableConsumer extends Consumer
         $handler($message);
     }
 
+    /**
+     * Wrap the message with a given middleware.
+     *
+     * @param callable $middleware
+     * @return callable
+     */
     private function wrapMiddleware(callable $middleware): callable
     {
         return function (callable $handler) use ($middleware) {
