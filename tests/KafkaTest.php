@@ -12,12 +12,19 @@ class KafkaTest extends TestCase
     public function testItCanPublishMessagesToKafka()
     {
         $mockedProducer = m::mock(Producer::class)
-            ->shouldReceive('newTopic', 'produce')
-            ->andReturnSelf()
-            ->andReturn()
+            ->shouldReceive('newTopic')
+            ->andReturn(m::self())
+            ->shouldReceive('producev')
+            ->andReturn(m::self())
+            ->shouldReceive('poll')
+            ->andReturn(m::self())
+            ->shouldReceive('flush')
+            ->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
             ->getMock();
 
-        $this->app->instance(Producer::class, $mockedProducer);
+        $this->app->bind(Producer::class, function() use ($mockedProducer) {
+            return $mockedProducer;
+        });
 
         $test = Kafka::publishOn('localhost:9092', 'test-topic')
             ->withKey(Str::uuid()->toString())
