@@ -31,8 +31,9 @@ class ConsumerBuilder
     private function __construct(string $brokers, string $groupId, array $topics)
     {
         foreach ($topics as $topic) {
-            if (!is_string($topic)) {
+            if (! is_string($topic)) {
                 $type = ucfirst(gettype($topic));
+
                 throw new InvalidArgumentException("The topic name should be a string value. {$type} given.");
             }
         }
@@ -42,7 +43,8 @@ class ConsumerBuilder
         $this->topics = $topics;
 
         $this->commit = 1;
-        $this->handler = function () {};
+        $this->handler = function () {
+        };
         $this->maxMessages = -1;
         $this->maxCommitRetries = 6;
         $this->middlewares = [];
@@ -69,6 +71,7 @@ class ConsumerBuilder
     public function withCommitBatchSize(int $size): self
     {
         $this->commit = $size;
+
         return $this;
     }
 
@@ -79,6 +82,7 @@ class ConsumerBuilder
     public function withHandler(callable $handler): self
     {
         $this->handler = Closure::fromCallable($handler);
+
         return $this;
     }
 
@@ -89,6 +93,7 @@ class ConsumerBuilder
     public function withMaxMessages(int $maxMessages): self
     {
         $this->maxMessages = $maxMessages;
+
         return $this;
     }
 
@@ -99,6 +104,7 @@ class ConsumerBuilder
     public function withMaxCommitRetries(int $maxCommitRetries): self
     {
         $this->maxCommitRetries = $maxCommitRetries;
+
         return $this;
     }
 
@@ -124,6 +130,7 @@ class ConsumerBuilder
     public function withSasl(Sasl $saslConfig): self
     {
         $this->saslConfig = $saslConfig;
+
         return $this;
     }
 
@@ -138,6 +145,7 @@ class ConsumerBuilder
     public function withMiddleware(callable $middleware): self
     {
         $this->middlewares[] = $middleware;
+
         return $this;
     }
 
@@ -148,6 +156,7 @@ class ConsumerBuilder
     public function withSecurityProtocol(string $securityProtocol): self
     {
         $this->securityProtocol = $securityProtocol;
+
         return $this;
     }
 
@@ -157,6 +166,7 @@ class ConsumerBuilder
     public function withAutoCommit(): self
     {
         $this->autoCommit = true;
+
         return $this;
     }
 
@@ -183,6 +193,7 @@ class ConsumerBuilder
     public function withOption(string $name, string $value): self
     {
         $this->options[$name] = $value;
+
         return $this;
     }
 

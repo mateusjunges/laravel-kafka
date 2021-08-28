@@ -12,8 +12,10 @@ class BatchCommitter implements Committer
     public function __construct(
         private Committer $committer,
         private MessageCounter $messageCounter,
-        private int $batchSize)
-    {}
+        private int $batchSize
+    )
+    {
+    }
 
     public function commitMessage(): void
     {
@@ -34,5 +36,4 @@ class BatchCommitter implements Committer
         $this->committer->commitDlq();
         $this->commits = 0;
     }
-
 }

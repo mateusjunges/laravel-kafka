@@ -22,8 +22,9 @@ class Logger
 
         $this->logger = new MonologLogger('PHP-KAFKA-CONSUMER-ERROR');
         $this->logger->pushHandler($handler);
-        $this->logger->pushProcessor(function($record) {
+        $this->logger->pushProcessor(function ($record) {
             $record['datetime']->format('c');
+
             return $record;
         });
     }
@@ -39,8 +40,7 @@ class Logger
     {
         $this->logger->error("[{$prefix}] Error to consume message", [
             'message' => $message,
-            'throwable' => $e
+            'throwable' => $e,
         ]);
     }
-
 }

@@ -41,6 +41,7 @@ class Retryable
                     ++$currentRetries,
                     $exponentially == true ? $delayInSeconds * 2 : $delayInSeconds
                 );
+
                 return;
             }
 

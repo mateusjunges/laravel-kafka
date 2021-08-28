@@ -60,10 +60,10 @@ class Consumer
     public function consume(): void
     {
         $this->consumer = app(KafkaConsumer::class, [
-            'conf' => $this->setConf($this->config->getConsumerOptions())
+            'conf' => $this->setConf($this->config->getConsumerOptions()),
         ]);
         $this->producer = app(KafkaProducer::class, [
-            'conf' => $this->setConf($this->config->getProducerOptions())
+            'conf' => $this->setConf($this->config->getProducerOptions()),
         ]);
 
         $this->committer = $this->committerFactory->make($this->consumer, $this->config);
@@ -140,11 +140,13 @@ class Consumer
                 $this->config->getTopics()[0],
                 $exception
             );
+
             return true;
         } catch (Throwable $throwable) {
             if ($exception !== $throwable) {
                 $this->logger->error($message, $throwable, 'HANDLER_EXCEPTION');
             }
+
             return false;
         }
     }
@@ -177,16 +179,18 @@ class Consumer
     private function commit(Message $message, bool $success): void
     {
         try {
-            if (!$success && !is_null($this->config->getDlq())) {
+            if (! $success && ! is_null($this->config->getDlq())) {
                 $this->sendToDlq($message);
                 $this->committer->commitDlq();
+
                 return;
             }
 
             $this->committer->commitMessage();
         } catch (Throwable $throwable) {
-            if (!in_array($throwable->getCode(), self::IGNORABLE_COMMIT_ERRORS)) {
+            if (! in_array($throwable->getCode(), self::IGNORABLE_COMMIT_ERRORS)) {
                 $this->logger->error($message, $throwable, 'MESSAGE_COMMIT');
+
                 throw $throwable;
             }
         }
@@ -213,11 +217,13 @@ class Consumer
         if (RD_KAFKA_RESP_ERR_NO_ERROR === $message->err) {
             $this->messageCounter->add();
             $this->executeMessage($message);
+
             return;
         }
 
-        if (!in_array($message->err, self::IGNORABLE_CONSUMER_ERRORS)) {
+        if (! in_array($message->err, self::IGNORABLE_CONSUMER_ERRORS)) {
             $this->logger->error($message, null, 'CONSUMER');
+
             throw new KafkaConsumerException($message->errstr(), $message->err);
         }
     }

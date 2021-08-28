@@ -9,7 +9,7 @@ use Junges\Kafka\Retryable;
 class RetryableCommitter implements Committer
 {
     private const RETRYABLE_ERRORS = [
-        RD_KAFKA_RESP_ERR_REQUEST_TIMED_OUT
+        RD_KAFKA_RESP_ERR_REQUEST_TIMED_OUT,
     ];
 
     private Retryable $retryable;
@@ -17,7 +17,8 @@ class RetryableCommitter implements Committer
     public function __construct(
         private Committer $committer,
         Sleeper $sleeper,
-        int $maximumRetries = 6)
+        int $maximumRetries = 6
+    )
     {
         $this->retryable = new Retryable($sleeper, $maximumRetries, self::RETRYABLE_ERRORS);
     }
