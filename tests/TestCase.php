@@ -4,8 +4,8 @@ namespace Junges\Kafka\Tests;
 
 use Junges\Kafka\Producers\Producer;
 use Junges\Kafka\Providers\LaravelKafkaServiceProvider;
-use Orchestra\Testbench\TestCase as Orchestra;
 use Mockery as m;
+use Orchestra\Testbench\TestCase as Orchestra;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
 use RdKafka\Producer as KafkaProducer;
@@ -38,7 +38,7 @@ class TestCase extends Orchestra
             ->shouldReceive('produce')
             ->andReturn();
 
-        $this->app->bind(Producer::class, function() use ($mockedProducer) {
+        $this->app->bind(Producer::class, function () use ($mockedProducer) {
             return $mockedProducer->getMock();
         });
 
@@ -47,7 +47,7 @@ class TestCase extends Orchestra
             ->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
             ->getMock();
 
-        $this->app->bind(KafkaProducer::class, function() use ($mockedKafkaProducer) {
+        $this->app->bind(KafkaProducer::class, function () use ($mockedKafkaProducer) {
             return $mockedKafkaProducer;
         });
     }
@@ -64,7 +64,7 @@ class TestCase extends Orchestra
             ->never()
             ->getMock();
 
-        $this->app->bind(KafkaConsumer::class, function() use ($mockedKafkaConsumer) {
+        $this->app->bind(KafkaConsumer::class, function () use ($mockedKafkaConsumer) {
             return $mockedKafkaConsumer;
         });
     }
@@ -81,7 +81,7 @@ class TestCase extends Orchestra
             ->andReturn()
             ->getMock();
 
-        $this->app->bind(KafkaConsumer::class, function() use ($mockedKafkaConsumer) {
+        $this->app->bind(KafkaConsumer::class, function () use ($mockedKafkaConsumer) {
             return $mockedKafkaConsumer;
         });
     }
@@ -94,5 +94,4 @@ class TestCase extends Orchestra
 
         return $reflectionProperty->getValue($object);
     }
-
 }

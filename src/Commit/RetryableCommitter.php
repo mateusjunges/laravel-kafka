@@ -9,7 +9,7 @@ use Junges\Kafka\Retryable;
 class RetryableCommitter implements Committer
 {
     private const RETRYABLE_ERRORS = [
-        RD_KAFKA_RESP_ERR_REQUEST_TIMED_OUT
+        RD_KAFKA_RESP_ERR_REQUEST_TIMED_OUT,
     ];
 
     private Committer $committer;
@@ -34,5 +34,4 @@ class RetryableCommitter implements Committer
             $this->committer->commitDlq();
         });
     }
-
 }

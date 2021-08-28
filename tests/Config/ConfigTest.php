@@ -28,7 +28,7 @@ class ConfigTest extends TestCase
             'compression.codec' => 'snappy',
             'group.id' => 'group',
             'bootstrap.servers' => 'broker',
-            'metadata.broker.list' => 'broker'
+            'metadata.broker.list' => 'broker',
         ];
 
         $this->assertEquals(
@@ -60,7 +60,7 @@ class ConfigTest extends TestCase
             'compression.codec' => 'gzip',
             'group.id' => 'group',
             'bootstrap.servers' => 'broker',
-            'metadata.broker.list' => 'broker'
+            'metadata.broker.list' => 'broker',
         ];
 
         $this->assertEquals(
@@ -94,7 +94,7 @@ class ConfigTest extends TestCase
             'sasl.username' => 'user',
             'sasl.password' => 'pass',
             'sasl.mechanisms' => 'mec',
-            'metadata.broker.list' => 'broker'
+            'metadata.broker.list' => 'broker',
         ];
 
         $this->assertEquals(

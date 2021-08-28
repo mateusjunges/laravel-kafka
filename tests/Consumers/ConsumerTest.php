@@ -74,5 +74,4 @@ class ConsumerTest extends TestCase
         $consumer = new Consumer($config);
         $consumer->consume();
     }
-
 }

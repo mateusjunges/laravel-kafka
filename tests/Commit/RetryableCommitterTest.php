@@ -30,6 +30,7 @@ class RetryableCommitterTest extends TestCase
         $retryableCommitter = new RetryableCommitter($failingCommitter, new FakeSleeper(), 4);
 
         $commitMessageException = null;
+
         try {
             $retryableCommitter->commitMessage();
         } catch (RdKafkaException $exception) {
@@ -37,6 +38,7 @@ class RetryableCommitterTest extends TestCase
         }
 
         $commitDlqException = null;
+
         try {
             $retryableCommitter->commitDlq();
         } catch (RdKafkaException $exception) {

@@ -39,5 +39,4 @@ class SaslTest extends TestCase
 
         $this->assertEquals('mechanisms', $sasl->getMechanisms());
     }
-
 }

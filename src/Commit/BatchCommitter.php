@@ -13,8 +13,7 @@ class BatchCommitter implements Committer
         private Committer $committer,
         private MessageCounter $messageCounter,
         private int $batchSize
-    )
-    {
+    ) {
     }
 
     public function commitMessage(): void

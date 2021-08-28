@@ -36,6 +36,7 @@ class FailingCommitter implements Committer
         $this->commitCount++;
         if ($this->commitCount > $this->timesToFail) {
             $this->commitCount = 0;
+
             return;
         }
 

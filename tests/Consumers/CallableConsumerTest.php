@@ -21,14 +21,14 @@ class CallableConsumerTest extends TestCase
         $message->topic_name = 'test-topic';
 
         $consumer = new CallableConsumer([$this, 'handleMessage'], [
-            function($message, callable $next): void {
+            function ($message, callable $next): void {
                 $decoded = json_decode($message->payload);
                 $next($decoded);
             },
-            function(stdClass $message, callable $next): void {
+            function (stdClass $message, callable $next): void {
                 $decoded = (array) $message;
                 $next($decoded);
-            }
+            },
         ]);
 
         $consumer->handle($message);
@@ -37,7 +37,7 @@ class CallableConsumerTest extends TestCase
     public function handleMessage(array $data): void
     {
         $this->assertEquals([
-            'foo' => 'bar'
+            'foo' => 'bar',
         ], $data);
     }
 }

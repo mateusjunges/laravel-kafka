@@ -5,8 +5,8 @@ namespace Junges\Kafka\Tests\Consumers;
 use Closure;
 use InvalidArgumentException;
 use Junges\Kafka\Config\Sasl;
-use Junges\Kafka\Consumers\ConsumerBuilder;
 use Junges\Kafka\Consumers\Consumer;
+use Junges\Kafka\Consumers\ConsumerBuilder;
 use Junges\Kafka\Tests\FakeConsumer;
 use Junges\Kafka\Tests\TestCase;
 
@@ -115,7 +115,7 @@ class ConsumerBuilderTest extends TestCase
     public function testItCanAddMiddlewaresToTheHandler()
     {
         $consumer = ConsumerBuilder::create('broker', 'group', ['test-topic'])
-            ->withMiddleware(function($message, callable $next) {
+            ->withMiddleware(function ($message, callable $next) {
                 $next($message);
             });
 
