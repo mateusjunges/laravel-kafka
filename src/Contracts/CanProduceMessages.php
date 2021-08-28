@@ -14,7 +14,7 @@ interface CanProduceMessages
 
     public function withHeaders(array $headers): self;
 
-    public function withKey(string $key): self;
+    public function withKafkaMessageKey(string $key): self;
 
     public function withMessageKey(string $key, mixed $message): self;
 
