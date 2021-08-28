@@ -7,12 +7,7 @@ use RdKafka\KafkaConsumer;
 
 class KafkaCommitter implements Committer
 {
-    private KafkaConsumer $consumer;
-
-    public function __construct(KafkaConsumer $consumer)
-    {
-        $this->consumer = $consumer;
-    }
+    public function __construct(private KafkaConsumer $consumer){}
 
     public function commitMessage(): void
     {

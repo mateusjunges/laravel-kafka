@@ -29,5 +29,4 @@ class CommitterFactory
             $config->getCommit()
         );
     }
-
 }

@@ -13,7 +13,7 @@ class KafkaFakeTest extends TestCase
 {
     private KafkaFake $fake;
 
-    protected function setUp(): void
+    public function setUp(): void
     {
         parent::setUp();
         $this->fake = new KafkaFake();

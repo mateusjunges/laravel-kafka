@@ -18,7 +18,7 @@ class ConsumerBuilder
     private string $brokers;
     private array $middlewares;
     private ?Sasl $saslConfig = null;
-    private string $dlq;
+    private ?string $dlq = null;
     private string $securityProtocol;
     private bool $autoCommit;
     private array $options;
