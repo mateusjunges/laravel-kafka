@@ -29,11 +29,6 @@ class ProducerFake
         return true;
     }
 
-    public function assertPublished(Message $message)
-    {
-        PHPUnit::assertContains($message, $this->messages);
-    }
-
     public function getPublishedMessages(): array
     {
         return $this->messages;
