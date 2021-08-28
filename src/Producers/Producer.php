@@ -21,6 +21,12 @@ class Producer
         ]);
     }
 
+    /**
+     * Set the Kafka Configuration.
+     *
+     * @param array $options
+     * @return \RdKafka\Conf
+     */
     public function setConf(array $options): Conf
     {
         $conf = new Conf();
@@ -32,7 +38,14 @@ class Producer
         return $conf;
     }
 
-    public function produce(Message $message)
+    /**
+     * Produce the specified message in the kafka topic.
+     *
+     * @param \Junges\Kafka\Message $message
+     * @return mixed
+     * @throws \Exception
+     */
+    public function produce(Message $message): mixed
     {
         $topic = $this->producer->newTopic($this->topic);
 
