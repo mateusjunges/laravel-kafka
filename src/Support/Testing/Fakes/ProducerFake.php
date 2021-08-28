@@ -4,7 +4,6 @@ namespace Junges\Kafka\Support\Testing\Fakes;
 
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Message;
-use PHPUnit\Framework\Assert as PHPUnit;
 use RdKafka\Conf;
 
 class ProducerFake
