@@ -2,7 +2,6 @@
 
 namespace Commit;
 
-use Junges\Kafka\Commit\Contracts\Committer;
 use Junges\Kafka\Commit\KafkaCommitter;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Tests\TestCase;
@@ -35,7 +34,7 @@ class KafkaCommitterTest extends TestCase
         }
 
         $kafkaCommitter = new KafkaCommitter(app(KafkaConsumer::class, [
-            'conf' => $conf
+            'conf' => $conf,
         ]));
 
         $kafkaCommitter->commitMessage();
@@ -64,7 +63,7 @@ class KafkaCommitterTest extends TestCase
         }
 
         $kafkaCommitter = new KafkaCommitter(app(KafkaConsumer::class, [
-            'conf' => $conf
+            'conf' => $conf,
         ]));
 
         $kafkaCommitter->commitDlq();
