@@ -11,7 +11,7 @@ class ConsumerBuilder
 {
     private array $topics;
     private int $commit;
-    private string $groupId;
+    private ?string $groupId;
     private Closure $handler;
     private int $maxMessages;
     private int $maxCommitRetries;
@@ -25,10 +25,10 @@ class ConsumerBuilder
 
     /**
      * @param string $brokers
-     * @param string $groupId
      * @param array $topics
+     * @param string|null $groupId
      */
-    private function __construct(string $brokers, string $groupId, array $topics)
+    private function __construct(string $brokers, array $topics, string $groupId = null)
     {
         foreach ($topics as $topic) {
             if (! is_string($topic)) {
@@ -55,16 +55,16 @@ class ConsumerBuilder
 
     /**
      * @param string $brokers
-     * @param string $groupId
      * @param array $topics
+     * @param string|null $groupId
      * @return static
      */
-    public static function create(string $brokers, string $groupId, array $topics): self
+    public static function create(string $brokers, array $topics, string $groupId = null): self
     {
         return new ConsumerBuilder(
             brokers: $brokers,
-            groupId: $groupId,
-            topics: $topics
+            topics: $topics,
+            groupId: $groupId
         );
     }
 

@@ -14,7 +14,7 @@ class ConsumerBuilderTest extends TestCase
 {
     public function testItReturnsAConsumerInstance()
     {
-        $consumer = ConsumerBuilder::create('broker', 'group', ['test-topic'])->build();
+        $consumer = ConsumerBuilder::create('broker', ['test-topic'], 'group')->build();
 
         $this->assertInstanceOf(Consumer::class, $consumer);
     }
@@ -23,12 +23,12 @@ class ConsumerBuilderTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        ConsumerBuilder::create('broker', 'group', [1234])->build();
+        ConsumerBuilder::create('broker', [1234], 'group')->build();
     }
 
     public function testItCanSaveTheCommitBatchSize()
     {
-        $consumer = ConsumerBuilder::create('broker', 'group', ['test-topic'])
+        $consumer = ConsumerBuilder::create('broker', ['test-topic'], 'group')
             ->withCommitBatchSize(1);
 
         $commitValue = $this->getPropertyWithReflection('commit', $consumer);
@@ -38,7 +38,7 @@ class ConsumerBuilderTest extends TestCase
 
     public function testItUsesTheCorrectHandler()
     {
-        $consumer = ConsumerBuilder::create('broker', 'group', ['test-topic'])
+        $consumer = ConsumerBuilder::create('broker', ['test-topic'], 'group')
             ->withHandler(new FakeConsumer());
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
@@ -50,7 +50,7 @@ class ConsumerBuilderTest extends TestCase
 
     public function testItCanSetMaxMessages()
     {
-        $consumer = ConsumerBuilder::create('broker', 'group', ['test-topic'])
+        $consumer = ConsumerBuilder::create('broker', ['test-topic'], 'group')
             ->withMaxMessages(2);
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
@@ -62,7 +62,7 @@ class ConsumerBuilderTest extends TestCase
 
     public function testItCanSetMaxCommitRetries()
     {
-        $consumer = ConsumerBuilder::create('broker', 'group', ['test-topic'])
+        $consumer = ConsumerBuilder::create('broker', ['test-topic'], 'group')
             ->withMaxCommitRetries(2);
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
@@ -74,7 +74,7 @@ class ConsumerBuilderTest extends TestCase
 
     public function testItCanSetTheDeadLetterQueue()
     {
-        $consumer = ConsumerBuilder::create('broker', 'group', ['test-topic'])
+        $consumer = ConsumerBuilder::create('broker', ['test-topic'], 'group')
             ->withDlq('test-topic-dlq');
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
@@ -86,7 +86,7 @@ class ConsumerBuilderTest extends TestCase
 
     public function testItUsesDlqSuffixIfDlqIsNull()
     {
-        $consumer = ConsumerBuilder::create('broker', 'group', ['test-topic'])
+        $consumer = ConsumerBuilder::create('broker', ['test-topic'], 'group')
             ->withDlq();
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
@@ -98,7 +98,7 @@ class ConsumerBuilderTest extends TestCase
 
     public function testItCanSetSasl()
     {
-        $consumer = ConsumerBuilder::create('broker', 'group', ['test-topic'])
+        $consumer = ConsumerBuilder::create('broker', ['test-topic'], 'group')
             ->withSasl($sasl = new Sasl(
                 'username',
                 'password',
@@ -114,7 +114,7 @@ class ConsumerBuilderTest extends TestCase
 
     public function testItCanAddMiddlewaresToTheHandler()
     {
-        $consumer = ConsumerBuilder::create('broker', 'group', ['test-topic'])
+        $consumer = ConsumerBuilder::create('broker', ['test-topic'], 'group')
             ->withMiddleware(function ($message, callable $next) {
                 $next($message);
             });
@@ -130,7 +130,7 @@ class ConsumerBuilderTest extends TestCase
 
     public function testItCanSetSecurityProtocol()
     {
-        $consumer = ConsumerBuilder::create('broker', 'group', ['test-topic'])
+        $consumer = ConsumerBuilder::create('broker', ['test-topic'], 'group')
             ->withSecurityProtocol('security');
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
@@ -142,7 +142,7 @@ class ConsumerBuilderTest extends TestCase
 
     public function testItCanSetAutoCommit()
     {
-        $consumer = ConsumerBuilder::create('broker', 'group', ['test-topic'])
+        $consumer = ConsumerBuilder::create('broker', ['test-topic'], 'group')
             ->withAutoCommit();
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
@@ -154,7 +154,7 @@ class ConsumerBuilderTest extends TestCase
 
     public function testItCanSetConsumerOptions()
     {
-        $consumer = ConsumerBuilder::create('broker', 'group', ['test-topic'])
+        $consumer = ConsumerBuilder::create('broker', ['test-topic'], 'group')
             ->withOptions([
                 'auto.offset.reset' => 'latest',
                 'enable.auto.commit' => 'false',

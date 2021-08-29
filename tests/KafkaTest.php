@@ -3,6 +3,7 @@
 namespace Junges\Kafka\Tests;
 
 use Illuminate\Support\Str;
+use Junges\Kafka\Consumers\ConsumerBuilder;
 use Junges\Kafka\Facades\Kafka;
 use Mockery as m;
 use RdKafka\Producer;
@@ -34,5 +35,12 @@ class KafkaTest extends TestCase
             ->send();
 
         $this->assertTrue($test);
+    }
+
+    public function testCreateConsumerReturnsAConsumerBuilderInstance()
+    {
+        $consumer = Kafka::createConsumer('broker', ['topic']);
+
+        $this->assertInstanceOf(ConsumerBuilder::class, $consumer);
     }
 }
