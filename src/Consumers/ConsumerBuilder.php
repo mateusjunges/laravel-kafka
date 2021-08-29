@@ -34,7 +34,7 @@ class ConsumerBuilder
             if (! is_string($topic)) {
                 $type = ucfirst(gettype($topic));
 
-                throw new InvalidArgumentException("The topic name should be a string value. {$type} given.");
+                throw new InvalidArgumentException("The topic name should be a string value. [{$type}] given.");
             }
         }
 
@@ -61,7 +61,11 @@ class ConsumerBuilder
      */
     public static function create(string $brokers, string $groupId, array $topics): self
     {
-        return new ConsumerBuilder($brokers, $groupId, $topics);
+        return new ConsumerBuilder(
+            brokers: $brokers,
+            groupId: $groupId,
+            topics: $topics
+        );
     }
 
     /**
@@ -109,6 +113,8 @@ class ConsumerBuilder
     }
 
     /**
+     * Set the Dead Letter Queue to be used. If null, the dlq is created from the topic name.
+     *
      * @param string|null $dlqTopic
      * @return $this
      */

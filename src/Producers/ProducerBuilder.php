@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Producers;
 
+use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\CanProduceMessages;
 use Junges\Kafka\Message;
@@ -11,7 +12,7 @@ class ProducerBuilder implements CanProduceMessages
     private array $options = [];
     private Message $message;
 
-    public function __construct(
+    #[Pure] public function __construct(
         private string $broker,
         private string $topic,
     ) {
@@ -24,9 +25,12 @@ class ProducerBuilder implements CanProduceMessages
      * @param string $topic
      * @return static
      */
-    public static function create(string $broker, string $topic): self
+    #[Pure] public static function create(string $broker, string $topic): self
     {
-        return new ProducerBuilder($broker, $topic);
+        return new ProducerBuilder(
+            broker: $broker,
+            topic: $topic
+        );
     }
 
     public function withConfigOption(string $name, string $option): self
@@ -114,6 +118,9 @@ class ProducerBuilder implements CanProduceMessages
         return $this->message;
     }
 
+    /**
+     * @throws \Exception
+     */
     public function send(): bool
     {
         $producer = $this->build();

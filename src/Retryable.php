@@ -2,20 +2,16 @@
 
 namespace Junges\Kafka;
 
-use Carbon\Exceptions\Exception;
+use Exception;
 use Junges\Kafka\Commit\Contracts\Sleeper;
 
 class Retryable
 {
-    private Sleeper $sleeper;
-    private int $maximumRetries;
-    private array $retryableErrors;
-
-    public function __construct(Sleeper $sleeper, int $maximumRetries, array $retryableErrors)
-    {
-        $this->sleeper = $sleeper;
-        $this->maximumRetries = $maximumRetries;
-        $this->retryableErrors = $retryableErrors;
+    public function __construct(
+        private Sleeper $sleeper,
+        private int $maximumRetries,
+        private array $retryableErrors
+    ) {
     }
 
     /**

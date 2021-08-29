@@ -3,6 +3,7 @@
 namespace Junges\Kafka;
 
 use Illuminate\Contracts\Support\Arrayable;
+use JetBrains\PhpStorm\ArrayShape;
 
 class Message implements Arrayable
 {
@@ -95,7 +96,8 @@ class Message implements Arrayable
         return $this->headers;
     }
 
-    public function toArray()
+    #[ArrayShape(['payload' => "array", 'key' => "null|string", 'headers' => "array"])]
+    public function toArray(): array
     {
         return [
             'payload' => $this->message,

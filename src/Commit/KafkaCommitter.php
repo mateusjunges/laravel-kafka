@@ -11,11 +11,17 @@ class KafkaCommitter implements Committer
     {
     }
 
+    /**
+     * @throws \RdKafka\Exception
+     */
     public function commitMessage(): void
     {
         $this->consumer->commit();
     }
 
+    /**
+     * @throws \RdKafka\Exception
+     */
     public function commitDlq(): void
     {
         $this->consumer->commit();

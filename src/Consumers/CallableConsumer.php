@@ -16,9 +16,9 @@ class CallableConsumer extends Consumer
         $this->handler = Closure::fromCallable($handler);
 
         $this->middlewares = array_map([$this, 'wrapMiddleware'], $middlewares);
-        $this->middlewares[] = $this->wrapMiddleware(function ($message, callable $next) {
-            $next($message);
-        });
+        $this->middlewares[] = $this->wrapMiddleware(
+            fn ($message, callable $next) => $next($message)
+        );
     }
 
     /**
@@ -46,10 +46,6 @@ class CallableConsumer extends Consumer
      */
     private function wrapMiddleware(callable $middleware): callable
     {
-        return function (callable $handler) use ($middleware) {
-            return function ($message) use ($handler, $middleware) {
-                $middleware($message, $handler);
-            };
-        };
+        return fn (callable $handler) => fn ($message) => $middleware($message, $handler);
     }
 }

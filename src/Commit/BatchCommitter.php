@@ -19,13 +19,13 @@ class BatchCommitter implements Committer
     public function commitMessage(): void
     {
         $this->commits++;
-        if ($this->isMaxMessage() || $this->commits >= $this->batchSize) {
+        if ($this->maxMessagesLimitReached() || $this->commits >= $this->batchSize) {
             $this->committer->commitMessage();
             $this->commits = 0;
         }
     }
 
-    private function isMaxMessage(): bool
+    private function maxMessagesLimitReached(): bool
     {
         return $this->messageCounter->maxMessagesLimitReached();
     }

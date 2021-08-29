@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Consumers;
 
+use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Commit\CommitterFactory;
 use Junges\Kafka\Commit\Contracts\Committer;
 use Junges\Kafka\Commit\NativeSleeper;
@@ -71,9 +72,7 @@ class Consumer
         $this->consumer->subscribe($this->config->getTopics());
 
         do {
-            $this->retryable->retry(function () {
-                $this->doConsume();
-            });
+            $this->retryable->retry(fn () => $this->doConsume());
         } while (! $this->maxMessagesLimitReached());
     }
 
@@ -160,10 +159,10 @@ class Consumer
     {
         $topic = $this->producer->newTopic($this->config->getDlq());
         $topic->produce(
-            RD_KAFKA_PARTITION_UA,
-            0,
-            $message->payload,
-            $this->config->getConsumer()->producerKey($message->payload)
+            partition: RD_KAFKA_PARTITION_UA,
+            msgflags: 0,
+            payload: $message->payload,
+            key: $this->config->getConsumer()->producerKey($message->payload)
         );
 
         if (method_exists($this->producer, 'flush')) {
@@ -201,7 +200,7 @@ class Consumer
      *
      * @return bool
      */
-    private function maxMessagesLimitReached(): bool
+    #[Pure] private function maxMessagesLimitReached(): bool
     {
         return $this->messageCounter->maxMessagesLimitReached();
     }

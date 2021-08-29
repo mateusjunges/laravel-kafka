@@ -45,7 +45,7 @@ class Producer
      * @return mixed
      * @throws \Exception
      */
-    public function produce(Message $message): mixed
+    public function produce(Message $message): bool
     {
         $topic = $this->producer->newTopic($this->topic);
 
