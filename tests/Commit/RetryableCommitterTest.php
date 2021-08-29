@@ -10,7 +10,7 @@ use RdKafka\Exception as RdKafkaException;
 
 class RetryableCommitterTest extends TestCase
 {
-    public function testShouldRetryToCommit()
+    public function testItShouldRetryToCommit()
     {
         $exception = new RdKafkaException("Something went wrong", RD_KAFKA_RESP_ERR_REQUEST_TIMED_OUT);
         $failingCommitter = new FailingCommitter($exception, 3);
@@ -23,7 +23,7 @@ class RetryableCommitterTest extends TestCase
         $this->assertEquals(4, $failingCommitter->getTimesTriedToCommitDlq());
     }
 
-    public function testShouldRetryOnlyUpToTheMaximumNumberOfRetries()
+    public function testItShouldRetryOnlyUpToTheMaximumNumberOfRetries()
     {
         $expectedException = new RdKafkaException("Something went wrong", RD_KAFKA_RESP_ERR_REQUEST_TIMED_OUT);
         $failingCommitter = new FailingCommitter($expectedException, 99);
@@ -53,7 +53,7 @@ class RetryableCommitterTest extends TestCase
         $this->assertSame($expectedException, $commitDlqException);
     }
 
-    public function testShouldProgressivelyWaitForTheNextRetry()
+    public function testItShouldProgressivelyWaitForTheNextRetry()
     {
         $expectedException = new RdKafkaException("Something went wrong", RD_KAFKA_RESP_ERR_REQUEST_TIMED_OUT);
 
