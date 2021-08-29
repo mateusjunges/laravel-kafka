@@ -19,7 +19,7 @@ class MessageTest extends TestCase
     {
         $this->message->withMessageKey('foo', 'bar');
 
-        $expected  = new Message(message: ['foo' => 'bar']);
+        $expected = new Message(message: ['foo' => 'bar']);
 
         $this->assertEquals($expected, $this->message);
     }
@@ -29,7 +29,7 @@ class MessageTest extends TestCase
         $this->message->withMessageKey('foo', 'bar');
         $this->message->withMessageKey('bar', 'foo');
 
-        $expected  = new Message(message: ['bar' => 'foo']);
+        $expected = new Message(message: ['bar' => 'foo']);
 
         $this->message->forgetMessageKey('foo');
 
@@ -39,10 +39,10 @@ class MessageTest extends TestCase
     public function testItCanSetMessageHeaders()
     {
         $this->message->withHeaders([
-            'foo' => 'bar'
+            'foo' => 'bar',
         ]);
 
-        $expected  = new Message(headers: ['foo' => 'bar']);
+        $expected = new Message(headers: ['foo' => 'bar']);
 
         $this->assertEquals($expected, $this->message);
     }
@@ -51,7 +51,7 @@ class MessageTest extends TestCase
     {
         $this->message->withKey($uuid = Str::uuid()->toString());
 
-        $expected  = new Message(key: $uuid);
+        $expected = new Message(key: $uuid);
 
         $this->assertEquals($expected, $this->message);
     }
@@ -61,7 +61,7 @@ class MessageTest extends TestCase
         $this->message->withMessageKey('foo', 'bar');
         $this->message->withMessageKey('bar', 'foo');
 
-        $expectedMessage  = new Message(message: $array = ['foo' => 'bar', 'bar' => 'foo']);
+        $expectedMessage = new Message(message: $array = ['foo' => 'bar', 'bar' => 'foo']);
 
         $this->assertEquals($expectedMessage, $this->message);
 
@@ -77,7 +77,7 @@ class MessageTest extends TestCase
         $this->message->withKey($uuid = Str::uuid()->toString());
         $this->message->withHeaders($headers = ['foo' => 'bar']);
 
-        $expectedMessage  = new Message(
+        $expectedMessage = new Message(
             headers: $headers,
             message: $array = ['foo' => 'bar', 'bar' => 'foo'],
             key: $uuid
@@ -86,7 +86,7 @@ class MessageTest extends TestCase
         $expectedArray = [
             'payload' => $array,
             'key' => $uuid,
-            'headers' => $headers
+            'headers' => $headers,
         ];
 
         $this->assertEquals($expectedMessage, $this->message);
