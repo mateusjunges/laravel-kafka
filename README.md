@@ -6,10 +6,9 @@ syntax usage syntax or, if it does, the test process with these packages are ver
 
 This package provides a nice way of producing and consuming kafka messages in your Laravel projects.
 
-Follow these docs to install this package and start using kafka as you have never seen before.
+Follow these docs to install this package and start using kafka with ease.
 
 # Installation
-
 To install this package, you must have installed PHP RdKafka extension. You can follow the steps [here](https://github.com/edenhill/librdkafka#installation)
 to install rdkafka in your system.
 
@@ -19,4 +18,4 @@ With RdKafka installed, require this package with composer:
 composer require mateusjunges/laravel-kafka
 ```
 
-
+# Usage
