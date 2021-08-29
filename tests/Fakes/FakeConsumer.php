@@ -1,6 +1,6 @@
 <?php
 
-namespace Junges\Kafka\Tests;
+namespace Junges\Kafka\Tests\Fakes;
 
 use RdKafka\Message;
 

@@ -5,7 +5,7 @@ namespace Junges\Kafka\Tests\Consumers;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Exceptions\KafkaConsumerException;
-use Junges\Kafka\Tests\FakeHandler;
+use Junges\Kafka\Tests\Fakes\FakeHandler;
 use Junges\Kafka\Tests\TestCase;
 use RdKafka\Message;
 

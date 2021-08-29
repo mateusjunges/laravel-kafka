@@ -7,7 +7,7 @@ use InvalidArgumentException;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Consumers\ConsumerBuilder;
-use Junges\Kafka\Tests\FakeConsumer;
+use Junges\Kafka\Tests\Fakes\FakeConsumer;
 use Junges\Kafka\Tests\TestCase;
 
 class ConsumerBuilderTest extends TestCase

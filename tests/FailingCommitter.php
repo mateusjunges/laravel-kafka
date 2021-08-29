@@ -19,18 +19,27 @@ class FailingCommitter implements Committer
         $this->timesToFail = $timesToFail;
     }
 
+    /**
+     * @throws \Exception
+     */
     public function commitMessage(): void
     {
         $this->timesTriedToCommitMessage++;
         $this->commit();
     }
 
+    /**
+     * @throws \Exception
+     */
     public function commitDlq(): void
     {
         $this->timesTriedToCommitDlq++;
         $this->commit();
     }
 
+    /**
+     * @throws \Exception
+     */
     private function commit(): void
     {
         $this->commitCount++;

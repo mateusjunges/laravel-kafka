@@ -1,6 +1,6 @@
 <?php
 
-namespace Junges\Kafka\Tests;
+namespace Junges\Kafka\Tests\Fakes;
 
 use Junges\Kafka\Contracts\Consumer;
 use RdKafka\Message;
@@ -9,7 +9,7 @@ class FakeHandler extends Consumer
 {
     private ?Message $lastMessage = null;
 
-    public function lastMessage()
+    public function lastMessage(): ?Message
     {
         return $this->lastMessage;
     }
