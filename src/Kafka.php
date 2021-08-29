@@ -17,13 +17,15 @@ class Kafka implements CanPublishMessagesToKafka
      * @param string $topic
      * @return CanProduceMessages
      */
-    #[Pure] public function publishOn(string $broker, string $topic): CanProduceMessages
-    {
-        return new ProducerBuilder(
-            broker: $broker,
-            topic: $topic
-        );
-    }
+
+    #[Pure]
+ public function publishOn(string $broker, string $topic): CanProduceMessages
+ {
+     return new ProducerBuilder(
+         broker: $broker,
+         topic: $topic
+     );
+ }
 
     /**
      * Return a ConsumerBuilder instance.

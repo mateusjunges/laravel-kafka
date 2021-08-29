@@ -12,12 +12,13 @@ class ProducerBuilder implements CanProduceMessages
     private array $options = [];
     private Message $message;
 
-    #[Pure] public function __construct(
-        private string $broker,
-        private string $topic,
-    ) {
-        $this->message = new Message();
-    }
+    #[Pure]
+ public function __construct(
+     private string $broker,
+     private string $topic,
+ ) {
+     $this->message = new Message();
+ }
 
     /**
      * Return a new Junges\Commit\ProducerBuilder instance
@@ -25,13 +26,15 @@ class ProducerBuilder implements CanProduceMessages
      * @param string $topic
      * @return static
      */
-    #[Pure] public static function create(string $broker, string $topic): self
-    {
-        return new ProducerBuilder(
-            broker: $broker,
-            topic: $topic
-        );
-    }
+
+    #[Pure]
+ public static function create(string $broker, string $topic): self
+ {
+     return new ProducerBuilder(
+         broker: $broker,
+         topic: $topic
+     );
+ }
 
     public function withConfigOption(string $name, string $option): self
     {
