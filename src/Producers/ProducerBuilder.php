@@ -116,11 +116,6 @@ class ProducerBuilder implements CanProduceMessages
         return $this->topic;
     }
 
-    public function getMessage(): Message
-    {
-        return $this->message;
-    }
-
     /**
      * @throws \Exception
      */

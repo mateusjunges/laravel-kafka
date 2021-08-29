@@ -24,7 +24,5 @@ interface CanProduceMessages
 
     public function getTopic(): string;
 
-    public function getMessage(): Message;
-
     public function send(): bool;
 }

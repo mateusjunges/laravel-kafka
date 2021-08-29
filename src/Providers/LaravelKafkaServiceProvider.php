@@ -3,8 +3,6 @@
 namespace Junges\Kafka\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Junges\Kafka\Facades\Kafka as KafkaFacade;
-use Junges\Kafka\Kafka;
 
 class LaravelKafkaServiceProvider extends ServiceProvider
 {
@@ -15,9 +13,6 @@ class LaravelKafkaServiceProvider extends ServiceProvider
 
     public function register(): void
     {
-        $this->app->bind(KafkaFacade::class, function () {
-            return new Kafka();
-        });
     }
 
     private function publishesConfiguration()
