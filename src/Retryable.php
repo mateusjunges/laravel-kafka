@@ -19,7 +19,7 @@ class Retryable
      * @param int $currentRetries
      * @param int $delayInSeconds
      * @param bool $exponentially
-     * @throws \Carbon\Exceptions\Exception
+     * @throws \Exception
      */
     public function retry(
         callable $function,
