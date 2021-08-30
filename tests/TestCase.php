@@ -98,7 +98,7 @@ class TestCase extends Orchestra
         return $reflectionProperty->getValue($object);
     }
 
-    private function getMockedLogger(): m\MockInterface|m\LegacyMockInterface|null
+    private function getMockedLogger(): m\MockInterface | m\LegacyMockInterface | null
     {
         return m::mock(Logger::class)
             ->shouldReceive('error')
