@@ -11,10 +11,6 @@ class LaravelKafkaServiceProvider extends ServiceProvider
         $this->publishesConfiguration();
     }
 
-    public function register(): void
-    {
-    }
-
     private function publishesConfiguration()
     {
         $this->publishes([

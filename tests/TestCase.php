@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Tests;
 
+use Junges\Kafka\Logger;
 use Junges\Kafka\Producers\Producer;
 use Junges\Kafka\Providers\LaravelKafkaServiceProvider;
 use Mockery as m;
@@ -17,6 +18,8 @@ class TestCase extends Orchestra
         parent::setUp();
 
         (new LaravelKafkaServiceProvider($this->app))->boot();
+
+        app()->instance(Logger::class, $this->getMockedLogger());
     }
 
     protected function getPackageProviders($app): array
@@ -93,5 +96,14 @@ class TestCase extends Orchestra
         $reflectionProperty->setAccessible(true);
 
         return $reflectionProperty->getValue($object);
+    }
+
+    private function getMockedLogger(): m\MockInterface|m\LegacyMockInterface|null
+    {
+        return m::mock(Logger::class)
+            ->shouldReceive('error')
+            ->withAnyArgs()
+            ->andReturn()
+            ->getMock();
     }
 }

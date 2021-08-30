@@ -47,7 +47,7 @@ class Consumer
      */
     public function __construct(private Config $config)
     {
-        $this->logger = new Logger();
+        $this->logger = app(Logger::class);
         $this->messageCounter = new MessageCounter($config->getMaxMessages());
         $this->retryable = new Retryable(new NativeSleeper(), 6, self::TIMEOUT_ERRORS);
         $this->committerFactory = new CommitterFactory($this->messageCounter);
