@@ -1,6 +1,6 @@
 <?php
 
-namespace Integration\Console\Commands;
+namespace Junges\Kafka\Tests\Integration\Console\Commands;
 
 use RdKafka\Message;
 

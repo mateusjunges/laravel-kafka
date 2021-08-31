@@ -1,6 +1,6 @@
 <?php
 
-namespace Integration\Console\Commands;
+namespace Junges\Kafka\Tests\Integration\Console\Commands;
 
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use Symfony\Component\Console\Input\ArgvInput;
