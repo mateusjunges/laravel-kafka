@@ -21,17 +21,17 @@ COPY build/laravel-kernels/kernel.php /application/laravel-test/app/Console/Kern
 
 COPY dev/kafka.php /application/laravel-test/config
 
-COPY src /application/php-kafka-consumer/src/
+COPY src /application/laravel-kafka/src/
 
-COPY tests /application/php-kafka-consumer/tests/
+COPY tests /application/laravel-kafka/tests/
 
-COPY composer.json /application/php-kafka-consumer/composer.json
+COPY composer.json /application/laravel-kafka/composer.json
 
-COPY start.sh /application/php-kafka-consumer/
+COPY start.sh /application/laravel-kafka/
 
-COPY wait-for-it.sh /application/php-kafka-consumer/
+COPY wait-for-it.sh /application/laravel-kafka/
 
-RUN cd /application/php-kafka-consumer && composer update
+RUN cd /application/laravel-kafka && composer update
 
 RUN cd /application/laravel-test && composer update
 

@@ -34,13 +34,13 @@
   "autoload": {
     "psr-4": {
       "App\\": "app/",
-      "Kafka\\Consumer\\": "/application/php-kafka-consumer/src/"
+      "Junges\\Kafka\\": "/application/laravel-kafka/src/"
     }
   },
   "autoload-dev": {
     "psr-4": {
       "Tests\\": "tests/",
-      "Kafka\\Consumer\\Tests\\": "/application/php-kafka-consumer/tests/"
+      "Junges\\Kafka\\Tests\\": "/application/laravel-kafka/tests/"
     }
   },
   "minimum-stability": "dev",

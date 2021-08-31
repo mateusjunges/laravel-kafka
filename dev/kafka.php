@@ -1,9 +1,9 @@
 <?php
 
 return [
-    'topic' => 'php-kafka-consumer-topic',
+    'topic' => 'laravel-kafka-topic',
     'broker' => env('KAFKA_BROKERS'),
-    'groupId' => 'php-kafka-consumer-test',
+    'groupId' => 'laravel-kafka-test',
     'securityProtocol' => 'PLAINTEXT',
     'sasl' => [
         'username' => '',

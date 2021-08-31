@@ -15,12 +15,12 @@ COPY build/laravel-kernels/kernel.php /application/laravel-test/app/Console/Kern
 
 COPY dev/kafka.php /application/laravel-test/config
 
-COPY composer.json /application/php-kafka-consumer/composer.json
+COPY composer.json /application/laravel-kafka/composer.json
 
-COPY src /application/php-kafka-consumer/src/
+COPY src /application/laravel-kafka/src/
 
 WORKDIR /application/laravel-test
 
-RUN cd /application/php-kafka-consumer && composer update
+RUN cd /application/laravel-kafka && composer update
 
 RUN cd /application/laravel-test && composer update

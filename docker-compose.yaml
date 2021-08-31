@@ -1,22 +1,22 @@
 version: "3.7"
 networks:
-  app-test:
+  app-tier:
     driver: bridge
 services:
   zookeeper-test:
     image: 'bitnami/zookeeper:latest'
     networks:
-      - app-test
+      - app-tier
     ports:
-      - '2182:2181'
+      - '2181:2181'
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
 
   kafka-test:
     image: 'bitnami/kafka:latest'
     ports:
-      - '9094:9092'
-      - '9095:9093'
+      - '9092:9092'
+      - '9093:9093'
     environment:
       - KAFKA_BROKER_ID=1
       - KAFKA_LISTENERS=CLIENT://:9092
@@ -32,19 +32,18 @@ services:
     depends_on:
       - zookeeper-test
     networks:
-      - app-test
+      - app-tier
 
-  test:
+  laravel:
     build:
       context: .
-      dockerfile: build/test/Dockerfile
-      args:
-        TAG: 8.0-v1.6.1-5.0.0-8
-        LARAVEL_VERSION: 8
+      dockerfile: dev/Dockerfile
     entrypoint: /application/laravel-kafka/start.sh
-    networks:
-      - app-test
     environment:
       KAFKA_BROKERS: kafka-test:9092
-    depends_on:
-      - kafka-test
+    volumes:
+      - .:/application/laravel-kafka
+      - ./tests:/application/laravel-test/tests
+      - ./src:/application/laravel-test/src
+    networks:
+      - app-tier

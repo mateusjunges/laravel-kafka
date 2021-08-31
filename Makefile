@@ -29,13 +29,13 @@ integration-tests: up
 	@docker-compose exec -T laravel ./vendor/phpunit/phpunit/phpunit tests --filter Integration
 
 coverage: up
-	@docker-compose exec laravel phpdbg -qrr ./vendor/bin/phpunit tests --whitelist /application/php-kafka-consumer/src --coverage-html /application/php-kafka-consumer/coverage
+	@docker-compose exec laravel phpdbg -qrr ./vendor/bin/phpunit tests --whitelist /application/laravel-kafka/src --coverage-html /application/laravel-kafka/coverage
 
 unit-coverage:
-	@docker-compose exec laravel phpdbg -qrr ./vendor/bin/phpunit tests --whitelist /application/php-kafka-consumer/src --coverage-html /application/php-kafka-consumer/coverage --filter Unit
+	@docker-compose exec laravel phpdbg -qrr ./vendor/bin/phpunit tests --whitelist /application/laravel-kafka/src --coverage-html /application/laravel-kafka/coverage --filter Unit
 
 integration-coverage:
-	@docker-compose exec laravel phpdbg -qrr ./vendor/bin/phpunit tests --whitelist /application/php-kafka-consumer/src --coverage-html /application/php-kafka-consumer/coverage --filter Integration
+	@docker-compose exec laravel phpdbg -qrr ./vendor/bin/phpunit tests --whitelist /application/laravel-kafka/src --coverage-html /application/laravel-kafka/coverage --filter Integration
 
 version-test-%:
 	@$(eval TAG = $(@:version-test-%=%))
