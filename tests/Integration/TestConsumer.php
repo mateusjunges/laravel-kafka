@@ -21,7 +21,7 @@ class TestConsumer
         self::$callCounter = 0;
     }
 
-    public function __invoke(string $message): void
+    public function __invoke(Message $message): void
     {
         if (!empty(self::$responses)) {
             $responseDirective = self::$responses[self::$callCounter++];
@@ -33,7 +33,5 @@ class TestConsumer
         }
 
         self::$messages[] = $message;
-
-        return;
     }
 }
