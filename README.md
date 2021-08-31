@@ -1,7 +1,4 @@
 # Laravel Kafka
-
-[![Continuous Integration](https://github.com/mateusjunges/laravel-kafka/actions/workflows/run-tests.yml/badge.svg)](https://github.com/mateusjunges/laravel-kafka/actions/workflows/run-tests.yml)
-
 ![docs/laravel-kafka.png](docs/laravel-kafka.png)
 
 Do you use Kafka in your laravel packages? All packages I've seen until today, including some built by myself, does not provide a nice
