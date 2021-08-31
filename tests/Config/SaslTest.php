@@ -3,9 +3,9 @@
 namespace Junges\Kafka\Tests\Config;
 
 use Junges\Kafka\Config\Sasl;
-use Junges\Kafka\Tests\LaravelKafkaTestCase;
+use Junges\Kafka\Tests\TestCase;
 
-class SaslLaravelKafkaTest extends LaravelKafkaTestCase
+class SaslTest extends TestCase
 {
     public function testGetUsername()
     {

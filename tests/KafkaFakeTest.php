@@ -9,7 +9,7 @@ use Junges\Kafka\Support\Testing\Fakes\KafkaFake;
 use PHPUnit\Framework\Constraint\ExceptionMessage;
 use PHPUnit\Framework\ExpectationFailedException;
 
-class KafkaFakeLaravelKafkaTest extends LaravelKafkaTestCase
+class KafkaFakeTest extends TestCase
 {
     private KafkaFake $fake;
 

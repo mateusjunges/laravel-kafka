@@ -11,10 +11,10 @@ use Junges\Kafka\Commit\VoidCommitter;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\Consumer;
 use Junges\Kafka\MessageCounter;
-use Junges\Kafka\Tests\LaravelKafkaTestCase;
+use Junges\Kafka\Tests\TestCase;
 use RdKafka\KafkaConsumer;
 
-class CommitterFactoryLaravelKafkaTest extends LaravelKafkaTestCase
+class CommitterFactoryTest extends TestCase
 {
     public function testShouldBuildARetryableBatchCommitterWhenAutoCommitIsDisable(): void
     {

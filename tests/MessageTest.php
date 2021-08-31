@@ -5,7 +5,7 @@ namespace Junges\Kafka\Tests;
 use Illuminate\Support\Str;
 use Junges\Kafka\Message;
 
-class MessageLaravelKafkaTest extends LaravelKafkaTestCase
+class MessageTest extends TestCase
 {
     private Message $message;
 

@@ -4,11 +4,11 @@ namespace Junges\Kafka\Tests\Consumers;
 
 use Illuminate\Support\Str;
 use Junges\Kafka\Consumers\CallableConsumer;
-use Junges\Kafka\Tests\LaravelKafkaTestCase;
+use Junges\Kafka\Tests\TestCase;
 use RdKafka\Message;
 use stdClass;
 
-class CallableConsumerLaravelKafkaTest extends LaravelKafkaTestCase
+class CallableConsumerTest extends TestCase
 {
     public function testItDecodesMessages()
     {
