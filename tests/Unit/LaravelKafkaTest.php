@@ -8,8 +8,8 @@ use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use Mockery as m;
-use RdKafka\Producer;
 use const RD_KAFKA_RESP_ERR_NO_ERROR;
+use RdKafka\Producer;
 
 class LaravelKafkaTest extends LaravelKafkaTestCase
 {
