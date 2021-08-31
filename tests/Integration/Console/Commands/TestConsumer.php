@@ -12,6 +12,7 @@ class TestConsumer extends Consumer
     public function handle(Message $message): void
     {
         self::$message = $message;
+
         return;
     }
 }
