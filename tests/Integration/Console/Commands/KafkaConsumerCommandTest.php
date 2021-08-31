@@ -3,6 +3,7 @@
 namespace Integration\Console\Commands;
 
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
+use Symfony\Component\Console\Input\ArgvInput;
 
 class KafkaConsumerCommandTest extends LaravelKafkaTestCase
 {
