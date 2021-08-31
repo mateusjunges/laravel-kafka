@@ -1,9 +1,9 @@
 <?php
 
-namespace Junges\Kafka\Tests\Commit;
+namespace Junges\Kafka\Tests\Unit\Commit;
 
 use Junges\Kafka\Commit\RetryableCommitter;
-use Junges\Kafka\Tests\FailingCommitter;
+use Junges\Kafka\Tests\Unit\FailingCommitter;
 use Junges\Kafka\Tests\Fakes\FakeSleeper;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use RdKafka\Exception as RdKafkaException;

@@ -1,15 +1,16 @@
 <?php
 
-namespace Junges\Kafka\Tests;
+namespace Junges\Kafka\Tests\Unit;
 
 use Illuminate\Support\Str;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message;
 use Junges\Kafka\Support\Testing\Fakes\KafkaFake;
+use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use PHPUnit\Framework\Constraint\ExceptionMessage;
 use PHPUnit\Framework\ExpectationFailedException;
 
-class KafkaFakeLaravelKafkaTest extends LaravelKafkaTestCase
+class KafkaFakeTest extends LaravelKafkaTestCase
 {
     private KafkaFake $fake;
 
