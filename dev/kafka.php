@@ -9,5 +9,6 @@ return [
         'username' => '',
         'password' => '',
         'mechanisms' => '',
-    ]
+    ],
+    'offset_reset' => env('KAFKA_OFFSET_RESET', 'smallest'),
 ];
