@@ -62,8 +62,7 @@ class Config
         $options = [
             'metadata.broker.list' => $this->broker,
             'auto.offset.reset' => config('kafka.offset_reset', 'latest'),
-            'enable.auto.commit' => config('kafka.auto_commit', 'true'),
-            'compression.codec' => config('kafka.compression', 'snappy'),
+            'enable.auto.commit' => config('kafka.auto_commit', 'false'),
             'group.id' => $this->groupId,
             'bootstrap.servers' => $this->broker,
         ];
