@@ -1,5 +1,5 @@
 # Laravel Kafka
-![docs/laravel-kafka.png](docs/karavel-kafka.png)
+![docs/laravel-kafka.png](docs/laravel-kafka.png)
 
 Do you use Kafka in your laravel packages? All packages I've seen until today, including some built by myself, does not provide a nice
 syntax usage syntax or, if it does, the test process with these packages are very painful.
