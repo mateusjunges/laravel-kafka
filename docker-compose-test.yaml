@@ -1,0 +1,50 @@
+version: "3.7"
+networks:
+  app-test:
+    driver: bridge
+services:
+  zookeeper-test:
+    image: 'bitnami/zookeeper:latest'
+    networks:
+      - app-test
+    ports:
+      - '2182:2181'
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+
+  kafka-test:
+    image: 'bitnami/kafka:latest'
+    ports:
+      - '9094:9092'
+      - '9095:9093'
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_LISTENERS=CLIENT://:9092
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka-test:9092
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper-test:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=CLIENT://:9092,EXTERNAL://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka-test:9092,EXTERNAL://localhost:9093
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+      - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
+    depends_on:
+      - zookeeper-test
+    networks:
+      - app-test
+
+  test:
+    build:
+      context: .
+      dockerfile: build/test/Dockerfile
+      args:
+        TAG: 8.0-v1.6.1-5.0.0-8
+        LARAVEL_VERSION: 8
+    entrypoint: /application/php-kafka-consumer/start.sh
+    networks:
+      - app-test
+    environment:
+      KAFKA_BROKERS: kafka-test:9092
+    depends_on:
+      - kafka-test
