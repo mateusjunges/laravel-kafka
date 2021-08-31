@@ -2,9 +2,10 @@
 
 namespace Junges\Kafka\Tests\Integration\Console\Commands;
 
+use Junges\Kafka\Contracts\Consumer;
 use RdKafka\Message;
 
-class TestConsumer
+class TestConsumer extends Consumer
 {
     public static Message $message;
 

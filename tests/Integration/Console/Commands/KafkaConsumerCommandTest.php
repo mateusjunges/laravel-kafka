@@ -51,7 +51,7 @@ class KafkaConsumerCommandTest extends LaravelKafkaTestCase
         $topic->produce(RD_KAFKA_PARTITION_UA, 0, 'What a lovely day!');
 
         $this->status = $this->kernel->call('kafka:consume', ['--topic' => 'php-kafka-consumer-topic', '--consumer' => TestConsumer::class, '--groupId' => 'test-group-id', '--commit' => '1', '--dlq' => 'php-kafka-consumer-topic-dlq', '--maxMessage' => 1,]);
-        $msg = TestConsumer::$message;
+        $msg = TestConsumer::$message->payload;
         $this->assertSame($msg, 'What a lovely day!');
     }
 
