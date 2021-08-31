@@ -2,7 +2,8 @@
 
 namespace Integration;
 
-use Junges\Kafka\Tests\Integration\Console\Commands\TestConsumer;
+use Junges\Kafka\Consumers\ConsumerBuilder;
+use Junges\Kafka\Tests\Integration\TestConsumer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 
 class IntegrationTest extends LaravelKafkaTestCase
@@ -76,7 +77,7 @@ class IntegrationTest extends LaravelKafkaTestCase
 
     private function consumeMessages(int $numberOfMessages, string $topicName, callable $handler): void
     {
-        $consumer = ConsumerBuilder::create(env('KAFKA_BROKERS'), 'test-group-id', [$topicName])
+        $consumer = ConsumerBuilder::create(env('KAFKA_BROKERS'), [$topicName], 'test-group-id')
             ->withCommitBatchSize(1)
             ->withMaxCommitRetries(6)
             ->withHandler($handler)

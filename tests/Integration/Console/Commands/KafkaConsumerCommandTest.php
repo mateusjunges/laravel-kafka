@@ -2,7 +2,6 @@
 
 namespace Junges\Kafka\Tests\Integration\Console\Commands;
 
-use Junges\Kafka\Tests\Integration\TestConsumer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use Symfony\Component\Console\Input\ArgvInput;
 

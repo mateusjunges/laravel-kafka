@@ -2,6 +2,8 @@
 
 namespace Junges\Kafka\Tests\Integration;
 
+use RdKafka\Message;
+
 class TestConsumer
 {
     public const RESPONSE_OK = 'response_ok';
