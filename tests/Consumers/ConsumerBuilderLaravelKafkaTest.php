@@ -8,9 +8,9 @@ use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Consumers\ConsumerBuilder;
 use Junges\Kafka\Tests\Fakes\FakeConsumer;
-use Junges\Kafka\Tests\TestCase;
+use Junges\Kafka\Tests\LaravelKafkaTestCase;
 
-class ConsumerBuilderTest extends TestCase
+class ConsumerBuilderLaravelKafkaTest extends LaravelKafkaTestCase
 {
     public function testItReturnsAConsumerInstance()
     {

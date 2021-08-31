@@ -6,10 +6,10 @@ use Junges\Kafka\Config\Config;
 use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Exceptions\KafkaConsumerException;
 use Junges\Kafka\Tests\Fakes\FakeHandler;
-use Junges\Kafka\Tests\TestCase;
+use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use RdKafka\Message;
 
-class ConsumerTest extends TestCase
+class ConsumerLaravelKafkaTest extends LaravelKafkaTestCase
 {
     public function testItConsumesAMessageSuccessfullyAndCommit()
     {

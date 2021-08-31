@@ -5,9 +5,9 @@ namespace Junges\Kafka\Tests\Config;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Contracts\Consumer;
-use Junges\Kafka\Tests\TestCase;
+use Junges\Kafka\Tests\LaravelKafkaTestCase;
 
-class ConfigTest extends TestCase
+class ConfigLaravelKafkaTest extends LaravelKafkaTestCase
 {
     public function testItReturnsDefaultKafkaConfiguration()
     {
