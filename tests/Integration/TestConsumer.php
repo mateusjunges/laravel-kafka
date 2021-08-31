@@ -2,9 +2,6 @@
 
 namespace Junges\Kafka\Tests\Integration;
 
-use Junges\Kafka\Contracts\Consumer;
-use RdKafka\Message;
-
 class TestConsumer
 {
     public const RESPONSE_OK = 'response_ok';
@@ -23,7 +20,7 @@ class TestConsumer
 
     public function __invoke(Message $message): void
     {
-        if (!empty(self::$responses)) {
+        if (! empty(self::$responses)) {
             $responseDirective = self::$responses[self::$callCounter++];
             if ($responseDirective == self::RESPONSE_ERROR) {
                 throw new \Exception('Error processing message');
