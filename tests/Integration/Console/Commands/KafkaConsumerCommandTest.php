@@ -10,7 +10,7 @@ class KafkaConsumerCommandTest extends LaravelKafkaTestCase
     private $status;
     private $input;
     private $kernel;
-
+/*
     public function setUp(): void
     {
         $app = new \Illuminate\Foundation\Application(
@@ -58,5 +58,5 @@ class KafkaConsumerCommandTest extends LaravelKafkaTestCase
     public function tearDown(): void
     {
         $this->kernel->terminate($this->input, $this->status);
-    }
+    }*/
 }
