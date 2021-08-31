@@ -19,4 +19,4 @@ jobs:
       - uses: actions/checkout@v2
       - name: Test ${{ matrix.php }}-${{ matrix.librdkafka }}-${{ matrix.extrdkafka }}-${{ matrix.laravel }}
         run:
-          make version-test-${{ matrix.php }}-${{ matrix.librdkafka }}-${{ matrix.extrdkafka }}-${{ matrix.laravel }}
+          make laravel-kafka-test-${{ matrix.php }}-${{ matrix.librdkafka }}-${{ matrix.extrdkafka }}-${{ matrix.laravel }}
