@@ -4,12 +4,12 @@ namespace Commit;
 
 use Junges\Kafka\Commit\KafkaCommitter;
 use Junges\Kafka\Config\Config;
-use Junges\Kafka\Tests\TestCase;
+use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use Mockery as m;
 use RdKafka\Conf;
 use RdKafka\KafkaConsumer;
 
-class KafkaCommitterTest extends TestCase
+class KafkaCommitterTest extends LaravelKafkaTestCase
 {
     public function testItCanCommit()
     {

@@ -5,9 +5,9 @@ namespace Junges\Kafka\Tests\Commit;
 use Junges\Kafka\Commit\BatchCommitter;
 use Junges\Kafka\Commit\Contracts\Committer;
 use Junges\Kafka\MessageCounter;
-use Junges\Kafka\Tests\TestCase;
+use Junges\Kafka\Tests\LaravelKafkaTestCase;
 
-class BatchCommitterTest extends TestCase
+class BatchCommitterTest extends LaravelKafkaTestCase
 {
     public function testShouldCommitMessageOnlyAfterTheBatchSizeIsReached()
     {

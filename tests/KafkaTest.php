@@ -9,7 +9,7 @@ use Junges\Kafka\Message;
 use Mockery as m;
 use RdKafka\Producer;
 
-class KafkaTest extends TestCase
+class KafkaTest extends LaravelKafkaTestCase
 {
     public function testItCanPublishMessagesToKafka()
     {
