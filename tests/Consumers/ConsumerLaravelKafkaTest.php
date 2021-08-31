@@ -1,6 +1,6 @@
 <?php
 
-namespace Junges\Kafka\Tests\Unit\Consumers;
+namespace Junges\Kafka\Tests\Consumers;
 
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Consumers\Consumer;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Junges\Kafka\Tests\Unit\Consumers;
+namespace Junges\Kafka\Tests\Consumers;
 
 use Illuminate\Support\Str;
 use Junges\Kafka\Consumers\CallableConsumer;

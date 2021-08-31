@@ -1,6 +1,6 @@
 <?php
 
-namespace Junges\Kafka\Tests\Unit\Commit;
+namespace Commit;
 
 use Junges\Kafka\Commit\KafkaCommitter;
 use Junges\Kafka\Config\Config;

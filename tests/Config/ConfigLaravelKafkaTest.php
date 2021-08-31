@@ -1,6 +1,6 @@
 <?php
 
-namespace Junges\Kafka\Tests\Unit\Config;
+namespace Junges\Kafka\Tests\Config;
 
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\Sasl;

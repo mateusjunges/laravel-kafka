@@ -1,6 +1,6 @@
 <?php
 
-namespace Junges\Kafka\Tests\Unit\Commit;
+namespace Junges\Kafka\Tests\Commit;
 
 use Junges\Kafka\Commit\BatchCommitter;
 use Junges\Kafka\Commit\CommitterFactory;

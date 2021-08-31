@@ -1,17 +1,15 @@
 <?php
 
-namespace Junges\Kafka\Tests\Unit;
+namespace Junges\Kafka\Tests;
 
 use Illuminate\Support\Str;
 use Junges\Kafka\Consumers\ConsumerBuilder;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message;
-use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use Mockery as m;
-use const RD_KAFKA_RESP_ERR_NO_ERROR;
 use RdKafka\Producer;
 
-class LaravelKafkaTest extends LaravelKafkaTestCase
+class KafkaLaravelKafkaTest extends LaravelKafkaTestCase
 {
     public function testItCanPublishMessagesToKafka()
     {

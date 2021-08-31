@@ -1,6 +1,6 @@
 <?php
 
-namespace Junges\Kafka\Tests\Unit;
+namespace Junges\Kafka\Tests;
 
 use Exception;
 use Junges\Kafka\Commit\Contracts\Committer;
