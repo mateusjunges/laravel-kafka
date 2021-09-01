@@ -22,3 +22,12 @@ composer require mateusjunges/laravel-kafka
 ```
 
 # Usage
+After installing the package, you can start producing and consuming Kafka messages.
+
+## Producing Kafka Messages
+To publish your messages to Kafka, you can use the `publishOn` method, of `Junges\Kafka\Facades\Kafka` class:
+
+```php
+\Junges\Kafka\Facades\Kafka::publishOn('broker', 'topic');
+```
+This method returns a `ProducerBuilder` instance, and you can configure your message
