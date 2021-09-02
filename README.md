@@ -70,6 +70,8 @@ Kafka::publishOn('broker', 'topic')
 ## Configuring the Kafka message payload
 In kafka, you can configure your payload with a message, message headers and message key. All these configurations are available 
 within `ProducerBuilder` class.
+
+### Configuring message headers
 To configure the message headers, use the `withHeaders` method:
 
 ```php
@@ -80,6 +82,8 @@ Kafka::publishOn('broker', 'topic')
         'header-key' => 'header-value'
     ])
 ```
+
+### Configure the message payload
 You can configure the message with the `withMessage` or `withMessageKey` methods. 
 
 The `withMessage` sets the entire message, and it accepts a `Junges\Kafka\Message::class` instance as argument.
@@ -99,7 +103,23 @@ $message = new Message(
 Kafka::publisOn('broker', 'topic')->withMessage($message);
 ```
 
+The `withMessageKey` method sets only a key in your message.
 
+```php
+use Junges\Kafka\Facades\Kafka;
+
+Kafka::publisOn('broker', 'topic')->withMessageKey('key', 'value');
+```
+
+### Using Kafka Keys
+In Kafka, keys are used to determine the partition within a log to which a message get's appended to.
+If you want to use a key in your message, you should use the `withKafkaKey` method:
+
+```php
+use Junges\Kafka\Facades\Kafka;
+
+Kafka::publisOn('broker', 'topic')->withKafkaKey('your-kafka-key');
+```
 
 
 
