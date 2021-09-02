@@ -31,7 +31,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         $producer = $this->fake->publishOn('broker', 'test_topic_1')
             ->withMessageKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
-            ->withKafkaMessageKey(Str::uuid()->toString());
+            ->withKafkaKey(Str::uuid()->toString());
 
         $producer->send();
 
@@ -49,7 +49,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         $producer = $this->fake->publishOn('broker', 'topic')
             ->withMessageKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
-            ->withKafkaMessageKey(Str::uuid()->toString());
+            ->withKafkaKey(Str::uuid()->toString());
         $producer->send();
 
         $this->fake->assertPublished($producer->getMessage());
@@ -60,7 +60,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         $producer = $this->fake->publishOn('broker', 'topic')
             ->withMessageKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
-            ->withKafkaMessageKey($uuid = Str::uuid()->toString());
+            ->withKafkaKey($uuid = Str::uuid()->toString());
 
         $producer->send();
 
@@ -84,7 +84,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         $producer = $this->fake->publishOn('broker', 'topic')
             ->withMessageKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
-            ->withKafkaMessageKey(Str::uuid()->toString());
+            ->withKafkaKey(Str::uuid()->toString());
 
         $producer->send();
 
@@ -104,7 +104,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         $producer = $this->fake->publishOn('broker', 'topic')
             ->withMessageKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
-            ->withKafkaMessageKey($uuid = Str::uuid()->toString());
+            ->withKafkaKey($uuid = Str::uuid()->toString());
 
         $producer->send();
 

@@ -52,7 +52,52 @@ Kafka::publishOn('broker', 'topic')
     ]);
 ```
 
+While you are developing your application, you can enable debug with the `withDebugEnabled` method.
+To disable debug mode, you can use `->withDebugEnabled(false)`, or `withDebugDisabled` methods.
 
+```php
+use Junges\Kafka\Facades\Kafka;
+
+Kafka::publishOn('broker', 'topic')
+    ->withCOnfigOption('property-name', 'property-value')
+    ->withConfigOptions([
+        'property-name' => 'property-value'
+    ])
+    ->withDebugEnabled() // To enable debug mode
+    ->withDebugDisabled() // To disable debug mode
+    ->withDebugEnabled(false) // Also to disable debug mode
+```
+## Configuring the Kafka message payload
+In kafka, you can configure your payload with a message, message headers and message key. All these configurations are available 
+within `ProducerBuilder` class.
+To configure the message headers, use the `withHeaders` method:
+
+```php
+use Junges\Kafka\Facades\Kafka;
+
+Kafka::publishOn('broker', 'topic')
+    ->withHeaders([
+        'header-key' => 'header-value'
+    ])
+```
+You can configure the message with the `withMessage` or `withMessageKey` methods. 
+
+The `withMessage` sets the entire message, and it accepts a `Junges\Kafka\Message::class` instance as argument.
+
+This is how you should use it:
+
+```php
+use Junges\Kafka\Facades\Kafka;
+use Junges\Kafka\Message;
+
+$message = new Message(
+    headers: ['header-key' => 'header-value'],
+    message: ['key' => 'value'],
+    key: 'kafka key here'  
+)
+
+Kafka::publisOn('broker', 'topic')->withMessage($message);
+```
 
 
 

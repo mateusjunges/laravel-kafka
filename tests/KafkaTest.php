@@ -32,7 +32,7 @@ class KafkaTest extends LaravelKafkaTestCase
             ->withConfigOptions([
                 'metadata.broker.list' => 'broker',
             ])
-            ->withKafkaMessageKey(Str::uuid()->toString())
+            ->withKafkaKey(Str::uuid()->toString())
             ->withMessageKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
             ->withDebugEnabled()
@@ -60,7 +60,7 @@ class KafkaTest extends LaravelKafkaTestCase
             ->withConfigOptions([
                 'metadata.broker.list' => 'broker',
             ])
-            ->withKafkaMessageKey(Str::uuid()->toString())
+            ->withKafkaKey(Str::uuid()->toString())
             ->withMessageKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
             ->withDebugEnabled()

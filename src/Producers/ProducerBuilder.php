@@ -69,7 +69,7 @@ class ProducerBuilder implements CanProduceMessages
      * @param string $key
      * @return $this
      */
-    public function withKafkaMessageKey(string $key): self
+    public function withKafkaKey(string $key): self
     {
         $this->message->withKey($key);
 
@@ -109,6 +109,11 @@ class ProducerBuilder implements CanProduceMessages
         }
 
         return $this;
+    }
+
+    public function withDebugDisabled(): self
+    {
+        return $this->withDebugEnabled(false);
     }
 
     public function getTopic(): string

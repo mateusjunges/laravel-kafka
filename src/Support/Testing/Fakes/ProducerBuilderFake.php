@@ -79,7 +79,7 @@ class ProducerBuilderFake implements CanProduceMessages
      * @param string $key
      * @return $this
      */
-    public function withKafkaMessageKey(string $key): self
+    public function withKafkaKey(string $key): self
     {
         $this->message->withKey($key);
 
