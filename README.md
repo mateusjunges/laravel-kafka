@@ -24,7 +24,7 @@ composer require mateusjunges/laravel-kafka
 # Usage
 After installing the package, you can start producing and consuming Kafka messages.
 
-## Producing Kafka Messages
+# Producing Kafka Messages
 To publish your messages to Kafka, you can use the `publishOn` method, of `Junges\Kafka\Facades\Kafka` class:
 
 ```php
@@ -37,7 +37,7 @@ This method returns a `Junges\Kafka\Producers\ProducerBuilder::class` instance, 
 
 The `ProducerBuilder` class contains a few methods to configure your kafka producer. The following methods describes these methods.
 
-### ProducerBuilder configuration methods
+## ProducerBuilder configuration methods
 The `withConfigOption` method sets a `\RdKafka\Conf::class` option. You can check all available options [here][rdkafka_config].
 This methods set one config per call, and you can use `withConfigOptions` passing an array of config name and config value 
 as argument. Here's an example:
@@ -67,7 +67,7 @@ Kafka::publishOn('broker', 'topic')
     ->withDebugDisabled() // To disable debug mode
     ->withDebugEnabled(false) // Also to disable debug mode
 ```
-## Configuring the Kafka message payload
+### Configuring the Kafka message payload
 In kafka, you can configure your payload with a message, message headers and message key. All these configurations are available 
 within `ProducerBuilder` class.
 
@@ -121,7 +121,7 @@ use Junges\Kafka\Facades\Kafka;
 Kafka::publisOn('broker', 'topic')->withKafkaKey('your-kafka-key');
 ```
 
-### Sending the message to Kafka
+## Sending the message to Kafka
 After configuring all your message options, you must use the `send` method, to send the message to kafka.
 
 ```php
@@ -136,6 +136,7 @@ $producer = Kafka::publisOn('broker', 'topic')
 
 $producer->send();
 ```
+# Consuming Kafka Messages
 
 [rdkafka_config]:https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
 
