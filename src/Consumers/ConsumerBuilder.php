@@ -31,11 +31,7 @@ class ConsumerBuilder
     private function __construct(string $brokers, array $topics, string $groupId = null)
     {
         foreach ($topics as $topic) {
-            if (! is_string($topic)) {
-                $type = ucfirst(gettype($topic));
-
-                throw new InvalidArgumentException("The topic name should be a string value. [{$type}] given.");
-            }
+            $this->validateTopic($topic);
         }
 
         $this->brokers = $brokers;
@@ -59,13 +55,28 @@ class ConsumerBuilder
      * @param string|null $groupId
      * @return static
      */
-    public static function create(string $brokers, array $topics, string $groupId = null): self
+    public static function create(string $brokers, array $topics = [], string $groupId = null): self
     {
         return new ConsumerBuilder(
             brokers: $brokers,
             topics: $topics,
             groupId: $groupId
         );
+    }
+
+    /**
+     * Subscribe to a Kafka topic.
+     *
+     * @param string $topic
+     * @return $this
+     */
+    public function subscribe(string $topic): self
+    {
+        $this->validateTopic($topic);
+
+        $this->topics[] = $topic;
+
+        return $this;
     }
 
     /**
@@ -221,5 +232,14 @@ class ConsumerBuilder
         );
 
         return new Consumer($config);
+    }
+
+    private function validateTopic(mixed $topic)
+    {
+        if (! is_string($topic)) {
+            $type = ucfirst(gettype($topic));
+
+            throw new InvalidArgumentException("The topic name should be a string value. [{$type}] given.");
+        }
     }
 }

@@ -19,11 +19,22 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertInstanceOf(Consumer::class, $consumer);
     }
 
+    public function testItCanSubscribeToATopic()
+    {
+        $consumer = ConsumerBuilder::create('broker');
+
+        $consumer->subscribe('test-topic');
+
+        $topics = $this->getPropertyWithReflection('topics', $consumer);
+
+        $this->assertEquals(['test-topic'], $topics);
+    }
+
     public function testItThrowsInvalidArgumentExceptionIfCreatingWithInvalidTopic()
     {
         $this->expectException(InvalidArgumentException::class);
 
-        ConsumerBuilder::create('broker', [1234], 'group')->build();
+        ConsumerBuilder::create('broker', [1234], 'group');
     }
 
     public function testItCanSaveTheCommitBatchSize()
