@@ -137,6 +137,9 @@ $producer = Kafka::publisOn('broker', 'topic')
 $producer->send();
 ```
 # Consuming Kafka Messages
+If your application needs to read messages from a Kafka topic, you must create a consumer object, subscribe to the appropriate topic
+and start receiving messages. 
+
 
 [rdkafka_config]:https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
 
