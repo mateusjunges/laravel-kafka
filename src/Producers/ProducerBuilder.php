@@ -29,12 +29,12 @@ class ProducerBuilder implements CanProduceMessages
 
     #[Pure]
     public static function create(string $broker, string $topic): self
- {
-     return new ProducerBuilder(
-         broker: $broker,
-         topic: $topic
-     );
- }
+    {
+        return new ProducerBuilder(
+            broker: $broker,
+            topic: $topic
+        );
+    }
 
     public function withConfigOption(string $name, string $option): self
     {
