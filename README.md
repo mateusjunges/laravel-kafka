@@ -28,6 +28,35 @@ After installing the package, you can start producing and consuming Kafka messag
 To publish your messages to Kafka, you can use the `publishOn` method, of `Junges\Kafka\Facades\Kafka` class:
 
 ```php
-\Junges\Kafka\Facades\Kafka::publishOn('broker', 'topic');
+use Junges\Kafka\Facades\Kafka;
+
+Kafka::publishOn('broker', 'topic');
 ```
-This method returns a `ProducerBuilder` instance, and you can configure your message
+
+This method returns a `Junges\Kafka\Producers\ProducerBuilder::class` instance, and you can configure your message.
+
+The `ProducerBuilder` class contains a few methods to configure your kafka producer. The following methods describes these methods.
+
+### ProducerBuilder configuration methods
+The `withConfigOption` method sets a `\RdKafka\Conf::class` option. You can check all available options [here][rdkafka_config].
+This methods set one config per call, and you can use `withConfigOptions` passing an array of config name and config value 
+as argument. Here's an example:
+
+```php
+use Junges\Kafka\Facades\Kafka;
+
+Kafka::publishOn('broker', 'topic')
+    ->withCOnfigOption('property-name', 'property-value')
+    ->withConfigOptions([
+        'property-name' => 'property-value'
+    ]);
+```
+
+
+
+
+
+
+
+[rdkafka_config]:https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
+
