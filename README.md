@@ -140,6 +140,56 @@ $producer->send();
 If your application needs to read messages from a Kafka topic, you must create a consumer object, subscribe to the appropriate topic
 and start receiving messages. 
 
+To create a consumer using this package, you can use the `createConsumer` method, on Kafka facade:
+
+```php
+use Junges\Kafka\Facades\Kafka;
+
+$consumer = Kafka::createConsumer('broker');
+```
+
+This method returns a `Junges\Kafka\Consumers\ConsumerBuilder::class` instance, and you can use it to configure your consumer.
+
+## Subscribing to a topic
+With a consumer created, you can subscribe to a kafka topic using the `subscribe` method:
+
+```php
+use Junges\Kafka\Facades\Kafka;
+
+$consumer = Kafka::createConsumer('broker')->subscribe('topic');
+```
+
+Of course, you can subscribe to more than one topic at once, either using an array of topics or specifying one by one:
+
+```php
+use Junges\Kafka\Facades\Kafka;
+
+$consumer = Kafka::createConsumer('broker')->subscribe('topic-1', 'topic-2', 'topic-n');
+
+// Or, using array:
+$consumer = Kafka::createConsumer('broker')->subscribe([
+    'topic-1',
+    'topic-2',
+    'topic-n'
+]);
+```
+
+## Configuring consumer groups
+Kafka consumers belonging to the same consumer group share a group id. THe consumers in a group divides the topic partitions as fairly amongst themselves as possible by
+establishing that each partition is only consumed by a single consumer from the group.
+
+To attach your consumer to a consumer group, you can use the method `withConsumerGroupId` to specify the consumer group id:
+
+```php
+use Junges\Kafka\Facades\Kafka;
+
+$consumer = Kafka::createConsumer('broker')->withConsumerGroupId('foo');
+```
+
+## 
+
+
+
 
 [rdkafka_config]:https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
 

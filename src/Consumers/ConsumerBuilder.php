@@ -67,14 +67,31 @@ class ConsumerBuilder
     /**
      * Subscribe to a Kafka topic.
      *
-     * @param string $topic
+     * @param mixed ...$topics
      * @return $this
      */
-    public function subscribe(string $topic): self
+    public function subscribe(...$topics): self
     {
-        $this->validateTopic($topic);
+        if (is_array($topics[0])) {
+            $topics = $topics[0];
+        }
 
-        $this->topics[] = $topic;
+        foreach ($topics as $topic) {
+            $this->validateTopic($topic);
+
+            $this->topics[] = $topic;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param string $groupId
+     * @return $this
+     */
+    public function withConsumerGroupId(string $groupId): self
+    {
+        $this->groupId = $groupId;
 
         return $this;
     }

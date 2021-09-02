@@ -14,7 +14,7 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
 {
     public function testItReturnsAConsumerInstance()
     {
-        $consumer = ConsumerBuilder::create('broker', ['test-topic'], 'group')->build();
+        $consumer = ConsumerBuilder::create('broker')->build();
 
         $this->assertInstanceOf(Consumer::class, $consumer);
     }
@@ -23,11 +23,39 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
     {
         $consumer = ConsumerBuilder::create('broker');
 
-        $consumer->subscribe('test-topic');
+        $consumer->subscribe('foo');
 
         $topics = $this->getPropertyWithReflection('topics', $consumer);
 
-        $this->assertEquals(['test-topic'], $topics);
+        $this->assertEquals(['foo'], $topics);
+    }
+
+    public function testItCanSubscribeToMoreThanOneTopicsAtOnce()
+    {
+        $consumer = ConsumerBuilder::create('broker');
+
+        $consumer->subscribe('foo', 'bar');
+
+        $topics = $this->getPropertyWithReflection('topics', $consumer);
+
+        $this->assertEquals(['foo', 'bar'], $topics);
+
+        $consumer = ConsumerBuilder::create('broker');
+
+        $consumer->subscribe(['foo', 'bar']);
+
+        $topics = $this->getPropertyWithReflection('topics', $consumer);
+
+        $this->assertEquals(['foo', 'bar'], $topics);
+    }
+
+    public function testItCanSetConsumerGroupId()
+    {
+        $consumer = ConsumerBuilder::create('broker')->withConsumerGroupId('foo');
+
+        $groupId = $this->getPropertyWithReflection('groupId', $consumer);
+
+        $this->assertEquals('foo', $groupId);
     }
 
     public function testItThrowsInvalidArgumentExceptionIfCreatingWithInvalidTopic()
@@ -39,7 +67,7 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
 
     public function testItCanSaveTheCommitBatchSize()
     {
-        $consumer = ConsumerBuilder::create('broker', ['test-topic'], 'group')
+        $consumer = ConsumerBuilder::create('broker')
             ->withCommitBatchSize(1);
 
         $commitValue = $this->getPropertyWithReflection('commit', $consumer);
@@ -49,8 +77,7 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
 
     public function testItUsesTheCorrectHandler()
     {
-        $consumer = ConsumerBuilder::create('broker', ['test-topic'], 'group')
-            ->withHandler(new FakeConsumer());
+        $consumer = ConsumerBuilder::create('broker')->withHandler(new FakeConsumer());
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
 
@@ -61,8 +88,7 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
 
     public function testItCanSetMaxMessages()
     {
-        $consumer = ConsumerBuilder::create('broker', ['test-topic'], 'group')
-            ->withMaxMessages(2);
+        $consumer = ConsumerBuilder::create('broker')->withMaxMessages(2);
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
 
@@ -73,8 +99,7 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
 
     public function testItCanSetMaxCommitRetries()
     {
-        $consumer = ConsumerBuilder::create('broker', ['test-topic'], 'group')
-            ->withMaxCommitRetries(2);
+        $consumer = ConsumerBuilder::create('broker')->withMaxCommitRetries(2);
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
 
@@ -85,8 +110,7 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
 
     public function testItCanSetTheDeadLetterQueue()
     {
-        $consumer = ConsumerBuilder::create('broker', ['test-topic'], 'group')
-            ->withDlq('test-topic-dlq');
+        $consumer = ConsumerBuilder::create('broker')->withDlq('test-topic-dlq');
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
 
@@ -97,19 +121,18 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
 
     public function testItUsesDlqSuffixIfDlqIsNull()
     {
-        $consumer = ConsumerBuilder::create('broker', ['test-topic'], 'group')
-            ->withDlq();
+        $consumer = ConsumerBuilder::create('broker', ['foo'])->withDlq();
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
 
         $dlq = $this->getPropertyWithReflection('dlq', $consumer);
 
-        $this->assertEquals('test-topic-dlq', $dlq);
+        $this->assertEquals('foo-dlq', $dlq);
     }
 
     public function testItCanSetSasl()
     {
-        $consumer = ConsumerBuilder::create('broker', ['test-topic'], 'group')
+        $consumer = ConsumerBuilder::create('broker')
             ->withSasl($sasl = new Sasl(
                 'username',
                 'password',
@@ -125,7 +148,7 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
 
     public function testItCanAddMiddlewaresToTheHandler()
     {
-        $consumer = ConsumerBuilder::create('broker', ['test-topic'], 'group')
+        $consumer = ConsumerBuilder::create('broker', ['foo'], 'group')
             ->withMiddleware(function ($message, callable $next) {
                 $next($message);
             });
@@ -141,7 +164,7 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
 
     public function testItCanSetSecurityProtocol()
     {
-        $consumer = ConsumerBuilder::create('broker', ['test-topic'], 'group')
+        $consumer = ConsumerBuilder::create('broker', ['foo'], 'group')
             ->withSecurityProtocol('security');
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
@@ -153,8 +176,7 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
 
     public function testItCanSetAutoCommit()
     {
-        $consumer = ConsumerBuilder::create('broker', ['test-topic'], 'group')
-            ->withAutoCommit();
+        $consumer = ConsumerBuilder::create('broker')->withAutoCommit();
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
 
@@ -165,7 +187,7 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
 
     public function testItCanSetConsumerOptions()
     {
-        $consumer = ConsumerBuilder::create('broker', ['test-topic'], 'group')
+        $consumer = ConsumerBuilder::create('broker')
             ->withOptions([
                 'auto.offset.reset' => 'latest',
                 'enable.auto.commit' => 'false',
