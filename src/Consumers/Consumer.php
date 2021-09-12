@@ -200,11 +200,10 @@ class Consumer
      *
      * @return bool
      */
-    #[Pure]
- private function maxMessagesLimitReached(): bool
- {
-     return $this->messageCounter->maxMessagesLimitReached();
- }
+     private function maxMessagesLimitReached(): bool
+     {
+         return $this->messageCounter->maxMessagesLimitReached();
+     }
 
     /**
      * Handle the message.

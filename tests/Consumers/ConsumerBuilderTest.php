@@ -9,6 +9,7 @@ use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Consumers\ConsumerBuilder;
 use Junges\Kafka\Tests\Fakes\FakeConsumer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
+use RdKafka\Message;
 
 class ConsumerBuilderTest extends LaravelKafkaTestCase
 {
@@ -162,6 +163,21 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertIsCallable($middlewares[0]);
     }
 
+    public function testItCanAddInvokableClassesAsMiddleware()
+    {
+
+        $consumer = ConsumerBuilder::create('broker', ['foo'], 'group')
+            ->withMiddleware(new TestMiddleware());
+
+        $this->assertInstanceOf(Consumer::class, $consumer->build());
+
+        $middlewares = $this->getPropertyWithReflection('middlewares',$consumer);
+
+        $this->assertIsArray($middlewares);
+
+        $this->assertIsCallable($middlewares[0]);
+    }
+
     public function testItCanSetSecurityProtocol()
     {
         $consumer = ConsumerBuilder::create('broker', ['foo'], 'group')
@@ -202,5 +218,13 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertArrayHasKey('enable.auto.commit', $options);
         $this->assertEquals('latest', $options['auto.offset.reset']);
         $this->assertEquals('false', $options['enable.auto.commit']);
+    }
+}
+
+class TestMiddleware
+{
+    public function __invoke(Message $message, callable $next)
+    {
+        return $next($message);
     }
 }

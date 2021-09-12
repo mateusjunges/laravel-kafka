@@ -213,6 +213,54 @@ class Handler
 $consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')->withHandler(Handler::class)
 ```
 
+## Configuring max messages to be consumed
+If you want to consume a limited amount of messages, you can use the `withMaxMessages` method to set the max number of messages to be consumed by a 
+kafka consumer:
+
+```php
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')->withMaxMessages(2);
+```
+
+## Configuring a dead letter queue
+In kafka, a Dead Letter Queue (or DLQ), is a simple kafka topic in the kafka cluster which acts as the destination for messages that were not
+able to make it to the desired destination due to some error.
+
+To create a `dlq` in this package, you can use the `withDlq` method. If you don't specify the DLQ topic name, it will be created based on the topic you are consuming, 
+adding the `-dlq` suffix to the topic name.
+
+```php
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')->withDlq();
+
+//Or, specifying the dlq topic name:
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')->withDlq('your-dlq-topic-name')
+```
+
+## Using SASL
+SASL allows your producers and your consumers to authenticate to your Kafka cluster, which verifies their identity. 
+It's also a secure way to enable your clients to endorse an identity. To provide SASL configuration, you can use the `withSasl` method,
+passing a `Junges\Kafka\Config\Sasl` instance as the argument:
+
+```php
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')
+    ->withSasl(new \Junges\Kafka\Config\Sasl(
+        password: 'password',
+        username: 'username'
+        mechanisms: 'authentication mechanism'
+    ));
+```
+
+## Using middlewares
+Middlewares provides a convenient way to filter and inspecting your Kafka messages. To write a middleware in this package, you can 
+use the `withMiddleware` method. The middleware is a callable in which the first argument is the message itself and the second one is
+the next handler. The middlewares get executed in the order they are defined,
+
+```php
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')
+    ->withMiddleware(function($message, callable $next) {
+        // Perform some work here
+        return $next($message);
+    });
+```
 
 
 
