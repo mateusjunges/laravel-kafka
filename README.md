@@ -186,7 +186,32 @@ use Junges\Kafka\Facades\Kafka;
 $consumer = Kafka::createConsumer('broker')->withConsumerGroupId('foo');
 ```
 
-## 
+## Configuring message handlers
+
+Now that you have created your kafka consumer, you must create a handler for the messages this consumer receives. By default, a consumer is any `callable`.
+You can use an invokable class or a simple callback. Use the `withHandler` method to specify your handler:
+
+```php
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker');
+
+// Using callback:
+$consumer->withHandler(function(\RdKafka\Message $message) {
+    // Handle your message here
+});
+```
+
+Or, using a invokable class:
+
+```php
+class Handler
+{
+    public function __invoke(\RdKafka\Message $message){
+        // Handle your message here
+    }
+}
+
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')->withHandler(Handler::class)
+```
 
 
 
