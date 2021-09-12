@@ -1,6 +1,9 @@
 # Laravel Kafka
 ![docs/laravel-kafka.png](docs/laravel-kafka.png)
 
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/mateusjunges/laravel-kafka.svg?style=flat)](https://packagist.org/packages/mateusjunges/laravel-kafka)
+[![Total Downloads](https://img.shields.io/packagist/dt/mateusjunges/laravel-kafka.svg?style=flat)](https://packagist.org/packages/mateusjunges/laravel-kafka)
+[![MIT Licensed](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](LICENSE)
 [![Continuous Integration](https://github.com/mateusjunges/laravel-kafka/actions/workflows/run-tests.yml/badge.svg)](https://github.com/mateusjunges/laravel-kafka/actions/workflows/run-tests.yml)
 [![Check & fix styling](https://github.com/mateusjunges/laravel-kafka/actions/workflows/php-cs-fixer.yml/badge.svg)](https://github.com/mateusjunges/laravel-kafka/actions/workflows/php-cs-fixer.yml)
 
