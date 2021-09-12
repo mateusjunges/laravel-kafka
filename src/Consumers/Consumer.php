@@ -2,7 +2,6 @@
 
 namespace Junges\Kafka\Consumers;
 
-use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Commit\CommitterFactory;
 use Junges\Kafka\Commit\Contracts\Committer;
 use Junges\Kafka\Commit\NativeSleeper;
@@ -200,10 +199,10 @@ class Consumer
      *
      * @return bool
      */
-     private function maxMessagesLimitReached(): bool
-     {
-         return $this->messageCounter->maxMessagesLimitReached();
-     }
+    private function maxMessagesLimitReached(): bool
+    {
+        return $this->messageCounter->maxMessagesLimitReached();
+    }
 
     /**
      * Handle the message.
