@@ -66,6 +66,11 @@ class KafkaFakeTest extends LaravelKafkaTestCase
 
         $this->fake->assertPublished($producer->getMessage());
 
+
+        $this->fake->assertPublished($producer->getMessage(), function($message) use ($uuid) {
+            return $message->getKey() === $uuid;
+        });
+
         $this->fake->assertPublished($message = $producer->getMessage(), function () use ($message, $uuid) {
             return $message->getKey() === $uuid;
         });

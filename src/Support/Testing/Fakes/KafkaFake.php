@@ -47,7 +47,7 @@ class KafkaFake implements CanPublishMessagesToKafka
     public function assertPublished(Message $message, $callback = null)
     {
         PHPUnit::assertTrue(
-            condition: $this->published($callback)->count() > 0,
+            condition: $this->published($message, $callback)->count() > 0,
             message: "The expected message was not published."
         );
     }
@@ -86,7 +86,7 @@ class KafkaFake implements CanPublishMessagesToKafka
      * @param null $callback
      * @return \Illuminate\Support\Collection
      */
-    private function published($callback = null): Collection
+    private function published(Message $message, $callback = null): Collection
     {
         if (! $this->hasPublished()) {
             return collect();
@@ -97,7 +97,7 @@ class KafkaFake implements CanPublishMessagesToKafka
         };
 
 
-        return collect($this->getPublishedMessages())->filter(function ($message, $topic) use ($callback) {
+        return collect($this->getPublishedMessages())->filter(function ($_, $topic) use ($message, $callback) {
             return $callback($message, $topic);
         });
     }

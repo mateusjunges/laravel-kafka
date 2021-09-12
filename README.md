@@ -305,6 +305,82 @@ $consumer = \Junges\Kafka\Facades\Kafka::createConsumer()->build();
 $consumer->consume();
 ```
 
+## Using `Kafka::fake()`
+When testing your application, you may wish to "mock" certain aspects of the app, so they are not actually executed during a given test. 
+This package provides convenient helpers for mocking the kafka producer out of the box. These helpers primarily provide a convenience layer over Mockery
+so you don't have to manually make complicated Mockery method calls.
+
+The Kafka facade also provides methods to perform assertions over published messages, such as `assertPublished`, `assertPublishedOn` and `assertNothingPublished`.
+
+```php
+use Junges\Kafka\Facades\Kafka;
+use PHPUnit\Framework\TestCase;
+
+class MyTest extends TestCase
+{
+     public function testMyAwesomeApp()
+     {
+         Kafka::fake();
+         
+         $producer = Kafka::publishOn('broker', 'topic')
+             ->withHeaders(['key' => 'value'])
+             ->withMessageKey('foo', 'bar');
+             
+         $producer->send();
+             
+         Kafka::assertPublished($producer->getMessage());       
+     }
+}
+```
+
+If you want to assert that a message was published in a specific kafka topic, you can use the `assertPublishedOn` method:
+
+```php
+use PHPUnit\Framework\TestCase;
+use Junges\Kafka\Facades\Kafka;
+
+class MyTest extends TestCase
+{
+    public function testWithSpecificTopic()
+    {
+        Kafka::fake();
+        
+        $producer = Kafka::publishOn('broker', 'some-kafka-topic')
+            ->withHeaders(['key' => 'value'])
+            ->withMessageKey('key', 'value');
+            
+        $producer->send();
+        
+        Kafka::assertPublishedOn('some-kafka-topic', $producer->getMessage());
+    }
+}
+```
+
+You can also use a callback function to perform assertions within the message:
+```php
+use PHPUnit\Framework\TestCase;
+use Junges\Kafka\Facades\Kafka;
+
+class MyTest extends TestCase
+{
+    public function testWithSpecificTopic()
+    {
+        Kafka::fake();
+        
+        $producer = Kafka::publishOn('broker', 'some-kafka-topic')
+            ->withHeaders(['key' => 'value'])
+            ->withMessageKey('key', 'value');
+            
+        $producer->send();
+        
+        Kafka::assertPublishedOn('some-kafka-topic', $producer->getMessage(), function(\Junges\Kafka\Message $message) {
+            return $message->getHeaders()['key'] === 'value';
+        });
+    }
+} 
+```
+
+
 # Testing
 Run `composer test` to test this package.
 

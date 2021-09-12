@@ -12,7 +12,6 @@ class ProducerBuilder implements CanProduceMessages
     private array $options = [];
     private Message $message;
 
-    #[Pure]
      public function __construct(
          private string $broker,
          private string $topic,

@@ -6,6 +6,7 @@ use Closure;
 use InvalidArgumentException;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\Sasl;
+use Junges\Kafka\Facades\Kafka;
 
 class ConsumerBuilder
 {
