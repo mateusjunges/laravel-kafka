@@ -21,7 +21,6 @@ class RetryableCommitter implements Committer
      * @param Sleeper $sleeper
      * @param int $maximumRetries
      */
-
     #[Pure]
     public function __construct(Committer $committer, Sleeper $sleeper, int $maximumRetries = 6)
     {

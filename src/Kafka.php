@@ -17,7 +17,6 @@ class Kafka implements CanPublishMessagesToKafka
      * @param string $topic
      * @return CanProduceMessages
      */
-
     #[Pure]
  public function publishOn(string $broker, string $topic): CanProduceMessages
  {

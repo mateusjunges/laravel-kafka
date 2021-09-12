@@ -200,7 +200,6 @@ class Consumer
      *
      * @return bool
      */
-
     #[Pure]
  private function maxMessagesLimitReached(): bool
  {

@@ -26,7 +26,6 @@ class ProducerBuilder implements CanProduceMessages
      * @param string $topic
      * @return static
      */
-
     #[Pure]
     public static function create(string $broker, string $topic): self
     {
