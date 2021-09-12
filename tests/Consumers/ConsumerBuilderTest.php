@@ -165,13 +165,12 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
 
     public function testItCanAddInvokableClassesAsMiddleware()
     {
-
         $consumer = ConsumerBuilder::create('broker', ['foo'], 'group')
             ->withMiddleware(new TestMiddleware());
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
 
-        $middlewares = $this->getPropertyWithReflection('middlewares',$consumer);
+        $middlewares = $this->getPropertyWithReflection('middlewares', $consumer);
 
         $this->assertIsArray($middlewares);
 
