@@ -356,10 +356,13 @@ class MyTest extends TestCase
 }
 ```
 
-You can also use a callback function to perform assertions within the message:
+You can also use a callback function to perform assertions within the message using a callback in which the argument is the published message
+itself.
+
 ```php
 use PHPUnit\Framework\TestCase;
 use Junges\Kafka\Facades\Kafka;
+use Junges\Kafka\Message;
 
 class MyTest extends TestCase
 {
@@ -373,9 +376,35 @@ class MyTest extends TestCase
             
         $producer->send();
         
-        Kafka::assertPublishedOn('some-kafka-topic', $producer->getMessage(), function(\Junges\Kafka\Message $message) {
+        Kafka::assertPublishedOn('some-kafka-topic', $producer->getMessage(), function(Message $message) {
             return $message->getHeaders()['key'] === 'value';
         });
+    }
+} 
+```
+
+You can also assert that nothing was published at all, using the `assertNothingPublished`:
+
+```php
+use PHPUnit\Framework\TestCase;
+use Junges\Kafka\Facades\Kafka;
+use Junges\Kafka\Message;
+
+class MyTest extends TestCase
+{
+    public function testWithSpecificTopic()
+    {
+        Kafka::fake();
+        
+        if (false) {
+            $producer = Kafka::publishOn('broker', 'some-kafka-topic')
+                ->withHeaders(['key' => 'value'])
+                ->withMessageKey('key', 'value');
+                
+            $producer->send();
+        }
+        
+        Kafka::assertNothingPublished();
     }
 } 
 ```
