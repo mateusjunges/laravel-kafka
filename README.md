@@ -262,7 +262,45 @@ $consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')
     });
 ```
 
+## Using auto commit
+The auto-commit check is called in every poll and it checks that the time elapsed is greater than the configured time. To enable auto commit, 
+use the `withAutoCommit` method:
 
+```php
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')->withAutoCommit();
+```
+
+## Setting Kafka configuration options
+To set configuration options, you can use two methods: `withOptions`, passing an array of option and option value or, using the `withOption method and
+passing two arguments, the option name and the option value.
+
+```php
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')
+    ->withOptions([
+        'option-name' => 'option-value'
+    ]);
+// Or:
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')
+    ->withOption('option-name', 'option-value');
+```
+
+## Building the consumer
+When you have finished configuring your consumer, you must call the `build` method, which returns a `Junges\Kafka\Consumers\Consumer` instance.
+
+```php
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')
+    // Configure your consumer here
+    ->build();
+```
+
+## Consuming the kafka messages
+After building the consumer, you must call the `consume` method to consume the messages:
+
+```php
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer()->build();
+
+$consumer->consume();
+```
 
 [rdkafka_config]:https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
 
