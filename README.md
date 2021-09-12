@@ -302,5 +302,20 @@ $consumer = \Junges\Kafka\Facades\Kafka::createConsumer()->build();
 $consumer->consume();
 ```
 
-[rdkafka_config]:https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
+# Testing
+Run `composer test` to test this package.
 
+# Contributing
+Thank you for considering contributing for the Laravel ACL package! The contribution guide can be found [here][contributing].
+
+# Credits
+- [Mateus Junges](https://twitter.com/mateusjungess)
+- [Arquivei](https://github.com/arquivei)
+
+# License
+The Laravel Kafka package is open-sourced software licenced under the [MIT][mit] License. Please see the [License File][license] for more information.
+
+[rdkafka_config]:https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
+[contributing]: .github/CONTRIBUTING.md
+[license]: LICENSE
+[mit]: https://opensource.org/licenses/MIT
