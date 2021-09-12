@@ -12,12 +12,12 @@ class ProducerBuilder implements CanProduceMessages
     private array $options = [];
     private Message $message;
 
-     public function __construct(
-         private string $broker,
-         private string $topic,
-     ) {
-         $this->message = new Message();
-     }
+    public function __construct(
+        private string $broker,
+        private string $topic,
+    ) {
+        $this->message = new Message();
+    }
 
     /**
      * Return a new Junges\Commit\ProducerBuilder instance
