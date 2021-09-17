@@ -50,7 +50,7 @@ as argument. Here's an example:
 use Junges\Kafka\Facades\Kafka;
 
 Kafka::publishOn('broker', 'topic')
-    ->withCOnfigOption('property-name', 'property-value')
+    ->withConfigOption('property-name', 'property-value')
     ->withConfigOptions([
         'property-name' => 'property-value'
     ]);
@@ -63,7 +63,7 @@ To disable debug mode, you can use `->withDebugEnabled(false)`, or `withDebugDis
 use Junges\Kafka\Facades\Kafka;
 
 Kafka::publishOn('broker', 'topic')
-    ->withCOnfigOption('property-name', 'property-value')
+    ->withConfigOption('property-name', 'property-value')
     ->withConfigOptions([
         'property-name' => 'property-value'
     ])
@@ -104,7 +104,7 @@ $message = new Message(
     key: 'kafka key here'  
 )
 
-Kafka::publisOn('broker', 'topic')->withMessage($message);
+Kafka::publishOn('broker', 'topic')->withMessage($message);
 ```
 
 The `withMessageKey` method sets only a key in your message.
@@ -112,7 +112,7 @@ The `withMessageKey` method sets only a key in your message.
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-Kafka::publisOn('broker', 'topic')->withMessageKey('key', 'value');
+Kafka::publishOn('broker', 'topic')->withMessageKey('key', 'value');
 ```
 
 ### Using Kafka Keys
@@ -122,7 +122,7 @@ If you want to use a key in your message, you should use the `withKafkaKey` meth
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-Kafka::publisOn('broker', 'topic')->withKafkaKey('your-kafka-key');
+Kafka::publishOn('broker', 'topic')->withKafkaKey('your-kafka-key');
 ```
 
 ## Sending the message to Kafka
@@ -132,7 +132,7 @@ After configuring all your message options, you must use the `send` method, to s
 use Junges\Kafka\Facades\Kafka;
 
 /** @var \Junges\Kafka\Producers\ProducerBuilder $producer */
-$producer = Kafka::publisOn('broker', 'topic')
+$producer = Kafka::publishOn('broker', 'topic')
     ->withConfigOptions(['key' => 'value'])
     ->withKafkaKey('your-kafka-key')
     ->withKafkaKey('kafka-key')
