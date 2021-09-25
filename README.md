@@ -25,6 +25,13 @@ With RdKafka installed, require this package with composer:
 composer require mateusjunges/laravel-kafka
 ```
 
+You can publish the package configuration using:
+```text
+php artisan vendor:publish --tag=laravel-kafka-config
+```
+Now you are good to go!
+
+
 # Usage
 After installing the package, you can start producing and consuming Kafka messages.
 
