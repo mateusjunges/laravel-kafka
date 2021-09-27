@@ -2,7 +2,6 @@
 
 namespace Junges\Kafka\Tests\Message\Encoders;
 
-use Jobcloud\Kafka\Message\KafkaProducerMessageInterface;
 use JsonException;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
 use Junges\Kafka\Message\Encoders\JsonEncoder;
