@@ -5,7 +5,7 @@ namespace Junges\Kafka\Tests;
 use Illuminate\Support\Str;
 use Junges\Kafka\Consumers\ConsumerBuilder;
 use Junges\Kafka\Facades\Kafka;
-use Junges\Kafka\Message;
+use Junges\Kafka\Message\Message;
 use Mockery as m;
 use RdKafka\Producer;
 
@@ -33,7 +33,7 @@ class KafkaTest extends LaravelKafkaTestCase
                 'metadata.broker.list' => 'broker',
             ])
             ->withKafkaKey(Str::uuid()->toString())
-            ->withMessageKey('test', ['test'])
+            ->withBodyKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
             ->withDebugEnabled()
             ->send();
@@ -61,7 +61,7 @@ class KafkaTest extends LaravelKafkaTestCase
                 'metadata.broker.list' => 'broker',
             ])
             ->withKafkaKey(Str::uuid()->toString())
-            ->withMessageKey('test', ['test'])
+            ->withBodyKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
             ->withDebugEnabled()
             ->send();
@@ -86,15 +86,13 @@ class KafkaTest extends LaravelKafkaTestCase
             return $mockedProducer;
         });
 
+        $message = Message::create('foo')->withHeaders(['foo' => 'bar'])->withKey('message-key')->withBody(['foo' => 'bar']);
+
         $test = Kafka::publishOn('localhost:9092', 'test-topic')
             ->withConfigOptions([
                 'metadata.broker.list' => 'broker',
             ])
-            ->withMessage(new Message(
-                headers: ['foo' => 'bar'],
-                message: ['foo' => 'bar'],
-                key: 'message-key'
-            ))
+            ->withMessage($message)
             ->withDebugEnabled()
             ->send();
 
@@ -105,8 +103,9 @@ class KafkaTest extends LaravelKafkaTestCase
                 'metadata.broker.list' => 'broker',
             ])
             ->withMessage(new Message(
+                topicName: 'foo',
                 headers: ['foo' => 'bar'],
-                message: ['foo' => 'bar'],
+                body: ['foo' => 'bar'],
                 key: 'message-key'
             ))
             ->withDebugEnabled(false)
