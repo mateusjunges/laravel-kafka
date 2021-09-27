@@ -70,9 +70,7 @@ class AvroDecoderTest extends LaravelKafkaTestCase
         $this->assertInstanceOf(KafkaConsumerMessage::class, $result);
         $this->assertSame(['test'], $result->getBody());
         $this->assertSame('decoded-key', $result->getKey());
-
     }
-
 
     public function testGetRegistry()
     {
