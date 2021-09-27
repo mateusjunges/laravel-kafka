@@ -2,6 +2,8 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## 2021-xx-xx v1.1.0
+
 ## 2021-09-25 v1.0.2
 - Fix documentation typos [#2](https://github.com/mateusjunges/laravel-kafka/pull/2)
 - Fix installation docs
