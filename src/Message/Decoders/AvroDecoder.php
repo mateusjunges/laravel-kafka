@@ -27,8 +27,8 @@ class AvroDecoder implements AvroMessageDecoder
             topicName: $message->getTopicName(),
             partition: $message->getPartition(),
             headers: $message->getHeaders(),
-            body: $this->decodeBody($message->getBody()),
-            key: $this->decodeKey($message->getKey()),
+            body: $this->decodeBody($message),
+            key: $this->decodeKey($message),
             offset: $message->getOffset(),
             timestamp: $message->getTimestamp()
         );
