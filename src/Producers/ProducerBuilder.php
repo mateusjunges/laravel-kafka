@@ -5,9 +5,8 @@ namespace Junges\Kafka\Producers;
 use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\CanProduceMessages;
-use Junges\Kafka\Contracts\MessageEncoder;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
-use Junges\Kafka\Message\Encoders\JsonEncoder;
+use Junges\Kafka\Contracts\MessageEncoder;
 use Junges\Kafka\Message\Message;
 
 class ProducerBuilder implements CanProduceMessages
@@ -154,7 +153,7 @@ class ProducerBuilder implements CanProduceMessages
         return app(Producer::class, [
             'config' => $conf,
             'topic' => $this->topic,
-            'encoder' => $this->encoder
+            'encoder' => $this->encoder,
         ]);
     }
 }

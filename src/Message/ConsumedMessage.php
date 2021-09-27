@@ -15,8 +15,7 @@ class ConsumedMessage extends AbstractMessage implements KafkaConsumerMessage
         protected mixed $key,
         protected ?int $offset,
         protected ?int $timestamp,
-    )
-    {
+    ) {
         parent::__construct(
             $this->topicName,
             $this->partition,
@@ -25,7 +24,6 @@ class ConsumedMessage extends AbstractMessage implements KafkaConsumerMessage
             $this->key
         );
     }
-
 
     public function getOffset(): ?int
     {

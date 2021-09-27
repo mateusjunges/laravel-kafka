@@ -21,15 +21,15 @@ class LaravelKafkaServiceProvider extends ServiceProvider
 
     public function register()
     {
-        $this->app->bind(MessageEncoder::class, function() {
+        $this->app->bind(MessageEncoder::class, function () {
             return new JsonEncoder();
         });
 
-        $this->app->bind(MessageDecoder::class, function() {
+        $this->app->bind(MessageDecoder::class, function () {
             return new JsonDecoder();
         });
 
-        $this->app->bind(KafkaProducerMessage::class, function() {
+        $this->app->bind(KafkaProducerMessage::class, function () {
             return new Message('');
         });
 

@@ -2,8 +2,8 @@
 
 namespace Junges\Kafka\Message\Decoders;
 
-use Junges\Kafka\Contracts\MessageDecoder;
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
+use Junges\Kafka\Contracts\MessageDecoder;
 use Junges\Kafka\Message\ConsumedMessage;
 
 class JsonDecoder implements MessageDecoder
