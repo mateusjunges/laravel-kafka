@@ -80,9 +80,9 @@ class MessageTest extends LaravelKafkaTestCase
 
         $this->assertEquals($expectedMessage, $this->message);
 
-        $expectedPayload = json_encode($array);
+        $expectedPayload = $array;
 
-        $this->assertEquals($expectedPayload, $this->message->getPayload());
+        $this->assertEquals($expectedPayload, $this->message->getBody());
     }
 
     public function testItCanTransformAMessageInArray()

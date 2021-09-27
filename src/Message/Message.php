@@ -75,35 +75,6 @@ class Message extends AbstractMessage implements Arrayable, KafkaProducerMessage
         return $this;
     }
 
-    /**
-     * Get the payload that should be sent to kafka.
-     *
-     * @return string
-     */
-    public function getPayload(): string
-    {
-        return json_encode($this->body);
-    }
-
-    /**
-     * Get the kafka message key.
-     *
-     * @return string
-     */
-    public function getKey(): string
-    {
-        return $this->key;
-    }
-
-    /**
-     * Get the message headers.
-     * @return array
-     */
-    public function getHeaders(): array
-    {
-        return $this->headers;
-    }
-
     #[ArrayShape(['payload' => "array", 'key' => "null|string", 'headers' => "array"])]
     public function toArray(): array
     {
