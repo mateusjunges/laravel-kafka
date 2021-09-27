@@ -28,10 +28,10 @@ class AvroSchemaRegistry implements AvroSchemaRegistryContract
 
     /**
      * @param string $topicName
-     * @param AvroSchemaRegistry $avroSchema
+     * @param KafkaAvroSchemaRegistry $avroSchema
      * @return void
      */
-    public function addBodySchemaMappingForTopic(string $topicName, AvroSchemaRegistryContract $avroSchema): void
+    public function addBodySchemaMappingForTopic(string $topicName, KafkaAvroSchemaRegistry $avroSchema): void
     {
         $this->schemaMapping[self::BODY_IDX][$topicName] = $avroSchema;
     }
@@ -41,7 +41,7 @@ class AvroSchemaRegistry implements AvroSchemaRegistryContract
      * @param AvroSchemaRegistry $avroSchema
      * @return void
      */
-    public function addKeySchemaMappingForTopic(string $topicName, AvroSchemaRegistryContract $avroSchema): void
+    public function addKeySchemaMappingForTopic(string $topicName, KafkaAvroSchemaRegistry $avroSchema): void
     {
         $this->schemaMapping[self::KEY_IDX][$topicName] = $avroSchema;
     }
@@ -119,7 +119,7 @@ class AvroSchemaRegistry implements AvroSchemaRegistryContract
      * @return AvroSchema
      * @throws SchemaRegistryException|\FlixTech\SchemaRegistryApi\Exception\SchemaRegistryException
      */
-    private function getSchemaDefinition(AvroSchemaRegistry $avroSchema): AvroSchema
+    private function getSchemaDefinition(KafkaAvroSchemaRegistry $avroSchema): AvroSchema
     {
         if (KafkaAvroSchemaRegistry::LATEST_VERSION === $avroSchema->getVersion()) {
             return $this->registry->latestVersion($avroSchema->getName());

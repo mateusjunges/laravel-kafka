@@ -13,18 +13,18 @@ interface AvroSchemaRegistry
     public const KEY_IDX = 'key';
 
     /**
-     * @param string                   $topicName
-     * @param AvroSchemaRegistry $avroSchema
+     * @param string $topicName
+     * @param KafkaAvroSchemaRegistry $avroSchema
      * @return void
      */
-    public function addBodySchemaMappingForTopic(string $topicName, AvroSchemaRegistry $avroSchema): void;
+    public function addBodySchemaMappingForTopic(string $topicName, KafkaAvroSchemaRegistry $avroSchema): void;
 
     /**
-     * @param string                   $topicName
-     * @param AvroSchemaRegistry $avroSchema
+     * @param string $topicName
+     * @param KafkaAvroSchemaRegistry $avroSchema
      * @return void
      */
-    public function addKeySchemaMappingForTopic(string $topicName, AvroSchemaRegistry $avroSchema): void;
+    public function addKeySchemaMappingForTopic(string $topicName, KafkaAvroSchemaRegistry $avroSchema): void;
 
     /**
      * @return array<string, AvroSchemaRegistry[]>
