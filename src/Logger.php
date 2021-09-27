@@ -2,7 +2,6 @@
 
 namespace Junges\Kafka;
 
-use Junges\Kafka\Message\ConsumedMessage;
 use Monolog\Formatter\JsonFormatter;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger as MonologLogger;

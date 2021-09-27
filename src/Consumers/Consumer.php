@@ -244,7 +244,7 @@ class Consumer
             'body' => $message->payload,
             'key' => $message->key,
             'offset' => $message->offset,
-            'timestamp' => $message->timestamp
+            'timestamp' => $message->timestamp,
         ]);
     }
 }

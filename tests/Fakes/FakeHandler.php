@@ -4,7 +4,6 @@ namespace Junges\Kafka\Tests\Fakes;
 
 use Junges\Kafka\Contracts\Consumer;
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
-use RdKafka\Message;
 
 class FakeHandler extends Consumer
 {

@@ -3,8 +3,8 @@
 namespace Junges\Kafka\Message\Encoders;
 
 use JsonException;
-use Junges\Kafka\Contracts\MessageEncoder;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
+use Junges\Kafka\Contracts\MessageEncoder;
 
 class JsonEncoder implements MessageEncoder
 {

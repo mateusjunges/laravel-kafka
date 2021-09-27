@@ -2,7 +2,6 @@
 
 namespace Junges\Kafka\Contracts;
 
-use RdKafka\Message;
 use Throwable;
 
 abstract class Consumer
