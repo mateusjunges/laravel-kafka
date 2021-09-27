@@ -148,6 +148,13 @@ class ProducerBuilderFake implements CanProduceMessages
         return $this->message;
     }
 
+    public function usingEncoder(MessageEncoder $encoder): CanProduceMessages
+    {
+        $this->encoder = $encoder;
+
+        return $this;
+    }
+
     /**
      * Send the message to the producer to be published on kafka.
      * @return bool
@@ -183,12 +190,5 @@ class ProducerBuilderFake implements CanProduceMessages
         ]);
 
         return $this->producerFake;
-    }
-
-    public function usingEncoder(MessageEncoder $encoder): CanProduceMessages
-    {
-        $this->encoder = $encoder;
-
-        return $this;
     }
 }
