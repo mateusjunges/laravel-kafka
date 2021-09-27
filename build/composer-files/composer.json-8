@@ -13,7 +13,9 @@
     "fruitcake/laravel-cors": "^2.0",
     "guzzlehttp/guzzle": "^7.0.1",
     "laravel/framework": "^8.0",
-    "laravel/tinker": "^2.0"
+    "laravel/tinker": "^2.0",
+    "flix-tech/avro-serde-php": "^1.7",
+    "flix-tech/confluent-schema-registry-api": "^7.5"
   },
   "require-dev": {
     "facade/ignition": "^2.3.6",
