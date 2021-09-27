@@ -6,5 +6,4 @@ use Monolog\Test\TestCase;
 
 class JsonDecoderTest extends TestCase
 {
-
 }
