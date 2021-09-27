@@ -20,9 +20,12 @@ class AvroEncoderTest extends LaravelKafkaTestCase
         $registry = $this->getMockForAbstractClass(AvroSchemaRegistry::class);
         $registry->expects($this->never())->method('hasBodySchemaForTopic');
         $registry->expects($this->never())->method('hasKeySchemaForTopic');
+
         $recordSerializer = $this->getMockBuilder(RecordSerializer::class)->disableOriginalConstructor()->getMock();
         $recordSerializer->expects($this->never())->method('encodeRecord');
+
         $encoder = new AvroEncoder($registry, $recordSerializer);
+
         $result = $encoder->encode($producerMessage);
 
         $this->assertInstanceOf(KafkaProducerMessage::class, $result);
