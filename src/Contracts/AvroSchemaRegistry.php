@@ -4,7 +4,7 @@ namespace Junges\Kafka\Contracts;
 
 use Junges\Kafka\Exceptions\SchemaRegistryException;
 
-interface SchemaRegistry
+interface AvroSchemaRegistry
 {
     /** @var string */
     public const BODY_IDX = 'body';
@@ -14,36 +14,36 @@ interface SchemaRegistry
 
     /**
      * @param string                   $topicName
-     * @param SchemaRegistry $avroSchema
+     * @param AvroSchemaRegistry $avroSchema
      * @return void
      */
-    public function addBodySchemaMappingForTopic(string $topicName, SchemaRegistry $avroSchema): void;
+    public function addBodySchemaMappingForTopic(string $topicName, AvroSchemaRegistry $avroSchema): void;
 
     /**
      * @param string                   $topicName
-     * @param SchemaRegistry $avroSchema
+     * @param AvroSchemaRegistry $avroSchema
      * @return void
      */
-    public function addKeySchemaMappingForTopic(string $topicName, SchemaRegistry $avroSchema): void;
+    public function addKeySchemaMappingForTopic(string $topicName, AvroSchemaRegistry $avroSchema): void;
 
     /**
-     * @return array<string, SchemaRegistry[]>
+     * @return array<string, AvroSchemaRegistry[]>
      */
     public function getTopicSchemaMapping(): array;
 
     /**
      * @param string $topicName
-     * @return SchemaRegistry
+     * @return KafkaAvroSchemaRegistry
      * @throws SchemaRegistryException
      */
-    public function getBodySchemaForTopic(string $topicName): SchemaRegistry;
+    public function getBodySchemaForTopic(string $topicName): KafkaAvroSchemaRegistry;
 
     /**
      * @param string $topicName
-     * @return SchemaRegistry
+     * @return KafkaAvroSchemaRegistry
      * @throws SchemaRegistryException
      */
-    public function getKeySchemaForTopic(string $topicName): SchemaRegistry;
+    public function getKeySchemaForTopic(string $topicName): KafkaAvroSchemaRegistry;
 
     /**
      * @param string $topicName
