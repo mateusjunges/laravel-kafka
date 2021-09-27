@@ -6,7 +6,7 @@ use Jobcloud\Kafka\Message\KafkaProducerMessageInterface;
 use JsonException;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
 use Junges\Kafka\Message\Encoders\JsonEncoder;
-use Monolog\Test\TestCase;
+use Junges\Kafka\Tests\LaravelKafkaTestCase as TestCase;
 
 class JsonEncoderTest extends TestCase
 {
