@@ -4,19 +4,21 @@ namespace Junges\Kafka\Support\Testing\Fakes;
 
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\CanProduceMessages;
-use Junges\Kafka\Message;
+use Junges\Kafka\Contracts\MessageEncoder;
+use Junges\Kafka\Message\Message;
 
 class ProducerBuilderFake implements CanProduceMessages
 {
     private array $options = [];
     private Message $message;
     private ProducerFake $producerFake;
+    private MessageEncoder $encoder;
 
     public function __construct(
         private string $broker,
         private string $topic,
     ) {
-        $this->message = new Message();
+        $this->message = new Message($topic);
 
         $conf = new Config(
             broker: '',
@@ -92,9 +94,9 @@ class ProducerBuilderFake implements CanProduceMessages
      * @param mixed $message
      * @return ProducerBuilderFake
      */
-    public function withMessageKey(string $key, mixed $message): self
+    public function withBodyKey(string $key, mixed $message): self
     {
-        $this->message->withMessageKey($key, $message);
+        $this->message->withBodyKey($key, $message);
 
         return $this;
     }
@@ -181,5 +183,12 @@ class ProducerBuilderFake implements CanProduceMessages
         ]);
 
         return $this->producerFake;
+    }
+
+    public function usingEncoder(MessageEncoder $encoder): CanProduceMessages
+    {
+        $this->encoder = $encoder;
+
+        return $this;
     }
 }

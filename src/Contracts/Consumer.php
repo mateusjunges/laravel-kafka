@@ -7,7 +7,7 @@ use Throwable;
 
 abstract class Consumer
 {
-    abstract public function handle(Message $message): void;
+    abstract public function handle(KafkaConsumerMessage $message): void;
 
     /**
      * @throws Throwable

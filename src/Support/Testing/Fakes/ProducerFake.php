@@ -4,7 +4,7 @@ namespace Junges\Kafka\Support\Testing\Fakes;
 
 use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Config\Config;
-use Junges\Kafka\Message;
+use Junges\Kafka\Message\Message;
 use RdKafka\Conf;
 
 class ProducerFake

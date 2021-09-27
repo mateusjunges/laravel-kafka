@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka;
 
+use Junges\Kafka\Message\ConsumedMessage;
 use Monolog\Formatter\JsonFormatter;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger as MonologLogger;
@@ -32,7 +33,7 @@ class Logger
     /**
      * Log an error message.
      *
-     * @param \RdKafka\Message $message
+     * @param Message $message
      * @param \Throwable|null $e
      * @param string $prefix
      */

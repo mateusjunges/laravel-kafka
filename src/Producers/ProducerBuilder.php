@@ -5,18 +5,25 @@ namespace Junges\Kafka\Producers;
 use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\CanProduceMessages;
-use Junges\Kafka\Message;
+use Junges\Kafka\Contracts\MessageEncoder;
+use Junges\Kafka\Contracts\KafkaProducerMessage;
+use Junges\Kafka\Message\Encoders\JsonEncoder;
+use Junges\Kafka\Message\Message;
 
 class ProducerBuilder implements CanProduceMessages
 {
     private array $options = [];
     private Message $message;
+    private MessageEncoder $encoder;
 
     public function __construct(
         private string $broker,
-        private string $topic,
+        private string $topic
     ) {
-        $this->message = new Message();
+        /** @var KafkaProducerMessage $message */
+        $message = app(KafkaProducerMessage::class);
+        $this->message = $message->create($topic);
+        $this->encoder = app(MessageEncoder::class);
     }
 
     /**
@@ -80,14 +87,14 @@ class ProducerBuilder implements CanProduceMessages
      * @param mixed $message
      * @return ProducerBuilder
      */
-    public function withMessageKey(string $key, mixed $message): self
+    public function withBodyKey(string $key, mixed $message): self
     {
-        $this->message->withMessageKey($key, $message);
+        $this->message->withBodyKey($key, $message);
 
         return $this;
     }
 
-    public function withMessage(Message $message): self
+    public function withMessage(KafkaProducerMessage $message): self
     {
         $this->message = $message;
 
@@ -105,6 +112,13 @@ class ProducerBuilder implements CanProduceMessages
             unset($this->options['log_level']);
             unset($this->options['debug']);
         }
+
+        return $this;
+    }
+
+    public function usingEncoder(MessageEncoder $encoder): CanProduceMessages
+    {
+        $this->encoder = $encoder;
 
         return $this;
     }
@@ -140,6 +154,7 @@ class ProducerBuilder implements CanProduceMessages
         return app(Producer::class, [
             'config' => $conf,
             'topic' => $this->topic,
+            'encoder' => $this->encoder
         ]);
     }
 }

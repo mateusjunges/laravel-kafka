@@ -103,11 +103,11 @@ This is how you should use it:
 
 ```php
 use Junges\Kafka\Facades\Kafka;
-use Junges\Kafka\Message;
+use Junges\Kafka\Message\Message;
 
 $message = new Message(
     headers: ['header-key' => 'header-value'],
-    message: ['key' => 'value'],
+    body: ['key' => 'value'],
     key: 'kafka key here'  
 )
 
@@ -119,7 +119,7 @@ The `withMessageKey` method sets only a key in your message.
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-Kafka::publishOn('broker', 'topic')->withMessageKey('key', 'value');
+Kafka::publishOn('broker', 'topic')->withBodyKey('key', 'value');
 ```
 
 ### Using Kafka Keys
@@ -332,7 +332,7 @@ class MyTest extends TestCase
          
          $producer = Kafka::publishOn('broker', 'topic')
              ->withHeaders(['key' => 'value'])
-             ->withMessageKey('foo', 'bar');
+             ->withBodyKey('foo', 'bar');
              
          $producer->send();
              
@@ -355,7 +355,7 @@ class MyTest extends TestCase
         
         $producer = Kafka::publishOn('broker', 'some-kafka-topic')
             ->withHeaders(['key' => 'value'])
-            ->withMessageKey('key', 'value');
+            ->withBodyKey('key', 'value');
             
         $producer->send();
         
@@ -370,7 +370,7 @@ itself.
 ```php
 use PHPUnit\Framework\TestCase;
 use Junges\Kafka\Facades\Kafka;
-use Junges\Kafka\Message;
+use Junges\Kafka\Message\Message;
 
 class MyTest extends TestCase
 {
@@ -380,7 +380,7 @@ class MyTest extends TestCase
         
         $producer = Kafka::publishOn('broker', 'some-kafka-topic')
             ->withHeaders(['key' => 'value'])
-            ->withMessageKey('key', 'value');
+            ->withBodyKey('key', 'value');
             
         $producer->send();
         
@@ -396,7 +396,7 @@ You can also assert that nothing was published at all, using the `assertNothingP
 ```php
 use PHPUnit\Framework\TestCase;
 use Junges\Kafka\Facades\Kafka;
-use Junges\Kafka\Message;
+use Junges\Kafka\Message\Message;
 
 class MyTest extends TestCase
 {
@@ -407,7 +407,7 @@ class MyTest extends TestCase
         if (false) {
             $producer = Kafka::publishOn('broker', 'some-kafka-topic')
                 ->withHeaders(['key' => 'value'])
-                ->withMessageKey('key', 'value');
+                ->withBodyKey('key', 'value');
                 
             $producer->send();
         }

@@ -4,7 +4,7 @@ namespace Junges\Kafka\Support\Testing\Fakes;
 
 use Illuminate\Support\Collection;
 use Junges\Kafka\Contracts\CanPublishMessagesToKafka;
-use Junges\Kafka\Message;
+use Junges\Kafka\Message\Message;
 use PHPUnit\Framework\Assert as PHPUnit;
 
 class KafkaFake implements CanPublishMessagesToKafka

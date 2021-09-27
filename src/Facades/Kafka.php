@@ -3,7 +3,7 @@
 namespace Junges\Kafka\Facades;
 
 use Illuminate\Support\Facades\Facade;
-use Junges\Kafka\Message;
+use Junges\Kafka\Message\Message;
 use Junges\Kafka\Support\Testing\Fakes\KafkaFake;
 
 /**
