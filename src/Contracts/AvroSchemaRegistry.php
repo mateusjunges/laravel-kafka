@@ -47,14 +47,14 @@ interface AvroSchemaRegistry
 
     /**
      * @param string $topicName
-     * @return boolean
+     * @return bool
      * @throws SchemaRegistryException
      */
     public function hasBodySchemaForTopic(string $topicName): bool;
 
     /**
      * @param string $topicName
-     * @return boolean
+     * @return bool
      * @throws SchemaRegistryException
      */
     public function hasKeySchemaForTopic(string $topicName): bool;
