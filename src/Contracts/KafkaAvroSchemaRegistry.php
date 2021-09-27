@@ -14,7 +14,7 @@ interface KafkaAvroSchemaRegistry
     public function getName(): string;
 
     /**
-     * @return integer
+     * @return int
      */
     public function getVersion(): int;
 

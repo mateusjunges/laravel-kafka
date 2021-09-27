@@ -4,8 +4,8 @@ namespace Junges\Kafka\Message\Decoders;
 
 use FlixTech\AvroSerializer\Objects\RecordSerializer;
 use Junges\Kafka\Contracts\AvroMessageDecoder;
-use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Contracts\AvroSchemaRegistry;
+use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Message\ConsumedMessage;
 
 class AvroDecoder implements AvroMessageDecoder
@@ -13,8 +13,7 @@ class AvroDecoder implements AvroMessageDecoder
     public function __construct(
         private AvroSchemaRegistry $registry,
         private RecordSerializer   $recordSerializer
-    )
-    {
+    ) {
     }
 
     public function getRegistry(): AvroSchemaRegistry

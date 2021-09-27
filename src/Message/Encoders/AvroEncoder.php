@@ -5,9 +5,9 @@ namespace Junges\Kafka\Message\Encoders;
 use AvroSchema;
 use FlixTech\AvroSerializer\Objects\RecordSerializer;
 use Junges\Kafka\Contracts\AvroMessageEncoder;
+use Junges\Kafka\Contracts\AvroSchemaRegistry;
 use Junges\Kafka\Contracts\KafkaAvroSchemaRegistry;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
-use Junges\Kafka\Contracts\AvroSchemaRegistry;
 use Junges\Kafka\Exceptions\Encoders\AvroEncoderException;
 
 class AvroEncoder implements AvroMessageEncoder

@@ -4,9 +4,9 @@ namespace Junges\Kafka\Message\Registry;
 
 use AvroSchema;
 use FlixTech\SchemaRegistryApi\Registry;
+use Junges\Kafka\Contracts\AvroSchemaRegistry as AvroSchemaRegistryContract;
 use Junges\Kafka\Contracts\KafkaAvroSchemaRegistry;
 use Junges\Kafka\Exceptions\SchemaRegistryException;
-use Junges\Kafka\Contracts\AvroSchemaRegistry as AvroSchemaRegistryContract;
 
 class AvroSchemaRegistry implements AvroSchemaRegistryContract
 {
@@ -66,7 +66,7 @@ class AvroSchemaRegistry implements AvroSchemaRegistryContract
 
     /**
      * @param string $topicName
-     * @return boolean
+     * @return bool
      * @throws SchemaRegistryException
      */
     public function hasBodySchemaForTopic(string $topicName): bool
@@ -76,7 +76,7 @@ class AvroSchemaRegistry implements AvroSchemaRegistryContract
 
     /**
      * @param string $topicName
-     * @return boolean
+     * @return bool
      * @throws SchemaRegistryException
      */
     public function hasKeySchemaForTopic(string $topicName): bool
