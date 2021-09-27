@@ -4,14 +4,20 @@ namespace Junges\Kafka;
 
 use Illuminate\Contracts\Support\Arrayable;
 use JetBrains\PhpStorm\ArrayShape;
+use Junges\Kafka\Contracts\KafkaProducerMessage;
 
-class Message implements Arrayable
+class Message extends AbstractMessage implements Arrayable, KafkaProducerMessage
 {
-    public function __construct(
-        protected array $headers = [],
-        protected array $message = [],
-        protected ?string $key = null
-    ) {
+    /**
+     * Creates a new message instance.
+     *
+     * @param string $topicName
+     * @param int $partition
+     * @return Message
+     */
+    public static function create(string $topicName, int $partition = RD_KAFKA_PARTITION_UA): KafkaProducerMessage
+    {
+        return new self($topicName, $partition);
     }
 
     /**
@@ -21,9 +27,9 @@ class Message implements Arrayable
      * @param mixed $message
      * @return $this
      */
-    public function withMessageKey(string $key, mixed $message): Message
+    public function withBodyKey(string $key, mixed $message): Message
     {
-        $this->message[$key] = $message;
+        $this->body[$key] = $message;
 
         return $this;
     }
@@ -34,9 +40,9 @@ class Message implements Arrayable
      * @param string $key
      * @return $this
      */
-    public function forgetMessageKey(string $key): Message
+    public function forgetBodyKey(string $key): Message
     {
-        unset($this->message[$key]);
+        unset($this->body[$key]);
 
         return $this;
     }
@@ -44,10 +50,10 @@ class Message implements Arrayable
     /**
      * Set the message headers.
      *
-     * @param array $headers
+     * @param array|null $headers
      * @return $this
      */
-    public function withHeaders(array $headers): Message
+    public function withHeaders(?array $headers): Message
     {
         $this->headers = $headers;
 
@@ -57,10 +63,10 @@ class Message implements Arrayable
     /**
      * Set the kafka message key.
      *
-     * @param string $key
+     * @param string|null $key
      * @return $this
      */
-    public function withKey(string $key): Message
+    public function withKey(?string $key): Message
     {
         $this->key = $key;
 
@@ -74,7 +80,7 @@ class Message implements Arrayable
      */
     public function getPayload(): string
     {
-        return json_encode($this->message);
+        return json_encode($this->body);
     }
 
     /**
@@ -100,9 +106,23 @@ class Message implements Arrayable
     public function toArray(): array
     {
         return [
-            'payload' => $this->message,
+            'payload' => $this->body,
             'key' => $this->key,
             'headers' => $this->headers,
         ];
+    }
+
+    public function withBody(mixed $body): KafkaProducerMessage
+    {
+        $this->body = $body;
+
+        return $this;
+    }
+
+    public function withHeader(string $key, mixed $value): KafkaProducerMessage
+    {
+        $this->headers[$key] = $value;
+
+        return $this;
     }
 }
