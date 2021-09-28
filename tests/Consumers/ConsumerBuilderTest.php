@@ -7,6 +7,7 @@ use InvalidArgumentException;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Consumers\ConsumerBuilder;
+use Junges\Kafka\Message\Deserializers\NullDeserializer;
 use Junges\Kafka\Tests\Fakes\FakeConsumer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use RdKafka\Message;
@@ -29,6 +30,17 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
         $topics = $this->getPropertyWithReflection('topics', $consumer);
 
         $this->assertEquals(['foo'], $topics);
+    }
+
+    public function testICanChangeDeserializersOnTheFly()
+    {
+        $consumer = ConsumerBuilder::create('broker');
+
+        $consumer->usingDeserializer(new NullDeserializer());
+
+        $deserializer = $this->getPropertyWithReflection('deserializer', $consumer);
+
+        $this->assertInstanceOf(NullDeserializer::class, $deserializer);
     }
 
     public function testItCanSubscribeToMoreThanOneTopicsAtOnce()

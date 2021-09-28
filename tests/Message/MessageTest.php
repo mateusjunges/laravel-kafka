@@ -1,9 +1,10 @@
 <?php
 
-namespace Junges\Kafka\Tests;
+namespace Junges\Kafka\Tests\Message;
 
 use Illuminate\Support\Str;
-use Junges\Kafka\Message;
+use Junges\Kafka\Message\Message;
+use Junges\Kafka\Tests\LaravelKafkaTestCase;
 
 class MessageTest extends LaravelKafkaTestCase
 {
@@ -12,26 +13,32 @@ class MessageTest extends LaravelKafkaTestCase
     public function setUp(): void
     {
         parent::setUp();
-        $this->message = new Message();
+        $this->message = new Message('foo');
     }
 
     public function testItCanSetAMessageKey()
     {
-        $this->message->withMessageKey('foo', 'bar');
+        $this->message->withBodyKey('foo', 'bar');
 
-        $expected = new Message(message: ['foo' => 'bar']);
+        $expected = new Message(
+            topicName: 'foo',
+            body: ['foo' => 'bar']
+        );
 
         $this->assertEquals($expected, $this->message);
     }
 
     public function testItCanForgetAMessageKey()
     {
-        $this->message->withMessageKey('foo', 'bar');
-        $this->message->withMessageKey('bar', 'foo');
+        $this->message->withBodyKey('foo', 'bar');
+        $this->message->withBodyKey('bar', 'foo');
 
-        $expected = new Message(message: ['bar' => 'foo']);
+        $expected = new Message(
+            topicName: 'foo',
+            body: ['bar' => 'foo']
+        );
 
-        $this->message->forgetMessageKey('foo');
+        $this->message->forgetBodyKey('foo');
 
         $this->assertEquals($expected, $this->message);
     }
@@ -42,7 +49,10 @@ class MessageTest extends LaravelKafkaTestCase
             'foo' => 'bar',
         ]);
 
-        $expected = new Message(headers: ['foo' => 'bar']);
+        $expected = new Message(
+            topicName: 'foo',
+            headers: ['foo' => 'bar']
+        );
 
         $this->assertEquals($expected, $this->message);
     }
@@ -51,35 +61,42 @@ class MessageTest extends LaravelKafkaTestCase
     {
         $this->message->withKey($uuid = Str::uuid()->toString());
 
-        $expected = new Message(key: $uuid);
+        $expected = new Message(
+            topicName: 'foo',
+            key: $uuid
+        );
 
         $this->assertEquals($expected, $this->message);
     }
 
     public function testItCanGetTheMessagePayload()
     {
-        $this->message->withMessageKey('foo', 'bar');
-        $this->message->withMessageKey('bar', 'foo');
+        $this->message->withBodyKey('foo', 'bar');
+        $this->message->withBodyKey('bar', 'foo');
 
-        $expectedMessage = new Message(message: $array = ['foo' => 'bar', 'bar' => 'foo']);
+        $expectedMessage = new Message(
+            topicName: 'foo',
+            body: $array = ['foo' => 'bar', 'bar' => 'foo']
+        );
 
         $this->assertEquals($expectedMessage, $this->message);
 
-        $expectedPayload = json_encode($array);
+        $expectedPayload = $array;
 
-        $this->assertEquals($expectedPayload, $this->message->getPayload());
+        $this->assertEquals($expectedPayload, $this->message->getBody());
     }
 
     public function testItCanTransformAMessageInArray()
     {
-        $this->message->withMessageKey('foo', 'bar');
-        $this->message->withMessageKey('bar', 'foo');
+        $this->message->withBodyKey('foo', 'bar');
+        $this->message->withBodyKey('bar', 'foo');
         $this->message->withKey($uuid = Str::uuid()->toString());
         $this->message->withHeaders($headers = ['foo' => 'bar']);
 
         $expectedMessage = new Message(
+            topicName: 'foo',
             headers: $headers,
-            message: $array = ['foo' => 'bar', 'bar' => 'foo'],
+            body: $array = ['foo' => 'bar', 'bar' => 'foo'],
             key: $uuid
         );
 

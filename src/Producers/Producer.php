@@ -3,7 +3,9 @@
 namespace Junges\Kafka\Producers;
 
 use Junges\Kafka\Config\Config;
-use Junges\Kafka\Message;
+use Junges\Kafka\Contracts\KafkaProducerMessage;
+use Junges\Kafka\Contracts\MessageSerializer;
+use Junges\Kafka\Message\Message;
 use Mockery\Exception;
 use RdKafka\Conf;
 use RdKafka\Producer as KafkaProducer;
@@ -14,7 +16,8 @@ class Producer
 
     public function __construct(
         private Config $config,
-        private string $topic
+        private string $topic,
+        private MessageSerializer $serializer
     ) {
         $this->producer = app(KafkaProducer::class, [
             'conf' => $this->setConf($this->config->getProducerOptions()),
@@ -41,18 +44,20 @@ class Producer
     /**
      * Produce the specified message in the kafka topic.
      *
-     * @param \Junges\Kafka\Message $message
+     * @param KafkaProducerMessage $message
      * @return mixed
      * @throws \Exception
      */
-    public function produce(Message $message): bool
+    public function produce(KafkaProducerMessage $message): bool
     {
         $topic = $this->producer->newTopic($this->topic);
 
+        $message = $this->serializer->serialize($message);
+
         $topic->producev(
-            partition: RD_KAFKA_PARTITION_UA,
-            msgflags: 0,
-            payload: $message->getPayload(),
+            partition: $message->getPartition(),
+            msgflags: RD_KAFKA_MSG_F_BLOCK,
+            payload: $message->getBody(),
             key: $message->getKey(),
             headers: $message->getHeaders()
         );

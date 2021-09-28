@@ -5,6 +5,8 @@ namespace Junges\Kafka\Tests\Consumers;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Exceptions\KafkaConsumerException;
+use Junges\Kafka\Message\ConsumedMessage;
+use Junges\Kafka\Message\Deserializers\JsonDeserializer;
 use Junges\Kafka\Tests\Fakes\FakeHandler;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use RdKafka\Message;
@@ -19,7 +21,7 @@ class ConsumerTest extends LaravelKafkaTestCase
         $message->err = 0;
         $message->key = 'key';
         $message->topic_name = 'test-topic';
-        $message->payload = 'message payload';
+        $message->payload = '{"body": "message payload"}';
 
         $this->mockConsumerWithMessage($message);
 
@@ -38,10 +40,10 @@ class ConsumerTest extends LaravelKafkaTestCase
             maxCommitRetries: 1
         );
 
-        $consumer = new Consumer($config);
+        $consumer = new Consumer($config, new JsonDeserializer());
         $consumer->consume();
 
-        $this->assertEquals($message, $fakeHandler->lastMessage());
+        $this->assertInstanceOf(ConsumedMessage::class, $fakeHandler->lastMessage());
     }
 
     public function testConsumeMessageWithError()
@@ -71,7 +73,7 @@ class ConsumerTest extends LaravelKafkaTestCase
 
         $this->mockConsumerWithMessageFailingCommit($message);
 
-        $consumer = new Consumer($config);
+        $consumer = new Consumer($config, new JsonDeserializer());
         $consumer->consume();
     }
 }

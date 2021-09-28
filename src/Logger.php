@@ -32,7 +32,7 @@ class Logger
     /**
      * Log an error message.
      *
-     * @param \RdKafka\Message $message
+     * @param Message $message
      * @param \Throwable|null $e
      * @param string $prefix
      */

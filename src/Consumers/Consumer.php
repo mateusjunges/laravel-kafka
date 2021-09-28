@@ -6,8 +6,11 @@ use Junges\Kafka\Commit\CommitterFactory;
 use Junges\Kafka\Commit\Contracts\Committer;
 use Junges\Kafka\Commit\NativeSleeper;
 use Junges\Kafka\Config\Config;
+use Junges\Kafka\Contracts\KafkaConsumerMessage;
+use Junges\Kafka\Contracts\MessageDeserializer;
 use Junges\Kafka\Exceptions\KafkaConsumerException;
 use Junges\Kafka\Logger;
+use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\MessageCounter;
 use Junges\Kafka\Retryable;
 use RdKafka\Conf;
@@ -40,16 +43,19 @@ class Consumer
     private Committer $committer;
     private Retryable $retryable;
     private CommitterFactory $committerFactory;
+    private MessageDeserializer $decoder;
 
     /**
      * @param \Junges\Kafka\Config\Config $config
+     * @param MessageDeserializer $decoder
      */
-    public function __construct(private Config $config)
+    public function __construct(private Config $config, MessageDeserializer $decoder)
     {
         $this->logger = app(Logger::class);
         $this->messageCounter = new MessageCounter($config->getMaxMessages());
         $this->retryable = new Retryable(new NativeSleeper(), 6, self::TIMEOUT_ERRORS);
         $this->committerFactory = new CommitterFactory($this->messageCounter);
+        $this->decoder = $decoder;
     }
 
     /**
@@ -113,7 +119,10 @@ class Consumer
     private function executeMessage(Message $message): void
     {
         try {
-            $this->config->getConsumer()->handle($message);
+            $consumedMessage = $this->getConsumerMessage($message);
+
+            $this->config->getConsumer()->handle($this->decoder->deserialize($consumedMessage));
+
             $success = true;
         } catch (Throwable $throwable) {
             $this->logger->error($message, $throwable);
@@ -127,10 +136,10 @@ class Consumer
      * Handle exceptions while consuming messages.
      *
      * @param \Throwable $exception
-     * @param \RdKafka\Message $message
+     * @param Message|ConsumedMessage $message
      * @return bool
      */
-    private function handleException(Throwable $exception, Message $message): bool
+    private function handleException(Throwable $exception, Message|KafkaConsumerMessage $message): bool
     {
         try {
             $this->config->getConsumer()->failed(
@@ -224,5 +233,18 @@ class Consumer
 
             throw new KafkaConsumerException($message->errstr(), $message->err);
         }
+    }
+
+    private function getConsumerMessage(Message $message): KafkaConsumerMessage
+    {
+        return app(KafkaConsumerMessage::class, [
+            'topicName' => $message->topic_name,
+            'partition' => $message->partition,
+            'headers' => $message->headers,
+            'body' => $message->payload,
+            'key' => $message->key,
+            'offset' => $message->offset,
+            'timestamp' => $message->timestamp,
+        ]);
     }
 }

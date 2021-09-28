@@ -15,6 +15,37 @@ This package provides a nice way of producing and consuming kafka messages in yo
 
 Follow these docs to install this package and start using kafka with ease.
 
+- [1. Installation](#installation)
+- [2. Usage](#usage)
+- [3. Producing Kafka Messages](#producing-kafka-messages)
+  - [3.1 ProducerBuilder configuration methods](#producerbuilder-configuration-methods)
+    - [3.1.2 Using custom serializers](#using-custom-serializers)
+    - [3.1.3 Using AVRO serializer](#using-avro-serializer)
+    - [3.1.4 Configuring the Kafka message payload](#configuring-the-kafka-message-payload)
+    - [3.1.5 Configuring the kafka message headers](#configuring-message-headers)
+    - [3.1.6 Configure the message body](#configure-the-message-body)
+    - [3.1.7 Using kafka keys](#using-kafka-keys)
+  - [3.2 Sending the message to Kafka](#sending-the-message-to-kafka)
+- [4. Consuming kafka messages](#consuming-kafka-messages)
+  - [4.1 Subscribing to a topic](#subscribing-to-a-topic)
+  - [4.2 Configuring consumer groups](#configuring-consumer-groups)
+  - [4.3 Configuring message handlers](#configuring-message-handlers)
+  - [4.4 Configuring max messages to be consumed](#configuring-max-messages-to-be-consumed)
+  - [4.5 Configuring a dead letter queue](#configuring-a-dead-letter-queue)
+  - [4.6 Using SASL](#using-sasl)
+  - [4.7 Using middlewares](#using-middlewares)
+  - [4.8 Using custom deserializers](#using-custom-deserializers)
+  - [4.9 Using AVRO deserializer](#using-avro-deserializer)
+  - [4.10 Using auto-commit](#using-auto-commit)
+  - [4.11 Setting kafka consumer configuration options](#setting-kafka-configuration-options)
+  - [4.12 Building the consumer](#building-the-consumer)
+  - [4.13 Consuming the kafka message](#consuming-the-kafka-messages)
+- [5. Using custom encoders and decoders]()
+- [6. Using `Kafka::fake()`method](#using-kafkafake)
+  - [6.1 `assertPublished` method](#assertpublished-method)
+  - [6.2 `assertPublishedOn` method](#assertpublishedon-method)
+  - [6.3 `assertNothingPublished` method](#assertnothingpublished-method)
+
 # Installation
 To install this package, you must have installed PHP RdKafka extension. You can follow the steps [here](https://github.com/edenhill/librdkafka#installation)
 to install rdkafka in your system.
@@ -78,6 +109,52 @@ Kafka::publishOn('broker', 'topic')
     ->withDebugDisabled() // To disable debug mode
     ->withDebugEnabled(false) // Also to disable debug mode
 ```
+
+### Using custom serializers
+To use custom serializers, you must use the `usingSerializer` method:
+```php
+$producer = \Junges\Kafka\Facades\Kafka::publishOn('broker', 'topic')->usingSerializer(new MyCustomSerializer());
+```
+
+### Using AVRO serializer
+To use the AVRO serializer, add the AVRO serializer:
+
+```php
+use FlixTech\AvroSerializer\Objects\RecordSerializer;
+use FlixTech\SchemaRegistryApi\Registry\CachedRegistry;
+use FlixTech\SchemaRegistryApi\Registry\BlockingRegistry;
+use FlixTech\SchemaRegistryApi\Registry\PromisingRegistry;
+use FlixTech\SchemaRegistryApi\Registry\Cache\AvroObjectCacheAdapter;
+use GuzzleHttp\Client;
+
+$cachedRegistry = new CachedRegistry(
+    new BlockingRegistry(
+        new PromisingRegistry(
+            new Client(['base_uri' => 'kafka-schema-registry:9081'])
+        )
+    ),
+    new AvroObjectCacheAdapter()
+);
+
+$registry = new AvroSchemaRegistry($cachedRegistry);
+$recordSerializer = new RecordSerializer($cachedRegistry);
+
+//if no version is defined, latest version will be used
+//if no schema definition is defined, the appropriate version will be fetched form the registry
+$registry->addBodySchemaMappingForTopic(
+    'test-topic',
+    new \Junges\Kafka\Message\KafkaAvroSchema('bodySchemaName' /*, int $version, AvroSchema $definition */)
+);
+$registry->addKeySchemaMappingForTopic(
+    'test-topic',
+    new \Junges\Kafka\Message\KafkaAvroSchema('keySchemaName' /*, int $version, AvroSchema $definition */)
+);
+
+$serializer = new \Junges\Kafka\Message\Serializers\AvroSerializer($registry, $recordSerializer /*, AvroEncoderInterface::ENCODE_BODY */);
+
+$producer = \Junges\Kafka\Facades\Kafka::publishOn('broker', 'topic')->usingSerializer($serializer);
+```
+
 ### Configuring the Kafka message payload
 In kafka, you can configure your payload with a message, message headers and message key. All these configurations are available 
 within `ProducerBuilder` class.
@@ -94,32 +171,32 @@ Kafka::publishOn('broker', 'topic')
     ])
 ```
 
-### Configure the message payload
-You can configure the message with the `withMessage` or `withMessageKey` methods. 
+### Configure the message body
+You can configure the message with the `withMessage` or `withBodyKey` methods. 
 
-The `withMessage` sets the entire message, and it accepts a `Junges\Kafka\Message::class` instance as argument.
+The `withMessage` sets the entire message, and it accepts a `Junges\Kafka\Message\Message::class` instance as argument.
 
 This is how you should use it:
 
 ```php
 use Junges\Kafka\Facades\Kafka;
-use Junges\Kafka\Message;
+use Junges\Kafka\Message\Message;
 
 $message = new Message(
     headers: ['header-key' => 'header-value'],
-    message: ['key' => 'value'],
+    body: ['key' => 'value'],
     key: 'kafka key here'  
 )
 
 Kafka::publishOn('broker', 'topic')->withMessage($message);
 ```
 
-The `withMessageKey` method sets only a key in your message.
+The `withBodyKey` method sets only a key in your message.
 
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-Kafka::publishOn('broker', 'topic')->withMessageKey('key', 'value');
+Kafka::publishOn('broker', 'topic')->withBodyKey('key', 'value');
 ```
 
 ### Using Kafka Keys
@@ -273,6 +350,56 @@ $consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')
     });
 ```
 
+## Using custom deserializers
+To set the deserializer you want to use, use the `usingDeserializer` method:
+
+```php
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')->usingDeserializer(new MyCustomDeserializer());
+```
+
+>NOTE: The deserializer class must use the same algorithm as the serializer used to produce this message.
+
+## Using AVRO deserializer
+To use the AVRO deserializer on your consumer, add the Avro deserializer:
+```php
+use FlixTech\AvroSerializer\Objects\RecordSerializer;
+use FlixTech\SchemaRegistryApi\Registry\CachedRegistry;
+use FlixTech\SchemaRegistryApi\Registry\BlockingRegistry;
+use FlixTech\SchemaRegistryApi\Registry\PromisingRegistry;
+use FlixTech\SchemaRegistryApi\Registry\Cache\AvroObjectCacheAdapter;
+use GuzzleHttp\Client;
+
+
+$cachedRegistry = new CachedRegistry(
+    new BlockingRegistry(
+        new PromisingRegistry(
+            new Client(['base_uri' => 'kafka-schema-registry:9081'])
+        )
+    ),
+    new AvroObjectCacheAdapter()
+);
+
+$registry = new \Junges\Kafka\Message\Registry\AvroSchemaRegistry($cachedRegistry);
+$recordSerializer = new RecordSerializer($cachedRegistry);
+
+//if no version is defined, latest version will be used
+//if no schema definition is defined, the appropriate version will be fetched form the registry
+$registry->addBodySchemaMappingForTopic(
+    'test-topic',
+    new \Junges\Kafka\Message\KafkaAvroSchema('bodySchema' , 9 /* , AvroSchema $definition */)
+);
+$registry->addKeySchemaMappingForTopic(
+    'test-topic',
+    new \Junges\Kafka\Message\KafkaAvroSchema('keySchema' , 9 /* , AvroSchema $definition */)
+);
+
+// if you are only decoding key or value, you can pass that mode as additional third argument
+// per default both key and body will get decoded
+$deserializer = new \Junges\Kafka\Message\Deserializers\AvroDeserializer($registry, $recordSerializer /*, AvroDecoderInterface::DECODE_BODY */);
+
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')->usingDeserializer($deserializer);
+```
+
 ## Using auto commit
 The auto-commit check is called in every poll and it checks that the time elapsed is greater than the configured time. To enable auto commit, 
 use the `withAutoCommit` method:
@@ -313,13 +440,58 @@ $consumer = \Junges\Kafka\Facades\Kafka::createConsumer()->build();
 $consumer->consume();
 ```
 
-## Using `Kafka::fake()`
+# Using custom encoders/decoders
+Serialization is the process of converting messages to bytes. Deserialization is the inverse process - converting a stream of bytes into and object. In a nutshell,
+it transforms the content into readable and interpretable information.
+Basically, in order to prepare the message for transmission from the producer we use serializers. This package supports three serializers out of the box:
+- NullSerializer / NullDeserializer
+- JsonSerializer / JsonDeserializer
+- AvroSerializer / JsonDeserializer
+
+## Changing default serializers and deserializers
+The default Serializer is resolved using the `MessageSerializer` and `MessageDeserializer` contracts. Out of the box, the `Json` serializers are used.
+
+To set the default serializer, you can bind the `MessageSerializer` and `MessageDeserializer` contracts to any class which implements this interfaces.
+
+Open your `AppServiceProvider` class and add this lines to the `register` method: 
+
+```php
+$this->app->bind(\Junges\Kafka\Contracts\MessageSerializer::class, function () {
+   return new MyCustomSerializer();
+});
+
+$this->app->bind(\Junges\Kafka\Contracts\MessageDeserializer::class, function() {
+    return new MyCustomDeserializer();
+});
+```
+
+## Creating a custom serializer
+To create a custom serializer, you need to create a class that implements the `\Junges\Kafka\Contracts\MessageSerializer` contract.
+This interface force you to declare the `serialize` method.
+
+## Creating a custom deserializer
+To create a custom deserializer, you need to create a class that implements the `\Junges\Kafka\Contracts\MessageDeserializer` contract.
+This interface force you to declare the `deserialize` method.
+
+## Replacing serializers and deserializers on the fly
+Serializers and deserializers need to be set both on the Producer and the Consumer classes.
+To set the producer serializer, you must use the `usingSerializer` method, available on the `ProducerBuilder` class.
+To set the consumer deserializer, you must use the `usingDeserializer` method, available on the `ConsumerBuilder` class.
+
+```php
+$producer = \Junges\Kafka\Facades\Kafka::publishOn('broker', 'topic')->usingSerializer(new MyCustomSerializer());
+
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')->usingDeserializer(new MyCustomDeserializer());
+```
+
+# Using `Kafka::fake()`
 When testing your application, you may wish to "mock" certain aspects of the app, so they are not actually executed during a given test. 
 This package provides convenient helpers for mocking the kafka producer out of the box. These helpers primarily provide a convenience layer over Mockery
 so you don't have to manually make complicated Mockery method calls.
 
 The Kafka facade also provides methods to perform assertions over published messages, such as `assertPublished`, `assertPublishedOn` and `assertNothingPublished`.
 
+## `assertPublished` method
 ```php
 use Junges\Kafka\Facades\Kafka;
 use PHPUnit\Framework\TestCase;
@@ -332,7 +504,7 @@ class MyTest extends TestCase
          
          $producer = Kafka::publishOn('broker', 'topic')
              ->withHeaders(['key' => 'value'])
-             ->withMessageKey('foo', 'bar');
+             ->withBodyKey('foo', 'bar');
              
          $producer->send();
              
@@ -341,6 +513,7 @@ class MyTest extends TestCase
 }
 ```
 
+## `assertPublishedOn` method
 If you want to assert that a message was published in a specific kafka topic, you can use the `assertPublishedOn` method:
 
 ```php
@@ -355,7 +528,7 @@ class MyTest extends TestCase
         
         $producer = Kafka::publishOn('broker', 'some-kafka-topic')
             ->withHeaders(['key' => 'value'])
-            ->withMessageKey('key', 'value');
+            ->withBodyKey('key', 'value');
             
         $producer->send();
         
@@ -370,7 +543,7 @@ itself.
 ```php
 use PHPUnit\Framework\TestCase;
 use Junges\Kafka\Facades\Kafka;
-use Junges\Kafka\Message;
+use Junges\Kafka\Message\Message;
 
 class MyTest extends TestCase
 {
@@ -380,7 +553,7 @@ class MyTest extends TestCase
         
         $producer = Kafka::publishOn('broker', 'some-kafka-topic')
             ->withHeaders(['key' => 'value'])
-            ->withMessageKey('key', 'value');
+            ->withBodyKey('key', 'value');
             
         $producer->send();
         
@@ -390,13 +563,13 @@ class MyTest extends TestCase
     }
 } 
 ```
-
+## `assertNothingPublished` method
 You can also assert that nothing was published at all, using the `assertNothingPublished`:
 
 ```php
 use PHPUnit\Framework\TestCase;
 use Junges\Kafka\Facades\Kafka;
-use Junges\Kafka\Message;
+use Junges\Kafka\Message\Message;
 
 class MyTest extends TestCase
 {
@@ -407,7 +580,7 @@ class MyTest extends TestCase
         if (false) {
             $producer = Kafka::publishOn('broker', 'some-kafka-topic')
                 ->withHeaders(['key' => 'value'])
-                ->withMessageKey('key', 'value');
+                ->withBodyKey('key', 'value');
                 
             $producer->send();
         }

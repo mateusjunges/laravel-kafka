@@ -4,19 +4,22 @@ namespace Junges\Kafka\Support\Testing\Fakes;
 
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\CanProduceMessages;
-use Junges\Kafka\Message;
+use Junges\Kafka\Contracts\KafkaProducerMessage;
+use Junges\Kafka\Contracts\MessageSerializer;
+use Junges\Kafka\Message\Message;
 
 class ProducerBuilderFake implements CanProduceMessages
 {
     private array $options = [];
-    private Message $message;
+    private KafkaProducerMessage $message;
     private ProducerFake $producerFake;
+    private MessageSerializer $serializer;
 
     public function __construct(
         private string $broker,
         private string $topic,
     ) {
-        $this->message = new Message();
+        $this->message = new Message($topic);
 
         $conf = new Config(
             broker: '',
@@ -92,9 +95,9 @@ class ProducerBuilderFake implements CanProduceMessages
      * @param mixed $message
      * @return ProducerBuilderFake
      */
-    public function withMessageKey(string $key, mixed $message): self
+    public function withBodyKey(string $key, mixed $message): self
     {
-        $this->message->withMessageKey($key, $message);
+        $this->message->withBodyKey($key, $message);
 
         return $this;
     }
@@ -144,6 +147,13 @@ class ProducerBuilderFake implements CanProduceMessages
     public function getMessage(): Message
     {
         return $this->message;
+    }
+
+    public function usingSerializer(MessageSerializer $serializer): CanProduceMessages
+    {
+        $this->serializer = $serializer;
+
+        return $this;
     }
 
     /**

@@ -2,9 +2,8 @@
 
 namespace Junges\Kafka\Support\Testing\Fakes;
 
-use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Config\Config;
-use Junges\Kafka\Message;
+use Junges\Kafka\Message\Message;
 use RdKafka\Conf;
 
 class ProducerFake
@@ -17,11 +16,10 @@ class ProducerFake
     ) {
     }
 
-    #[Pure]
- public function setConf(array $options = []): Conf
- {
-     return new Conf();
- }
+    public function setConf(array $options = []): Conf
+    {
+        return new Conf();
+    }
 
     public function produce(Message $message): bool
     {

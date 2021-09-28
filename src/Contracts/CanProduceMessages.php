@@ -2,7 +2,7 @@
 
 namespace Junges\Kafka\Contracts;
 
-use Junges\Kafka\Message;
+use Junges\Kafka\Message\Message;
 
 interface CanProduceMessages
 {
@@ -16,9 +16,11 @@ interface CanProduceMessages
 
     public function withKafkaKey(string $key): self;
 
-    public function withMessageKey(string $key, mixed $message): self;
+    public function withBodyKey(string $key, mixed $message): self;
 
     public function withMessage(Message $message): self;
+
+    public function usingSerializer(MessageSerializer $serializer): self;
 
     public function withDebugEnabled(bool $enabled = true): self;
 

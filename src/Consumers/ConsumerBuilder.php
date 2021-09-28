@@ -6,6 +6,7 @@ use Closure;
 use InvalidArgumentException;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\Sasl;
+use Junges\Kafka\Contracts\MessageDeserializer;
 use Junges\Kafka\Facades\Kafka;
 
 class ConsumerBuilder
@@ -23,6 +24,7 @@ class ConsumerBuilder
     private string $securityProtocol;
     private bool $autoCommit;
     private array $options;
+    private MessageDeserializer $deserializer;
 
     /**
      * @param string $brokers
@@ -48,6 +50,8 @@ class ConsumerBuilder
         $this->securityProtocol = 'PLAINTEXT';
         $this->autoCommit = false;
         $this->options = [];
+
+        $this->deserializer = resolve(MessageDeserializer::class);
     }
 
     /**
@@ -115,6 +119,13 @@ class ConsumerBuilder
     public function withHandler(callable $handler): self
     {
         $this->handler = Closure::fromCallable($handler);
+
+        return $this;
+    }
+
+    public function usingDeserializer(MessageDeserializer $deserializer)
+    {
+        $this->deserializer = $deserializer;
 
         return $this;
     }
@@ -249,7 +260,7 @@ class ConsumerBuilder
             customOptions: $this->options
         );
 
-        return new Consumer($config);
+        return new Consumer($config, $this->deserializer);
     }
 
     private function validateTopic(mixed $topic)

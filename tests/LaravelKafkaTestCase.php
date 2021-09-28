@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Tests;
 
+use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Logger;
 use Junges\Kafka\Producers\Producer;
 use Junges\Kafka\Providers\LaravelKafkaServiceProvider;
@@ -105,5 +106,18 @@ class LaravelKafkaTestCase extends Orchestra
             ->withAnyArgs()
             ->andReturn()
             ->getMock();
+    }
+
+    protected function getConsumerMessage(Message $message): KafkaConsumerMessage
+    {
+        return app(KafkaConsumerMessage::class, [
+            'topicName' => $message->topic_name,
+            'partition' => $message->partition,
+            'headers' => $message->headers,
+            'body' => $message->payload,
+            'key' => $message->key,
+            'offset' => $message->offset,
+            'timestamp' => $message->timestamp,
+        ]);
     }
 }

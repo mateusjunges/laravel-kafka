@@ -3,18 +3,18 @@
 namespace Junges\Kafka\Tests\Fakes;
 
 use Junges\Kafka\Contracts\Consumer;
-use RdKafka\Message;
+use Junges\Kafka\Contracts\KafkaConsumerMessage;
 
 class FakeHandler extends Consumer
 {
-    private ?Message $lastMessage = null;
+    private ?KafkaConsumerMessage $lastMessage = null;
 
-    public function lastMessage(): ?Message
+    public function lastMessage(): ?KafkaConsumerMessage
     {
         return $this->lastMessage;
     }
 
-    public function handle(Message $message): void
+    public function handle(KafkaConsumerMessage $message): void
     {
         $this->lastMessage = $message;
     }

@@ -4,6 +4,7 @@ namespace Junges\Kafka\Tests\Consumers;
 
 use Illuminate\Support\Str;
 use Junges\Kafka\Consumers\CallableConsumer;
+use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use RdKafka\Message;
 use stdClass;
@@ -21,8 +22,8 @@ class CallableConsumerTest extends LaravelKafkaTestCase
         $message->topic_name = 'test-topic';
 
         $consumer = new CallableConsumer([$this, 'handleMessage'], [
-            function ($message, callable $next): void {
-                $decoded = json_decode($message->payload);
+            function (KafkaConsumerMessage $message, callable $next): void {
+                $decoded = json_decode($message->getBody());
                 $next($decoded);
             },
             function (stdClass $message, callable $next): void {
@@ -31,7 +32,7 @@ class CallableConsumerTest extends LaravelKafkaTestCase
             },
         ]);
 
-        $consumer->handle($message);
+        $consumer->handle($this->getConsumerMessage($message));
     }
 
     public function handleMessage(array $data): void
