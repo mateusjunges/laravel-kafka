@@ -4,16 +4,16 @@ namespace Junges\Kafka\Message\Encoders;
 
 use JsonException;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
-use Junges\Kafka\Contracts\MessageEncoder;
+use Junges\Kafka\Contracts\MessageSerializer;
 
-class JsonEncoder implements MessageEncoder
+class JsonSerializer implements MessageSerializer
 {
     /**
      * @param KafkaProducerMessage $message
      * @return KafkaProducerMessage
      * @throws JsonException
      */
-    public function encode(KafkaProducerMessage $message): KafkaProducerMessage
+    public function serialize(KafkaProducerMessage $message): KafkaProducerMessage
     {
         $body = json_encode($message->getBody(), JSON_THROW_ON_ERROR);
 

@@ -26,7 +26,7 @@ class AvroEncoderTest extends LaravelKafkaTestCase
 
         $encoder = new AvroEncoder($registry, $recordSerializer);
 
-        $result = $encoder->encode($producerMessage);
+        $result = $encoder->serialize($producerMessage);
 
         $this->assertInstanceOf(KafkaProducerMessage::class, $result);
         $this->assertSame($producerMessage, $result);
@@ -57,7 +57,7 @@ class AvroEncoderTest extends LaravelKafkaTestCase
         $recordSerializer = $this->getMockBuilder(RecordSerializer::class)->disableOriginalConstructor()->getMock();
 
         $encoder = new AvroEncoder($registry, $recordSerializer);
-        $encoder->encode($producerMessage);
+        $encoder->serialize($producerMessage);
     }
 
     public function testEncodeSuccessWithSchema()
@@ -93,7 +93,7 @@ class AvroEncoderTest extends LaravelKafkaTestCase
 
         $encoder = new AvroEncoder($registry, $recordSerializer);
 
-        $this->assertSame($producerMessage, $encoder->encode($producerMessage));
+        $this->assertSame($producerMessage, $encoder->serialize($producerMessage));
     }
 
     public function testEncodeKeyMode()
@@ -123,7 +123,7 @@ class AvroEncoderTest extends LaravelKafkaTestCase
 
         $encoder = new AvroEncoder($registry, $recordSerializer);
 
-        $this->assertSame($producerMessage, $encoder->encode($producerMessage));
+        $this->assertSame($producerMessage, $encoder->serialize($producerMessage));
     }
 
     public function testEncodeBodyMode()
@@ -153,7 +153,7 @@ class AvroEncoderTest extends LaravelKafkaTestCase
 
         $encoder = new AvroEncoder($registry, $recordSerializer);
 
-        $this->assertSame($producerMessage, $encoder->encode($producerMessage));
+        $this->assertSame($producerMessage, $encoder->serialize($producerMessage));
     }
 
     public function testGetRegistry()

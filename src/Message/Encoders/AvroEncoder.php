@@ -4,13 +4,13 @@ namespace Junges\Kafka\Message\Encoders;
 
 use AvroSchema;
 use FlixTech\AvroSerializer\Objects\RecordSerializer;
-use Junges\Kafka\Contracts\AvroMessageEncoder;
+use Junges\Kafka\Contracts\AvroMessageSerializer;
 use Junges\Kafka\Contracts\AvroSchemaRegistry;
 use Junges\Kafka\Contracts\KafkaAvroSchemaRegistry;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
 use Junges\Kafka\Exceptions\Encoders\AvroEncoderException;
 
-class AvroEncoder implements AvroMessageEncoder
+class AvroEncoder implements AvroMessageSerializer
 {
     public function __construct(
         private AvroSchemaRegistry $registry,
@@ -23,7 +23,7 @@ class AvroEncoder implements AvroMessageEncoder
         return $this->registry;
     }
 
-    public function encode(KafkaProducerMessage $message): KafkaProducerMessage
+    public function serialize(KafkaProducerMessage $message): KafkaProducerMessage
     {
         $message = $this->encodeBody($message);
 

@@ -6,14 +6,14 @@ use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\CanProduceMessages;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
-use Junges\Kafka\Contracts\MessageEncoder;
+use Junges\Kafka\Contracts\MessageSerializer;
 use Junges\Kafka\Message\Message;
 
 class ProducerBuilder implements CanProduceMessages
 {
     private array $options = [];
     private Message $message;
-    private MessageEncoder $encoder;
+    private MessageSerializer $encoder;
 
     public function __construct(
         private string $broker,
@@ -22,7 +22,7 @@ class ProducerBuilder implements CanProduceMessages
         /** @var KafkaProducerMessage $message */
         $message = app(KafkaProducerMessage::class);
         $this->message = $message->create($topic);
-        $this->encoder = app(MessageEncoder::class);
+        $this->encoder = app(MessageSerializer::class);
     }
 
     /**
@@ -115,7 +115,7 @@ class ProducerBuilder implements CanProduceMessages
         return $this;
     }
 
-    public function usingEncoder(MessageEncoder $encoder): CanProduceMessages
+    public function usingEncoder(MessageSerializer $encoder): CanProduceMessages
     {
         $this->encoder = $encoder;
 

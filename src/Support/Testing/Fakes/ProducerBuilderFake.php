@@ -4,7 +4,7 @@ namespace Junges\Kafka\Support\Testing\Fakes;
 
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\CanProduceMessages;
-use Junges\Kafka\Contracts\MessageEncoder;
+use Junges\Kafka\Contracts\MessageSerializer;
 use Junges\Kafka\Message\Message;
 
 class ProducerBuilderFake implements CanProduceMessages
@@ -12,7 +12,7 @@ class ProducerBuilderFake implements CanProduceMessages
     private array $options = [];
     private Message $message;
     private ProducerFake $producerFake;
-    private MessageEncoder $encoder;
+    private MessageSerializer $encoder;
 
     public function __construct(
         private string $broker,
@@ -148,7 +148,7 @@ class ProducerBuilderFake implements CanProduceMessages
         return $this->message;
     }
 
-    public function usingEncoder(MessageEncoder $encoder): CanProduceMessages
+    public function usingEncoder(MessageSerializer $encoder): CanProduceMessages
     {
         $this->encoder = $encoder;
 

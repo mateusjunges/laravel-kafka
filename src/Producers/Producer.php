@@ -4,7 +4,7 @@ namespace Junges\Kafka\Producers;
 
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
-use Junges\Kafka\Contracts\MessageEncoder;
+use Junges\Kafka\Contracts\MessageSerializer;
 use Junges\Kafka\Message\Message;
 use Mockery\Exception;
 use RdKafka\Conf;
@@ -17,7 +17,7 @@ class Producer
     public function __construct(
         private Config $config,
         private string $topic,
-        private MessageEncoder $encoder
+        private MessageSerializer $encoder
     ) {
         $this->producer = app(KafkaProducer::class, [
             'conf' => $this->setConf($this->config->getProducerOptions()),
@@ -52,7 +52,7 @@ class Producer
     {
         $topic = $this->producer->newTopic($this->topic);
 
-        $message = $this->encoder->encode($message);
+        $message = $this->encoder->serialize($message);
 
         $topic->producev(
             partition: $message->getPartition(),

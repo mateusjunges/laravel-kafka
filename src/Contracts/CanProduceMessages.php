@@ -20,7 +20,7 @@ interface CanProduceMessages
 
     public function withMessage(Message $message): self;
 
-    public function usingEncoder(MessageEncoder $encoder): self;
+    public function usingEncoder(MessageSerializer $encoder): self;
 
     public function withDebugEnabled(bool $enabled = true): self;
 
