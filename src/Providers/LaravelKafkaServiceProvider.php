@@ -5,10 +5,10 @@ namespace Junges\Kafka\Providers;
 use Illuminate\Support\ServiceProvider;
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
-use Junges\Kafka\Contracts\MessageDecoder;
+use Junges\Kafka\Contracts\MessageDeserializer;
 use Junges\Kafka\Contracts\MessageEncoder;
 use Junges\Kafka\Message\ConsumedMessage;
-use Junges\Kafka\Message\Decoders\JsonDecoder;
+use Junges\Kafka\Message\Decoders\JsonDeserializer;
 use Junges\Kafka\Message\Encoders\JsonEncoder;
 use Junges\Kafka\Message\Message;
 
@@ -25,8 +25,8 @@ class LaravelKafkaServiceProvider extends ServiceProvider
             return new JsonEncoder();
         });
 
-        $this->app->bind(MessageDecoder::class, function () {
-            return new JsonDecoder();
+        $this->app->bind(MessageDeserializer::class, function () {
+            return new JsonDeserializer();
         });
 
         $this->app->bind(KafkaProducerMessage::class, function () {

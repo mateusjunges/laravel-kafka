@@ -2,7 +2,7 @@
 
 namespace Junges\Kafka\Contracts;
 
-interface AvroMessageDecoder extends MessageDecoder
+interface AvroMessageDeserializer extends MessageDeserializer
 {
     public function getRegistry(): AvroSchemaRegistry;
 }

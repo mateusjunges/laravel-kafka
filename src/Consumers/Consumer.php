@@ -7,7 +7,7 @@ use Junges\Kafka\Commit\Contracts\Committer;
 use Junges\Kafka\Commit\NativeSleeper;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
-use Junges\Kafka\Contracts\MessageDecoder;
+use Junges\Kafka\Contracts\MessageDeserializer;
 use Junges\Kafka\Exceptions\KafkaConsumerException;
 use Junges\Kafka\Logger;
 use Junges\Kafka\Message\ConsumedMessage;
@@ -43,13 +43,13 @@ class Consumer
     private Committer $committer;
     private Retryable $retryable;
     private CommitterFactory $committerFactory;
-    private MessageDecoder $decoder;
+    private MessageDeserializer $decoder;
 
     /**
      * @param \Junges\Kafka\Config\Config $config
-     * @param MessageDecoder $decoder
+     * @param MessageDeserializer $decoder
      */
-    public function __construct(private Config $config, MessageDecoder $decoder)
+    public function __construct(private Config $config, MessageDeserializer $decoder)
     {
         $this->logger = app(Logger::class);
         $this->messageCounter = new MessageCounter($config->getMaxMessages());
@@ -121,7 +121,7 @@ class Consumer
         try {
             $consumedMessage = $this->getConsumerMessage($message);
 
-            $this->config->getConsumer()->handle($this->decoder->decode($consumedMessage));
+            $this->config->getConsumer()->handle($this->decoder->deserialize($consumedMessage));
 
             $success = true;
         } catch (Throwable $throwable) {

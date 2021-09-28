@@ -26,7 +26,7 @@ class AvroDecoderTest extends LaravelKafkaTestCase
 
         $decoder = new AvroDecoder($registry, $recordSerializer);
 
-        $result = $decoder->decode($message);
+        $result = $decoder->deserialize($message);
 
         $this->assertInstanceOf(KafkaConsumerMessage::class, $result);
         $this->assertNull($result->getBody());
@@ -65,7 +65,7 @@ class AvroDecoderTest extends LaravelKafkaTestCase
 
         $decoder = new AvroDecoder($registry, $recordSerializer);
 
-        $result = $decoder->decode($message);
+        $result = $decoder->deserialize($message);
 
         $this->assertInstanceOf(KafkaConsumerMessage::class, $result);
         $this->assertSame(['test'], $result->getBody());
@@ -100,7 +100,7 @@ class AvroDecoderTest extends LaravelKafkaTestCase
 
         $decoder = new AvroDecoder($registry, $recordSerializer);
 
-        $result = $decoder->decode($message);
+        $result = $decoder->deserialize($message);
 
         $this->assertInstanceOf(KafkaConsumerMessage::class, $result);
         $this->assertSame('decoded-key', $result->getKey());
@@ -134,7 +134,7 @@ class AvroDecoderTest extends LaravelKafkaTestCase
 
         $decoder = new AvroDecoder($registry, $recordSerializer);
 
-        $result = $decoder->decode($message);
+        $result = $decoder->deserialize($message);
 
         $this->assertInstanceOf(KafkaConsumerMessage::class, $result);
         $this->assertSame('test-key', $result->getKey());

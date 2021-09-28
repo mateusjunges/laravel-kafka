@@ -6,7 +6,7 @@ use Closure;
 use InvalidArgumentException;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\Sasl;
-use Junges\Kafka\Contracts\MessageDecoder;
+use Junges\Kafka\Contracts\MessageDeserializer;
 use Junges\Kafka\Facades\Kafka;
 
 class ConsumerBuilder
@@ -24,7 +24,7 @@ class ConsumerBuilder
     private string $securityProtocol;
     private bool $autoCommit;
     private array $options;
-    private MessageDecoder $decoder;
+    private MessageDeserializer $decoder;
 
     /**
      * @param string $brokers
@@ -51,7 +51,7 @@ class ConsumerBuilder
         $this->autoCommit = false;
         $this->options = [];
 
-        $this->decoder = resolve(MessageDecoder::class);
+        $this->decoder = resolve(MessageDeserializer::class);
     }
 
     /**
@@ -123,7 +123,7 @@ class ConsumerBuilder
         return $this;
     }
 
-    public function usingDecoder(MessageDecoder $decoder)
+    public function usingDecoder(MessageDeserializer $decoder)
     {
         $this->decoder = $decoder;
 

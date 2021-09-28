@@ -3,17 +3,17 @@
 namespace Junges\Kafka\Message\Decoders;
 
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
-use Junges\Kafka\Contracts\MessageDecoder;
+use Junges\Kafka\Contracts\MessageDeserializer;
 use Junges\Kafka\Message\ConsumedMessage;
 
-class JsonDecoder implements MessageDecoder
+class JsonDeserializer implements MessageDeserializer
 {
     /**
      * @param KafkaConsumerMessage $message
      * @return KafkaConsumerMessage
      * @throws \JsonException
      */
-    public function decode(KafkaConsumerMessage $message): KafkaConsumerMessage
+    public function deserialize(KafkaConsumerMessage $message): KafkaConsumerMessage
     {
         $body = json_decode($message->getBody(), true, 512, JSON_THROW_ON_ERROR);
 
