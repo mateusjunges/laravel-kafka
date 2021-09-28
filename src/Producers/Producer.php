@@ -17,7 +17,7 @@ class Producer
     public function __construct(
         private Config $config,
         private string $topic,
-        private MessageSerializer $encoder
+        private MessageSerializer $serializer
     ) {
         $this->producer = app(KafkaProducer::class, [
             'conf' => $this->setConf($this->config->getProducerOptions()),
@@ -52,7 +52,7 @@ class Producer
     {
         $topic = $this->producer->newTopic($this->topic);
 
-        $message = $this->encoder->serialize($message);
+        $message = $this->serializer->serialize($message);
 
         $topic->producev(
             partition: $message->getPartition(),

@@ -153,7 +153,7 @@ class ProducerBuilder implements CanProduceMessages
         return app(Producer::class, [
             'config' => $conf,
             'topic' => $this->topic,
-            'encoder' => $this->serializer,
+            'serializer' => $this->serializer,
         ]);
     }
 }

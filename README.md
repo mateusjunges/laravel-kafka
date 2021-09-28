@@ -348,6 +348,42 @@ Basically, in order to prepare the message for transmission from the producer we
 - JsonSerializer / JsonDeserializer
 - AvroSerializer / JsonDeserializer
 
+## Changing default serializers and deserializers
+The default Serializer is resolved using the `MessageSerializer` and `MessageDeserializer` contracts. Out of the box, the `Json` serializers are used.
+
+To set the default serializer, you can bind the `MessageSerializer` and `MessageDeserializer` contracts to any class which implements this interfaces.
+
+Open your `AppServiceProvider` class and add this lines to the `register` method: 
+
+```php
+$this->app->bind(\Junges\Kafka\Contracts\MessageSerializer::class, function () {
+   return new MyCustomSerializer();
+});
+
+$this->app->bind(\Junges\Kafka\Contracts\MessageDeserializer::class, function() {
+    return new MyCustomDeserializer();
+});
+```
+
+## Creating a custom serializer
+To create a custom serializer, you need to create a class that implements the `\Junges\Kafka\Contracts\MessageSerializer` contract.
+This interface force you to declare the `serialize` method.
+
+## Creating a custom deserializer
+To create a custom deserializer, you need to create a class that implements the `\Junges\Kafka\Contracts\MessageDeserializer` contract.
+This interface force you to declare the `deserialize` method.
+
+## Replacing serializers and deserializers on the fly
+Serializers and deserializers need to be set both on the Producer and the Consumer classes.
+To set the producer serializer, you must use the `usingSerializer` method, available on the `ProducerBuilder` class.
+To set the consumer deserializer, you must use the `usingDeserializer` method, available on the `ConsumerBuilder` class.
+
+```php
+$producer = \Junges\Kafka\Facades\Kafka::publishOn('broker')->usingSerializer(new MyCustomSerializer());
+
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')->usingDeserializer(new MyCustomDeserializer());
+```
+
 # Using `Kafka::fake()`
 When testing your application, you may wish to "mock" certain aspects of the app, so they are not actually executed during a given test. 
 This package provides convenient helpers for mocking the kafka producer out of the box. These helpers primarily provide a convenience layer over Mockery
