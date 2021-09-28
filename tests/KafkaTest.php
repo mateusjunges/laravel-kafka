@@ -4,8 +4,11 @@ namespace Junges\Kafka\Tests;
 
 use Illuminate\Support\Str;
 use Junges\Kafka\Consumers\ConsumerBuilder;
+use Junges\Kafka\Contracts\KafkaProducerMessage;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\Message;
+use Junges\Kafka\Message\Serializers\NullSerializer;
+use Junges\Kafka\Producers\ProducerBuilder;
 use Mockery as m;
 use RdKafka\Producer;
 
@@ -39,6 +42,43 @@ class KafkaTest extends LaravelKafkaTestCase
             ->send();
 
         $this->assertTrue($test);
+    }
+
+    public function testICanSwitchSerializersOnTheFly()
+    {
+        $mockedProducer = m::mock(Producer::class)
+            ->shouldReceive('newTopic')
+            ->andReturn(m::self())
+            ->shouldReceive('producev')
+            ->andReturn(m::self())
+            ->shouldReceive('poll')
+            ->andReturn(m::self())
+            ->shouldReceive('flush')
+            ->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
+            ->getMock();
+
+        $this->app->bind(Producer::class, function () use ($mockedProducer) {
+            return $mockedProducer;
+        });
+
+        $producer = Kafka::publishOn('localhost:9092', 'test-topic')
+            ->withConfigOptions([
+                'metadata.broker.list' => 'broker',
+            ])
+            ->withKafkaKey(Str::uuid()->toString())
+            ->usingSerializer(new NullSerializer())
+            ->withBodyKey('test', ['test'])
+            ->withHeaders(['custom' => 'header'])
+            ->withDebugEnabled();
+
+
+        $test = $producer->send();
+
+        $this->assertTrue($test);
+
+        $serializer = $this->getPropertyWithReflection('serializer', $producer);
+
+        $this->assertInstanceOf(NullSerializer::class, $serializer);
     }
 
     public function testItDoesNotSendMessagesToKafkaIfUsingFake()
@@ -112,6 +152,45 @@ class KafkaTest extends LaravelKafkaTestCase
             ->send();
 
         $this->assertTrue($test);
+    }
+
+    public function testICanDisableDebugUsingWithDebugDisabledMethod()
+    {
+        $mockedProducer = m::mock(Producer::class)
+            ->shouldReceive('newTopic')
+            ->andReturn(m::self())
+            ->shouldReceive('producev')
+            ->andReturn(m::self())
+            ->shouldReceive('poll')
+            ->andReturn(m::self())
+            ->shouldReceive('flush')
+            ->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
+            ->getMock();
+
+        $this->app->bind(Producer::class, function () use ($mockedProducer) {
+            return $mockedProducer;
+        });
+
+        /** @var ProducerBuilder $producer */
+        $producer = Kafka::publishOn('localhost:9092', 'test-topic')
+            ->withConfigOptions([
+                'metadata.broker.list' => 'broker',
+            ])
+            ->withKafkaKey(Str::uuid()->toString())
+            ->withBodyKey('test', ['test'])
+            ->withHeaders(['custom' => 'header'])
+            ->withDebugDisabled();
+
+        $test = $producer->send();
+
+        $this->assertTrue($test);
+
+        $message = $this->getPropertyWithReflection('message', $producer);
+
+        $this->assertInstanceOf(KafkaProducerMessage::class, $message);
+
+        $this->assertArrayNotHasKey('log_level', $message->getHeaders());
+        $this->assertArrayNotHasKey('debug', $message->getHeaders());
     }
 
     public function testCreateConsumerReturnsAConsumerBuilderInstance()
