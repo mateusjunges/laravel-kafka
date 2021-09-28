@@ -36,10 +36,11 @@ Follow these docs to install this package and start using kafka with ease.
   - [4.9 Setting kafka consumer configuration options](#setting-kafka-configuration-options)
   - [4.10 Building the consumer](#building-the-consumer)
   - [4.11 Consuming the kafka message](#consuming-the-kafka-messages)
-- [5. Using `Kafka::fake()`method](#using-kafkafake)
-  - [5.1 `assertPublished` method](#assertpublished-method)
-  - [5.2 `assertPublishedOn` method](#assertpublishedon-method)
-  - [5.3 `assertNothingPublished` method](#assertnothingpublished-method)
+- [5. Using custom encoders and decoders]()
+- [6. Using `Kafka::fake()`method](#using-kafkafake)
+  - [6.1 `assertPublished` method](#assertpublished-method)
+  - [6.2 `assertPublishedOn` method](#assertpublishedon-method)
+  - [6.3 `assertNothingPublished` method](#assertnothingpublished-method)
 
 # Installation
 To install this package, you must have installed PHP RdKafka extension. You can follow the steps [here](https://github.com/edenhill/librdkafka#installation)
@@ -140,7 +141,7 @@ $message = new Message(
 Kafka::publishOn('broker', 'topic')->withMessage($message);
 ```
 
-The `withMessageKey` method sets only a key in your message.
+The `withBodyKey` method sets only a key in your message.
 
 ```php
 use Junges\Kafka\Facades\Kafka;
@@ -338,6 +339,11 @@ $consumer = \Junges\Kafka\Facades\Kafka::createConsumer()->build();
 
 $consumer->consume();
 ```
+
+# Using custom encoders/decoders
+Serialization is the process of converting messages to bytes. Deserialization is the inverse process - converting a stream of bytes into and object. In a nutshell,
+it transforms the content into readable and interpretable information.
+Basically, in order to prepare the message for transmission from the producer we use serializers. This package supports three serializers out of the box:
 
 # Using `Kafka::fake()`
 When testing your application, you may wish to "mock" certain aspects of the app, so they are not actually executed during a given test. 
