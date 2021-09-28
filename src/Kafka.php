@@ -2,7 +2,6 @@
 
 namespace Junges\Kafka;
 
-use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Consumers\ConsumerBuilder;
 use Junges\Kafka\Contracts\CanProduceMessages;
 use Junges\Kafka\Contracts\CanPublishMessagesToKafka;
@@ -17,13 +16,13 @@ class Kafka implements CanPublishMessagesToKafka
      * @param string $topic
      * @return CanProduceMessages
      */
-     public function publishOn(string $broker, string $topic): CanProduceMessages
-     {
-         return new ProducerBuilder(
-             broker: $broker,
-             topic: $topic
-         );
-     }
+    public function publishOn(string $broker, string $topic): CanProduceMessages
+    {
+        return new ProducerBuilder(
+            broker: $broker,
+            topic: $topic
+        );
+    }
 
     /**
      * Return a ConsumerBuilder instance.
