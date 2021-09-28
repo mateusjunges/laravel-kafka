@@ -1,6 +1,6 @@
 <?php
 
-namespace Junges\Kafka\Message\Encoders;
+namespace Junges\Kafka\Message\Serializers;
 
 use JsonException;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
