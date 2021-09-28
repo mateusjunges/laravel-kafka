@@ -15,6 +15,32 @@ This package provides a nice way of producing and consuming kafka messages in yo
 
 Follow these docs to install this package and start using kafka with ease.
 
+- [1. Installation](#installation)
+- [2. Usage](#usage)
+- [3. Producing Kafka Messages](#producing-kafka-messages)
+  - [3.1 ProducerBuilder configuration methods](#producerbuilder-configuration-methods)
+    - [3.1.2 Configuring the Kafka message payload](#configuring-the-kafka-message-payload)
+    - [3.1.3 Configuring the kafka message headers](#configuring-message-headers)
+    - [3.1.4 Configure the message body](#configure-the-message-body)
+    - [3.1.5 Using kafka keys](#using-kafka-keys)
+  - [3.2 Sending the message to Kafka](#sending-the-message-to-kafka)
+- [4. Consuming kafka messages](#consuming-kafka-messages)
+  - [4.1 Subscribing to a topic](#subscribing-to-a-topic)
+  - [4.2 Configuring consumer groups](#configuring-consumer-groups)
+  - [4.3 Configuring message handlers](#configuring-message-handlers)
+  - [4.4 Configuring max messages to be consumed](#configuring-max-messages-to-be-consumed)
+  - [4.5 Configuring a dead letter queue](#configuring-a-dead-letter-queue)
+  - [4.6 Using SASL](#using-sasl)
+  - [4.7 Using middlewares](#using-middlewares)
+  - [4.8 Using auto-commit](#using-auto-commit)
+  - [4.9 Setting kafka consumer configuration options](#setting-kafka-configuration-options)
+  - [4.10 Building the consumer](#building-the-consumer)
+  - [4.11 Consuming the kafka message](#consuming-the-kafka-messages)
+- [5. Using `Kafka::fake()`method](#using-kafkafake)
+  - [5.1 `assertPublished` method](#assertpublished-method)
+  - [5.2 `assertPublishedOn` method](#assertpublishedon-method)
+  - [5.3 `assertNothingPublished` method](#assertnothingpublished-method)
+
 # Installation
 To install this package, you must have installed PHP RdKafka extension. You can follow the steps [here](https://github.com/edenhill/librdkafka#installation)
 to install rdkafka in your system.
@@ -94,10 +120,10 @@ Kafka::publishOn('broker', 'topic')
     ])
 ```
 
-### Configure the message payload
-You can configure the message with the `withMessage` or `withMessageKey` methods. 
+### Configure the message body
+You can configure the message with the `withMessage` or `withBodyKey` methods. 
 
-The `withMessage` sets the entire message, and it accepts a `Junges\Kafka\Message::class` instance as argument.
+The `withMessage` sets the entire message, and it accepts a `Junges\Kafka\Message\Message::class` instance as argument.
 
 This is how you should use it:
 
@@ -313,13 +339,14 @@ $consumer = \Junges\Kafka\Facades\Kafka::createConsumer()->build();
 $consumer->consume();
 ```
 
-## Using `Kafka::fake()`
+# Using `Kafka::fake()`
 When testing your application, you may wish to "mock" certain aspects of the app, so they are not actually executed during a given test. 
 This package provides convenient helpers for mocking the kafka producer out of the box. These helpers primarily provide a convenience layer over Mockery
 so you don't have to manually make complicated Mockery method calls.
 
 The Kafka facade also provides methods to perform assertions over published messages, such as `assertPublished`, `assertPublishedOn` and `assertNothingPublished`.
 
+## `assertPublished` method
 ```php
 use Junges\Kafka\Facades\Kafka;
 use PHPUnit\Framework\TestCase;
@@ -341,6 +368,7 @@ class MyTest extends TestCase
 }
 ```
 
+## `assertPublishedOn` method
 If you want to assert that a message was published in a specific kafka topic, you can use the `assertPublishedOn` method:
 
 ```php
@@ -390,7 +418,7 @@ class MyTest extends TestCase
     }
 } 
 ```
-
+## `assertNothingPublished` method
 You can also assert that nothing was published at all, using the `assertNothingPublished`:
 
 ```php
