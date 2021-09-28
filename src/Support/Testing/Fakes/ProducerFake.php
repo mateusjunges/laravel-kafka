@@ -17,11 +17,10 @@ class ProducerFake
     ) {
     }
 
-    #[Pure]
- public function setConf(array $options = []): Conf
- {
-     return new Conf();
- }
+     public function setConf(array $options = []): Conf
+     {
+         return new Conf();
+     }
 
     public function produce(Message $message): bool
     {

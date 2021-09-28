@@ -113,7 +113,7 @@ Kafka::publishOn('broker', 'topic')
 ### Using custom serializers
 To use custom serializers, you must use the `usingSerializer` method:
 ```php
-$producer = \Junges\Kafka\Facades\Kafka::publishOn('broker')->usingSerializer(new MyCustomSerializer());
+$producer = \Junges\Kafka\Facades\Kafka::publishOn('broker', 'topic')->usingSerializer(new MyCustomSerializer());
 ```
 
 ### Using AVRO serializer
@@ -152,7 +152,7 @@ $registry->addKeySchemaMappingForTopic(
 
 $serializer = new \Junges\Kafka\Message\Serializers\AvroSerializer($registry, $recordSerializer /*, AvroEncoderInterface::ENCODE_BODY */);
 
-$producer = \Junges\Kafka\Facades\Kafka::publishOn('broker')->usingSerializer($serializer);
+$producer = \Junges\Kafka\Facades\Kafka::publishOn('broker', 'topic')->usingSerializer($serializer);
 ```
 
 ### Configuring the Kafka message payload
@@ -479,7 +479,7 @@ To set the producer serializer, you must use the `usingSerializer` method, avail
 To set the consumer deserializer, you must use the `usingDeserializer` method, available on the `ConsumerBuilder` class.
 
 ```php
-$producer = \Junges\Kafka\Facades\Kafka::publishOn('broker')->usingSerializer(new MyCustomSerializer());
+$producer = \Junges\Kafka\Facades\Kafka::publishOn('broker', 'topic')->usingSerializer(new MyCustomSerializer());
 
 $consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')->usingDeserializer(new MyCustomDeserializer());
 ```
