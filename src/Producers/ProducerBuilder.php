@@ -12,7 +12,7 @@ use Junges\Kafka\Message\Message;
 class ProducerBuilder implements CanProduceMessages
 {
     private array $options = [];
-    private Message $message;
+    private KafkaProducerMessage $message;
     private MessageSerializer $serializer;
 
     public function __construct(
