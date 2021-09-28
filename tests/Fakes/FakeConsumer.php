@@ -2,18 +2,18 @@
 
 namespace Junges\Kafka\Tests\Fakes;
 
-use RdKafka\Message;
+use Junges\Kafka\Contracts\KafkaConsumerMessage;
 
 class FakeConsumer
 {
-    private Message $message;
+    private KafkaConsumerMessage $message;
 
-    public function __invoke(Message $message)
+    public function __invoke(KafkaConsumerMessage $message)
     {
         $this->message = $message;
     }
 
-    public function getMessage(): Message
+    public function getMessage(): KafkaConsumerMessage
     {
         return $this->message;
     }

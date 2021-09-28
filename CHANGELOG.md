@@ -2,7 +2,12 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
-## [2021-09-28 v1.1.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.0.2...v1.1.0)
+## [2021-09-28 v1.1.1](https://github.com/mateusjunges/laravel-kafka/compare/v1.1.0...v1.1.1)
+### Fixed
+- Fixed documentation about message handlers
+- Fixed tests to test a message can be consumed using message handlers
+
+## [2021-09-27 v1.1.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.0.2...v1.1.0)
 ### Added
 - Added option to use custom serializers/deserializers with Kafka([#5](https://github.com/mateusjunges/laravel-kafka/pull/5))
 - Added default AVRO, Json and Null serializers/deserializers ([#5](https://github.com/mateusjunges/laravel-kafka/pull/5))

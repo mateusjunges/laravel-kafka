@@ -283,7 +283,7 @@ You can use an invokable class or a simple callback. Use the `withHandler` metho
 $consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker');
 
 // Using callback:
-$consumer->withHandler(function(\RdKafka\Message $message) {
+$consumer->withHandler(function(\Junges\Kafka\Contracts\KafkaConsumerMessage $message) {
     // Handle your message here
 });
 ```
@@ -293,7 +293,7 @@ Or, using a invokable class:
 ```php
 class Handler
 {
-    public function __invoke(\RdKafka\Message $message){
+    public function __invoke(\Junges\Kafka\Contracts\KafkaConsumerMessage $message){
         // Handle your message here
     }
 }

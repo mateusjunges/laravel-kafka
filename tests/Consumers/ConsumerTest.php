@@ -5,8 +5,10 @@ namespace Junges\Kafka\Tests\Consumers;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Exceptions\KafkaConsumerException;
+use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
+use Junges\Kafka\Tests\Fakes\FakeConsumer;
 use Junges\Kafka\Tests\Fakes\FakeHandler;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use RdKafka\Message;
@@ -44,6 +46,29 @@ class ConsumerTest extends LaravelKafkaTestCase
         $consumer->consume();
 
         $this->assertInstanceOf(ConsumedMessage::class, $fakeHandler->lastMessage());
+    }
+
+    public function testItCanConsumeMessages()
+    {
+        $message = new Message();
+        $message->err = 0;
+        $message->key = 'key';
+        $message->topic_name = 'test';
+        $message->payload = '{"body": "message payload"}';
+
+        $this->mockConsumerWithMessage($message);
+
+        $this->mockProducer();
+
+        $consumer = Kafka::createConsumer('broker', ['test'])
+            ->withHandler($fakeConsumer = new FakeConsumer())
+            ->withAutoCommit()
+            ->withMaxMessages(1)
+            ->build();
+
+        $consumer->consume();
+
+        $this->assertInstanceOf(ConsumedMessage::class, $fakeConsumer->getMessage());
     }
 
     public function testConsumeMessageWithError()
