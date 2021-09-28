@@ -1,10 +1,10 @@
 <?php
 
-namespace Junges\Kafka\Tests\Message\Encoders;
+namespace Junges\Kafka\Tests\Message\Serializers;
 
 use JsonException;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
-use Junges\Kafka\Message\Encoders\JsonSerializer;
+use Junges\Kafka\Message\Serializers\JsonSerializer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase as TestCase;
 
 class JsonEncoderTest extends TestCase

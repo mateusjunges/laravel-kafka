@@ -1,9 +1,9 @@
 <?php
 
-namespace Junges\Kafka\Tests\Message\Decoders;
+namespace Junges\Kafka\Tests\Message\Deserializers;
 
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
-use Junges\Kafka\Message\Decoders\JsonDeserializer;
+use Junges\Kafka\Message\Deserializers\JsonDeserializer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase as TestCase;
 
 class JsonDecoderTest extends TestCase

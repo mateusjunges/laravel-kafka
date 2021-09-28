@@ -1,6 +1,6 @@
 <?php
 
-namespace Junges\Kafka\Message\Decoders;
+namespace Junges\Kafka\Message\Deserializers;
 
 use FlixTech\AvroSerializer\Objects\RecordSerializer;
 use Junges\Kafka\Contracts\AvroMessageDeserializer;

@@ -1,13 +1,13 @@
 <?php
 
-namespace Junges\Kafka\Tests\Message\Decoders;
+namespace Junges\Kafka\Tests\Message\Deserializers;
 
 use AvroSchema;
 use FlixTech\AvroSerializer\Objects\RecordSerializer;
 use Junges\Kafka\Contracts\AvroSchemaRegistry;
 use Junges\Kafka\Contracts\KafkaAvroSchemaRegistry;
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
-use Junges\Kafka\Message\Decoders\AvroDecoder;
+use Junges\Kafka\Message\Deserializers\AvroDecoder;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 
 class AvroDecoderTest extends LaravelKafkaTestCase

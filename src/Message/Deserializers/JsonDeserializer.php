@@ -1,6 +1,6 @@
 <?php
 
-namespace Junges\Kafka\Message\Decoders;
+namespace Junges\Kafka\Message\Deserializers;
 
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Contracts\MessageDeserializer;
