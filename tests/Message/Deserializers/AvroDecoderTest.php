@@ -12,7 +12,7 @@ use Junges\Kafka\Tests\LaravelKafkaTestCase;
 
 class AvroDecoderTest extends LaravelKafkaTestCase
 {
-    public function testDecodeTombstone()
+    public function testDeserializeTombstone()
     {
         $message = $this->getMockForAbstractClass(KafkaConsumerMessage::class);
         $message->expects($this->once())->method('getBody')->willReturn(null);
@@ -32,7 +32,7 @@ class AvroDecoderTest extends LaravelKafkaTestCase
         $this->assertNull($result->getBody());
     }
 
-    public function testDecodeWithSchema()
+    public function testDeserializeWithSchema()
     {
         $schemaDefinition = $this->getMockBuilder(AvroSchema::class)->disableOriginalConstructor()->getMock();
 
@@ -72,7 +72,7 @@ class AvroDecoderTest extends LaravelKafkaTestCase
         $this->assertSame('decoded-key', $result->getKey());
     }
 
-    public function testDecodeKeyMode()
+    public function testDeserializeKeyMode()
     {
         $schemaDefinition = $this->getMockBuilder(AvroSchema::class)->disableOriginalConstructor()->getMock();
 
@@ -107,7 +107,7 @@ class AvroDecoderTest extends LaravelKafkaTestCase
         $this->assertSame('body', $result->getBody());
     }
 
-    public function testDecodeBodyMode()
+    public function testDeserializeBodyMode()
     {
         $schemaDefinition = $this->getMockBuilder(AvroSchema::class)->disableOriginalConstructor()->getMock();
 

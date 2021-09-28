@@ -12,7 +12,7 @@ use Junges\Kafka\Tests\LaravelKafkaTestCase;
 
 class AvroEncoderTest extends LaravelKafkaTestCase
 {
-    public function testEncodeTombstone()
+    public function testSerializeTombstone()
     {
         $producerMessage = $this->getMockForAbstractClass(KafkaProducerMessage::class);
         $producerMessage->expects($this->exactly(2))->method('getBody')->willReturn(null);
@@ -33,7 +33,7 @@ class AvroEncoderTest extends LaravelKafkaTestCase
         $this->assertNull($result->getBody());
     }
 
-    public function testEncodeWithoutSchemaDefinition()
+    public function testSerializeWithoutSchemaDefinition()
     {
         $avroSchema = $this->getMockForAbstractClass(KafkaAvroSchemaRegistry::class);
         $avroSchema->expects($this->once())->method('getDefinition')->willReturn(null);
@@ -60,7 +60,7 @@ class AvroEncoderTest extends LaravelKafkaTestCase
         $encoder->serialize($producerMessage);
     }
 
-    public function testEncodeSuccessWithSchema()
+    public function testSerializeSuccessWithSchema()
     {
         $schemaDefinition = $this->getMockBuilder(\AvroSchema::class)->disableOriginalConstructor()->getMock();
 
@@ -96,7 +96,7 @@ class AvroEncoderTest extends LaravelKafkaTestCase
         $this->assertSame($producerMessage, $encoder->serialize($producerMessage));
     }
 
-    public function testEncodeKeyMode()
+    public function testSerializeKeyMode()
     {
         $schemaDefinition = $this->getMockBuilder(\AvroSchema::class)->disableOriginalConstructor()->getMock();
 
@@ -126,7 +126,7 @@ class AvroEncoderTest extends LaravelKafkaTestCase
         $this->assertSame($producerMessage, $encoder->serialize($producerMessage));
     }
 
-    public function testEncodeBodyMode()
+    public function testSerializeBodyMode()
     {
         $schemaDefinition = $this->getMockBuilder(\AvroSchema::class)->disableOriginalConstructor()->getMock();
 

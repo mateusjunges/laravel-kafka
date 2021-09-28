@@ -9,7 +9,7 @@ use Junges\Kafka\Tests\LaravelKafkaTestCase as TestCase;
 
 class JsonEncoderTest extends TestCase
 {
-    public function testEncode()
+    public function testSerialize()
     {
         $message = $this->getMockForAbstractClass(KafkaProducerMessage::class);
         $message->expects($this->once())->method('getBody')->willReturn(['name' => 'foo']);
@@ -20,7 +20,7 @@ class JsonEncoderTest extends TestCase
         $this->assertSame($message, $encoder->serialize($message));
     }
 
-    public function testEncodeThrowsException(): void
+    public function testSerializeThrowsException(): void
     {
         $message = $this->getMockForAbstractClass(KafkaProducerMessage::class);
         $message->expects($this->once())->method('getBody')->willReturn(chr(255));

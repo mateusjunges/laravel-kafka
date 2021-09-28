@@ -8,7 +8,7 @@ use Junges\Kafka\Tests\LaravelKafkaTestCase as TestCase;
 
 class JsonDecoderTest extends TestCase
 {
-    public function testDecode(): void
+    public function testDeserialize(): void
     {
         $message = $this->getMockForAbstractClass(KafkaConsumerMessage::class);
         $message->expects($this->once())->method('getBody')->willReturn('{"name":"foo"}');
@@ -22,7 +22,7 @@ class JsonDecoderTest extends TestCase
     /**
      * @return void
      */
-    public function testDecodeNonJson(): void
+    public function testDeserializeNonJson(): void
     {
         $message = $this->getMockForAbstractClass(KafkaConsumerMessage::class);
         $message->expects($this->once())->method('getBody')->willReturn('test');
