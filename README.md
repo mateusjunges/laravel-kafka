@@ -20,10 +20,11 @@ Follow these docs to install this package and start using kafka with ease.
 - [3. Producing Kafka Messages](#producing-kafka-messages)
   - [3.1 ProducerBuilder configuration methods](#producerbuilder-configuration-methods)
     - [3.1.2 Using custom serializers](#using-custom-serializers)
-    - [3.1.3 Configuring the Kafka message payload](#configuring-the-kafka-message-payload)
-    - [3.1.4 Configuring the kafka message headers](#configuring-message-headers)
-    - [3.1.5 Configure the message body](#configure-the-message-body)
-    - [3.1.6 Using kafka keys](#using-kafka-keys)
+    - [3.1.3 Using AVRO serializer](#using-avro-serializer)
+    - [3.1.4 Configuring the Kafka message payload](#configuring-the-kafka-message-payload)
+    - [3.1.5 Configuring the kafka message headers](#configuring-message-headers)
+    - [3.1.6 Configure the message body](#configure-the-message-body)
+    - [3.1.7 Using kafka keys](#using-kafka-keys)
   - [3.2 Sending the message to Kafka](#sending-the-message-to-kafka)
 - [4. Consuming kafka messages](#consuming-kafka-messages)
   - [4.1 Subscribing to a topic](#subscribing-to-a-topic)
@@ -34,10 +35,11 @@ Follow these docs to install this package and start using kafka with ease.
   - [4.6 Using SASL](#using-sasl)
   - [4.7 Using middlewares](#using-middlewares)
   - [4.8 Using custom deserializers](#using-custom-deserializers)
-  - [4.9 Using auto-commit](#using-auto-commit)
-  - [4.10 Setting kafka consumer configuration options](#setting-kafka-configuration-options)
-  - [4.11 Building the consumer](#building-the-consumer)
-  - [4.12 Consuming the kafka message](#consuming-the-kafka-messages)
+  - [4.9 Using AVRO deserializer](#using-avro-deserializer)
+  - [4.10 Using auto-commit](#using-auto-commit)
+  - [4.11 Setting kafka consumer configuration options](#setting-kafka-configuration-options)
+  - [4.12 Building the consumer](#building-the-consumer)
+  - [4.13 Consuming the kafka message](#consuming-the-kafka-messages)
 - [5. Using custom encoders and decoders]()
 - [6. Using `Kafka::fake()`method](#using-kafkafake)
   - [6.1 `assertPublished` method](#assertpublished-method)
@@ -112,6 +114,45 @@ Kafka::publishOn('broker', 'topic')
 To use custom serializers, you must use the `usingSerializer` method:
 ```php
 $producer = \Junges\Kafka\Facades\Kafka::publishOn('broker')->usingSerializer(new MyCustomSerializer());
+```
+
+### Using AVRO serializer
+To use the AVRO serializer, add the AVRO serializer:
+
+```php
+use FlixTech\AvroSerializer\Objects\RecordSerializer;
+use FlixTech\SchemaRegistryApi\Registry\CachedRegistry;
+use FlixTech\SchemaRegistryApi\Registry\BlockingRegistry;
+use FlixTech\SchemaRegistryApi\Registry\PromisingRegistry;
+use FlixTech\SchemaRegistryApi\Registry\Cache\AvroObjectCacheAdapter;
+use GuzzleHttp\Client;
+
+$cachedRegistry = new CachedRegistry(
+    new BlockingRegistry(
+        new PromisingRegistry(
+            new Client(['base_uri' => 'kafka-schema-registry:9081'])
+        )
+    ),
+    new AvroObjectCacheAdapter()
+);
+
+$registry = new AvroSchemaRegistry($cachedRegistry);
+$recordSerializer = new RecordSerializer($cachedRegistry);
+
+//if no version is defined, latest version will be used
+//if no schema definition is defined, the appropriate version will be fetched form the registry
+$registry->addBodySchemaMappingForTopic(
+    'test-topic',
+    new \Junges\Kafka\Message\KafkaAvroSchema('bodySchemaName' /*, int $version, AvroSchema $definition */)
+);
+$registry->addKeySchemaMappingForTopic(
+    'test-topic',
+    new \Junges\Kafka\Message\KafkaAvroSchema('keySchemaName' /*, int $version, AvroSchema $definition */)
+);
+
+$serializer = new \Junges\Kafka\Message\Serializers\AvroSerializer($registry, $recordSerializer /*, AvroEncoderInterface::ENCODE_BODY */);
+
+$producer = \Junges\Kafka\Facades\Kafka::publishOn('broker')->usingSerializer($serializer);
 ```
 
 ### Configuring the Kafka message payload
@@ -317,6 +358,47 @@ $consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')->usingDeserial
 ```
 
 >NOTE: The deserializer class must use the same algorithm as the serializer used to produce this message.
+
+## Using AVRO deserializer
+To use the AVRO deserializer on your consumer, add the Avro deserializer:
+```php
+use FlixTech\AvroSerializer\Objects\RecordSerializer;
+use FlixTech\SchemaRegistryApi\Registry\CachedRegistry;
+use FlixTech\SchemaRegistryApi\Registry\BlockingRegistry;
+use FlixTech\SchemaRegistryApi\Registry\PromisingRegistry;
+use FlixTech\SchemaRegistryApi\Registry\Cache\AvroObjectCacheAdapter;
+use GuzzleHttp\Client;
+
+
+$cachedRegistry = new CachedRegistry(
+    new BlockingRegistry(
+        new PromisingRegistry(
+            new Client(['base_uri' => 'kafka-schema-registry:9081'])
+        )
+    ),
+    new AvroObjectCacheAdapter()
+);
+
+$registry = new \Junges\Kafka\Message\Registry\AvroSchemaRegistry($cachedRegistry);
+$recordSerializer = new RecordSerializer($cachedRegistry);
+
+//if no version is defined, latest version will be used
+//if no schema definition is defined, the appropriate version will be fetched form the registry
+$registry->addBodySchemaMappingForTopic(
+    'test-topic',
+    new \Junges\Kafka\Message\KafkaAvroSchema('bodySchema' , 9 /* , AvroSchema $definition */)
+);
+$registry->addKeySchemaMappingForTopic(
+    'test-topic',
+    new \Junges\Kafka\Message\KafkaAvroSchema('keySchema' , 9 /* , AvroSchema $definition */)
+);
+
+// if you are only decoding key or value, you can pass that mode as additional third argument
+// per default both key and body will get decoded
+$deserializer = new \Junges\Kafka\Message\Deserializers\AvroDeserializer($registry, $recordSerializer /*, AvroDecoderInterface::DECODE_BODY */);
+
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')->usingDeserializer($deserializer);
+```
 
 ## Using auto commit
 The auto-commit check is called in every poll and it checks that the time elapsed is greater than the configured time. To enable auto commit, 
