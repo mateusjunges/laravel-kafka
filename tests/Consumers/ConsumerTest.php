@@ -6,7 +6,7 @@ use Junges\Kafka\Config\Config;
 use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Exceptions\KafkaConsumerException;
 use Junges\Kafka\Message\ConsumedMessage;
-use Junges\Kafka\Message\Decoders\JsonDeserializer;
+use Junges\Kafka\Message\Deserializers\JsonDeserializer;
 use Junges\Kafka\Tests\Fakes\FakeHandler;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use RdKafka\Message;
