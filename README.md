@@ -19,10 +19,11 @@ Follow these docs to install this package and start using kafka with ease.
 - [2. Usage](#usage)
 - [3. Producing Kafka Messages](#producing-kafka-messages)
   - [3.1 ProducerBuilder configuration methods](#producerbuilder-configuration-methods)
-    - [3.1.2 Configuring the Kafka message payload](#configuring-the-kafka-message-payload)
-    - [3.1.3 Configuring the kafka message headers](#configuring-message-headers)
-    - [3.1.4 Configure the message body](#configure-the-message-body)
-    - [3.1.5 Using kafka keys](#using-kafka-keys)
+    - [3.1.2 Using custom serializers](#using-custom-serializers)
+    - [3.1.3 Configuring the Kafka message payload](#configuring-the-kafka-message-payload)
+    - [3.1.4 Configuring the kafka message headers](#configuring-message-headers)
+    - [3.1.5 Configure the message body](#configure-the-message-body)
+    - [3.1.6 Using kafka keys](#using-kafka-keys)
   - [3.2 Sending the message to Kafka](#sending-the-message-to-kafka)
 - [4. Consuming kafka messages](#consuming-kafka-messages)
   - [4.1 Subscribing to a topic](#subscribing-to-a-topic)
@@ -32,10 +33,11 @@ Follow these docs to install this package and start using kafka with ease.
   - [4.5 Configuring a dead letter queue](#configuring-a-dead-letter-queue)
   - [4.6 Using SASL](#using-sasl)
   - [4.7 Using middlewares](#using-middlewares)
-  - [4.8 Using auto-commit](#using-auto-commit)
-  - [4.9 Setting kafka consumer configuration options](#setting-kafka-configuration-options)
-  - [4.10 Building the consumer](#building-the-consumer)
-  - [4.11 Consuming the kafka message](#consuming-the-kafka-messages)
+  - [4.8 Using custom deserializers](#using-custom-deserializers)
+  - [4.9 Using auto-commit](#using-auto-commit)
+  - [4.10 Setting kafka consumer configuration options](#setting-kafka-configuration-options)
+  - [4.11 Building the consumer](#building-the-consumer)
+  - [4.12 Consuming the kafka message](#consuming-the-kafka-messages)
 - [5. Using custom encoders and decoders]()
 - [6. Using `Kafka::fake()`method](#using-kafkafake)
   - [6.1 `assertPublished` method](#assertpublished-method)
@@ -105,6 +107,13 @@ Kafka::publishOn('broker', 'topic')
     ->withDebugDisabled() // To disable debug mode
     ->withDebugEnabled(false) // Also to disable debug mode
 ```
+
+### Using custom serializers
+To use custom serializers, you must use the `usingSerializer` method:
+```php
+$producer = \Junges\Kafka\Facades\Kafka::publishOn('broker')->usingSerializer(new MyCustomSerializer());
+```
+
 ### Configuring the Kafka message payload
 In kafka, you can configure your payload with a message, message headers and message key. All these configurations are available 
 within `ProducerBuilder` class.
@@ -299,6 +308,15 @@ $consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')
         return $next($message);
     });
 ```
+
+## Using custom deserializers
+To set the deserializer you want to use, use the `usingDeserializer` method:
+
+```php
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')->usingDeserializer(new MyCustomDeserializer());
+```
+
+>NOTE: The deserializer class must use the same algorithm as the serializer used to produce this message.
 
 ## Using auto commit
 The auto-commit check is called in every poll and it checks that the time elapsed is greater than the configured time. To enable auto commit, 
