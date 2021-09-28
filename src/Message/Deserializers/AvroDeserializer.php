@@ -8,7 +8,7 @@ use Junges\Kafka\Contracts\AvroSchemaRegistry;
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Message\ConsumedMessage;
 
-class AvroDecoder implements AvroMessageDeserializer
+class AvroDeserializer implements AvroMessageDeserializer
 {
     public function __construct(
         private AvroSchemaRegistry $registry,

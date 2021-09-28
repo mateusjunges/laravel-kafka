@@ -10,7 +10,7 @@ use Junges\Kafka\Contracts\KafkaAvroSchemaRegistry;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
 use Junges\Kafka\Exceptions\Encoders\AvroEncoderException;
 
-class AvroEncoder implements AvroMessageSerializer
+class AvroSerializer implements AvroMessageSerializer
 {
     public function __construct(
         private AvroSchemaRegistry $registry,
