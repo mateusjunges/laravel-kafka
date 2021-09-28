@@ -24,7 +24,7 @@ class ConsumerBuilder
     private string $securityProtocol;
     private bool $autoCommit;
     private array $options;
-    private MessageDeserializer $decoder;
+    private MessageDeserializer $deserializer;
 
     /**
      * @param string $brokers
@@ -51,7 +51,7 @@ class ConsumerBuilder
         $this->autoCommit = false;
         $this->options = [];
 
-        $this->decoder = resolve(MessageDeserializer::class);
+        $this->deserializer = resolve(MessageDeserializer::class);
     }
 
     /**
@@ -123,9 +123,9 @@ class ConsumerBuilder
         return $this;
     }
 
-    public function usingDecoder(MessageDeserializer $decoder)
+    public function usingDeserializer(MessageDeserializer $deserializer)
     {
-        $this->decoder = $decoder;
+        $this->deserializer = $deserializer;
 
         return $this;
     }
@@ -260,7 +260,7 @@ class ConsumerBuilder
             customOptions: $this->options
         );
 
-        return new Consumer($config, $this->decoder);
+        return new Consumer($config, $this->deserializer);
     }
 
     private function validateTopic(mixed $topic)

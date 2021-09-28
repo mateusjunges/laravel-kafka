@@ -13,7 +13,7 @@ class ProducerBuilder implements CanProduceMessages
 {
     private array $options = [];
     private Message $message;
-    private MessageSerializer $encoder;
+    private MessageSerializer $serializer;
 
     public function __construct(
         private string $broker,
@@ -22,7 +22,7 @@ class ProducerBuilder implements CanProduceMessages
         /** @var KafkaProducerMessage $message */
         $message = app(KafkaProducerMessage::class);
         $this->message = $message->create($topic);
-        $this->encoder = app(MessageSerializer::class);
+        $this->serializer = app(MessageSerializer::class);
     }
 
     /**
@@ -115,9 +115,9 @@ class ProducerBuilder implements CanProduceMessages
         return $this;
     }
 
-    public function usingEncoder(MessageSerializer $encoder): CanProduceMessages
+    public function usingSerializer(MessageSerializer $serializer): CanProduceMessages
     {
-        $this->encoder = $encoder;
+        $this->serializer = $serializer;
 
         return $this;
     }
@@ -153,7 +153,7 @@ class ProducerBuilder implements CanProduceMessages
         return app(Producer::class, [
             'config' => $conf,
             'topic' => $this->topic,
-            'encoder' => $this->encoder,
+            'encoder' => $this->serializer,
         ]);
     }
 }

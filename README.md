@@ -344,6 +344,9 @@ $consumer->consume();
 Serialization is the process of converting messages to bytes. Deserialization is the inverse process - converting a stream of bytes into and object. In a nutshell,
 it transforms the content into readable and interpretable information.
 Basically, in order to prepare the message for transmission from the producer we use serializers. This package supports three serializers out of the box:
+- NullSerializer / NullDeserializer
+- JsonSerializer / JsonDeserializer
+- AvroSerializer / JsonDeserializer
 
 # Using `Kafka::fake()`
 When testing your application, you may wish to "mock" certain aspects of the app, so they are not actually executed during a given test. 

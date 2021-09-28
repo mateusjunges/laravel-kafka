@@ -148,7 +148,7 @@ class ProducerBuilderFake implements CanProduceMessages
         return $this->message;
     }
 
-    public function usingEncoder(MessageSerializer $encoder): CanProduceMessages
+    public function usingSerializer(MessageSerializer $encoder): CanProduceMessages
     {
         $this->encoder = $encoder;
 
