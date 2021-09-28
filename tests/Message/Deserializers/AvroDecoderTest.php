@@ -7,7 +7,7 @@ use FlixTech\AvroSerializer\Objects\RecordSerializer;
 use Junges\Kafka\Contracts\AvroSchemaRegistry;
 use Junges\Kafka\Contracts\KafkaAvroSchemaRegistry;
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
-use Junges\Kafka\Message\Deserializers\AvroDecoder;
+use Junges\Kafka\Message\Deserializers\AvroDeserializer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 
 class AvroDecoderTest extends LaravelKafkaTestCase
@@ -24,7 +24,7 @@ class AvroDecoderTest extends LaravelKafkaTestCase
         $recordSerializer = $this->getMockBuilder(RecordSerializer::class)->disableOriginalConstructor()->getMock();
         $recordSerializer->expects($this->never())->method('decodeMessage');
 
-        $decoder = new AvroDecoder($registry, $recordSerializer);
+        $decoder = new AvroDeserializer($registry, $recordSerializer);
 
         $result = $decoder->deserialize($message);
 
@@ -63,7 +63,7 @@ class AvroDecoderTest extends LaravelKafkaTestCase
             )
             ->willReturnOnConsecutiveCalls(['test'], 'decoded-key');
 
-        $decoder = new AvroDecoder($registry, $recordSerializer);
+        $decoder = new AvroDeserializer($registry, $recordSerializer);
 
         $result = $decoder->deserialize($message);
 
@@ -98,7 +98,7 @@ class AvroDecoderTest extends LaravelKafkaTestCase
         $recordSerializer = $this->getMockBuilder(RecordSerializer::class)->disableOriginalConstructor()->getMock();
         $recordSerializer->expects($this->once())->method('decodeMessage')->with($message->getKey(), $schemaDefinition)->willReturn('decoded-key');
 
-        $decoder = new AvroDecoder($registry, $recordSerializer);
+        $decoder = new AvroDeserializer($registry, $recordSerializer);
 
         $result = $decoder->deserialize($message);
 
@@ -132,7 +132,7 @@ class AvroDecoderTest extends LaravelKafkaTestCase
         $recordSerializer = $this->getMockBuilder(RecordSerializer::class)->disableOriginalConstructor()->getMock();
         $recordSerializer->expects($this->once())->method('decodeMessage')->with($message->getBody(), $schemaDefinition)->willReturn(['test']);
 
-        $decoder = new AvroDecoder($registry, $recordSerializer);
+        $decoder = new AvroDeserializer($registry, $recordSerializer);
 
         $result = $decoder->deserialize($message);
 
@@ -146,7 +146,7 @@ class AvroDecoderTest extends LaravelKafkaTestCase
         $registry = $this->getMockForAbstractClass(AvroSchemaRegistry::class);
         $recordSerializer = $this->getMockBuilder(RecordSerializer::class)->disableOriginalConstructor()->getMock();
 
-        $decoder = new AvroDecoder($registry, $recordSerializer);
+        $decoder = new AvroDeserializer($registry, $recordSerializer);
 
         $this->assertSame($registry, $decoder->getRegistry());
     }
