@@ -4,7 +4,7 @@ All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
 ## [2021-09-28 v1.1.1](https://github.com/mateusjunges/laravel-kafka/compare/v1.1.0...v1.1.1)
 ### Fixed
-- Fixed documentation about message handlers
+- Fixed documentation about message handlers ([#c375e10](https://github.com/mateusjunges/laravel-kafka/commit/c375e100b416f63837bcc9be5762c1762772050a))
 - Fixed tests to test a message can be consumed using message handlers
 
 ## [2021-09-27 v1.1.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.0.2...v1.1.0)
