@@ -8,8 +8,8 @@ use Junges\Kafka\Contracts\KafkaProducerMessage;
 use Junges\Kafka\Contracts\MessageDeserializer;
 use Junges\Kafka\Contracts\MessageSerializer;
 use Junges\Kafka\Message\ConsumedMessage;
-use Junges\Kafka\Message\Decoders\JsonDeserializer;
-use Junges\Kafka\Message\Encoders\JsonSerializer;
+use Junges\Kafka\Message\Deserializers\JsonDeserializer;
+use Junges\Kafka\Message\Serializers\JsonSerializer;
 use Junges\Kafka\Message\Message;
 
 class LaravelKafkaServiceProvider extends ServiceProvider
