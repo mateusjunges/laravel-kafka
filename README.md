@@ -595,7 +595,7 @@ class MyTest extends TestCase
 Run `composer test` to test this package.
 
 # Contributing
-Thank you for considering contributing for the Laravel ACL package! The contribution guide can be found [here][contributing].
+Thank you for considering contributing for the Laravel Kafka package! The contribution guide can be found [here][contributing].
 
 # Credits
 - [Mateus Junges](https://twitter.com/mateusjungess)
