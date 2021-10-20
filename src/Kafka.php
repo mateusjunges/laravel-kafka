@@ -32,7 +32,7 @@ class Kafka implements CanPublishMessagesToKafka
      * @param string|null $groupId
      * @return \Junges\Kafka\Consumers\ConsumerBuilder
      */
-    public function createConsumer(string $brokers, array $topics, string $groupId = null): ConsumerBuilder
+    public function createConsumer(string $brokers, array $topics = [], string $groupId = null): ConsumerBuilder
     {
         return ConsumerBuilder::create(
             brokers: $brokers,
