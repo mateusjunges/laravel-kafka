@@ -32,6 +32,17 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertEquals(['foo'], $topics);
     }
 
+    public function testItDoesNotSubscribeToATopicTwice()
+    {
+        $consumer = ConsumerBuilder::create('broker');
+
+        $consumer->subscribe('foo', 'foo');
+
+        $topics = $this->getPropertyWithReflection('topics', $consumer);
+
+        $this->assertEquals(['foo'], $topics);
+    }
+
     public function testICanChangeDeserializersOnTheFly()
     {
         $consumer = ConsumerBuilder::create('broker');

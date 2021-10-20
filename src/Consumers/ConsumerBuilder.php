@@ -31,19 +31,22 @@ class ConsumerBuilder
      * @param array $topics
      * @param string|null $groupId
      */
-    private function __construct(string $brokers, array $topics, string $groupId = null)
+    private function __construct(string $brokers, array $topics = [], string $groupId = null)
     {
-        foreach ($topics as $topic) {
-            $this->validateTopic($topic);
+        if (count($topics) > 0) {
+            foreach ($topics as $topic) {
+                $this->validateTopic($topic);
+            }
         }
 
         $this->brokers = $brokers;
         $this->groupId = $groupId;
-        $this->topics = $topics;
+        $this->topics = array_unique($topics);
 
         $this->commit = 1;
         $this->handler = function () {
         };
+
         $this->maxMessages = -1;
         $this->maxCommitRetries = 6;
         $this->middlewares = [];
@@ -84,7 +87,9 @@ class ConsumerBuilder
         foreach ($topics as $topic) {
             $this->validateTopic($topic);
 
-            $this->topics[] = $topic;
+            if (! collect($this->topics)->contains($topic)) {
+                $this->topics[] = $topic;
+            }
         }
 
         return $this;
