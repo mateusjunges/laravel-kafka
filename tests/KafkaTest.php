@@ -195,7 +195,7 @@ class KafkaTest extends LaravelKafkaTestCase
 
     public function testCreateConsumerReturnsAConsumerBuilderInstance()
     {
-        $consumer = Kafka::createConsumer('broker', ['topic']);
+        $consumer = Kafka::createConsumer('broker');
 
         $this->assertInstanceOf(ConsumerBuilder::class, $consumer);
     }
