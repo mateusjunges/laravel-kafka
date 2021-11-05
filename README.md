@@ -301,6 +301,15 @@ class Handler
 $consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')->withHandler(Handler::class)
 ```
 
+The `KafkaConsumerMessage` contract gives you some handy methods to get the message properties: 
+
+- `getKey()`: Returns the Kafka Message Key
+- `getTopicName()`: Returns the topic where the message was published
+- `getPartition()`: Returns the kafka partition where the message was published 
+- `getHeaders()`: Returns the kafka message headers
+- `getBody()`: Returns the body of the message
+- `getOffset()`: Returns the offset where the message was published
+
 ## Configuring max messages to be consumed
 If you want to consume a limited amount of messages, you can use the `withMaxMessages` method to set the max number of messages to be consumed by a 
 kafka consumer:
