@@ -83,7 +83,7 @@ class Config
             'metadata.broker.list' => $this->broker,
         ];
 
-        return array_merge($config, $this->getSaslOptions());
+        return array_merge($config, $this->customOptions, $this->getSaslOptions());
     }
 
     private function getSaslOptions(): array

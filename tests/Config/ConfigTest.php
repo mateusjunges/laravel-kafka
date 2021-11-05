@@ -102,4 +102,42 @@ class ConfigTest extends LaravelKafkaTestCase
             $config->getProducerOptions()
         );
     }
+
+    public function testItAcceptsCustomOptionsForProducersConfig()
+    {
+        $customOptions = [
+            'bootstrap.servers' => '[REMOTE_ADDRESS]',
+            'metadata.broker.list' => '[REMOTE_ADDRESS]',
+            'security.protocol' => 'SASL_SSL',
+            'sasl.mechanisms' => 'PLAIN',
+            'sasl.username' => '[API_KEY]',
+            'sasl.password' => '[API_KEY]',
+        ];
+
+        $config = new Config(
+            broker: 'broker',
+            topics: ['topic'],
+            securityProtocol: 'SASL_PLAINTEXT',
+            commit: 1,
+            groupId: 'group',
+            consumer: $this->createMock(Consumer::class),
+            dlq: null,
+            customOptions: $customOptions
+        );
+
+        $expectedOptions = [
+            'compression.codec' => 'snappy',
+            'bootstrap.servers' => '[REMOTE_ADDRESS]',
+            'metadata.broker.list' => '[REMOTE_ADDRESS]',
+            'security.protocol' => 'SASL_SSL',
+            'sasl.mechanisms' => 'PLAIN',
+            'sasl.username' => '[API_KEY]',
+            'sasl.password' => '[API_KEY]',
+        ];
+
+        $this->assertEquals(
+            $expectedOptions,
+            $config->getProducerOptions()
+        );
+    }
 }

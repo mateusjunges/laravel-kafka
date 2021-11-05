@@ -193,6 +193,23 @@ class KafkaTest extends LaravelKafkaTestCase
         $this->assertArrayNotHasKey('debug', $message->getHeaders());
     }
 
+    public function testICanUseCustomOptionsForProducerConfig()
+    {
+        $producer = Kafka::publishOn('localhost:9092', 'test-topic')
+            ->withConfigOptions($expectedOptions = [
+                'bootstrap.servers' => '[REMOTE_ADDRESS]',
+                'metadata.broker.list' => '[REMOTE_ADDRESS]',
+                'security.protocol' => 'SASL_SSL',
+                'sasl.mechanisms' => 'PLAIN',
+                'sasl.username' => '[API_KEY]',
+                'sasl.password' => '[API_KEY]',
+            ]);
+
+        $options = $this->getPropertyWithReflection('options', $producer);
+
+        $this->assertEquals($expectedOptions, $options);
+    }
+
     public function testCreateConsumerReturnsAConsumerBuilderInstance()
     {
         $consumer = Kafka::createConsumer('broker');
