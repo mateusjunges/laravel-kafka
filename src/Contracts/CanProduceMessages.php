@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Contracts;
 
+use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Message\Message;
 
 interface CanProduceMessages
@@ -19,6 +20,8 @@ interface CanProduceMessages
     public function withBodyKey(string $key, mixed $message): self;
 
     public function withMessage(Message $message): self;
+
+    public function withSasl(Sasl $saslConfig): self;
 
     public function usingSerializer(MessageSerializer $serializer): self;
 

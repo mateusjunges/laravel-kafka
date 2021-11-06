@@ -4,6 +4,8 @@ namespace Junges\Kafka\Producers;
 
 use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Config\Config;
+use Junges\Kafka\Config\Sasl;
+use Junges\Kafka\Consumers\ConsumerBuilder;
 use Junges\Kafka\Contracts\CanProduceMessages;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
 use Junges\Kafka\Contracts\MessageSerializer;
@@ -14,6 +16,7 @@ class ProducerBuilder implements CanProduceMessages
     private array $options = [];
     private KafkaProducerMessage $message;
     private MessageSerializer $serializer;
+    private ?Sasl $saslConfig = null;
 
     public function __construct(
         private string $broker,
@@ -115,6 +118,17 @@ class ProducerBuilder implements CanProduceMessages
         return $this;
     }
 
+    /**
+     * @param Sasl $saslConfig
+     * @return $this
+     */
+    public function withSasl(Sasl $saslConfig): self
+    {
+        $this->saslConfig = $saslConfig;
+
+        return $this;
+    }
+
     public function usingSerializer(MessageSerializer $serializer): CanProduceMessages
     {
         $this->serializer = $serializer;
@@ -147,7 +161,8 @@ class ProducerBuilder implements CanProduceMessages
         $conf = new Config(
             broker: $this->broker,
             topics: [$this->getTopic()],
-            customOptions: $this->options
+            sasl: $this->saslConfig,
+            customOptions: $this->options,
         );
 
         return app(Producer::class, [
