@@ -96,7 +96,7 @@ class Config
                 'sasl.username' => $this->sasl->getUsername(),
                 'sasl.password' => $this->sasl->getPassword(),
                 'sasl.mechanisms' => $this->sasl->getMechanisms(),
-                'security.protocol' => $this->sasl->getSecurityProtocol()
+                'security.protocol' => $this->sasl->getSecurityProtocol(),
             ];
         }
 
