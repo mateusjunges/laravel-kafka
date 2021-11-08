@@ -145,9 +145,6 @@ class ProducerBuilder implements CanProduceMessages
         return $this->topic;
     }
 
-    /**
-     * @throws \Exception
-     */
     public function send(): bool
     {
         $producer = $this->build();

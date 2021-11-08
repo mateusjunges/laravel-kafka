@@ -76,6 +76,7 @@ class Config
         return array_merge($options, $this->customOptions);
     }
 
+    #[Pure]
     public function getProducerOptions(): array
     {
         $config = [
@@ -95,6 +96,7 @@ class Config
                 'sasl.username' => $this->sasl->getUsername(),
                 'sasl.password' => $this->sasl->getPassword(),
                 'sasl.mechanisms' => $this->sasl->getMechanisms(),
+                'security.protocol' => $this->sasl->getSecurityProtocol()
             ];
         }
 
