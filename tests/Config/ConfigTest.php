@@ -95,6 +95,7 @@ class ConfigTest extends LaravelKafkaTestCase
             'sasl.password' => 'pass',
             'sasl.mechanisms' => 'mec',
             'metadata.broker.list' => 'broker',
+            'security.protocol' => 'SASL_PLAINTEXT',
         ];
 
         $this->assertEquals(

@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Config;
 
+use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Contracts\Consumer;
 
 class Config
@@ -75,6 +76,7 @@ class Config
         return array_merge($options, $this->customOptions);
     }
 
+    #[Pure]
     public function getProducerOptions(): array
     {
         $config = [
@@ -86,21 +88,23 @@ class Config
         return array_merge($config, $this->customOptions, $this->getSaslOptions());
     }
 
+    #[Pure]
     private function getSaslOptions(): array
     {
-        if ($this->isPlainText() && $this->sasl !== null) {
+        if ($this->usingSasl() && $this->sasl !== null) {
             return [
                 'sasl.username' => $this->sasl->getUsername(),
                 'sasl.password' => $this->sasl->getPassword(),
                 'sasl.mechanisms' => $this->sasl->getMechanisms(),
+                'security.protocol' => $this->sasl->getSecurityProtocol(),
             ];
         }
 
         return [];
     }
 
-    private function isPlainText(): bool
+    private function usingSasl(): bool
     {
-        return $this->securityProtocol == 'SASL_PLAINTEXT';
+        return $this->securityProtocol === 'SASL_PLAINTEXT' || $this->securityProtocol === 'SASL_SSL';
     }
 }

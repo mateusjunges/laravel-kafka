@@ -3,6 +3,7 @@
 namespace Junges\Kafka\Support\Testing\Fakes;
 
 use Junges\Kafka\Config\Config;
+use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Contracts\CanProduceMessages;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
 use Junges\Kafka\Contracts\MessageSerializer;
@@ -14,6 +15,7 @@ class ProducerBuilderFake implements CanProduceMessages
     private KafkaProducerMessage $message;
     private ProducerFake $producerFake;
     private MessageSerializer $serializer;
+    private ?Sasl $saslConfig = null;
 
     public function __construct(
         private string $broker,
@@ -149,6 +151,13 @@ class ProducerBuilderFake implements CanProduceMessages
         return $this->message;
     }
 
+    public function withSasl(Sasl $saslConfig): CanProduceMessages
+    {
+        $this->saslConfig = $saslConfig;
+
+        return $this;
+    }
+
     public function usingSerializer(MessageSerializer $serializer): CanProduceMessages
     {
         $this->serializer = $serializer;
@@ -182,6 +191,7 @@ class ProducerBuilderFake implements CanProduceMessages
         $conf = new Config(
             broker: $this->broker,
             topics: [$this->getTopic()],
+            sasl: $this->saslConfig,
             customOptions: $this->options
         );
 

@@ -8,7 +8,7 @@
 [![Check & fix styling](https://github.com/mateusjunges/laravel-kafka/actions/workflows/php-cs-fixer.yml/badge.svg)](https://github.com/mateusjunges/laravel-kafka/actions/workflows/php-cs-fixer.yml)
 [![PHP Version Require](http://poser.pugx.org/mateusjunges/laravel-kafka/require/php)](https://packagist.org/packages/mateusjunges/laravel-kafka)
 
-Do you use Kafka in your laravel packages? All packages I've seen until today, including some built by myself, does not provide a nice
+Do you use Kafka in your laravel projects? All packages I've seen until today, including some built by myself, does not provide a nice
 syntax usage syntax or, if it does, the test process with these packages are very painful.
 
 This package provides a nice way of producing and consuming kafka messages in your Laravel projects.
@@ -343,6 +343,18 @@ $consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')
         password: 'password',
         username: 'username'
         mechanisms: 'authentication mechanism'
+    ));
+```
+
+You can also set the security protocol used with sasl. It's optional and by default `SASL_PLAINTEXT` is used, but you can set it to `SASL_SSL`:
+
+```php
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')
+    ->withSasl(new \Junges\Kafka\Config\Sasl(
+        password: 'password',
+        username: 'username'
+        mechanisms: 'authentication mechanism',
+        securityProtocol: 'SASL_SSL',
     ));
 ```
 
