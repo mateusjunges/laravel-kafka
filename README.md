@@ -346,6 +346,18 @@ $consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')
     ));
 ```
 
+You can also set the security protocol used with sasl. It's optional and by default `SASL_PLAINTEXT` is used, but you can set it to `SASL_SSL`:
+
+```php
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')
+    ->withSasl(new \Junges\Kafka\Config\Sasl(
+        password: 'password',
+        username: 'username'
+        mechanisms: 'authentication mechanism',
+        securityProtocol: 'SASL_SSL',
+    ));
+```
+
 ## Using middlewares
 Middlewares provides a convenient way to filter and inspecting your Kafka messages. To write a middleware in this package, you can 
 use the `withMiddleware` method. The middleware is a callable in which the first argument is the message itself and the second one is
