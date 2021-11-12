@@ -31,7 +31,7 @@ class KafkaTest extends LaravelKafkaTestCase
             return $mockedProducer;
         });
 
-        $test = Kafka::publishOn('localhost:9092', 'test-topic')
+        $test = Kafka::publishOn('test-topic')
             ->withConfigOptions([
                 'metadata.broker.list' => 'broker',
             ])
@@ -61,7 +61,7 @@ class KafkaTest extends LaravelKafkaTestCase
             return $mockedProducer;
         });
 
-        $producer = Kafka::publishOn('localhost:9092', 'test-topic')
+        $producer = Kafka::publishOn('test-topic')
             ->withConfigOptions([
                 'metadata.broker.list' => 'broker',
             ])
@@ -96,7 +96,7 @@ class KafkaTest extends LaravelKafkaTestCase
 
         Kafka::fake();
 
-        $test = Kafka::publishOn('localhost:9092', 'test-topic')
+        $test = Kafka::publishOn('test-topic')
             ->withConfigOptions([
                 'metadata.broker.list' => 'broker',
             ])
@@ -126,9 +126,9 @@ class KafkaTest extends LaravelKafkaTestCase
             return $mockedProducer;
         });
 
-        $message = Message::create('foo')->withHeaders(['foo' => 'bar'])->withKey('message-key')->withBody(['foo' => 'bar']);
+        $message = Message::create()->withHeaders(['foo' => 'bar'])->withKey('message-key')->withBody(['foo' => 'bar']);
 
-        $test = Kafka::publishOn('localhost:9092', 'test-topic')
+        $test = Kafka::publishOn('test-topic')
             ->withConfigOptions([
                 'metadata.broker.list' => 'broker',
             ])
@@ -138,12 +138,11 @@ class KafkaTest extends LaravelKafkaTestCase
 
         $this->assertTrue($test);
 
-        $test = Kafka::publishOn('localhost:9092', 'test-topic')
+        $test = Kafka::publishOn('test-topic')
             ->withConfigOptions([
                 'metadata.broker.list' => 'broker',
             ])
             ->withMessage(new Message(
-                topicName: 'foo',
                 headers: ['foo' => 'bar'],
                 body: ['foo' => 'bar'],
                 key: 'message-key'
@@ -172,7 +171,7 @@ class KafkaTest extends LaravelKafkaTestCase
         });
 
         /** @var ProducerBuilder $producer */
-        $producer = Kafka::publishOn('localhost:9092', 'test-topic')
+        $producer = Kafka::publishOn('test-topic')
             ->withConfigOptions([
                 'metadata.broker.list' => 'broker',
             ])
@@ -195,7 +194,7 @@ class KafkaTest extends LaravelKafkaTestCase
 
     public function testICanUseCustomOptionsForProducerConfig()
     {
-        $producer = Kafka::publishOn('localhost:9092', 'test-topic')
+        $producer = Kafka::publishOn('test-topic')
             ->withConfigOptions($expectedOptions = [
                 'bootstrap.servers' => '[REMOTE_ADDRESS]',
                 'metadata.broker.list' => '[REMOTE_ADDRESS]',
@@ -212,7 +211,7 @@ class KafkaTest extends LaravelKafkaTestCase
 
     public function testCreateConsumerReturnsAConsumerBuilderInstance()
     {
-        $consumer = Kafka::createConsumer('broker');
+        $consumer = Kafka::createConsumer();
 
         $this->assertInstanceOf(ConsumerBuilder::class, $consumer);
     }

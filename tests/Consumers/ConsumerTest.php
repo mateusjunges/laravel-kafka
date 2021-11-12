@@ -60,7 +60,7 @@ class ConsumerTest extends LaravelKafkaTestCase
 
         $this->mockProducer();
 
-        $consumer = Kafka::createConsumer('broker', ['test'])
+        $consumer = Kafka::createConsumer(['test'])
             ->withHandler($fakeConsumer = new FakeConsumer())
             ->withAutoCommit()
             ->withMaxMessages(1)

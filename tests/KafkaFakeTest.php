@@ -28,7 +28,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
 
     public function testItStorePublishedMessagesOnArray()
     {
-        $producer = $this->fake->publishOn('broker', 'test_topic_1')
+        $producer = $this->fake->publishOn('topic')
             ->withBodyKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
             ->withKafkaKey(Str::uuid()->toString());
@@ -46,7 +46,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
             $this->assertThat($exception, new ExceptionMessage('The expected message was not published.'));
         }
 
-        $producer = $this->fake->publishOn('broker', 'topic')
+        $producer = $this->fake->publishOn('topic')
             ->withBodyKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
             ->withKafkaKey(Str::uuid()->toString());
@@ -57,7 +57,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
 
     public function testItCanPerformAssertionsOnPublishedMessages()
     {
-        $producer = $this->fake->publishOn('broker', 'topic')
+        $producer = $this->fake->publishOn( 'topic')
             ->withBodyKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
             ->withKafkaKey($uuid = Str::uuid()->toString());
@@ -86,7 +86,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
 
     public function testAssertPublishedOn()
     {
-        $producer = $this->fake->publishOn('broker', 'topic')
+        $producer = $this->fake->publishOn('topic')
             ->withBodyKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
             ->withKafkaKey(Str::uuid()->toString());
@@ -106,7 +106,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
 
     public function testICanPerformAssertionsUsingAssertPublishedOn()
     {
-        $producer = $this->fake->publishOn('broker', 'topic')
+        $producer = $this->fake->publishOn('topic')
             ->withBodyKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
             ->withKafkaKey($uuid = Str::uuid()->toString());
