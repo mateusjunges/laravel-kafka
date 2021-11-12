@@ -6,7 +6,7 @@ interface KafkaMessage
 {
     public function getKey(): mixed;
 
-    public function getTopicName(): string;
+    public function getTopicName(): ?string;
 
     public function getPartition(): ?int;
 
