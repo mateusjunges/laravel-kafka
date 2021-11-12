@@ -2,6 +2,15 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2020-11-12 v1.3.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.2.0...v1.3.0)
+### Changed
+- Make topic name optional. Add method to set topic name when using fake driver ([#12dde5](https://github.com/mateusjunges/laravel-kafka/commit/12dde5de2aa8b9d735fa3fb093dc48948733f3a3), [#8f5b25](https://github.com/mateusjunges/laravel-kafka/commit/8f5b258609cbd6f475aee4e9a9517daeffcd5b60), [#f3c8b43](https://github.com/mateusjunges/laravel-kafka/commit/f3c8b4392872063060891bc9f2152712b639e81b), [#fe19922](https://github.com/mateusjunges/laravel-kafka/commit/fe199227fd1b657660d30fb7fc0cca41d5a4d24f))
+- Make broker parameter optional ([#5625bef](https://github.com/mateusjunges/laravel-kafka/commit/5625befca0c11ae19b109f1368d42d5aaa284da2), [#aa5596c](https://github.com/mateusjunges/laravel-kafka/commit/aa5596c21910bae780e9f4be8afb5864a6b8eab7), [#c6ad0e9](https://github.com/mateusjunges/laravel-kafka/commit/c6ad0e98ee65536d30a09bdaeb89c3e184860f07), [#5117cd8](https://github.com/mateusjunges/laravel-kafka/commit/5117cd8eeb435ab1774144cca1ef6ed36b0d09d7))
+- Allow getTopicName to return null on KafkaMessage contract ([#3e6289d](https://github.com/mateusjunges/laravel-kafka/commit/3e6289d91cf36bdc185eb142810b1dffe463df6f))
+- Make topicName optional on Message::create() ([#7213af9](https://github.com/mateusjunges/laravel-kafka/commit/7213af9b6fc843301d8ffc84e961387d118fde37))
+- Fix `publishOn` and `createConsumer` method signatures on kafka facade ([#eb66e8e](https://github.com/mateusjunges/laravel-kafka/commit/eb66e8efa1a94be020193017dd9ea2f1025c41e9))
+
+
 ## [2021-11-08 v1.2.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.1.3...v1.2.0)
 ### Added
 - Added the security protocol to Sasl class. By default, its used `SASL_PLAINTEXT`([#f4e62d2](https://github.com/mateusjunges/laravel-kafka/commit/f4e62d2d5e8d2842ccd3168295245a911f5f74fb))
