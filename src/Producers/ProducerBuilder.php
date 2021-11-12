@@ -2,7 +2,6 @@
 
 namespace Junges\Kafka\Producers;
 
-use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Contracts\CanProduceMessages;

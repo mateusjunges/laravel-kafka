@@ -57,7 +57,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
 
     public function testItCanPerformAssertionsOnPublishedMessages()
     {
-        $producer = $this->fake->publishOn( 'topic')
+        $producer = $this->fake->publishOn('topic')
             ->withBodyKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
             ->withKafkaKey($uuid = Str::uuid()->toString());
