@@ -14,8 +14,8 @@ class KafkaFake implements CanPublishMessagesToKafka
     public function __construct()
     {
         $this->producerBuilderFake = new ProducerBuilderFake(
-            broker: '',
-            topic: ''
+            topic: '',
+            broker: ''
         );
 
         return $this->producerBuilderFake;
@@ -24,15 +24,15 @@ class KafkaFake implements CanPublishMessagesToKafka
     /**
      * Publish a message in the specified broker/topic.
      *
-     * @param string $broker
      * @param string $topic
+     * @param string|null $broker
      * @return ProducerBuilderFake
      */
-    public function publishOn(string $broker, string $topic): ProducerBuilderFake
+    public function publishOn(string $topic, string $broker = null): ProducerBuilderFake
     {
         $this->producerBuilderFake = new ProducerBuilderFake(
-            broker: $broker,
-            topic: $topic
+            topic: $topic,
+            broker: $broker
         );
 
         return $this->producerBuilderFake;
