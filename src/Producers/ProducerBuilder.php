@@ -16,29 +16,30 @@ class ProducerBuilder implements CanProduceMessages
     private KafkaProducerMessage $message;
     private MessageSerializer $serializer;
     private ?Sasl $saslConfig = null;
+    private string $broker;
 
     public function __construct(
-        private string $broker,
-        private string $topic
+        private string $topic,
+        ?string $broker = null,
     ) {
         /** @var KafkaProducerMessage $message */
         $message = app(KafkaProducerMessage::class);
         $this->message = $message->create($topic);
         $this->serializer = app(MessageSerializer::class);
+        $this->broker = $broker ?? config('kafka.brokers');
     }
 
     /**
      * Return a new Junges\Commit\ProducerBuilder instance
-     * @param string $broker
      * @param string $topic
+     * @param string|null $broker
      * @return static
      */
-    #[Pure]
-    public static function create(string $broker, string $topic): self
+    public static function create(string $topic, string $broker = null): self
     {
         return new ProducerBuilder(
-            broker: $broker,
-            topic: $topic
+            topic: $topic,
+            broker: $broker ?? config('kafka.brokers')
         );
     }
 
