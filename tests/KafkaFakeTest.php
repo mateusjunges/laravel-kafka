@@ -55,6 +55,29 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         $this->fake->assertPublished($producer->getMessage());
     }
 
+    public function testAssertPublishedTimes()
+    {
+        try {
+            $this->fake->assertPublished(new Message('foo'));
+        } catch (ExpectationFailedException $exception) {
+            $this->assertThat($exception, new ExceptionMessage('The expected message was not published.'));
+        }
+
+        $producer = $this->fake->publishOn('topic')
+            ->withBodyKey('test', ['test'])
+            ->withHeaders(['custom' => 'header'])
+            ->withKafkaKey(Str::uuid()->toString());
+        $producer->send();
+
+        $this->fake->assertPublishedTimes(1, $producer->getMessage());
+
+        try {
+            $this->fake->assertPublishedTimes(2, new Message('foo'));
+        } catch (ExpectationFailedException $exception) {
+            $this->assertThat($exception, new ExceptionMessage('Kafka published 1 messages instead of 2.'));
+        }
+    }
+
     public function testItCanPerformAssertionsOnPublishedMessages()
     {
         $producer = $this->fake->publishOn('topic')
@@ -101,6 +124,26 @@ class KafkaFakeTest extends LaravelKafkaTestCase
             $this->fake->assertPublishedOn('not-published-on-this-topic', $producer->getMessage());
         } catch (ExpectationFailedException $exception) {
             $this->assertThat($exception, new ExceptionMessage('The expected message was not published.'));
+        }
+    }
+
+    public function testAssertPublishedOnTimes()
+    {
+        $producer = $this->fake->publishOn('topic')
+            ->withBodyKey('test', ['test'])
+            ->withHeaders(['custom' => 'header'])
+            ->withKafkaKey(Str::uuid()->toString());
+
+        $producer->send();
+
+        $this->fake->assertPublished($producer->getMessage());
+
+        $this->fake->assertPublishedOnTimes('topic', 1, $producer->getMessage());
+
+        try {
+            $this->fake->assertPublishedOnTimes('topic', 4, $producer->getMessage());
+        } catch (ExpectationFailedException $exception) {
+            $this->assertThat($exception, new ExceptionMessage('Kafka published 1 messages instead of 4.'));
         }
     }
 
