@@ -45,6 +45,8 @@ Follow these docs to install this package and start using kafka with ease.
   - [6.1 `assertPublished` method](#assertpublished-method)
   - [6.2 `assertPublishedOn` method](#assertpublishedon-method)
   - [6.3 `assertNothingPublished` method](#assertnothingpublished-method)
+  - [6.4 `assertPublishedTimes` method](#assertpublishedtimes-method)
+  - [6.5 `assertPublishedOnTimes` method](#assertpublishedontimes-method)
 
 # Installation
 To install this package, you must have installed PHP RdKafka extension. You can follow the steps [here](https://github.com/edenhill/librdkafka#installation)
