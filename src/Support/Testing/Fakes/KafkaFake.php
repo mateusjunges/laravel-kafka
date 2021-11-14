@@ -41,10 +41,10 @@ class KafkaFake implements CanPublishMessagesToKafka
     /**
      * Assert if a messages was published based on a truth-test callback.
      *
-     * @param KafkaProducerMessage $message
+     * @param KafkaProducerMessage|null $message
      * @param null $callback
      */
-    public function assertPublished(KafkaProducerMessage $message, $callback = null)
+    public function assertPublished(KafkaProducerMessage $message = null, $callback = null)
     {
         PHPUnit::assertTrue(
             condition: $this->published($message, $callback)->count() > 0,
@@ -56,11 +56,19 @@ class KafkaFake implements CanPublishMessagesToKafka
      * Assert that a message was published on a specific topic.
      *
      * @param string $topic
-     * @param KafkaProducerMessage $message
+     * @param KafkaProducerMessage|null $message
      * @param callable|null $callback
      */
-    public function assertPublishedOn(string $topic, KafkaProducerMessage $message, callable $callback = null)
+    public function assertPublishedOn(string $topic, KafkaProducerMessage $message = null, callable $callback = null)
     {
+        if ($message === null) {
+            $this->assertPublished(null, function ($messageArray, $publishedTopic) use ($topic) {
+                return $topic === $publishedTopic;
+            });
+
+            return;
+        }
+
         $this->assertPublished($message, function ($messageArray, $publishedTopic) use ($callback, $topic, $message) {
             if ($publishedTopic !== $topic) {
                 return false;
@@ -83,11 +91,11 @@ class KafkaFake implements CanPublishMessagesToKafka
     /**
      * Get all messages matching a truth-test callback.
      *
-     * @param KafkaProducerMessage $message
+     * @param KafkaProducerMessage|null $message
      * @param null $callback
      * @return \Illuminate\Support\Collection
      */
-    private function published(KafkaProducerMessage $message, $callback = null): Collection
+    private function published(KafkaProducerMessage $message = null, $callback = null): Collection
     {
         if (! $this->hasPublished()) {
             return collect();
