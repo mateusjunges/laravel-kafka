@@ -3,6 +3,7 @@
 namespace Junges\Kafka\Support\Testing\Fakes;
 
 use Illuminate\Support\Collection;
+use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Contracts\CanPublishMessagesToKafka;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
 use PHPUnit\Framework\Assert as PHPUnit;
@@ -161,6 +162,7 @@ class KafkaFake implements CanPublishMessagesToKafka
      *
      * @return bool
      */
+    #[Pure]
     private function hasPublished(): bool
     {
         return ! empty($this->getPublishedMessages());
@@ -171,6 +173,7 @@ class KafkaFake implements CanPublishMessagesToKafka
      *
      * @return array
      */
+    #[Pure]
     private function getPublishedMessages(): array
     {
         return $this->producerBuilderFake->getProducer()->getPublishedMessages();
