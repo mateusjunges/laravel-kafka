@@ -8,7 +8,7 @@ use Junges\Kafka\Contracts\KafkaConsumerMessage;
 class ConsumedMessage extends AbstractMessage implements KafkaConsumerMessage
 {
     public function __construct(
-        protected string $topicName,
+        protected ?string $topicName,
         protected ?int $partition,
         protected ?array $headers,
         protected mixed $body,

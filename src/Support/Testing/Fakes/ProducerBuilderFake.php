@@ -18,8 +18,8 @@ class ProducerBuilderFake implements CanProduceMessages
     private ?Sasl $saslConfig = null;
 
     public function __construct(
-        private string $broker,
         private string $topic,
+        private ?string $broker = null,
     ) {
         $this->message = new Message($topic);
 
@@ -37,11 +37,11 @@ class ProducerBuilderFake implements CanProduceMessages
 
     /**
      * Return a new Junges\Commit\ProducerBuilder instance
-     * @param string $broker
      * @param string $topic
+     * @param string|null $broker
      * @return static
      */
-    public static function create(string $broker, string $topic): self
+    public static function create(string $topic, string $broker = null): self
     {
         return new ProducerBuilderFake($broker, $topic);
     }
@@ -171,6 +171,10 @@ class ProducerBuilderFake implements CanProduceMessages
      */
     public function send(): bool
     {
+        if ($this->getMessage()->getTopicName() === null) {
+            $this->message->setTopicName($this->getTopic());
+        }
+
         $producer = $this->build();
 
         return $producer->produce($this->getMessage());
@@ -189,7 +193,7 @@ class ProducerBuilderFake implements CanProduceMessages
     private function build(): ProducerFake
     {
         $conf = new Config(
-            broker: $this->broker,
+            broker: $this->broker ?? config('kafka.brokers'),
             topics: [$this->getTopic()],
             sasl: $this->saslConfig,
             customOptions: $this->options

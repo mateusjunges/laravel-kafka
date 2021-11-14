@@ -23,6 +23,18 @@ class LaravelKafkaTestCase extends Orchestra
         app()->instance(Logger::class, $this->getMockedLogger());
     }
 
+    public function getEnvironmentSetUp($app)
+    {
+        $app['config']->set('kafka.brokers', 'localhost:9092');
+        $app['config']->set('kafka.consumer_group_id', 'group');
+        $app['config']->set('kafka.offset_reset', 'latest');
+        $app['config']->set('kafka.auto_commit', true);
+        $app['config']->set('kafka.sleep_on_error', 5);
+        $app['config']->set('kafka.partition', 0);
+        $app['config']->set('kafka.compression', 'snappy');
+        $app['config']->set('kafka.debug', false);
+    }
+
     protected function getPackageProviders($app): array
     {
         return [

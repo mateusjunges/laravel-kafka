@@ -5,7 +5,6 @@ namespace Junges\Kafka\Producers;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
 use Junges\Kafka\Contracts\MessageSerializer;
-use Junges\Kafka\Message\Message;
 use Mockery\Exception;
 use RdKafka\Conf;
 use RdKafka\Producer as KafkaProducer;

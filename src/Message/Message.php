@@ -4,20 +4,21 @@ namespace Junges\Kafka\Message;
 
 use Illuminate\Contracts\Support\Arrayable;
 use JetBrains\PhpStorm\ArrayShape;
+use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\AbstractMessage;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
-use const RD_KAFKA_PARTITION_UA;
 
 class Message extends AbstractMessage implements Arrayable, KafkaProducerMessage
 {
     /**
      * Creates a new message instance.
      *
-     * @param string $topicName
+     * @param string|null $topicName
      * @param int $partition
      * @return Message
      */
-    public static function create(string $topicName, int $partition = RD_KAFKA_PARTITION_UA): KafkaProducerMessage
+    #[Pure]
+    public static function create(string $topicName = null, int $partition = RD_KAFKA_PARTITION_UA): KafkaProducerMessage
     {
         return new self($topicName, $partition);
     }

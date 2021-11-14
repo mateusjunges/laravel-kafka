@@ -40,11 +40,13 @@ Follow these docs to install this package and start using kafka with ease.
   - [4.11 Setting kafka consumer configuration options](#setting-kafka-configuration-options)
   - [4.12 Building the consumer](#building-the-consumer)
   - [4.13 Consuming the kafka message](#consuming-the-kafka-messages)
-- [5. Using custom encoders and decoders]()
+- [5. Using custom encoders and decoders](#using-custom-encodersdecoders)
 - [6. Using `Kafka::fake()`method](#using-kafkafake)
   - [6.1 `assertPublished` method](#assertpublished-method)
   - [6.2 `assertPublishedOn` method](#assertpublishedon-method)
   - [6.3 `assertNothingPublished` method](#assertnothingpublished-method)
+  - [6.4 `assertPublishedTimes` method](#assertpublishedtimes-method)
+  - [6.5 `assertPublishedOnTimes` method](#assertpublishedontimes-method)
 
 # Installation
 To install this package, you must have installed PHP RdKafka extension. You can follow the steps [here](https://github.com/edenhill/librdkafka#installation)
@@ -72,7 +74,15 @@ To publish your messages to Kafka, you can use the `publishOn` method, of `Junge
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-Kafka::publishOn('broker', 'topic');
+Kafka::publishOn('topic');
+```
+
+You can also specify the broker where you want to publish the message:
+
+```php
+use Junges\Kafka\Facades\Kafka;
+
+Kafka::publishOn('topic', 'broker');
 ```
 
 This method returns a `Junges\Kafka\Producers\ProducerBuilder::class` instance, and you can configure your message.
@@ -87,7 +97,7 @@ as argument. Here's an example:
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-Kafka::publishOn('broker', 'topic')
+Kafka::publishOn('topic')
     ->withConfigOption('property-name', 'property-value')
     ->withConfigOptions([
         'property-name' => 'property-value'
@@ -100,7 +110,7 @@ To disable debug mode, you can use `->withDebugEnabled(false)`, or `withDebugDis
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-Kafka::publishOn('broker', 'topic')
+Kafka::publishOn('topic')
     ->withConfigOption('property-name', 'property-value')
     ->withConfigOptions([
         'property-name' => 'property-value'
@@ -113,7 +123,7 @@ Kafka::publishOn('broker', 'topic')
 ### Using custom serializers
 To use custom serializers, you must use the `usingSerializer` method:
 ```php
-$producer = \Junges\Kafka\Facades\Kafka::publishOn('broker', 'topic')->usingSerializer(new MyCustomSerializer());
+$producer = \Junges\Kafka\Facades\Kafka::publishOn('topic')->usingSerializer(new MyCustomSerializer());
 ```
 
 ### Using AVRO serializer
@@ -152,7 +162,7 @@ $registry->addKeySchemaMappingForTopic(
 
 $serializer = new \Junges\Kafka\Message\Serializers\AvroSerializer($registry, $recordSerializer /*, AvroEncoderInterface::ENCODE_BODY */);
 
-$producer = \Junges\Kafka\Facades\Kafka::publishOn('broker', 'topic')->usingSerializer($serializer);
+$producer = \Junges\Kafka\Facades\Kafka::publishOn('topic')->usingSerializer($serializer);
 ```
 
 ### Configuring the Kafka message payload
@@ -165,7 +175,7 @@ To configure the message headers, use the `withHeaders` method:
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-Kafka::publishOn('broker', 'topic')
+Kafka::publishOn('topic')
     ->withHeaders([
         'header-key' => 'header-value'
     ])
@@ -188,7 +198,7 @@ $message = new Message(
     key: 'kafka key here'  
 )
 
-Kafka::publishOn('broker', 'topic')->withMessage($message);
+Kafka::publishOn('topic')->withMessage($message);
 ```
 
 The `withBodyKey` method sets only a key in your message.
@@ -196,7 +206,7 @@ The `withBodyKey` method sets only a key in your message.
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-Kafka::publishOn('broker', 'topic')->withBodyKey('key', 'value');
+Kafka::publishOn('topic')->withBodyKey('key', 'value');
 ```
 
 ### Using Kafka Keys
@@ -206,7 +216,7 @@ If you want to use a key in your message, you should use the `withKafkaKey` meth
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-Kafka::publishOn('broker', 'topic')->withKafkaKey('your-kafka-key');
+Kafka::publishOn('topic')->withKafkaKey('your-kafka-key');
 ```
 
 ## Sending the message to Kafka
@@ -216,7 +226,7 @@ After configuring all your message options, you must use the `send` method, to s
 use Junges\Kafka\Facades\Kafka;
 
 /** @var \Junges\Kafka\Producers\ProducerBuilder $producer */
-$producer = Kafka::publishOn('broker', 'topic')
+$producer = Kafka::publishOn('topic')
     ->withConfigOptions(['key' => 'value'])
     ->withKafkaKey('your-kafka-key')
     ->withKafkaKey('kafka-key')
@@ -233,8 +243,17 @@ To create a consumer using this package, you can use the `createConsumer` method
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-$consumer = Kafka::createConsumer('broker');
+$consumer = Kafka::createConsumer();
 ```
+
+This method also allows you to specify the `topics` it should consume, the `broker` and the consumer `group id`:
+
+```php
+use Junges\Kafka\Facades\Kafka;
+
+$consumer = Kafka::createConsumer(['topic-1', 'topic-2'], 'group-id', 'broker');
+```
+
 
 This method returns a `Junges\Kafka\Consumers\ConsumerBuilder::class` instance, and you can use it to configure your consumer.
 
@@ -244,7 +263,7 @@ With a consumer created, you can subscribe to a kafka topic using the `subscribe
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-$consumer = Kafka::createConsumer('broker')->subscribe('topic');
+$consumer = Kafka::createConsumer()->subscribe('topic');
 ```
 
 Of course, you can subscribe to more than one topic at once, either using an array of topics or specifying one by one:
@@ -252,10 +271,10 @@ Of course, you can subscribe to more than one topic at once, either using an arr
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-$consumer = Kafka::createConsumer('broker')->subscribe('topic-1', 'topic-2', 'topic-n');
+$consumer = Kafka::createConsumer()->subscribe('topic-1', 'topic-2', 'topic-n');
 
 // Or, using array:
-$consumer = Kafka::createConsumer('broker')->subscribe([
+$consumer = Kafka::createConsumer()->subscribe([
     'topic-1',
     'topic-2',
     'topic-n'
@@ -271,7 +290,7 @@ To attach your consumer to a consumer group, you can use the method `withConsume
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-$consumer = Kafka::createConsumer('broker')->withConsumerGroupId('foo');
+$consumer = Kafka::createConsumer()->withConsumerGroupId('foo');
 ```
 
 ## Configuring message handlers
@@ -280,7 +299,7 @@ Now that you have created your kafka consumer, you must create a handler for the
 You can use an invokable class or a simple callback. Use the `withHandler` method to specify your handler:
 
 ```php
-$consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker');
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer();
 
 // Using callback:
 $consumer->withHandler(function(\Junges\Kafka\Contracts\KafkaConsumerMessage $message) {
@@ -298,7 +317,7 @@ class Handler
     }
 }
 
-$consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')->withHandler(Handler::class)
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer()->withHandler(Handler::class)
 ```
 
 The `KafkaConsumerMessage` contract gives you some handy methods to get the message properties: 
@@ -315,7 +334,7 @@ If you want to consume a limited amount of messages, you can use the `withMaxMes
 kafka consumer:
 
 ```php
-$consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')->withMaxMessages(2);
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer()->withMaxMessages(2);
 ```
 
 ## Configuring a dead letter queue
@@ -326,10 +345,10 @@ To create a `dlq` in this package, you can use the `withDlq` method. If you don'
 adding the `-dlq` suffix to the topic name.
 
 ```php
-$consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')->withDlq();
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer()->withDlq();
 
 //Or, specifying the dlq topic name:
-$consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')->withDlq('your-dlq-topic-name')
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer()->withDlq('your-dlq-topic-name')
 ```
 
 ## Using SASL
@@ -338,7 +357,7 @@ It's also a secure way to enable your clients to endorse an identity. To provide
 passing a `Junges\Kafka\Config\Sasl` instance as the argument:
 
 ```php
-$consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer()
     ->withSasl(new \Junges\Kafka\Config\Sasl(
         password: 'password',
         username: 'username'
@@ -349,7 +368,7 @@ $consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')
 You can also set the security protocol used with sasl. It's optional and by default `SASL_PLAINTEXT` is used, but you can set it to `SASL_SSL`:
 
 ```php
-$consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer()
     ->withSasl(new \Junges\Kafka\Config\Sasl(
         password: 'password',
         username: 'username'
@@ -364,7 +383,7 @@ use the `withMiddleware` method. The middleware is a callable in which the first
 the next handler. The middlewares get executed in the order they are defined,
 
 ```php
-$consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer()
     ->withMiddleware(function($message, callable $next) {
         // Perform some work here
         return $next($message);
@@ -375,7 +394,7 @@ $consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')
 To set the deserializer you want to use, use the `usingDeserializer` method:
 
 ```php
-$consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')->usingDeserializer(new MyCustomDeserializer());
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer()->usingDeserializer(new MyCustomDeserializer());
 ```
 
 >NOTE: The deserializer class must use the same algorithm as the serializer used to produce this message.
@@ -418,7 +437,7 @@ $registry->addKeySchemaMappingForTopic(
 // per default both key and body will get decoded
 $deserializer = new \Junges\Kafka\Message\Deserializers\AvroDeserializer($registry, $recordSerializer /*, AvroDecoderInterface::DECODE_BODY */);
 
-$consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')->usingDeserializer($deserializer);
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer()->usingDeserializer($deserializer);
 ```
 
 ## Using auto commit
@@ -426,7 +445,7 @@ The auto-commit check is called in every poll and it checks that the time elapse
 use the `withAutoCommit` method:
 
 ```php
-$consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')->withAutoCommit();
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer()->withAutoCommit();
 ```
 
 ## Setting Kafka configuration options
@@ -434,12 +453,12 @@ To set configuration options, you can use two methods: `withOptions`, passing an
 passing two arguments, the option name and the option value.
 
 ```php
-$consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer()
     ->withOptions([
         'option-name' => 'option-value'
     ]);
 // Or:
-$consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer()
     ->withOption('option-name', 'option-value');
 ```
 
@@ -447,7 +466,7 @@ $consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')
 When you have finished configuring your consumer, you must call the `build` method, which returns a `Junges\Kafka\Consumers\Consumer` instance.
 
 ```php
-$consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer()
     // Configure your consumer here
     ->build();
 ```
@@ -500,9 +519,9 @@ To set the producer serializer, you must use the `usingSerializer` method, avail
 To set the consumer deserializer, you must use the `usingDeserializer` method, available on the `ConsumerBuilder` class.
 
 ```php
-$producer = \Junges\Kafka\Facades\Kafka::publishOn('broker', 'topic')->usingSerializer(new MyCustomSerializer());
+$producer = \Junges\Kafka\Facades\Kafka::publishOn('topic')->usingSerializer(new MyCustomSerializer());
 
-$consumer = \Junges\Kafka\Facades\Kafka::createConsumer('broker')->usingDeserializer(new MyCustomDeserializer());
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer()->usingDeserializer(new MyCustomDeserializer());
 ```
 
 # Using `Kafka::fake()`
@@ -523,13 +542,35 @@ class MyTest extends TestCase
      {
          Kafka::fake();
          
-         $producer = Kafka::publishOn('broker', 'topic')
+         $producer = Kafka::publishOn('topic')
              ->withHeaders(['key' => 'value'])
              ->withBodyKey('foo', 'bar');
              
          $producer->send();
              
          Kafka::assertPublished($producer->getMessage());       
+     }
+}
+```
+
+You can also use `assertPublished` without passing the message argument:
+
+```php
+use Junges\Kafka\Facades\Kafka;
+use PHPUnit\Framework\TestCase;
+
+class MyTest extends TestCase
+{
+     public function testMyAwesomeApp()
+     {
+         Kafka::fake();
+         
+         Kafka::publishOn('topic')
+             ->withHeaders(['key' => 'value'])
+             ->withBodyKey('foo', 'bar');
+             
+             
+         Kafka::assertPublished();       
      }
 }
 ```
@@ -547,13 +588,17 @@ class MyTest extends TestCase
     {
         Kafka::fake();
         
-        $producer = Kafka::publishOn('broker', 'some-kafka-topic')
+        $producer = Kafka::publishOn('some-kafka-topic')
             ->withHeaders(['key' => 'value'])
             ->withBodyKey('key', 'value');
             
         $producer->send();
         
         Kafka::assertPublishedOn('some-kafka-topic', $producer->getMessage());
+        
+        // Or:
+        Kafka::assertPublishedOn('some-kafka-topic');
+        
     }
 }
 ```
@@ -572,13 +617,18 @@ class MyTest extends TestCase
     {
         Kafka::fake();
         
-        $producer = Kafka::publishOn('broker', 'some-kafka-topic')
+        $producer = Kafka::publishOn('some-kafka-topic')
             ->withHeaders(['key' => 'value'])
             ->withBodyKey('key', 'value');
             
         $producer->send();
         
         Kafka::assertPublishedOn('some-kafka-topic', $producer->getMessage(), function(Message $message) {
+            return $message->getHeaders()['key'] === 'value';
+        });
+        
+        // Or:
+        Kafka::assertPublishedOn('some-kafka-topic', null, function(Message $message) {
             return $message->getHeaders()['key'] === 'value';
         });
     }
@@ -599,7 +649,7 @@ class MyTest extends TestCase
         Kafka::fake();
         
         if (false) {
-            $producer = Kafka::publishOn('broker', 'some-kafka-topic')
+            $producer = Kafka::publishOn('some-kafka-topic')
                 ->withHeaders(['key' => 'value'])
                 ->withBodyKey('key', 'value');
                 
@@ -607,6 +657,59 @@ class MyTest extends TestCase
         }
         
         Kafka::assertNothingPublished();
+    }
+} 
+```
+
+## `assertPublishedTimes` method
+Sometimes, you need to assert that Kafka has published a given number of messages. For that, you can use the `assertPublishedTimes` method:
+
+```php
+use PHPUnit\Framework\TestCase;
+use Junges\Kafka\Facades\Kafka;
+use Junges\Kafka\Message\Message;
+
+class MyTest extends TestCase
+{
+    public function testWithSpecificTopic()
+    {
+        Kafka::fake();
+
+        Kafka::publishOn('some-kafka-topic')
+            ->withHeaders(['key' => 'value'])
+            ->withBodyKey('key', 'value');
+
+        Kafka::publishOn('some-kafka-topic')
+            ->withHeaders(['key' => 'value'])
+            ->withBodyKey('key', 'value');
+
+        Kafka::assertPublishedTimes(2);
+    }
+} 
+```
+
+## `assertPublishedOnTimes` method
+To assert that messages were published on a given topic a given number of times, you can use the `assertPublishedOnTimes` method:
+```php
+use PHPUnit\Framework\TestCase;
+use Junges\Kafka\Facades\Kafka;
+use Junges\Kafka\Message\Message;
+
+class MyTest extends TestCase
+{
+    public function testWithSpecificTopic()
+    {
+        Kafka::fake();
+
+        Kafka::publishOn('some-kafka-topic')
+            ->withHeaders(['key' => 'value'])
+            ->withBodyKey('key', 'value');
+
+        Kafka::publishOn('some-kafka-topic')
+            ->withHeaders(['key' => 'value'])
+            ->withBodyKey('key', 'value');
+
+        Kafka::assertPublishedOnTimes('some-kafka-topic', 2);
     }
 } 
 ```
@@ -629,3 +732,4 @@ The Laravel Kafka package is open-sourced software licenced under the [MIT][mit]
 [contributing]: .github/CONTRIBUTING.md
 [license]: LICENSE
 [mit]: https://opensource.org/licenses/MIT
+ 

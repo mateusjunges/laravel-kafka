@@ -13,7 +13,7 @@ class MessageTest extends LaravelKafkaTestCase
     public function setUp(): void
     {
         parent::setUp();
-        $this->message = new Message('foo');
+        $this->message = new Message();
     }
 
     public function testItCanSetAMessageKey()
@@ -21,7 +21,6 @@ class MessageTest extends LaravelKafkaTestCase
         $this->message->withBodyKey('foo', 'bar');
 
         $expected = new Message(
-            topicName: 'foo',
             body: ['foo' => 'bar']
         );
 
@@ -34,7 +33,6 @@ class MessageTest extends LaravelKafkaTestCase
         $this->message->withBodyKey('bar', 'foo');
 
         $expected = new Message(
-            topicName: 'foo',
             body: ['bar' => 'foo']
         );
 
@@ -50,7 +48,6 @@ class MessageTest extends LaravelKafkaTestCase
         ]);
 
         $expected = new Message(
-            topicName: 'foo',
             headers: ['foo' => 'bar']
         );
 
@@ -62,7 +59,6 @@ class MessageTest extends LaravelKafkaTestCase
         $this->message->withKey($uuid = Str::uuid()->toString());
 
         $expected = new Message(
-            topicName: 'foo',
             key: $uuid
         );
 
@@ -75,7 +71,6 @@ class MessageTest extends LaravelKafkaTestCase
         $this->message->withBodyKey('bar', 'foo');
 
         $expectedMessage = new Message(
-            topicName: 'foo',
             body: $array = ['foo' => 'bar', 'bar' => 'foo']
         );
 
@@ -94,7 +89,6 @@ class MessageTest extends LaravelKafkaTestCase
         $this->message->withHeaders($headers = ['foo' => 'bar']);
 
         $expectedMessage = new Message(
-            topicName: 'foo',
             headers: $headers,
             body: $array = ['foo' => 'bar', 'bar' => 'foo'],
             key: $uuid

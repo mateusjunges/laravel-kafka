@@ -7,7 +7,7 @@ use Junges\Kafka\Contracts\KafkaMessage;
 abstract class AbstractMessage implements KafkaMessage
 {
     public function __construct(
-        protected string  $topicName,
+        protected ?string  $topicName = null,
         protected ?int    $partition = RD_KAFKA_PARTITION_UA,
         protected ?array  $headers = [],
         protected mixed   $body = [],
@@ -15,7 +15,14 @@ abstract class AbstractMessage implements KafkaMessage
     ) {
     }
 
-    public function getTopicName(): string
+    public function setTopicName(string $topic): self
+    {
+        $this->topicName = $topic;
+
+        return $this;
+    }
+
+    public function getTopicName(): ?string
     {
         return $this->topicName;
     }
