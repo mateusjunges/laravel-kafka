@@ -551,6 +551,28 @@ class MyTest extends TestCase
 }
 ```
 
+You can also use `assertPublished` without passing the message argument:
+
+```php
+use Junges\Kafka\Facades\Kafka;
+use PHPUnit\Framework\TestCase;
+
+class MyTest extends TestCase
+{
+     public function testMyAwesomeApp()
+     {
+         Kafka::fake();
+         
+         Kafka::publishOn('topic')
+             ->withHeaders(['key' => 'value'])
+             ->withBodyKey('foo', 'bar');
+             
+             
+         Kafka::assertPublished();       
+     }
+}
+```
+
 ## `assertPublishedOn` method
 If you want to assert that a message was published in a specific kafka topic, you can use the `assertPublishedOn` method:
 
@@ -571,6 +593,10 @@ class MyTest extends TestCase
         $producer->send();
         
         Kafka::assertPublishedOn('some-kafka-topic', $producer->getMessage());
+        
+        // Or:
+        Kafka::assertPublishedOn('some-kafka-topic');
+        
     }
 }
 ```
@@ -596,6 +622,11 @@ class MyTest extends TestCase
         $producer->send();
         
         Kafka::assertPublishedOn('some-kafka-topic', $producer->getMessage(), function(Message $message) {
+            return $message->getHeaders()['key'] === 'value';
+        });
+        
+        // Or:
+        Kafka::assertPublishedOn('some-kafka-topic', null, function(Message $message) {
             return $message->getHeaders()['key'] === 'value';
         });
     }
@@ -628,6 +659,59 @@ class MyTest extends TestCase
 } 
 ```
 
+## `assertPublishedTimes` method
+Sometimes, you need to assert that Kafka has published a given number of messages. For that, you can use the `assertPublishedTimes` method:
+
+```php
+use PHPUnit\Framework\TestCase;
+use Junges\Kafka\Facades\Kafka;
+use Junges\Kafka\Message\Message;
+
+class MyTest extends TestCase
+{
+    public function testWithSpecificTopic()
+    {
+        Kafka::fake();
+
+        Kafka::publishOn('some-kafka-topic')
+            ->withHeaders(['key' => 'value'])
+            ->withBodyKey('key', 'value');
+
+        Kafka::publishOn('some-kafka-topic')
+            ->withHeaders(['key' => 'value'])
+            ->withBodyKey('key', 'value');
+
+        Kafka::assertPublishedTimes(2);
+    }
+} 
+```
+
+## `assertPublishedOnTimes` method
+To assert that messages were published on a given topic a given number of times, you can use the `assertPublishedOnTimes` method:
+```php
+use PHPUnit\Framework\TestCase;
+use Junges\Kafka\Facades\Kafka;
+use Junges\Kafka\Message\Message;
+
+class MyTest extends TestCase
+{
+    public function testWithSpecificTopic()
+    {
+        Kafka::fake();
+
+        Kafka::publishOn('some-kafka-topic')
+            ->withHeaders(['key' => 'value'])
+            ->withBodyKey('key', 'value');
+
+        Kafka::publishOn('some-kafka-topic')
+            ->withHeaders(['key' => 'value'])
+            ->withBodyKey('key', 'value');
+
+        Kafka::assertPublishedOnTimes('some-kafka-topic', 2);
+    }
+} 
+```
+
 
 # Testing
 Run `composer test` to test this package.
@@ -646,3 +730,4 @@ The Laravel Kafka package is open-sourced software licenced under the [MIT][mit]
 [contributing]: .github/CONTRIBUTING.md
 [license]: LICENSE
 [mit]: https://opensource.org/licenses/MIT
+ 

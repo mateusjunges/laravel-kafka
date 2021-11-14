@@ -12,6 +12,7 @@ use Junges\Kafka\Support\Testing\Fakes\KafkaFake;
  * @method static void assertPublished(Message $message = null);
  * @method static void assertPublishedTimes(int $times = 1, Message $message = null);
  * @method static void assertPublishedOn(string $topic, Message $message = null, $callback = null)
+ * @method static void assertPublishedOnTimes(string $topic, int $times = 1, Message $message = null, $callback = null)
  * @method static void assertNothingPublished()
  * @mixin \Junges\Kafka\Kafka
  *
