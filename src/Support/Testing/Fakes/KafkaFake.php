@@ -53,6 +53,22 @@ class KafkaFake implements CanPublishMessagesToKafka
     }
 
     /**
+     * Assert if a messages was published based on a truth-test callback.
+     *
+     * @param KafkaProducerMessage|null $message
+     * @param null $callback
+     */
+    public function assertPublishedTimes(int $times = 1, KafkaProducerMessage $message = null, $callback = null)
+    {
+        $count = $this->published($message, $callback)->count();
+
+        PHPUnit::assertTrue(
+            condition: $count === $times,
+            message: "Kafka published {$count} messages instead of {$times}."
+        );
+    }
+
+    /**
      * Assert that a message was published on a specific topic.
      *
      * @param string $topic
@@ -70,6 +86,35 @@ class KafkaFake implements CanPublishMessagesToKafka
         }
 
         $this->assertPublished($message, function ($messageArray, $publishedTopic) use ($callback, $topic, $message) {
+            if ($publishedTopic !== $topic) {
+                return false;
+            }
+
+            return $callback
+                ? $callback($message, $messageArray)
+                : true;
+        });
+    }
+
+    /**
+     * Assert that a message was published on a specific topic.
+     *
+     * @param string $topic
+     * @param int $times
+     * @param KafkaProducerMessage|null $message
+     * @param callable|null $callback
+     */
+    public function assertPublishedOnTimes(string $topic, int $times = 1, KafkaProducerMessage $message = null, callable $callback = null)
+    {
+        if ($message === null) {
+            $this->assertPublishedTimes($times, null, function ($messageArray, $publishedTopic) use ($topic) {
+                return $topic === $publishedTopic;
+            });
+
+            return;
+        }
+
+        $this->assertPublishedTimes($times, $message, function ($messageArray, $publishedTopic) use ($callback, $topic, $message) {
             if ($publishedTopic !== $topic) {
                 return false;
             }
