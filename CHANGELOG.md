@@ -2,6 +2,10 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2020-11-14 v1.3.1](https://github.com/mateusjunges/laravel-kafka/compare/v1.3.0...v1.3.1)
+### Changed
+- Fix `assertPublishedOnTimes` to allow usage of callback if the message is null. ([#c5b496](https://github.com/mateusjunges/laravel-kafka/commit/c5b496cf5c7b50e1519e9b7726cff8d2aaf3fda1))
+
 ## [2020-11-14 v1.3.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.2.0...v1.3.0)
 ### Added
 - Added `assertPublishedTimes` and `assertPublishedOnTimes` methods ([#a16a10d](https://github.com/mateusjunges/laravel-kafka/commit/a16a10dbe9ddfbbe5e412148b2083faead774cf8))
