@@ -107,14 +107,6 @@ class KafkaFake implements CanPublishMessagesToKafka
      */
     public function assertPublishedOnTimes(string $topic, int $times = 1, KafkaProducerMessage $message = null, callable $callback = null)
     {
-        if ($message === null) {
-            $this->assertPublishedTimes($times, null, function ($messageArray, $publishedTopic) use ($topic) {
-                return $topic === $publishedTopic;
-            });
-
-            return;
-        }
-
         $this->assertPublishedTimes($times, $message, function ($messageArray, $publishedTopic) use ($callback, $topic, $message) {
             if ($publishedTopic !== $topic) {
                 return false;
