@@ -23,7 +23,7 @@ class ProducerFake
 
     public function produce(Message $message): bool
     {
-        $this->messages[$this->topic][] = json_encode($message->toArray());
+        $this->messages[] = $message;
 
         return true;
     }
