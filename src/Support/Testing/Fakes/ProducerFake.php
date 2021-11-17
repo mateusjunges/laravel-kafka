@@ -3,12 +3,14 @@
 namespace Junges\Kafka\Support\Testing\Fakes;
 
 use Junges\Kafka\Config\Config;
+use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\Message;
 use RdKafka\Conf;
 
 class ProducerFake
 {
     private array $messages = [];
+    private $produceCallback = null;
 
     public function __construct(
         private Config $config,
@@ -21,15 +23,19 @@ class ProducerFake
         return new Conf();
     }
 
-    public function produce(Message $message): bool
+    public function withProduceCallback(callable $callback): self
     {
-        $this->messages[] = $message;
-
-        return true;
+        $this->produceCallback = $callback;
+        return $this;
     }
 
-    public function getPublishedMessages(): array
+    public function produce(Message $message): bool
     {
-        return $this->messages;
+        if ($this->produceCallback !== null) {
+            $callback = $this->produceCallback;
+            $callback($message);
+        }
+
+        return true;
     }
 }

@@ -12,13 +12,11 @@ use PHPUnit\Framework\Assert as PHPUnit;
 class KafkaFake implements CanPublishMessagesToKafka
 {
     private ProducerBuilderFake $producerBuilderFake;
+    private array $publishedMessages = [];
 
     public function __construct()
     {
-        $this->producerBuilderFake = new ProducerBuilderFake(
-            topic: '',
-            broker: ''
-        );
+        $this->makeProducerBuilderFake('');
 
         return $this->producerBuilderFake;
     }
@@ -30,14 +28,9 @@ class KafkaFake implements CanPublishMessagesToKafka
      * @param string|null $broker
      * @return ProducerBuilderFake
      */
-    public function publishOn(string $topic, string $broker = null): ProducerBuilderFake
+    public function publishOn(string $topic, ?string $broker = null): ProducerBuilderFake
     {
-        $this->producerBuilderFake = new ProducerBuilderFake(
-            topic: $topic,
-            broker: $broker
-        );
-
-        return $this->producerBuilderFake;
+        return $this->makeProducerBuilderFake($topic, $broker);
     }
 
     /**
@@ -111,6 +104,17 @@ class KafkaFake implements CanPublishMessagesToKafka
         PHPUnit::assertEmpty($this->getPublishedMessages(), 'Messages were published unexpectedly.');
     }
 
+    private function makeProducerBuilderFake(string $topic, ?string $broker = null): ProducerBuilderFake
+    {
+        $this->producerBuilderFake = new ProducerBuilderFake(
+            topic: $topic,
+            broker: $broker
+        );
+        $this->producerBuilderFake->withProduceCallback(fn (Message $message) => $this->publishedMessages[] = $message);
+
+        return $this->producerBuilderFake;
+    }
+
     /**
      * Get all messages matching a truth-test callback.
      *
@@ -158,6 +162,6 @@ class KafkaFake implements CanPublishMessagesToKafka
     #[Pure]
     private function getPublishedMessages(): array
     {
-        return $this->producerBuilderFake->getProducer()->getPublishedMessages();
+        return $this->publishedMessages;
     }
 }
