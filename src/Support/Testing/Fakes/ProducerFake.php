@@ -3,7 +3,6 @@
 namespace Junges\Kafka\Support\Testing\Fakes;
 
 use Junges\Kafka\Config\Config;
-use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\Message;
 use RdKafka\Conf;
 
@@ -26,6 +25,7 @@ class ProducerFake
     public function withProduceCallback(callable $callback): self
     {
         $this->produceCallback = $callback;
+
         return $this;
     }
 

@@ -47,6 +47,7 @@ class ProducerBuilderFake implements CanProduceMessages
     public function withProducerCallback(callable $callback): self
     {
         $this->producerCallback = $callback;
+
         return $this;
     }
 
@@ -193,6 +194,7 @@ class ProducerBuilderFake implements CanProduceMessages
         if ($this->producerCallback) {
             $producerFake->withProduceCallback($this->producerCallback);
         }
+
         return $producerFake;
     }
 
