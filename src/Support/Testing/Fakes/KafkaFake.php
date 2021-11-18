@@ -17,8 +17,6 @@ class KafkaFake implements CanPublishMessagesToKafka
     public function __construct()
     {
         $this->makeProducerBuilderFake();
-
-        return $this->producerBuilderFake;
     }
 
     /**
