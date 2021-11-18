@@ -16,7 +16,7 @@ class KafkaFake implements CanPublishMessagesToKafka
 
     public function __construct()
     {
-        $this->makeProducerBuilderFake('');
+        $this->makeProducerBuilderFake();
 
         return $this->producerBuilderFake;
     }
@@ -37,7 +37,7 @@ class KafkaFake implements CanPublishMessagesToKafka
      * Assert if a messages was published based on a truth-test callback.
      *
      * @param KafkaProducerMessage|null $expectedMessage
-     * @param null $callback
+     * @param callable|null $callback
      */
     public function assertPublished(?KafkaProducerMessage $expectedMessage = null, ?callable $callback = null)
     {
@@ -50,6 +50,7 @@ class KafkaFake implements CanPublishMessagesToKafka
     /**
      * Assert if a messages was published based on a truth-test callback.
      *
+     * @param int $times
      * @param KafkaProducerMessage|null $expectedMessage
      * @param callable|null $callback
      */
@@ -104,13 +105,14 @@ class KafkaFake implements CanPublishMessagesToKafka
         PHPUnit::assertEmpty($this->getPublishedMessages(), 'Messages were published unexpectedly.');
     }
 
-    private function makeProducerBuilderFake(string $topic, ?string $broker = null): ProducerBuilderFake
+    private function makeProducerBuilderFake(string $topic = '', ?string $broker = null): ProducerBuilderFake
     {
         $this->producerBuilderFake = new ProducerBuilderFake(
             topic: $topic,
             broker: $broker
         );
-        $this->producerBuilderFake->withProduceCallback(fn (Message $message) => $this->publishedMessages[] = $message);
+
+        $this->producerBuilderFake->withProducerCallback(fn (Message $message) => $this->publishedMessages[] = $message);
 
         return $this->producerBuilderFake;
     }
@@ -120,7 +122,7 @@ class KafkaFake implements CanPublishMessagesToKafka
      *
      * @param string|null $topic
      * @param KafkaProducerMessage|null $expectedMessage
-     * @param null $callback
+     * @param callable|null $callback
      * @return \Illuminate\Support\Collection
      */
     private function published(?string $topic, ?KafkaProducerMessage $expectedMessage = null, ?callable $callback = null): Collection
