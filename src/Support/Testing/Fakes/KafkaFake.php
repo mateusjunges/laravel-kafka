@@ -11,7 +11,6 @@ use PHPUnit\Framework\Assert as PHPUnit;
 
 class KafkaFake implements CanPublishMessagesToKafka
 {
-    private ProducerBuilderFake $producerBuilderFake;
     private array $publishedMessages = [];
 
     public function __construct()
@@ -105,14 +104,12 @@ class KafkaFake implements CanPublishMessagesToKafka
 
     private function makeProducerBuilderFake(string $topic = '', ?string $broker = null): ProducerBuilderFake
     {
-        $this->producerBuilderFake = new ProducerBuilderFake(
-            topic: $topic,
-            broker: $broker
-        );
-
-        $this->producerBuilderFake->withProducerCallback(fn (Message $message) => $this->publishedMessages[] = $message);
-
-        return $this->producerBuilderFake;
+        return (
+            new ProducerBuilderFake(
+                topic: $topic,
+                broker: $broker
+            )
+        )->withProducerCallback(fn (Message $message) => $this->publishedMessages[] = $message);
     }
 
     /**
