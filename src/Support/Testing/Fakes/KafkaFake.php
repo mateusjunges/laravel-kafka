@@ -42,7 +42,7 @@ class KafkaFake implements CanPublishMessagesToKafka
     public function assertPublished(?KafkaProducerMessage $expectedMessage = null, ?callable $callback = null)
     {
         PHPUnit::assertTrue(
-            condition: $this->published(null, $expectedMessage, $callback)->count() > 0,
+            condition: $this->published($callback, $expectedMessage)->count() > 0,
             message: "The expected message was not published."
         );
     }
@@ -56,7 +56,7 @@ class KafkaFake implements CanPublishMessagesToKafka
      */
     public function assertPublishedTimes(int $times = 1, ?KafkaProducerMessage $expectedMessage = null, ?callable $callback = null)
     {
-        $count = $this->published(null, $expectedMessage, $callback)->count();
+        $count = $this->published($callback, $expectedMessage)->count();
 
         PHPUnit::assertTrue(
             condition: $count === $times,
@@ -74,7 +74,7 @@ class KafkaFake implements CanPublishMessagesToKafka
     public function assertPublishedOn(string $topic, ?KafkaProducerMessage $expectedMessage = null, ?callable $callback = null)
     {
         PHPUnit::assertTrue(
-            condition: $this->published($topic, $expectedMessage, $callback)->count() > 0,
+            condition: $this->published($callback, $expectedMessage, $topic)->count() > 0,
             message: "The expected message was not published."
         );
     }
@@ -89,7 +89,7 @@ class KafkaFake implements CanPublishMessagesToKafka
      */
     public function assertPublishedOnTimes(string $topic, int $times = 1, ?KafkaProducerMessage $expectedMessage = null, ?callable $callback = null)
     {
-        $count = $this->published($topic, $expectedMessage, $callback)->count();
+        $count = $this->published($callback, $expectedMessage, $topic)->count();
 
         PHPUnit::assertTrue(
             condition: $count === $times,
@@ -125,7 +125,7 @@ class KafkaFake implements CanPublishMessagesToKafka
      * @param callable|null $callback
      * @return \Illuminate\Support\Collection
      */
-    private function published(?string $topic, ?KafkaProducerMessage $expectedMessage = null, ?callable $callback = null): Collection
+    private function published(?callable $callback = null, ?KafkaProducerMessage $expectedMessage = null, ?string $topic = null): Collection
     {
         if (! $this->hasPublished()) {
             return collect();
