@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Support\Testing\Fakes;
 
+use Closure;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Contracts\CanProduceMessages;
@@ -13,10 +14,9 @@ class ProducerBuilderFake implements CanProduceMessages
 {
     private array $options = [];
     private KafkaProducerMessage $message;
-    private ProducerFake $producerFake;
     private MessageSerializer $serializer;
     private ?Sasl $saslConfig = null;
-    private $produceCallback = null;
+    private ?Closure $producerCallback = null;
 
     public function __construct(
         private string $topic,
@@ -44,9 +44,10 @@ class ProducerBuilderFake implements CanProduceMessages
         return new ProducerBuilderFake($broker, $topic);
     }
 
-    public function withProduceCallback(callable $callback): self
+    public function withProducerCallback(callable $callback): self
     {
-        $this->produceCallback = $callback;
+        $this->producerCallback = $callback;
+
         return $this;
     }
 
@@ -184,21 +185,17 @@ class ProducerBuilderFake implements CanProduceMessages
         return $producer->produce($this->getMessage());
     }
 
-    public function getProducer(): ProducerFake
-    {
-        return $this->producerFake;
-    }
-
     private function makeProducer(Config $config): ProducerFake
     {
-        $this->producerFake = app(ProducerFake::class, [
+        $producerFake = app(ProducerFake::class, [
             'config' => $config,
             'topic' => $this->getTopic(),
         ]);
-        if ($this->produceCallback) {
-            $this->producerFake->withProduceCallback($this->produceCallback);
+        if ($this->producerCallback) {
+            $producerFake->withProduceCallback($this->producerCallback);
         }
-        return $this->producerFake;
+
+        return $producerFake;
     }
 
     /**
