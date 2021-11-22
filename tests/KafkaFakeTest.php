@@ -72,7 +72,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         $this->fake->assertPublishedTimes(1, $producer->getMessage());
 
         try {
-            $this->fake->assertPublishedTimes(2, new Message('foo'));
+            $this->fake->assertPublishedTimes(2);
         } catch (ExpectationFailedException $exception) {
             $this->assertThat($exception, new ExceptionMessage('Kafka published 1 messages instead of 2.'));
         }
@@ -177,7 +177,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
     {
         $this->fake->assertNothingPublished();
 
-        $this->fake->publishOn('broker', 'topic')->withMessage(new Message('foo'))->send();
+        $this->fake->publishOn('topic', 'broker')->withMessage(new Message('foo'))->send();
 
         try {
             $this->fake->assertNothingPublished();

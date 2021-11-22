@@ -16,6 +16,7 @@ class ProducerBuilderFake implements CanProduceMessages
     private ProducerFake $producerFake;
     private MessageSerializer $serializer;
     private ?Sasl $saslConfig = null;
+    private $produceCallback = null;
 
     public function __construct(
         private string $topic,
@@ -29,10 +30,7 @@ class ProducerBuilderFake implements CanProduceMessages
             customOptions: []
         );
 
-        $this->producerFake = app(ProducerFake::class, [
-            'config' => $conf,
-            'topic' => $this->topic,
-        ]);
+        $this->makeProducer($conf);
     }
 
     /**
@@ -44,6 +42,12 @@ class ProducerBuilderFake implements CanProduceMessages
     public static function create(string $topic, string $broker = null): self
     {
         return new ProducerBuilderFake($broker, $topic);
+    }
+
+    public function withProduceCallback(callable $callback): self
+    {
+        $this->produceCallback = $callback;
+        return $this;
     }
 
     public function withConfigOption(string $name, string $option): self
@@ -185,6 +189,18 @@ class ProducerBuilderFake implements CanProduceMessages
         return $this->producerFake;
     }
 
+    private function makeProducer(Config $config): ProducerFake
+    {
+        $this->producerFake = app(ProducerFake::class, [
+            'config' => $config,
+            'topic' => $this->getTopic(),
+        ]);
+        if ($this->produceCallback) {
+            $this->producerFake->withProduceCallback($this->produceCallback);
+        }
+        return $this->producerFake;
+    }
+
     /**
      * Build the producer.
      *
@@ -199,11 +215,6 @@ class ProducerBuilderFake implements CanProduceMessages
             customOptions: $this->options
         );
 
-        $this->producerFake = app(ProducerFake::class, [
-            'config' => $conf,
-            'topic' => $this->topic,
-        ]);
-
-        return $this->producerFake;
+        return $this->makeProducer($conf);
     }
 }
