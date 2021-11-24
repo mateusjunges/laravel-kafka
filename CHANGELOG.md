@@ -2,6 +2,10 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+### [2020-11-23 v1.4.0](https://github.com/mateusjunges/laraevl-kafka/compare/v1.4.0...v1.4.1)
+### Fixed
+- Fixes exception thrown when kafka cannot complete a `flush` call. ([#ddae8e3](https://github.com/mateusjunges/laravel-kafka/commit/ddae8e3167fd180017ae6d0f15039f8600552f00))
+
 ### [2020-11-23 v1.4.0](https://github.com/mateusjunges/laraevl-kafka/compare/v1.3.1...v1.4.0)
 ### Fixed
 - Reworked testing framework to properly check what was dispatched ([#ec8b3f6](https://github.com/mateusjunges/laravel-kafka/commit/ec8b3f61998a0d85723b1b7457c76ac3fffda345)) 
