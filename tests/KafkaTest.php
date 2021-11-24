@@ -2,9 +2,11 @@
 
 namespace Junges\Kafka\Tests;
 
+use Exception;
 use Illuminate\Support\Str;
 use Junges\Kafka\Consumers\ConsumerBuilder;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
+use Junges\Kafka\Exceptions\CouldNotPublishMessage;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\Message;
 use Junges\Kafka\Message\Serializers\NullSerializer;
@@ -214,5 +216,30 @@ class KafkaTest extends LaravelKafkaTestCase
         $consumer = Kafka::createConsumer();
 
         $this->assertInstanceOf(ConsumerBuilder::class, $consumer);
+    }
+
+    public function testProducerThrowsExceptionIfMessageCouldNotBePublished()
+    {
+        $this->expectException(CouldNotPublishMessage::class);
+
+        $this->expectExceptionMessage("Sent messages may not be completed yet.");
+
+        $mockedProducer = m::mock(Producer::class)
+            ->shouldReceive('newTopic')
+            ->andReturn(m::self())
+            ->shouldReceive('producev')
+            ->andReturn(m::self())
+            ->shouldReceive('poll')
+            ->andReturn(m::self())
+            ->shouldReceive('flush')
+            ->andReturn(RD_KAFKA_RESP_ERR__FAIL)
+            ->times(10)
+            ->getMock();
+
+        $this->app->bind(Producer::class, function () use ($mockedProducer) {
+            return $mockedProducer;
+        });
+
+        Kafka::publishOn('test')->withBodyKey('foo', 'bar')->send();
     }
 }
