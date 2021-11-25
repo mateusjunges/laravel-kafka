@@ -5,6 +5,7 @@ All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 ## [2020-11-25 v1.3.2](https://github.com/mateusjunges/laravel-kafka/compare/v1.3.0...v1.3.1)
 ### Fixed
 - Fix incorrect message published count ([#06c3844](https://github.com/mateusjunges/laravel-kafka/commit/06c3844))
+- Fixed exception thrown when kafka cannot complete a flush call ([#9a1fcba](https://github.com/mateusjunges/laravel-kafka/commit/9a1fcbace9b549e54c9a2c17174c74478f87d47e))
 
 ## [2020-11-14 v1.3.1](https://github.com/mateusjunges/laravel-kafka/compare/v1.3.0...v1.3.1)
 ### Changed
