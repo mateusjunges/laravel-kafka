@@ -6,20 +6,17 @@ use Illuminate\Support\Collection;
 use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Contracts\CanPublishMessagesToKafka;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
+use Junges\Kafka\Message\Message;
 use PHPUnit\Framework\Assert as PHPUnit;
 
 class KafkaFake implements CanPublishMessagesToKafka
 {
     private ProducerBuilderFake $producerBuilderFake;
+    private array $publishedMessages = [];
 
     public function __construct()
     {
-        $this->producerBuilderFake = new ProducerBuilderFake(
-            topic: '',
-            broker: ''
-        );
-
-        return $this->producerBuilderFake;
+        return $this->makeProducerBuilderFake();
     }
 
     /**
@@ -31,12 +28,7 @@ class KafkaFake implements CanPublishMessagesToKafka
      */
     public function publishOn(string $topic, string $broker = null): ProducerBuilderFake
     {
-        $this->producerBuilderFake = new ProducerBuilderFake(
-            topic: $topic,
-            broker: $broker
-        );
-
-        return $this->producerBuilderFake;
+        return $this->makeProducerBuilderFake($topic, $broker);
     }
 
     /**
@@ -78,23 +70,10 @@ class KafkaFake implements CanPublishMessagesToKafka
      */
     public function assertPublishedOn(string $topic, KafkaProducerMessage $message = null, callable $callback = null)
     {
-        if ($message === null) {
-            $this->assertPublished(null, function ($messageArray, $publishedTopic) use ($topic) {
-                return $topic === $publishedTopic;
-            });
-
-            return;
-        }
-
-        $this->assertPublished($message, function ($messageArray, $publishedTopic) use ($callback, $topic, $message) {
-            if ($publishedTopic !== $topic) {
-                return false;
-            }
-
-            return $callback
-                ? $callback($message, $messageArray)
-                : true;
-        });
+        PHPUnit::assertTrue(
+            condition: $this->published($message, $callback)->count() > 0,
+            message: "The expected message was not published."
+        );
     }
 
     /**
@@ -107,15 +86,12 @@ class KafkaFake implements CanPublishMessagesToKafka
      */
     public function assertPublishedOnTimes(string $topic, int $times = 1, KafkaProducerMessage $message = null, callable $callback = null)
     {
-        $this->assertPublishedTimes($times, $message, function ($messageArray, $publishedTopic) use ($callback, $topic, $message) {
-            if ($publishedTopic !== $topic) {
-                return false;
-            }
+        $count = $this->published($message, $callback)->count();
 
-            return $callback
-                ? $callback($message, $messageArray)
-                : true;
-        });
+        PHPUnit::assertTrue(
+            condition: $count === $times,
+            message: "Kafka published {$count} messages instead of {$times}."
+        );
     }
 
     /**
@@ -124,6 +100,18 @@ class KafkaFake implements CanPublishMessagesToKafka
     public function assertNothingPublished()
     {
         PHPUnit::assertEmpty($this->getPublishedMessages(), 'Messages were published unexpectedly.');
+    }
+
+    private function makeProducerBuilderFake(string $topic = '', ?string $broker = null): ProducerBuilderFake
+    {
+        $this->producerBuilderFake = new ProducerBuilderFake(
+            topic: $topic,
+            broker: $broker
+        );
+
+        $this->producerBuilderFake->withProduceCallback(fn (Message $message) => $this->publishedMessages[] = $message);
+
+        return $this->producerBuilderFake;
     }
 
     /**
@@ -139,13 +127,16 @@ class KafkaFake implements CanPublishMessagesToKafka
             return collect();
         }
 
-        $callback = $callback ?: function () {
+        return collect($this->getPublishedMessages())->filter(function (Message $publishedMessage) use ($message, $callback) {
+            if ($callback !== null) {
+                $callback($publishedMessage);
+            }
+
+            if ($message !== null) {
+                return json_encode($publishedMessage->toArray()) === json_encode($message->toArray());
+            }
+
             return true;
-        };
-
-
-        return collect($this->getPublishedMessages())->filter(function ($_, $topic) use ($message, $callback) {
-            return $callback($message, $topic);
         });
     }
 
@@ -168,6 +159,6 @@ class KafkaFake implements CanPublishMessagesToKafka
     #[Pure]
     private function getPublishedMessages(): array
     {
-        return $this->producerBuilderFake->getProducer()->getPublishedMessages();
+        return $this->publishedMessages;
     }
 }

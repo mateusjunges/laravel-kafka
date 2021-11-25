@@ -67,12 +67,13 @@ class KafkaFakeTest extends LaravelKafkaTestCase
             ->withBodyKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
             ->withKafkaKey(Str::uuid()->toString());
+
         $producer->send();
 
         $this->fake->assertPublishedTimes(1, $producer->getMessage());
 
         try {
-            $this->fake->assertPublishedTimes(2, new Message('foo'));
+            $this->fake->assertPublishedTimes(2);
         } catch (ExpectationFailedException $exception) {
             $this->assertThat($exception, new ExceptionMessage('Kafka published 1 messages instead of 2.'));
         }
