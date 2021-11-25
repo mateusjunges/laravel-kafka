@@ -2,7 +2,6 @@
 
 namespace Junges\Kafka\Producers;
 
-use Exception;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
 use Junges\Kafka\Contracts\MessageSerializer;
