@@ -2,7 +2,6 @@
 
 namespace Junges\Kafka\Tests;
 
-use Exception;
 use Illuminate\Support\Str;
 use Junges\Kafka\Consumers\ConsumerBuilder;
 use Junges\Kafka\Contracts\KafkaProducerMessage;

@@ -25,6 +25,7 @@ class ProducerFake
     public function withProduceCallback(callable $callback): self
     {
         $this->producerCallback = $callback;
+
         return $this;
     }
 
