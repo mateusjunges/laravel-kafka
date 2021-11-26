@@ -5,7 +5,7 @@ namespace Junges\Kafka\Producers;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
 use Junges\Kafka\Contracts\MessageSerializer;
-use Mockery\Exception;
+use Junges\Kafka\Exceptions\CouldNotPublishMessage;
 use RdKafka\Conf;
 use RdKafka\Producer as KafkaProducer;
 
@@ -70,7 +70,7 @@ class Producer
                 return true;
             }
 
-            throw new Exception();
+            throw CouldNotPublishMessage::flushError();
         });
     }
 }

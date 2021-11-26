@@ -67,9 +67,14 @@ class KafkaFakeTest extends LaravelKafkaTestCase
             ->withBodyKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
             ->withKafkaKey(Str::uuid()->toString());
+
         $producer->send();
 
         $this->fake->assertPublishedTimes(1, $producer->getMessage());
+
+        $producer->send();
+
+        $this->fake->assertPublishedTimes(2, $producer->getMessage());
 
         try {
             $this->fake->assertPublishedTimes(2);
