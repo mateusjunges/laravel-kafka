@@ -85,14 +85,16 @@ class LaravelKafkaTestCase extends Orchestra
         });
     }
 
-    protected function mockConsumerWithMessage(Message $message)
+    protected function mockConsumerWithMessage(Message ...$message)
     {
         $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')
             ->withAnyArgs()
-            ->andReturn($message)
+            ->andReturnUsing(function() use (&$message) {
+                return array_splice($message, 0, 1)[0] ?? null;
+            })
             ->shouldReceive('commit')
             ->andReturn()
             ->getMock();
