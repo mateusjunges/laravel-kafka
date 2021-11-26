@@ -17,6 +17,11 @@ class MessageCounter
         return $this;
     }
 
+    public function messagesCounted(): int
+    {
+        return $this->messageCount;
+    }
+
     public function maxMessagesLimitReached(): bool
     {
         return $this->maxMessages === $this->messageCount;

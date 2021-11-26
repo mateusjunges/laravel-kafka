@@ -4,6 +4,7 @@ namespace Junges\Kafka\Tests\Consumers;
 
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Consumers\Consumer;
+use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Exceptions\KafkaConsumerException;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\ConsumedMessage;
@@ -15,6 +16,9 @@ use RdKafka\Message;
 
 class ConsumerTest extends LaravelKafkaTestCase
 {
+    private ?Consumer $stoppableConsumer = null;
+    private bool $stoppableConsumerStopped = false;
+
     public function testItConsumesAMessageSuccessfullyAndCommit()
     {
         $fakeHandler = new FakeHandler();
@@ -100,5 +104,40 @@ class ConsumerTest extends LaravelKafkaTestCase
 
         $consumer = new Consumer($config, new JsonDeserializer());
         $consumer->consume();
+    }
+
+    public function testCanStopConsume()
+    {
+        $message = new Message();
+        $message->err = 0;
+        $message->key = 'key';
+        $message->topic_name = 'test';
+        $message->payload = '{"body": "message payload"}';
+
+        $message2 = new Message();
+        $message2->err = 0;
+        $message2->key = 'key2';
+        $message2->topic_name = 'test2';
+        $message2->payload = '{"body": "message payload2"}';
+
+        $this->mockConsumerWithMessage($message, $message2);
+
+        $this->mockProducer();
+
+        $this->stoppableConsumer = Kafka::createConsumer(['test'])
+            ->withHandler(function(KafkaConsumerMessage $message) {
+                if ($message->getKey() === 'key2' && $this->stoppableConsumer) {
+                    $this->stoppableConsumer->stopConsume(function() {
+                        $this->stoppableConsumerStopped = true;
+                    });
+                }
+            })
+            ->withAutoCommit()
+            ->build();
+
+        $this->stoppableConsumer->consume();
+
+        $this->assertSame(2, $this->stoppableConsumer->consumedMessagesCount());
+        $this->assertTrue($this->stoppableConsumerStopped);
     }
 }
