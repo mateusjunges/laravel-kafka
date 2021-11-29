@@ -125,7 +125,7 @@ class Consumer
      */
     private function doConsume()
     {
-        $message = $this->consumer->consume(120000);
+        $message = $this->consumer->consume(2000);
         $this->handleMessage($message);
     }
 
