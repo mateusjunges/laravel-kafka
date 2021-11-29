@@ -7,7 +7,7 @@ use Junges\Kafka\Contracts\KafkaProducerMessage;
 use Junges\Kafka\Message\Serializers\JsonSerializer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase as TestCase;
 
-class JsonEncoderTest extends TestCase
+class JsonSerializerTest extends TestCase
 {
     public function testSerialize()
     {
@@ -15,9 +15,9 @@ class JsonEncoderTest extends TestCase
         $message->expects($this->once())->method('getBody')->willReturn(['name' => 'foo']);
         $message->expects($this->once())->method('withBody')->with('{"name":"foo"}')->willReturn($message);
 
-        $encoder = $this->getMockForAbstractClass(JsonSerializer::class);
+        $serializer = $this->getMockForAbstractClass(JsonSerializer::class);
 
-        $this->assertSame($message, $encoder->serialize($message));
+        $this->assertSame($message, $serializer->serialize($message));
     }
 
     public function testSerializeThrowsException(): void
@@ -25,10 +25,10 @@ class JsonEncoderTest extends TestCase
         $message = $this->getMockForAbstractClass(KafkaProducerMessage::class);
         $message->expects($this->once())->method('getBody')->willReturn(chr(255));
 
-        $encoder = $this->getMockForAbstractClass(JsonSerializer::class);
+        $serializer = $this->getMockForAbstractClass(JsonSerializer::class);
 
         $this->expectException(JsonException::class);
 
-        $encoder->serialize($message);
+        $serializer->serialize($message);
     }
 }

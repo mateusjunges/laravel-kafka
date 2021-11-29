@@ -10,7 +10,7 @@ use Junges\Kafka\Exceptions\Encoders\AvroEncoderException;
 use Junges\Kafka\Message\Serializers\AvroSerializer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 
-class AvroEncoderTest extends LaravelKafkaTestCase
+class AvroSerializerTest extends LaravelKafkaTestCase
 {
     public function testSerializeTombstone()
     {
@@ -24,9 +24,9 @@ class AvroEncoderTest extends LaravelKafkaTestCase
         $recordSerializer = $this->getMockBuilder(RecordSerializer::class)->disableOriginalConstructor()->getMock();
         $recordSerializer->expects($this->never())->method('encodeRecord');
 
-        $encoder = new AvroSerializer($registry, $recordSerializer);
+        $serializer = new AvroSerializer($registry, $recordSerializer);
 
-        $result = $encoder->serialize($producerMessage);
+        $result = $serializer->serialize($producerMessage);
 
         $this->assertInstanceOf(KafkaProducerMessage::class, $result);
         $this->assertSame($producerMessage, $result);
@@ -56,8 +56,8 @@ class AvroEncoderTest extends LaravelKafkaTestCase
 
         $recordSerializer = $this->getMockBuilder(RecordSerializer::class)->disableOriginalConstructor()->getMock();
 
-        $encoder = new AvroSerializer($registry, $recordSerializer);
-        $encoder->serialize($producerMessage);
+        $serializer = new AvroSerializer($registry, $recordSerializer);
+        $serializer->serialize($producerMessage);
     }
 
     public function testSerializeSuccessWithSchema()
@@ -91,9 +91,9 @@ class AvroEncoderTest extends LaravelKafkaTestCase
                 [$avroSchema->getName(), $avroSchema->getDefinition(), 'test-key']
             )->willReturnOnConsecutiveCalls('encodedValue', 'encodedKey');
 
-        $encoder = new AvroSerializer($registry, $recordSerializer);
+        $serializer = new AvroSerializer($registry, $recordSerializer);
 
-        $this->assertSame($producerMessage, $encoder->serialize($producerMessage));
+        $this->assertSame($producerMessage, $serializer->serialize($producerMessage));
     }
 
     public function testSerializeKeyMode()
@@ -121,9 +121,9 @@ class AvroEncoderTest extends LaravelKafkaTestCase
         $recordSerializer = $this->getMockBuilder(RecordSerializer::class)->disableOriginalConstructor()->getMock();
         $recordSerializer->expects($this->once())->method('encodeRecord')->with($avroSchema->getName(), $avroSchema->getDefinition(), 'test-key')->willReturn('encodedKey');
 
-        $encoder = new AvroSerializer($registry, $recordSerializer);
+        $serializer = new AvroSerializer($registry, $recordSerializer);
 
-        $this->assertSame($producerMessage, $encoder->serialize($producerMessage));
+        $this->assertSame($producerMessage, $serializer->serialize($producerMessage));
     }
 
     public function testSerializeBodyMode()
@@ -151,9 +151,9 @@ class AvroEncoderTest extends LaravelKafkaTestCase
         $recordSerializer = $this->getMockBuilder(RecordSerializer::class)->disableOriginalConstructor()->getMock();
         $recordSerializer->expects($this->once())->method('encodeRecord')->with($avroSchema->getName(), $avroSchema->getDefinition(), [])->willReturn('encodedBody');
 
-        $encoder = new AvroSerializer($registry, $recordSerializer);
+        $serializer = new AvroSerializer($registry, $recordSerializer);
 
-        $this->assertSame($producerMessage, $encoder->serialize($producerMessage));
+        $this->assertSame($producerMessage, $serializer->serialize($producerMessage));
     }
 
     public function testGetRegistry()
@@ -161,8 +161,8 @@ class AvroEncoderTest extends LaravelKafkaTestCase
         $registry = $this->getMockForAbstractClass(AvroSchemaRegistry::class);
 
         $recordSerializer = $this->getMockBuilder(RecordSerializer::class)->disableOriginalConstructor()->getMock();
-        $encoder = new AvroSerializer($registry, $recordSerializer);
+        $serializer = new AvroSerializer($registry, $recordSerializer);
 
-        $this->assertSame($registry, $encoder->getRegistry());
+        $this->assertSame($registry, $serializer->getRegistry());
     }
 }

@@ -44,21 +44,21 @@ class Consumer
     private Committer $committer;
     private Retryable $retryable;
     private CommitterFactory $committerFactory;
-    private MessageDeserializer $decoder;
+    private MessageDeserializer $deserializer;
     private bool $stopRequested = false;
     private ?Closure $onStopConsume = null;
 
     /**
      * @param \Junges\Kafka\Config\Config $config
-     * @param MessageDeserializer $decoder
+     * @param MessageDeserializer $deserializer
      */
-    public function __construct(private Config $config, MessageDeserializer $decoder)
+    public function __construct(private Config $config, MessageDeserializer $deserializer)
     {
         $this->logger = app(Logger::class);
         $this->messageCounter = new MessageCounter($config->getMaxMessages());
         $this->retryable = new Retryable(new NativeSleeper(), 6, self::TIMEOUT_ERRORS);
         $this->committerFactory = new CommitterFactory($this->messageCounter);
-        $this->decoder = $decoder;
+        $this->deserializer = $deserializer;
     }
 
     /**
@@ -157,7 +157,7 @@ class Consumer
         try {
             $consumedMessage = $this->getConsumerMessage($message);
 
-            $this->config->getConsumer()->handle($this->decoder->deserialize($consumedMessage));
+            $this->config->getConsumer()->handle($this->deserializer->deserialize($consumedMessage));
 
             $success = true;
         } catch (Throwable $throwable) {
