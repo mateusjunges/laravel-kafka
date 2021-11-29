@@ -364,7 +364,6 @@ pcntl_signal(SIGINT, fn() => gracefulShutdown($consumer));
 $consumer->consume();
 ```
 
-
 ## Configuring a dead letter queue
 In kafka, a Dead Letter Queue (or DLQ), is a simple kafka topic in the kafka cluster which acts as the destination for messages that were not
 able to make it to the desired destination due to some error.
