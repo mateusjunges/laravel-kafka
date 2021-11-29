@@ -31,15 +31,16 @@ Follow these docs to install this package and start using kafka with ease.
   - [4.2 Configuring consumer groups](#configuring-consumer-groups)
   - [4.3 Configuring message handlers](#configuring-message-handlers)
   - [4.4 Configuring max messages to be consumed](#configuring-max-messages-to-be-consumed)
-  - [4.5 Configuring a dead letter queue](#configuring-a-dead-letter-queue)
-  - [4.6 Using SASL](#using-sasl)
-  - [4.7 Using middlewares](#using-middlewares)
-  - [4.8 Using custom deserializers](#using-custom-deserializers)
-  - [4.9 Using AVRO deserializer](#using-avro-deserializer)
-  - [4.10 Using auto-commit](#using-auto-commit)
-  - [4.11 Setting kafka consumer configuration options](#setting-kafka-configuration-options)
-  - [4.12 Building the consumer](#building-the-consumer)
-  - [4.13 Consuming the kafka message](#consuming-the-kafka-messages)
+  - [4.5 Stopping consumer](#stopping-consumer-using-pcntl)
+  - [4.6 Configuring a dead letter queue](#configuring-a-dead-letter-queue)
+  - [4.7 Using SASL](#using-sasl)
+  - [4.8 Using middlewares](#using-middlewares)
+  - [4.9 Using custom deserializers](#using-custom-deserializers)
+  - [4.10 Using AVRO deserializer](#using-avro-deserializer)
+  - [4.11 Using auto-commit](#using-auto-commit)
+  - [4.12 Setting kafka consumer configuration options](#setting-kafka-configuration-options)
+  - [4.13 Building the consumer](#building-the-consumer)
+  - [4.14 Consuming the kafka message](#consuming-the-kafka-messages)
 - [5. Using custom encoders and decoders](#using-custom-encodersdecoders)
 - [6. Using `Kafka::fake()`method](#using-kafkafake)
   - [6.1 `assertPublished` method](#assertpublished-method)
@@ -335,6 +336,32 @@ kafka consumer:
 
 ```php
 $consumer = \Junges\Kafka\Facades\Kafka::createConsumer()->withMaxMessages(2);
+```
+
+## Stopping consumer using pcntl
+
+Stopping consumers is very useful if you want to ensure you don't kill a process halfway through processing a consumed message.
+
+To stop the consumer gracefully call the `stopConsume` method on a consumer instance.
+
+This is particularly useful when using signal handlers. **NOTE** You will require the [Process Control Extension](https://www.php.net/manual/en/book.pcntl.php) to be installed to utilise the pcntl methods.
+
+```php
+function gracefulShutdown(Consumer $consumer) {
+    $consumer->stopConsume(function() {
+        echo 'Stopped consuming';
+        exit(0);
+    });
+}
+
+$consumer = Kafka::createConsumer(['topic'])
+    ->withConsumerGroupId('group')
+    ->withHandler(Handler::class)
+    ->build();
+    
+pcntl_signal(SIGINT, fn() => gracefulShutdown($consumer));
+
+$consumer->consume();
 ```
 
 ## Configuring a dead letter queue
