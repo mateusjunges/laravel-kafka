@@ -2,22 +2,27 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
-### [2020-11-23 v1.4.0](https://github.com/mateusjunges/laraevl-kafka/compare/v1.4.0...v1.4.1)
+### [2021-11-29 v1.4.2](https://github.com/mateusjunges/laravel-kafka/compare/v1.4.1...v1.4.2)
+### Added
+- Added `stopConsume` method to allow consumer to be gracefully stopped ([#db37381](https://github.com/mateusjunges/laravel-kafka/commit/db37381bcc9e8903e476fedd13d6962ca20597ad))
+- Reduced consumer timeout to a more realistic number, this allows signals to be caught every 2 seconds allowing graceful shutdown ([#af1902f](https://github.com/mateusjunges/laravel-kafka/commit/af1902f480286ca31ab1f973a56ee66edfa8b994))
+
+### [2020-11-23 v1.4.1](https://github.com/mateusjunges/laravel-kafka/compare/v1.4.0...v1.4.1)
 ### Fixed
 - Fixes exception thrown when kafka cannot complete a `flush` call. ([#ddae8e3](https://github.com/mateusjunges/laravel-kafka/commit/ddae8e3167fd180017ae6d0f15039f8600552f00))
 
-### [2020-11-23 v1.4.0](https://github.com/mateusjunges/laraevl-kafka/compare/v1.3.1...v1.4.0)
+### [2021-11-23 v1.4.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.3.1...v1.4.0)
 ### Fixed
 - Reworked testing framework to properly check what was dispatched ([#ec8b3f6](https://github.com/mateusjunges/laravel-kafka/commit/ec8b3f61998a0d85723b1b7457c76ac3fffda345)) 
 - Fixed incorrect param ordering on test ([#1022799](https://github.com/mateusjunges/laravel-kafka/commit/10227992b055ea745a29f13015c3f2bbff5d8687))
 - Fixed KafkaFake to store published messages correctly ([#4fe6e96](https://github.com/mateusjunges/laravel-kafka/commit/4fe6e96ab253eab88e0b50233e939a3bbf16e385))
 - Added tests to ensure count of published messages works ([#7ea370f](https://github.com/mateusjunges/laravel-kafka/commit/7ea370f150c9bf122d67b1e4f4b3e1750ef7f7fa))
 
-## [2020-11-14 v1.3.1](https://github.com/mateusjunges/laravel-kafka/compare/v1.3.0...v1.3.1)
+## [2021-11-14 v1.3.1](https://github.com/mateusjunges/laravel-kafka/compare/v1.3.0...v1.3.1)
 ### Changed
 - Fix `assertPublishedOnTimes` to allow usage of callback if the message is null. ([#c5b496](https://github.com/mateusjunges/laravel-kafka/commit/c5b496cf5c7b50e1519e9b7726cff8d2aaf3fda1))
 
-## [2020-11-14 v1.3.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.2.0...v1.3.0)
+## [2021-11-14 v1.3.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.2.0...v1.3.0)
 ### Added
 - Added `assertPublishedTimes` and `assertPublishedOnTimes` methods ([#a16a10d](https://github.com/mateusjunges/laravel-kafka/commit/a16a10dbe9ddfbbe5e412148b2083faead774cf8))
 
