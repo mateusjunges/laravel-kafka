@@ -92,7 +92,7 @@ class LaravelKafkaTestCase extends Orchestra
             ->andReturn(m::self())
             ->shouldReceive('consume')
             ->withAnyArgs()
-            ->andReturnUsing(function() use (&$message) {
+            ->andReturnUsing(function () use (&$message) {
                 return array_splice($message, 0, 1)[0] ?? null;
             })
             ->shouldReceive('commit')

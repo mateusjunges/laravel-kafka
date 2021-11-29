@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Consumers;
 
+use Closure;
 use Junges\Kafka\Commit\CommitterFactory;
 use Junges\Kafka\Commit\Contracts\Committer;
 use Junges\Kafka\Commit\NativeSleeper;
@@ -18,7 +19,6 @@ use RdKafka\KafkaConsumer;
 use RdKafka\Message;
 use RdKafka\Producer as KafkaProducer;
 use Throwable;
-use Closure;
 
 class Consumer
 {
