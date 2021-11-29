@@ -1,6 +1,8 @@
 name: Check & fix styling
 
-on: [push]
+on:
+  push:
+    branches: [ master ]
 
 jobs:
   php-cs-fixer:
