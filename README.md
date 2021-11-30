@@ -41,7 +41,7 @@ Follow these docs to install this package and start using kafka with ease.
   - [4.12 Setting kafka consumer configuration options](#setting-kafka-configuration-options)
   - [4.13 Building the consumer](#building-the-consumer)
   - [4.14 Consuming the kafka message](#consuming-the-kafka-messages)
-- [5. Using custom encoders and decoders](#using-custom-encodersdecoders)
+- [5. Using custom serializers/deserializers](#using-custom-serializersdeserializers)
 - [6. Using `Kafka::fake()`method](#using-kafkafake)
   - [6.1 `assertPublished` method](#assertpublished-method)
   - [6.2 `assertPublishedOn` method](#assertpublishedon-method)
@@ -507,7 +507,8 @@ $consumer = \Junges\Kafka\Facades\Kafka::createConsumer()->build();
 $consumer->consume();
 ```
 
-# Using custom encoders/decoders
+<a name="using-custom-serializersdeserializers"></a>
+# Using custom serializers/deserializers
 Serialization is the process of converting messages to bytes. Deserialization is the inverse process - converting a stream of bytes into and object. In a nutshell,
 it transforms the content into readable and interpretable information.
 Basically, in order to prepare the message for transmission from the producer we use serializers. This package supports three serializers out of the box:
@@ -759,4 +760,3 @@ The Laravel Kafka package is open-sourced software licenced under the [MIT][mit]
 [contributing]: .github/CONTRIBUTING.md
 [license]: LICENSE
 [mit]: https://opensource.org/licenses/MIT
- 

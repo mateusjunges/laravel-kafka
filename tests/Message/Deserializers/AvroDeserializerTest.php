@@ -10,7 +10,7 @@ use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Message\Deserializers\AvroDeserializer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 
-class AvroDecoderTest extends LaravelKafkaTestCase
+class AvroDeserializerTest extends LaravelKafkaTestCase
 {
     public function testDeserializeTombstone()
     {
@@ -24,9 +24,9 @@ class AvroDecoderTest extends LaravelKafkaTestCase
         $recordSerializer = $this->getMockBuilder(RecordSerializer::class)->disableOriginalConstructor()->getMock();
         $recordSerializer->expects($this->never())->method('decodeMessage');
 
-        $decoder = new AvroDeserializer($registry, $recordSerializer);
+        $deserializer = new AvroDeserializer($registry, $recordSerializer);
 
-        $result = $decoder->deserialize($message);
+        $result = $deserializer->deserialize($message);
 
         $this->assertInstanceOf(KafkaConsumerMessage::class, $result);
         $this->assertNull($result->getBody());
@@ -63,9 +63,9 @@ class AvroDecoderTest extends LaravelKafkaTestCase
             )
             ->willReturnOnConsecutiveCalls(['test'], 'decoded-key');
 
-        $decoder = new AvroDeserializer($registry, $recordSerializer);
+        $deserializer = new AvroDeserializer($registry, $recordSerializer);
 
-        $result = $decoder->deserialize($message);
+        $result = $deserializer->deserialize($message);
 
         $this->assertInstanceOf(KafkaConsumerMessage::class, $result);
         $this->assertSame(['test'], $result->getBody());

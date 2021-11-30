@@ -6,14 +6,14 @@ use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase as TestCase;
 
-class JsonDecoderTest extends TestCase
+class JsonDeserializerTest extends TestCase
 {
     public function testDeserialize(): void
     {
         $message = $this->getMockForAbstractClass(KafkaConsumerMessage::class);
         $message->expects($this->once())->method('getBody')->willReturn('{"name":"foo"}');
-        $decoder = new JsonDeserializer();
-        $result = $decoder->deserialize($message);
+        $deserializer = new JsonDeserializer();
+        $result = $deserializer->deserialize($message);
 
         $this->assertInstanceOf(KafkaConsumerMessage::class, $result);
         $this->assertEquals(['name' => 'foo'], $result->getBody());
@@ -26,10 +26,10 @@ class JsonDecoderTest extends TestCase
     {
         $message = $this->getMockForAbstractClass(KafkaConsumerMessage::class);
         $message->expects($this->once())->method('getBody')->willReturn('test');
-        $decoder = new JsonDeserializer();
+        $deserializer = new JsonDeserializer();
 
         $this->expectException(\JsonException::class);
 
-        $decoder->deserialize($message);
+        $deserializer->deserialize($message);
     }
 }
