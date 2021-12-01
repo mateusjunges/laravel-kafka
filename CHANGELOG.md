@@ -2,6 +2,11 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+### [2021-12-01 v1.4.3](https://github.com/mateusjunges/laravel-kafka/compare/v1.4.2...v1.4.3)
+### Added
+- Allow `createConsumer` to use consumer group id from config ([#559b467](https://github.com/mateusjunges/laravel-kafka/commit/559b467b5ff0cb47e5002ea37ec5dda9f7d88d1a))
+- Improve consistency with serializers/deserializers naming ([#b55772a](https://github.com/mateusjunges/laravel-kafka/commit/b55772a2e91f44a1c2809380c725e4e9af738912))
+
 ### [2021-11-29 v1.4.2](https://github.com/mateusjunges/laravel-kafka/compare/v1.4.1...v1.4.2)
 ### Added
 - Added `stopConsume` method to allow consumer to be gracefully stopped ([#db37381](https://github.com/mateusjunges/laravel-kafka/commit/db37381bcc9e8903e476fedd13d6962ca20597ad))
