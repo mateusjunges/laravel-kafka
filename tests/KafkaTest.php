@@ -217,6 +217,16 @@ class KafkaTest extends LaravelKafkaTestCase
         $this->assertInstanceOf(ConsumerBuilder::class, $consumer);
     }
 
+    public function testCreateConsumerDefaultConfigs()
+    {
+        $consumer = Kafka::createConsumer();
+
+        $this->assertInstanceOf(ConsumerBuilder::class, $consumer);
+        $this->assertEquals('group', $this->getPropertyWithReflection('groupId', $consumer));
+        $this->assertEquals('localhost:9092', $this->getPropertyWithReflection('brokers', $consumer));
+        $this->assertEquals([], $this->getPropertyWithReflection('topics', $consumer));
+    }
+
     public function testProducerThrowsExceptionIfMessageCouldNotBePublished()
     {
         $this->expectException(CouldNotPublishMessage::class);

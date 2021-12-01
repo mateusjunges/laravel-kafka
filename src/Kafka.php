@@ -37,7 +37,7 @@ class Kafka implements CanPublishMessagesToKafka
         return ConsumerBuilder::create(
             brokers: $brokers ?? config('kafka.brokers'),
             topics: $topics,
-            groupId: $groupId
+            groupId: $groupId ?? config('kafka.consumer_group_id')
         );
     }
 }
