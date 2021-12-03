@@ -5,12 +5,11 @@
     "require": {
         "php": "^8.0",
         "ext-rdkafka": "^5.0|^4.0",
-        "phpunit/phpunit": "^9.5",
         "monolog/monolog": "^2.3",
-        "flix-tech/avro-serde-php": "^1.7",
-        "flix-tech/confluent-schema-registry-api": "^7.5"
+        "flix-tech/avro-serde-php": "^1.7"
     },
     "require-dev": {
+        "phpunit/phpunit": "^9.5",
         "orchestra/testbench": "^6.20",
         "predis/predis": "^1.1",
         "friendsofphp/php-cs-fixer": "^3.0"
