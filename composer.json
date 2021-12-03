@@ -37,6 +37,12 @@
         "test": "vendor/bin/phpunit tests",
         "format": "vendor/bin/php-cs-fixer fix --allow-risky=yes --config=.php_cs.dist.php"
     },
+    "repositories": [
+        {
+            "type": "git",
+            "url": "https://github.com/flix-tech/schema-registry-php-client"
+        }
+    ],
     "extra": {
         "laravel": {
             "providers": [
