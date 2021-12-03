@@ -2,21 +2,25 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
-### [2021-12-01 v1.4.3](https://github.com/mateusjunges/laravel-kafka/compare/v1.4.2...v1.4.3)
+## [2021-12-03 v1.4.4](https://github.com/mateusjunges/laravel-kafka/compare/v1.4.3...v1.4.4)
+### Fixed
+- Fixed composer.json dependencies. Improve installation process ([#5981907](https://github.com/mateusjunges/laravel-kafka/commit/598190772ac1cca28f72d7de73468b7cecf21113))
+
+## [2021-12-01 v1.4.3](https://github.com/mateusjunges/laravel-kafka/compare/v1.4.2...v1.4.3)
 ### Added
 - Allow `createConsumer` to use consumer group id from config ([#559b467](https://github.com/mateusjunges/laravel-kafka/commit/559b467b5ff0cb47e5002ea37ec5dda9f7d88d1a))
 - Improve consistency with serializers/deserializers naming ([#b55772a](https://github.com/mateusjunges/laravel-kafka/commit/b55772a2e91f44a1c2809380c725e4e9af738912))
 
-### [2021-11-29 v1.4.2](https://github.com/mateusjunges/laravel-kafka/compare/v1.4.1...v1.4.2)
+## [2021-11-29 v1.4.2](https://github.com/mateusjunges/laravel-kafka/compare/v1.4.1...v1.4.2)
 ### Added
 - Added `stopConsume` method to allow consumer to be gracefully stopped ([#db37381](https://github.com/mateusjunges/laravel-kafka/commit/db37381bcc9e8903e476fedd13d6962ca20597ad))
 - Reduced consumer timeout to a more realistic number, this allows signals to be caught every 2 seconds allowing graceful shutdown ([#af1902f](https://github.com/mateusjunges/laravel-kafka/commit/af1902f480286ca31ab1f973a56ee66edfa8b994))
 
-### [2020-11-23 v1.4.1](https://github.com/mateusjunges/laravel-kafka/compare/v1.4.0...v1.4.1)
+## [2020-11-23 v1.4.1](https://github.com/mateusjunges/laravel-kafka/compare/v1.4.0...v1.4.1)
 ### Fixed
 - Fixes exception thrown when kafka cannot complete a `flush` call. ([#ddae8e3](https://github.com/mateusjunges/laravel-kafka/commit/ddae8e3167fd180017ae6d0f15039f8600552f00))
 
-### [2021-11-23 v1.4.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.3.1...v1.4.0)
+## [2021-11-23 v1.4.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.3.1...v1.4.0)
 ### Fixed
 - Reworked testing framework to properly check what was dispatched ([#ec8b3f6](https://github.com/mateusjunges/laravel-kafka/commit/ec8b3f61998a0d85723b1b7457c76ac3fffda345)) 
 - Fixed incorrect param ordering on test ([#1022799](https://github.com/mateusjunges/laravel-kafka/commit/10227992b055ea745a29f13015c3f2bbff5d8687))
