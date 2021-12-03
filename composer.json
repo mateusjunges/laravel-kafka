@@ -8,7 +8,8 @@
         "phpunit/phpunit": "^9.5",
         "monolog/monolog": "^2.3",
         "flix-tech/avro-serde-php": "^1.7",
-        "flix-tech/confluent-schema-registry-api": "^7.5"
+        "flix-tech/confluent-schema-registry-api": "^7.5",
+        "guzzlehttp/guzzle": "^7.4"
     },
     "require-dev": {
         "orchestra/testbench": "^6.20",
