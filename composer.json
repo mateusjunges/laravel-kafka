@@ -6,8 +6,7 @@
         "php": "^8.0",
         "ext-rdkafka": "^5.0|^4.0",
         "monolog/monolog": "^2.3",
-        "flix-tech/avro-serde-php": "^1.7",
-        "guzzlehttp/guzzle": "^7.4"
+        "flix-tech/avro-serde-php": "^1.7"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5",
