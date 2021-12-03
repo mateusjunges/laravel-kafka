@@ -42,7 +42,7 @@
             "type": "package",
             "package": {
                 "name": "flix-tech/schema-registry-php-client",
-                "version": "^7.5",
+                "version": "7.5",
                 "dist": {
                     "type": "zip",
                     "url": "https://github.com/flix-tech/schema-registry-php-client",
