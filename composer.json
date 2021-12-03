@@ -7,7 +7,6 @@
         "ext-rdkafka": "^5.0|^4.0",
         "monolog/monolog": "^2.3",
         "flix-tech/avro-serde-php": "^1.7",
-        "flix-tech/confluent-schema-registry-api": "^7.5",
         "guzzlehttp/guzzle": "^7.4"
     },
     "require-dev": {
@@ -38,20 +37,6 @@
         "test": "vendor/bin/phpunit tests",
         "format": "vendor/bin/php-cs-fixer fix --allow-risky=yes --config=.php_cs.dist.php"
     },
-    "repositories": [
-        {
-            "type": "package",
-            "package": {
-                "name": "flix-tech/confluent-schema-registry-api",
-                "version": "7.5",
-                "dist": {
-                    "type": "zip",
-                    "url": "https://github.com/flix-tech/schema-registry-php-client",
-                    "reference": "master"
-                }
-            }
-        }
-    ],
     "extra": {
         "laravel": {
             "providers": [
