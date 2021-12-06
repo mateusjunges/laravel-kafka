@@ -3,8 +3,9 @@
 namespace Junges\Kafka\Consumers;
 
 use Closure;
-use Junges\Kafka\Commit\CommitterFactory;
 use Junges\Kafka\Commit\Contracts\Committer;
+use Junges\Kafka\Commit\Contracts\CommitterFactory;
+use Junges\Kafka\Commit\DefaultCommitterFactory;
 use Junges\Kafka\Commit\NativeSleeper;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
@@ -52,13 +53,14 @@ class Consumer
      * @param \Junges\Kafka\Config\Config $config
      * @param MessageDeserializer $deserializer
      */
-    public function __construct(private Config $config, MessageDeserializer $deserializer)
+    public function __construct(private Config $config, MessageDeserializer $deserializer, CommitterFactory $committerFactory = null)
     {
         $this->logger = app(Logger::class);
         $this->messageCounter = new MessageCounter($config->getMaxMessages());
         $this->retryable = new Retryable(new NativeSleeper(), 6, self::TIMEOUT_ERRORS);
-        $this->committerFactory = new CommitterFactory($this->messageCounter);
         $this->deserializer = $deserializer;
+
+        $this->committerFactory = $committerFactory ?? new DefaultCommitterFactory($this->messageCounter);
     }
 
     /**
@@ -224,12 +226,12 @@ class Consumer
         try {
             if (! $success && ! is_null($this->config->getDlq())) {
                 $this->sendToDlq($message);
-                $this->committer->commitDlq();
+                $this->committer->commitDlq($message);
 
                 return;
             }
 
-            $this->committer->commitMessage();
+            $this->committer->commitMessage($message, $success);
         } catch (Throwable $throwable) {
             if (! in_array($throwable->getCode(), self::IGNORABLE_COMMIT_ERRORS)) {
                 $this->logger->error($message, $throwable, 'MESSAGE_COMMIT');

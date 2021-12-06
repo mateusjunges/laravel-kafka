@@ -6,6 +6,7 @@ use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Commit\Contracts\Committer;
 use Junges\Kafka\Commit\Contracts\Sleeper;
 use Junges\Kafka\Retryable;
+use RdKafka\Message;
 
 class RetryableCommitter implements Committer
 {
@@ -31,16 +32,16 @@ class RetryableCommitter implements Committer
     /**
      * @throws \Carbon\Exceptions\Exception
      */
-    public function commitMessage(): void
+    public function commitMessage(Message $message, bool $success): void
     {
-        $this->retryable->retry(fn () => $this->committer->commitMessage());
+        $this->retryable->retry(fn () => $this->committer->commitMessage($message, $success));
     }
 
     /**
      * @throws \Carbon\Exceptions\Exception
      */
-    public function commitDlq(): void
+    public function commitDlq(Message $message): void
     {
-        $this->retryable->retry(fn () => $this->committer->commitDlq());
+        $this->retryable->retry(fn () => $this->committer->commitDlq($message));
     }
 }
