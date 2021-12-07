@@ -39,9 +39,7 @@ class Options
 
     public function getGroupId(): string
     {
-        return (is_string($this->groupId) && strlen($this->groupId) > 1)
-            ? $this->groupId
-            : $this->config['groupId'];
+        return strlen($this->groupId) > 1 ? $this->groupId : $this->config['groupId'];
     }
 
     public function getCommit(): ?string
@@ -51,11 +49,11 @@ class Options
 
     public function getDlq(): ?string
     {
-        return (is_string($this->dlq) && strlen($this->dlq) > 1) ? $this->dlq : null;
+        return strlen($this->dlq) > 1 ? $this->dlq : null;
     }
 
     public function getMaxMessage(): int
     {
-        return (is_int($this->maxMessage) && $this->maxMessage >= 1) ? $this->maxMessage : -1;
+        return $this->maxMessage >= 1 ? $this->maxMessage : -1;
     }
 }
