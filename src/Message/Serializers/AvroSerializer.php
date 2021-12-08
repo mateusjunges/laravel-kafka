@@ -8,7 +8,7 @@ use Junges\Kafka\Contracts\AvroMessageSerializer;
 use Junges\Kafka\Contracts\AvroSchemaRegistry;
 use Junges\Kafka\Contracts\KafkaAvroSchemaRegistry;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
-use Junges\Kafka\Exceptions\Encoders\AvroEncoderException;
+use Junges\Kafka\Exceptions\Serializers\AvroSerializerException;
 
 class AvroSerializer implements AvroMessageSerializer
 {
@@ -83,9 +83,9 @@ class AvroSerializer implements AvroMessageSerializer
         $schemaDefinition = $avroSchema->getDefinition();
 
         if (null === $schemaDefinition) {
-            throw new AvroEncoderException(
+            throw new AvroSerializerException(
                 sprintf(
-                    AvroEncoderException::UNABLE_TO_LOAD_DEFINITION_MESSAGE,
+                    AvroSerializerException::UNABLE_TO_LOAD_DEFINITION_MESSAGE,
                     $avroSchema->getName()
                 )
             );
