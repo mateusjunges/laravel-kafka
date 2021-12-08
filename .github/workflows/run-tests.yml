@@ -2,9 +2,9 @@ name: Continuous Integration
 
 on:
   push:
-    branches: [ v1.4.x ]
+    branches: [ v1.3.x ]
   pull_request:
-    branches: [ v1.4.x ]
+    branches: [ v1.3.x ]
 
 jobs:
   run-tests:
