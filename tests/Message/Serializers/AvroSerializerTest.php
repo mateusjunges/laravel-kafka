@@ -6,7 +6,7 @@ use FlixTech\AvroSerializer\Objects\RecordSerializer;
 use Junges\Kafka\Contracts\AvroSchemaRegistry;
 use Junges\Kafka\Contracts\KafkaAvroSchemaRegistry;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
-use Junges\Kafka\Exceptions\Encoders\AvroEncoderException;
+use Junges\Kafka\Exceptions\Serializers\AvroSerializerException;
 use Junges\Kafka\Message\Serializers\AvroSerializer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 
@@ -46,10 +46,10 @@ class AvroSerializerTest extends LaravelKafkaTestCase
         $registry->expects($this->once())->method('hasBodySchemaForTopic')->willReturn(true);
         $registry->expects($this->once())->method('getBodySchemaForTopic')->willReturn($avroSchema);
 
-        $this->expectException(AvroEncoderException::class);
+        $this->expectException(AvroSerializerException::class);
         $this->expectExceptionMessage(
             sprintf(
-                AvroEncoderException::UNABLE_TO_LOAD_DEFINITION_MESSAGE,
+                AvroSerializerException::UNABLE_TO_LOAD_DEFINITION_MESSAGE,
                 $avroSchema->getName()
             )
         );
