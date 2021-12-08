@@ -2,7 +2,7 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
-## [2021-12-08 v1.4.5](https://github.com/mateusjunges/laravel-kafka/compare/v1.4.4...v1.4.5)
+## [2021-12-08 v1.5.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.4.5...v1.5.0)
 ### Changed
 - Renamed `AvroencoderException` to `AvroSerializerException` by @rtuin in [#38](https://github.com/mateusjunges/laravel-kafka/pull/38)
 - Extend all exceptions from `LaravelKafkaException` by @rtuin in [#38](https://github.com/mateusjunges/laravel-kafka/pull/38)
