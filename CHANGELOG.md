@@ -2,6 +2,11 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2021-12-08 v1.4.5](https://github.com/mateusjunges/laravel-kafka/compare/v1.4.4...v1.4.5)
+### Added
+- Added message context to committers plus allow to use custom committers ([#133a4bb](https://github.com/mateusjunges/laravel-kafka/commit/133a4bb446c773d16a4fd05b0e4cb25900d45550))
+- Added retryable handler, allowing to retry message handling and block processing any other message. ([#0f9aeee](https://github.com/mateusjunges/laravel-kafka/commit/0f9aeee67fe4fd776a812d5a5ebc74dff2bcf2b6))
+
 ## [2021-12-03 v1.4.4](https://github.com/mateusjunges/laravel-kafka/compare/v1.4.3...v1.4.4)
 ### Fixed
 - Fixed composer.json dependencies. Improve installation process ([#5981907](https://github.com/mateusjunges/laravel-kafka/commit/598190772ac1cca28f72d7de73468b7cecf21113))
