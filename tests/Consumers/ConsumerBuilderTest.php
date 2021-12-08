@@ -4,12 +4,17 @@ namespace Junges\Kafka\Tests\Consumers;
 
 use Closure;
 use InvalidArgumentException;
+use Junges\Kafka\Commit\Contracts\Committer;
+use Junges\Kafka\Commit\Contracts\CommitterFactory;
+use Junges\Kafka\Commit\VoidCommitter;
+use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Consumers\ConsumerBuilder;
 use Junges\Kafka\Message\Deserializers\NullDeserializer;
 use Junges\Kafka\Tests\Fakes\FakeConsumer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
+use RdKafka\KafkaConsumer;
 use RdKafka\Message;
 
 class ConsumerBuilderTest extends LaravelKafkaTestCase
@@ -240,6 +245,22 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertArrayHasKey('enable.auto.commit', $options);
         $this->assertEquals('latest', $options['auto.offset.reset']);
         $this->assertEquals('false', $options['enable.auto.commit']);
+    }
+
+    public function testItCanBuildWithCustomCommitter(): void
+    {
+        $adhocCommitterFactory = new class implements CommitterFactory {
+            public function make(KafkaConsumer $kafkaConsumer, Config $config): Committer
+            {
+                return new VoidCommitter();
+            }
+        };
+        $consumer = ConsumerBuilder::create('broker')
+            ->usingCommitterFactory($adhocCommitterFactory)
+            ->build();
+
+        $committerFactory = $this->getPropertyWithReflection('committerFactory', $consumer);
+        $this->assertInstanceOf($adhocCommitterFactory::class, $committerFactory);
     }
 }
 

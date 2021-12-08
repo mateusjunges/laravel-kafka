@@ -4,10 +4,10 @@ namespace Junges\Kafka\Consumers;
 
 use Closure;
 use InvalidArgumentException;
+use Junges\Kafka\Commit\Contracts\CommitterFactory;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Contracts\MessageDeserializer;
-use Junges\Kafka\Facades\Kafka;
 
 class ConsumerBuilder
 {
@@ -25,6 +25,7 @@ class ConsumerBuilder
     private bool $autoCommit;
     private array $options;
     private MessageDeserializer $deserializer;
+    private ?CommitterFactory $committerFactory = null;
 
     /**
      * @param string $brokers
@@ -128,9 +129,16 @@ class ConsumerBuilder
         return $this;
     }
 
-    public function usingDeserializer(MessageDeserializer $deserializer)
+    public function usingDeserializer(MessageDeserializer $deserializer): self
     {
         $this->deserializer = $deserializer;
+
+        return $this;
+    }
+
+    public function usingCommitterFactory(CommitterFactory $committerFactory): self
+    {
+        $this->committerFactory = $committerFactory;
 
         return $this;
     }
@@ -265,7 +273,7 @@ class ConsumerBuilder
             customOptions: $this->options
         );
 
-        return new Consumer($config, $this->deserializer);
+        return new Consumer($config, $this->deserializer, $this->committerFactory);
     }
 
     private function validateTopic(mixed $topic)

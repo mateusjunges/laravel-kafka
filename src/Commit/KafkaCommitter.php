@@ -4,6 +4,7 @@ namespace Junges\Kafka\Commit;
 
 use Junges\Kafka\Commit\Contracts\Committer;
 use RdKafka\KafkaConsumer;
+use RdKafka\Message;
 
 class KafkaCommitter implements Committer
 {
@@ -14,16 +15,16 @@ class KafkaCommitter implements Committer
     /**
      * @throws \RdKafka\Exception
      */
-    public function commitMessage(): void
+    public function commitMessage(Message $message, bool $success): void
     {
-        $this->consumer->commit();
+        $this->consumer->commit($message);
     }
 
     /**
      * @throws \RdKafka\Exception
      */
-    public function commitDlq(): void
+    public function commitDlq(Message $message): void
     {
-        $this->consumer->commit();
+        $this->consumer->commit($message);
     }
 }

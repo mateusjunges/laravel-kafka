@@ -4,6 +4,7 @@ namespace Junges\Kafka\Tests;
 
 use Exception;
 use Junges\Kafka\Commit\Contracts\Committer;
+use RdKafka\Message;
 
 class FailingCommitter implements Committer
 {
@@ -22,7 +23,7 @@ class FailingCommitter implements Committer
     /**
      * @throws \Exception
      */
-    public function commitMessage(): void
+    public function commitMessage(Message $message = null, bool $success = null): void
     {
         $this->timesTriedToCommitMessage++;
         $this->commit();
@@ -31,7 +32,7 @@ class FailingCommitter implements Committer
     /**
      * @throws \Exception
      */
-    public function commitDlq(): void
+    public function commitDlq(Message $message): void
     {
         $this->timesTriedToCommitDlq++;
         $this->commit();

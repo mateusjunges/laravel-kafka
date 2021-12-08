@@ -3,7 +3,7 @@
 namespace Junges\Kafka\Tests\Commit;
 
 use Junges\Kafka\Commit\BatchCommitter;
-use Junges\Kafka\Commit\CommitterFactory;
+use Junges\Kafka\Commit\DefaultCommitterFactory;
 use Junges\Kafka\Commit\KafkaCommitter;
 use Junges\Kafka\Commit\NativeSleeper;
 use Junges\Kafka\Commit\RetryableCommitter;
@@ -36,7 +36,7 @@ class CommitterFactoryTest extends LaravelKafkaTestCase
 
         $messageCounter = new MessageCounter(6);
 
-        $factory = new CommitterFactory($messageCounter);
+        $factory = new DefaultCommitterFactory($messageCounter);
 
         $committer = $factory->make($consumer, $config);
 
@@ -75,7 +75,7 @@ class CommitterFactoryTest extends LaravelKafkaTestCase
 
         $messageCounter = new MessageCounter(6);
 
-        $factory = new CommitterFactory($messageCounter);
+        $factory = new DefaultCommitterFactory($messageCounter);
 
         $committer = $factory->make($consumer, $config);
 

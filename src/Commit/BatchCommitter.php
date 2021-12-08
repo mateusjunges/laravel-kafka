@@ -4,6 +4,7 @@ namespace Junges\Kafka\Commit;
 
 use Junges\Kafka\Commit\Contracts\Committer;
 use Junges\Kafka\MessageCounter;
+use RdKafka\Message;
 
 class BatchCommitter implements Committer
 {
@@ -16,11 +17,11 @@ class BatchCommitter implements Committer
     ) {
     }
 
-    public function commitMessage(): void
+    public function commitMessage(Message $message, bool $success): void
     {
         $this->commits++;
         if ($this->maxMessagesLimitReached() || $this->commits >= $this->batchSize) {
-            $this->committer->commitMessage();
+            $this->committer->commitMessage($message, $success);
             $this->commits = 0;
         }
     }
@@ -30,9 +31,9 @@ class BatchCommitter implements Committer
         return $this->messageCounter->maxMessagesLimitReached();
     }
 
-    public function commitDlq(): void
+    public function commitDlq(Message $message): void
     {
-        $this->committer->commitDlq();
+        $this->committer->commitDlq($message);
         $this->commits = 0;
     }
 }

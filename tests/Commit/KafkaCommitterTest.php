@@ -8,6 +8,7 @@ use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use Mockery as m;
 use RdKafka\Conf;
 use RdKafka\KafkaConsumer;
+use RdKafka\Message;
 
 class KafkaCommitterTest extends LaravelKafkaTestCase
 {
@@ -37,7 +38,7 @@ class KafkaCommitterTest extends LaravelKafkaTestCase
             'conf' => $conf,
         ]));
 
-        $kafkaCommitter->commitMessage();
+        $kafkaCommitter->commitMessage(new Message(), true);
     }
 
     public function testItCanCommitToDlq()
@@ -66,6 +67,6 @@ class KafkaCommitterTest extends LaravelKafkaTestCase
             'conf' => $conf,
         ]));
 
-        $kafkaCommitter->commitDlq();
+        $kafkaCommitter->commitDlq(new Message());
     }
 }

@@ -38,9 +38,10 @@ Follow these docs to install this package and start using kafka with ease.
   - [4.9 Using custom deserializers](#using-custom-deserializers)
   - [4.10 Using AVRO deserializer](#using-avro-deserializer)
   - [4.11 Using auto-commit](#using-auto-commit)
-  - [4.12 Setting kafka consumer configuration options](#setting-kafka-configuration-options)
-  - [4.13 Building the consumer](#building-the-consumer)
-  - [4.14 Consuming the kafka message](#consuming-the-kafka-messages)
+  - [4.12 Using custom committers](#using-custom-committers)
+  - [4.13 Setting kafka consumer configuration options](#setting-kafka-configuration-options)
+  - [4.14 Building the consumer](#building-the-consumer)
+  - [4.15 Consuming the kafka message](#consuming-the-kafka-messages)
 - [5. Using custom serializers/deserializers](#using-custom-serializersdeserializers)
 - [6. Using `Kafka::fake()`method](#using-kafkafake)
   - [6.1 `assertPublished` method](#assertpublished-method)
@@ -473,6 +474,42 @@ use the `withAutoCommit` method:
 
 ```php
 $consumer = \Junges\Kafka\Facades\Kafka::createConsumer()->withAutoCommit();
+```
+
+<a name="using-custom-committers"></a>
+## Using custom committers
+By default the committers provided by the `DefaultCommitterFactory` are provided.
+
+To set a custom committer on your consumer, add the committer via a factory that implements the `CommitterFactory` interface:
+
+```php
+use \RdKafka\KafkaConsumer;
+use \RdKafka\Message;
+use \Junges\Kafka\Commit\Contracts\Committer;
+use \Junges\Kafka\Commit\Contracts\CommitterFactory;
+use \Junges\Kafka\Config\Config;
+
+class MyCommitter implements Committer
+{
+    public function commitMessage(Message $message, bool $success) : void {
+        // ...
+    }
+    
+    public function commitDlq(Message $message) : void {
+        // ...
+    }  
+}
+
+class MyCommitterFactory implements CommitterFactory
+{
+    public function make(KafkaConsumer $kafkaConsumer, Config $config) : Committer {
+        // ...
+    }
+}
+
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer()
+    ->usingCommitterFactory(new MyCommitterFactory())
+    ->build();
 ```
 
 ## Setting Kafka configuration options

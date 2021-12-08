@@ -2,6 +2,8 @@
 
 namespace Junges\Kafka\Tests\Consumers;
 
+use Junges\Kafka\Commit\Contracts\CommitterFactory;
+use Junges\Kafka\Commit\VoidCommitter;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
@@ -139,5 +141,46 @@ class ConsumerTest extends LaravelKafkaTestCase
 
         $this->assertSame(2, $this->stoppableConsumer->consumedMessagesCount());
         $this->assertTrue($this->stoppableConsumerStopped);
+    }
+
+    public function testItAcceptsCustomCommitter(): void
+    {
+        $fakeHandler = new FakeHandler();
+
+        $message = new Message();
+        $message->err = 0;
+        $message->key = 'key';
+        $message->topic_name = 'test-topic';
+        $message->payload = '{"body": "message payload"}';
+
+        $this->mockConsumerWithMessage($message);
+
+        $this->mockProducer();
+
+        $config = new Config(
+            broker: 'broker',
+            topics: ['test-topic'],
+            securityProtocol: 'security',
+            commit: 1,
+            groupId: 'group',
+            consumer: $fakeHandler,
+            sasl: null,
+            dlq: null,
+            maxMessages: 1,
+            maxCommitRetries: 1
+        );
+
+        $mockedCommitterFactory = $this->createMock(CommitterFactory::class);
+        $mockedCommitterFactory->expects($this->once())
+            ->method('make')
+            ->willReturn(new VoidCommitter());
+
+        $consumer = new Consumer($config, new JsonDeserializer(), $mockedCommitterFactory);
+        $consumer->consume();
+
+        $this->assertInstanceOf(ConsumedMessage::class, $fakeHandler->lastMessage());
+
+        $committer = $this->getPropertyWithReflection('committer', $consumer);
+        $this->assertInstanceOf(VoidCommitter::class, $committer);
     }
 }
