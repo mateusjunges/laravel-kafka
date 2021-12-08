@@ -10,7 +10,7 @@ class Retryable
     public function __construct(
         private Sleeper $sleeper,
         private int $maximumRetries,
-        private array $retryableErrors
+        private ?array $retryableErrors
     ) {
     }
 
@@ -30,12 +30,15 @@ class Retryable
         try {
             $function();
         } catch (Exception $exception) {
-            if (in_array($exception->getCode(), $this->retryableErrors) && $currentRetries < $this->maximumRetries) {
+            if (
+                $currentRetries < $this->maximumRetries
+                && (is_null($this->retryableErrors) || in_array($exception->getCode(), $this->retryableErrors))
+            ) {
                 $this->sleeper->sleep((int)($delayInSeconds * 1e6));
                 $this->retry(
                     $function,
                     ++$currentRetries,
-                    $exponentially == true ? $delayInSeconds * 2 : $delayInSeconds
+                    $exponentially === true ? $delayInSeconds * 2 : $delayInSeconds
                 );
 
                 return;
