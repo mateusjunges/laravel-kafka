@@ -220,7 +220,7 @@ class ConsumerBuilder
     }
 
     /**
-     * Set the Sals configuration.
+     * Set the Sasl configuration.
      *
      * @param Sasl $saslConfig
      * @return $this
