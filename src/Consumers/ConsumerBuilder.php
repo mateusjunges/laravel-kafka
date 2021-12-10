@@ -265,9 +265,9 @@ class ConsumerBuilder
      *
      * @return $this
      */
-    public function withAutoCommit(): self
+    public function withAutoCommit(bool $autoCommit = true): self
     {
-        $this->autoCommit = true;
+        $this->autoCommit = $autoCommit;
 
         return $this;
     }
