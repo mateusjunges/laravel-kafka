@@ -69,8 +69,8 @@ class Config
             'bootstrap.servers' => $this->broker,
         ];
 
-        if ($this->autoCommit) {
-            $options['enable.auto.commit'] = 'true';
+        if (! empty($this->autoCommit)) {
+            $options['enable.auto.commit'] = $this->autoCommit === true ? 'true' : 'false';
         }
 
         return array_merge($options, $this->customOptions);

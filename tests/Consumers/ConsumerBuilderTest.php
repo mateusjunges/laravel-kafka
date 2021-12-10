@@ -226,6 +226,14 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
         $autoCommit = $this->getPropertyWithReflection('autoCommit', $consumer);
 
         $this->assertTrue($autoCommit);
+
+        $consumer = ConsumerBuilder::create('broker')->withAutoCommit(false);
+
+        $this->assertInstanceOf(Consumer::class, $consumer->build());
+
+        $autoCommit = $this->getPropertyWithReflection('autoCommit', $consumer);
+
+        $this->assertFalse($autoCommit);
     }
 
     public function testItCanSetConsumerOptions()
