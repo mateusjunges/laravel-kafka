@@ -247,6 +247,17 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertEquals('false', $options['enable.auto.commit']);
     }
 
+    public function testItCanSpecifyBrokersUsingWithBrokers()
+    {
+        $consumer = ConsumerBuilder::create('broker')->withBrokers('my-test-broker');
+
+        $this->assertInstanceOf(Consumer::class, $consumer->build());
+
+        $brokers = $this->getPropertyWithReflection('brokers', $consumer);
+
+        $this->assertEquals('my-test-broker', $brokers);
+    }
+
     public function testItCanBuildWithCustomCommitter(): void
     {
         $adhocCommitterFactory = new class implements CommitterFactory {

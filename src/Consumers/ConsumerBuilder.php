@@ -97,6 +97,19 @@ class ConsumerBuilder
     }
 
     /**
+     * Set the brokers the kafka consumer should use.
+     *
+     * @param string $brokers
+     * @return $this
+     */
+    public function withBrokers(string $brokers): self
+    {
+        $this->brokers = $brokers;
+
+        return $this;
+    }
+
+    /**
      * @param string $groupId
      * @return $this
      */
