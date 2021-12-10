@@ -101,12 +101,12 @@ class ConsumerBuilder
     /**
      * Set the brokers the kafka consumer should use.
      *
-     * @param string $brokers
+     * @param ?string $brokers
      * @return $this
      */
-    public function withBrokers(string $brokers): self
+    public function withBrokers(?string $brokers): self
     {
-        $this->brokers = $brokers;
+        $this->brokers = $brokers ?? config('kafka.brokers');
 
         return $this;
     }
@@ -114,10 +114,10 @@ class ConsumerBuilder
     /**
      * Specify the consumer group id.
      *
-     * @param string $groupId
+     * @param ?string $groupId
      * @return $this
      */
-    public function withConsumerGroupId(string $groupId): self
+    public function withConsumerGroupId(?string $groupId): self
     {
         $this->groupId = $groupId;
 
