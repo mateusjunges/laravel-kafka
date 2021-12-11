@@ -222,12 +222,20 @@ class ConsumerBuilder
     /**
      * Set the Sasl configuration.
      *
-     * @param Sasl $saslConfig
+     * @param string $username
+     * @param string $password
+     * @param string $mechanisms
+     * @param string $securityProtocol
      * @return $this
      */
-    public function withSasl(Sasl $saslConfig): self
+    public function withSasl(string $username, string $password, string $mechanisms, string $securityProtocol = 'SASL_PLAINTEXT'): self
     {
-        $this->saslConfig = $saslConfig;
+        $this->saslConfig = new Sasl(
+            username: $username,
+            password: $password,
+            mechanisms: $mechanisms,
+            securityProtocol: $securityProtocol
+        );
 
         return $this;
     }
