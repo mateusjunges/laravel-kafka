@@ -66,7 +66,8 @@ class ConsumerTest extends LaravelKafkaTestCase
 
         $this->mockProducer();
 
-        $consumer = Kafka::createConsumer(['test'])
+        $consumer = Kafka::createConsumer('default')
+            ->subscribe('test')
             ->withHandler($fakeConsumer = new FakeConsumer())
             ->withAutoCommit()
             ->withMaxMessages(1)
@@ -126,7 +127,8 @@ class ConsumerTest extends LaravelKafkaTestCase
 
         $this->mockProducer();
 
-        $this->stoppableConsumer = Kafka::createConsumer(['test'])
+        $this->stoppableConsumer = Kafka::createConsumer('default')
+            ->subscribe('topic')
             ->withHandler(function (KafkaConsumerMessage $message) {
                 if ($message->getKey() === 'key2' && $this->stoppableConsumer) {
                     $this->stoppableConsumer->stopConsume(function () {

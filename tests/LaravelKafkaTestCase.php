@@ -25,20 +25,12 @@ class LaravelKafkaTestCase extends Orchestra
 
     public function getEnvironmentSetUp($app)
     {
-        $app['config']->set('kafka.brokers', 'localhost:9092');
-        $app['config']->set('kafka.consumer_group_id', 'group');
-        $app['config']->set('kafka.offset_reset', 'latest');
-        $app['config']->set('kafka.auto_commit', true);
-        $app['config']->set('kafka.sleep_on_error', 5);
-        $app['config']->set('kafka.partition', 0);
-        $app['config']->set('kafka.compression', 'snappy');
-        $app['config']->set('kafka.debug', false);
-
         $app['config']->set('kafka.clusters.default.brokers', 'localhost:9092');
         $app['config']->set('kafka.clusters.default.partition', 0);
         $app['config']->set('kafka.clusters.default.compression', 'snappy');
         $app['config']->set('kafka.clusters.default.debug', false);
         $app['config']->set('kafka.clusters.default.security_protocol', 'plaintext');
+        $app['config']->set('kafka.clusters.default.options', []);
 
         $app['config']->set('kafka.consumers.default.brokers', 'localhost:9092');
         $app['config']->set('kafka.consumers.default.topics', ['topic1', 'topic2']);

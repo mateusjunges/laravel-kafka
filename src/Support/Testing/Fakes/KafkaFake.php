@@ -3,6 +3,7 @@
 namespace Junges\Kafka\Support\Testing\Fakes;
 
 use Illuminate\Support\Collection;
+use InvalidArgumentException;
 use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Contracts\CanPublishMessagesToKafka;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
@@ -13,21 +14,30 @@ class KafkaFake implements CanPublishMessagesToKafka
 {
     private array $publishedMessages = [];
 
-    public function __construct()
-    {
-        $this->makeProducerBuilderFake();
-    }
-
     /**
      * Publish a message in the specified broker/topic.
      *
-     * @param string $topic
-     * @param string|null $broker
+     * @param string $cluster
      * @return ProducerBuilderFake
      */
-    public function publishOn(string $topic, ?string $broker = null): ProducerBuilderFake
+    public function publishOn(string $cluster): ProducerBuilderFake
     {
-        return $this->makeProducerBuilderFake($topic, $broker);
+        $clusterConfig = config('kafka.clusters.'.$cluster);
+
+        if ($clusterConfig === null) {
+            throw new InvalidArgumentException("Cluster [{$cluster}] is not defined.");
+        }
+
+        return $this->makeProducerBuilderFake($clusterConfig);
+    }
+
+    /**
+     * @param string $cluster
+     * @return \Junges\Kafka\Support\Testing\Fakes\ProducerBuilderFake
+     */
+    public function cluster(string $cluster): ProducerBuilderFake
+    {
+
     }
 
     /**
@@ -102,14 +112,10 @@ class KafkaFake implements CanPublishMessagesToKafka
         PHPUnit::assertEmpty($this->getPublishedMessages(), 'Messages were published unexpectedly.');
     }
 
-    private function makeProducerBuilderFake(string $topic = '', ?string $broker = null): ProducerBuilderFake
+    private function makeProducerBuilderFake(array $config): ProducerBuilderFake
     {
-        return (
-            new ProducerBuilderFake(
-                topic: $topic,
-                broker: $broker
-            )
-        )->withProducerCallback(fn (Message $message) => $this->publishedMessages[] = $message);
+        return ProducerBuilderFake::create($config)
+            ->withProducerCallback(fn (Message $message) => $this->publishedMessages[] = $message);
     }
 
     /**

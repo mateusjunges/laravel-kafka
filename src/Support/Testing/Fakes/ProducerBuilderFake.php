@@ -3,8 +3,6 @@
 namespace Junges\Kafka\Support\Testing\Fakes;
 
 use Closure;
-use InvalidArgumentException;
-use Junges\Kafka\Config\Cluster;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Contracts\CanProduceMessages;
@@ -19,13 +17,12 @@ class ProducerBuilderFake implements CanProduceMessages
     private MessageSerializer $serializer;
     private ?Sasl $saslConfig = null;
     private ?Closure $producerCallback = null;
-    private ?Cluster $cluster = null;
+    private string $topic = '';
+    private ?string $brokers = null;
 
-    public function __construct(
-        private string $topic,
-        private ?string $broker = null,
-    ) {
-        $this->message = new Message($topic);
+    public function __construct()
+    {
+        $this->message = new Message('');
 
         $conf = new Config(
             broker: '',
@@ -38,30 +35,41 @@ class ProducerBuilderFake implements CanProduceMessages
 
     /**
      * Return a new Junges\Commit\ProducerBuilder instance
-     * @param string $topic
-     * @param string|null $broker
      * @return static
      */
-    public static function create(string $topic, string $broker = null): self
+    public static function create(array $config): CanProduceMessages
     {
-        return new ProducerBuilderFake($broker, $topic);
+        return (new static())
+            ->withBrokers($config['brokers'])
+            ->withDebugEnabled($config['debug'])
+            ->withConfigOption('compression.codec', $config['compression'])
+            ->withConfigOptions($config['options']);
     }
 
     /**
-     * Create a Cluster instance with the given cluster configuration.
+     * Set the brokers to be used.
      *
-     * @param string $cluster
-     * @return $this
+     * @param string $brokers
+     * @return \Junges\Kafka\Contracts\CanProduceMessages
      */
-    public function usingCluster(string $cluster = 'default'): self
+    public function withBrokers(string $brokers): CanProduceMessages
     {
-        $clusterConfig = config('kafka.clusters.'.$cluster);
+        $this->brokers = $brokers;
 
-        if ($clusterConfig === null) {
-            throw new InvalidArgumentException("Cluster [{$cluster}] is not defined.");
-        }
+        return $this;
+    }
 
-        $this->cluster = Cluster::createFromConfig($clusterConfig);
+    /**
+     * Set the topic to publish the message.
+     *
+     * @param string $topic
+     * @return \Junges\Kafka\Contracts\CanProduceMessages
+     */
+    public function onTopic(string $topic): CanProduceMessages
+    {
+        $this->topic = $topic;
+
+        $this->message->setTopicName($topic);
 
         return $this;
     }
@@ -227,34 +235,13 @@ class ProducerBuilderFake implements CanProduceMessages
      */
     private function build(): ProducerFake
     {
-        if ($this->isUsingCluster()) {
-            $this->buildClusterConfiguration();
-        }
-
         $conf = new Config(
-            broker: $this->broker ?? config('kafka.brokers'),
+            broker: $this->brokers,
             topics: [$this->getTopic()],
             sasl: $this->saslConfig,
             customOptions: $this->options
         );
 
         return $this->makeProducer($conf);
-    }
-
-    private function isUsingCluster(): bool
-    {
-        return $this->cluster !== null;
-    }
-
-    private function buildClusterConfiguration(): void
-    {
-        $this->saslConfig = $this->cluster->getSasl();
-
-        if ($this->cluster->isDebugEnabled()) {
-            $this->withDebugEnabled();
-        }
-
-        $this->withConfigOption('compression.codec', $this->cluster->getCompression());
-        $this->broker = $this->cluster->getBrokers();
     }
 }

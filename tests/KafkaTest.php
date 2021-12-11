@@ -37,7 +37,8 @@ class KafkaTest extends LaravelKafkaTestCase
             return $mockedProducer;
         });
 
-        $test = Kafka::publishOn('test-topic')
+        $test = Kafka::publishOn('default')
+            ->onTopic('test-topic')
             ->withConfigOptions([
                 'metadata.broker.list' => 'broker',
             ])
@@ -70,7 +71,8 @@ class KafkaTest extends LaravelKafkaTestCase
             return $mockedProducer;
         });
 
-        $producer = Kafka::publishOn('test-topic')
+        $producer = Kafka::publishOn('default')
+            ->onTopic('test-topic')
             ->withConfigOptions([
                 'metadata.broker.list' => 'broker',
             ])
@@ -105,7 +107,8 @@ class KafkaTest extends LaravelKafkaTestCase
 
         Kafka::fake();
 
-        $test = Kafka::publishOn('test-topic')
+        $test = Kafka::publishOn('default')
+            ->onTopic('test-topic')
             ->withConfigOptions([
                 'metadata.broker.list' => 'broker',
             ])
@@ -140,7 +143,8 @@ class KafkaTest extends LaravelKafkaTestCase
 
         $message = Message::create()->withHeaders(['foo' => 'bar'])->withKey('message-key')->withBody(['foo' => 'bar']);
 
-        $test = Kafka::publishOn('test-topic')
+        $test = Kafka::publishOn('default')
+            ->onTopic('test-topic')
             ->withConfigOptions([
                 'metadata.broker.list' => 'broker',
             ])
@@ -150,7 +154,8 @@ class KafkaTest extends LaravelKafkaTestCase
 
         $this->assertTrue($test);
 
-        $test = Kafka::publishOn('test-topic')
+        $test = Kafka::publishOn('default')
+            ->onTopic('test-topic')
             ->withConfigOptions([
                 'metadata.broker.list' => 'broker',
             ])
@@ -186,7 +191,8 @@ class KafkaTest extends LaravelKafkaTestCase
         });
 
         /** @var ProducerBuilder $producer */
-        $producer = Kafka::publishOn('test-topic')
+        $producer = Kafka::publishOn('default')
+            ->onTopic('test-topic')
             ->withConfigOptions([
                 'metadata.broker.list' => 'broker',
             ])
@@ -209,7 +215,8 @@ class KafkaTest extends LaravelKafkaTestCase
 
     public function testICanUseCustomOptionsForProducerConfig()
     {
-        $producer = Kafka::publishOn('test-topic')
+        $producer = Kafka::publishOn('default')
+            ->onTopic('test-topic')
             ->withConfigOptions($expectedOptions = [
                 'bootstrap.servers' => '[REMOTE_ADDRESS]',
                 'metadata.broker.list' => '[REMOTE_ADDRESS]',
@@ -217,6 +224,7 @@ class KafkaTest extends LaravelKafkaTestCase
                 'sasl.mechanisms' => 'PLAIN',
                 'sasl.username' => '[API_KEY]',
                 'sasl.password' => '[API_KEY]',
+                'compression.codec' => 'snappy'
             ]);
 
         $options = $this->getPropertyWithReflection('options', $producer);
@@ -226,7 +234,7 @@ class KafkaTest extends LaravelKafkaTestCase
 
     public function testCreateConsumerReturnsAConsumerBuilderInstance()
     {
-        $consumer = Kafka::createConsumer();
+        $consumer = Kafka::createConsumer('localhost:9092');
 
         $this->assertInstanceOf(ConsumerBuilder::class, $consumer);
 
@@ -246,10 +254,9 @@ class KafkaTest extends LaravelKafkaTestCase
 
     public function testCreateConsumerDefaultConfigs()
     {
-        $consumer = Kafka::createConsumer();
+        $consumer = Kafka::createConsumer('localhost:9092');
 
         $this->assertInstanceOf(ConsumerBuilder::class, $consumer);
-        $this->assertEquals('group', $this->getPropertyWithReflection('groupId', $consumer));
         $this->assertEquals('localhost:9092', $this->getPropertyWithReflection('brokers', $consumer));
         $this->assertEquals([], $this->getPropertyWithReflection('topics', $consumer));
     }
@@ -279,7 +286,9 @@ class KafkaTest extends LaravelKafkaTestCase
             return $mockedProducer;
         });
 
-        Kafka::publishOn('test')->withBodyKey('foo', 'bar')->send();
+        Kafka::publishOn('default')
+            ->onTopic('test')
+            ->withBodyKey('foo', 'bar')->send();
     }
 
     public function testItCanConnectToACluster()
@@ -302,8 +311,8 @@ class KafkaTest extends LaravelKafkaTestCase
             return $mockedProducer;
         });
 
-        Kafka::publishOn('test')
-            ->usingCluster('default')
+        Kafka::publishOn('default')
+            ->onTopic('test')
             ->withBodyKey('foo', 'bar')
             ->send();
     }
@@ -314,8 +323,7 @@ class KafkaTest extends LaravelKafkaTestCase
 
         $this->expectExceptionMessage("Cluster [undefined] is not defined.");
 
-        Kafka::publishOn('test')
-            ->usingCluster('undefined')
+        Kafka::publishOn('undefined')
             ->withBodyKey('foo', 'bar')
             ->send();
     }

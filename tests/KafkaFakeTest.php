@@ -28,7 +28,8 @@ class KafkaFakeTest extends LaravelKafkaTestCase
 
     public function testItStorePublishedMessagesOnArray()
     {
-        $producer = $this->fake->publishOn('topic')
+        $producer = $this->fake->publishOn('default')
+            ->onTopic('topic')
             ->withBodyKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
             ->withKafkaKey(Str::uuid()->toString());
@@ -46,7 +47,8 @@ class KafkaFakeTest extends LaravelKafkaTestCase
             $this->assertThat($exception, new ExceptionMessage('The expected message was not published.'));
         }
 
-        $producer = $this->fake->publishOn('topic')
+        $producer = $this->fake->publishOn('default')
+            ->onTopic('topic')
             ->withBodyKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
             ->withKafkaKey(Str::uuid()->toString());
@@ -63,7 +65,8 @@ class KafkaFakeTest extends LaravelKafkaTestCase
             $this->assertThat($exception, new ExceptionMessage('The expected message was not published.'));
         }
 
-        $producer = $this->fake->publishOn('topic')
+        $producer = $this->fake->publishOn('default')
+            ->onTopic('topic')
             ->withBodyKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
             ->withKafkaKey(Str::uuid()->toString());
@@ -85,7 +88,8 @@ class KafkaFakeTest extends LaravelKafkaTestCase
 
     public function testItCanPerformAssertionsOnPublishedMessages()
     {
-        $producer = $this->fake->publishOn('topic')
+        $producer = $this->fake->publishOn('default')
+            ->onTopic('topic')
             ->withBodyKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
             ->withKafkaKey($uuid = Str::uuid()->toString());
@@ -114,7 +118,8 @@ class KafkaFakeTest extends LaravelKafkaTestCase
 
     public function testAssertPublishedOn()
     {
-        $producer = $this->fake->publishOn('topic')
+        $producer = $this->fake->publishOn('default')
+            ->onTopic('topic')
             ->withBodyKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
             ->withKafkaKey(Str::uuid()->toString());
@@ -134,7 +139,8 @@ class KafkaFakeTest extends LaravelKafkaTestCase
 
     public function testAssertPublishedOnTimes()
     {
-        $producer = $this->fake->publishOn('topic')
+        $producer = $this->fake->publishOn('default')
+            ->onTopic('topic')
             ->withBodyKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
             ->withKafkaKey(Str::uuid()->toString());
@@ -154,7 +160,8 @@ class KafkaFakeTest extends LaravelKafkaTestCase
 
     public function testICanPerformAssertionsUsingAssertPublishedOn()
     {
-        $producer = $this->fake->publishOn('topic')
+        $producer = $this->fake->publishOn('default')
+            ->onTopic('topic')
             ->withBodyKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
             ->withKafkaKey($uuid = Str::uuid()->toString());
@@ -182,7 +189,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
     {
         $this->fake->assertNothingPublished();
 
-        $this->fake->publishOn('topic', 'broker')->withMessage(new Message('foo'))->send();
+        $this->fake->publishOn('default')->onTopic('topic')->withMessage(new Message('foo'))->send();
 
         try {
             $this->fake->assertNothingPublished();

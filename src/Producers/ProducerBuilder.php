@@ -2,8 +2,6 @@
 
 namespace Junges\Kafka\Producers;
 
-use InvalidArgumentException;
-use Junges\Kafka\Config\Cluster;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Contracts\CanProduceMessages;
@@ -16,49 +14,55 @@ class ProducerBuilder implements CanProduceMessages
     private KafkaProducerMessage $message;
     private MessageSerializer $serializer;
     private ?Sasl $saslConfig = null;
-    private string $broker;
-    private ?Cluster $cluster = null;
+    private ?string $topic = null;
+    private ?string $brokers;
 
-    public function __construct(
-        private string $topic,
-        ?string $broker = null,
-    ) {
+    public function __construct()
+    {
         /** @var KafkaProducerMessage $message */
         $message = app(KafkaProducerMessage::class);
-        $this->message = $message->create($topic);
+        $this->message = $message->create('');
         $this->serializer = app(MessageSerializer::class);
-        $this->broker = $broker ?? config('kafka.brokers');
+        $this->brokers = $broker ?? config('kafka.brokers');
     }
 
     /**
      * Return a new Junges\Commit\ProducerBuilder instance
-     * @param string $topic
-     * @param string|null $broker
+     *
+     * @param array $config
      * @return static
      */
-    public static function create(string $topic, string $broker = null): self
+    public static function create(array $config): self
     {
-        return new ProducerBuilder(
-            topic: $topic,
-            broker: $broker ?? config('kafka.brokers')
-        );
+        return (new static())
+            ->withBrokers($config['brokers'])
+            ->withDebugEnabled($config['debug'])
+            ->withConfigOption('compression.codec', $config['compression'])
+            ->withConfigOptions($config['options']);
     }
 
     /**
-     * Create a Cluster instance with the given cluster configuration.
+     * Set the brokers to be used.
      *
-     * @param string $cluster
+     * @param string $brokers
      * @return $this
      */
-    public function usingCluster(string $cluster = 'default'): self
+    public function withBrokers(string $brokers): self
     {
-        $clusterConfig = config('kafka.clusters.'.$cluster);
+        $this->brokers = $brokers;
 
-        if ($clusterConfig === null) {
-            throw new InvalidArgumentException("Cluster [{$cluster}] is not defined.");
-        }
+        return $this;
+    }
 
-        $this->cluster = Cluster::createFromConfig($clusterConfig);
+    /**
+     * Set the topic to publish the message.
+     *
+     * @param string $topic
+     * @return $this
+     */
+    public function onTopic(string $topic): self
+    {
+        $this->topic = $topic;
 
         return $this;
     }
@@ -175,12 +179,8 @@ class ProducerBuilder implements CanProduceMessages
 
     private function build(): Producer
     {
-        if ($this->isUsingCluster()) {
-            $this->buildClusterConfiguration();
-        }
-
         $conf = new Config(
-            broker: $this->cluster ? $this->cluster->getBrokers() : $this->broker,
+            broker: $this->brokers,
             topics: [$this->getTopic()],
             sasl: $this->saslConfig,
             customOptions: $this->options,
@@ -191,22 +191,5 @@ class ProducerBuilder implements CanProduceMessages
             'topic' => $this->topic,
             'serializer' => $this->serializer,
         ]);
-    }
-
-    private function isUsingCluster(): bool
-    {
-        return $this->cluster !== null;
-    }
-
-    private function buildClusterConfiguration(): void
-    {
-        $this->saslConfig = $this->cluster->getSasl();
-
-        if ($this->cluster->isDebugEnabled()) {
-            $this->withDebugEnabled();
-        }
-
-        $this->withConfigOption('compression.codec', $this->cluster->getCompression());
-        $this->broker = $this->cluster->getBrokers();
     }
 }
