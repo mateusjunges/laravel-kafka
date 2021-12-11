@@ -83,20 +83,24 @@ class ConsumerBuilder
      */
     public static function createFromConsumerConfig(array $config): ConsumerBuilder
     {
-        return
-            (new static(
+        $consumer = (new static(
                 brokers: $config['brokers'],
                 topics: $config['topics'],
                 groupId: $config['group_id']
             ))
             ->withAutoCommit($config['auto_commit'])
-            ->withDlq($config['dlq_topic'])
             ->withMaxCommitRetries($config['max_commit_retries'])
             ->withCommitBatchSize($config['commit_batch_size'])
             ->withMaxMessages($config['max_messages'])
             ->withSecurityProtocol($config['security_protocol'])
             ->withOption('auto.offset.reset', $config['offset_reset'])
             ->withOptions($config['options']);
+
+        if ($config['dlq_topic']) {
+            $consumer->withDlq($config['dlq_topic']);
+        }
+
+        return $consumer;
     }
 
     /**

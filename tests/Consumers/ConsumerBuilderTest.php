@@ -293,9 +293,15 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertEquals('default', $this->getPropertyWithReflection('groupId', $consumer));
         $this->assertEquals('latest', $this->getPropertyWithReflection('options', $consumer)['auto.offset.reset']);
         $this->assertEquals(10, $this->getPropertyWithReflection('maxCommitRetries', $consumer));
-        $this->assertEquals(null, $this->getPropertyWithReflection('commit', $consumer));
+        $this->assertNull($this->getPropertyWithReflection('commit', $consumer));
         $this->assertEquals(2, $this->getPropertyWithReflection('maxMessages', $consumer));
         $this->assertEquals('plaintext', $this->getPropertyWithReflection('securityProtocol', $consumer));
+
+        config()->set('kafka.consumers.default.dlq_topic', null);
+
+        $consumer = ConsumerBuilder::createFromConsumerConfig(config('kafka.consumers.default'));
+
+        $this->assertNull($this->getPropertyWithReflection('dlq', $consumer));
     }
 }
 

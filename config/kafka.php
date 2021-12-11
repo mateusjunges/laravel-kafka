@@ -45,7 +45,7 @@ return [
             /*
              * The dead letter queue for this consumer.
              */
-            'dlq_topic' => '',
+            'dlq_topic' => null,
 
             /*
              | Kafka consumers belonging to the same consumer group share a group id.
