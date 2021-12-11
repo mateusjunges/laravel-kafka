@@ -25,11 +25,21 @@ class ConsumedMessage extends AbstractMessage implements KafkaConsumerMessage
         );
     }
 
+    /**
+     * Get the offset in which message was published.
+     *
+     * @return int|null
+     */
     public function getOffset(): ?int
     {
         return $this->offset;
     }
 
+    /**
+     * Get the timestamp the message was published.
+     *
+     * @return int|null
+     */
     public function getTimestamp(): ?int
     {
         return $this->timestamp;

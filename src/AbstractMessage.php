@@ -22,6 +22,12 @@ abstract class AbstractMessage implements KafkaMessage
         return $this;
     }
 
+    /**
+     * Set the message topic.
+     *
+     * @param string $topic
+     * @return $this
+     */
     public function setTopicName(string $topic): self
     {
         $this->topicName = $topic;
@@ -29,26 +35,51 @@ abstract class AbstractMessage implements KafkaMessage
         return $this;
     }
 
+    /**
+     * Get the topic where the message was published.
+     *
+     * @return string|null
+     */
     public function getTopicName(): ?string
     {
         return $this->topicName;
     }
 
+    /**
+     * Get the partition in which the message was published.
+     *
+     * @return int|null
+     */
     public function getPartition(): ?int
     {
         return $this->partition;
     }
 
+    /**
+     * Get the published message body.
+     *
+     * @return mixed
+     */
     public function getBody()
     {
         return $this->body;
     }
 
+    /**
+     * Get the published message headers.
+     *
+     * @return array|null
+     */
     public function getHeaders(): ?array
     {
         return $this->headers;
     }
 
+    /**
+     * Get the published message key.
+     *
+     * @return mixed
+     */
     public function getKey(): mixed
     {
         return $this->key;
