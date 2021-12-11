@@ -42,4 +42,11 @@ return [
      | Choose if debug is enabled or not.
      */
     'debug' => env('KAFKA_DEBUG', false),
+
+    'sasl' => [
+        'security_protocol' => env('KAFKA_SECURITY_PROTOCOL','plaintext'),
+        'mechanisms' => env('KAFKA_SASL_MECHANISM',null),
+        'username' => env('KAFKA_SASL_USER',null),
+        'password' => env('KAFKA_SASL_PASS',null),
+    ]
 ];
