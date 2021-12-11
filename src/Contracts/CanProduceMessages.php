@@ -4,7 +4,6 @@ namespace Junges\Kafka\Contracts;
 
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Message\Message;
-use Junges\Kafka\Producers\ProducerBuilder;
 
 interface CanProduceMessages
 {
