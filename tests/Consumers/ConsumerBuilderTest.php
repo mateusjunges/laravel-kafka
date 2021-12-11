@@ -226,6 +226,14 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
         $autoCommit = $this->getPropertyWithReflection('autoCommit', $consumer);
 
         $this->assertTrue($autoCommit);
+
+        $consumer = ConsumerBuilder::create('broker')->withAutoCommit(false);
+
+        $this->assertInstanceOf(Consumer::class, $consumer->build());
+
+        $autoCommit = $this->getPropertyWithReflection('autoCommit', $consumer);
+
+        $this->assertFalse($autoCommit);
     }
 
     public function testItCanSetConsumerOptions()
@@ -245,6 +253,17 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertArrayHasKey('enable.auto.commit', $options);
         $this->assertEquals('latest', $options['auto.offset.reset']);
         $this->assertEquals('false', $options['enable.auto.commit']);
+    }
+
+    public function testItCanSpecifyBrokersUsingWithBrokers()
+    {
+        $consumer = ConsumerBuilder::create('broker')->withBrokers('my-test-broker');
+
+        $this->assertInstanceOf(Consumer::class, $consumer->build());
+
+        $brokers = $this->getPropertyWithReflection('brokers', $consumer);
+
+        $this->assertEquals('my-test-broker', $brokers);
     }
 
     public function testItCanBuildWithCustomCommitter(): void

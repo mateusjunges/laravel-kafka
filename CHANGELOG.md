@@ -2,6 +2,14 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2021-12-xx v1.5.1](https://github.com/mateusjunges/laravel-kafka/compare/v1.5.0...v1.5.1)
+### Added
+- Added a `withBrokers` setter to the consumer api, allowing to set brokers on the run ([#6a639ce](https://github.com/mateusjunges/laravel-kafka/commit/6a639ce3670ef1df25c79d11923fcb13b37d4f8f))
+- Added boolean argument to `withAutoCommit`, which defaults to true ([#3ffb226](https://github.com/mateusjunges/laravel-kafka/commit/3ffb2265b0abd46e2d7048f55f9982bfedd441e2))
+
+### Fixed
+- Cast `auto_commit` to string on initial consumer options ([#f2a6c2b](https://github.com/mateusjunges/laravel-kafka/commit/f2a6c2b30d1180347f423df18132a90024c7b542))
+
 ## [2021-12-08 v1.5.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.4.5...v1.5.0)
 ### Changed
 - Renamed `AvroencoderException` to `AvroSerializerException` by @rtuin in [#38](https://github.com/mateusjunges/laravel-kafka/pull/38)

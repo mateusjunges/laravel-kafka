@@ -59,6 +59,8 @@ class ConsumerBuilder
     }
 
     /**
+     * Creates a new ConsumerBuilder instance.
+     *
      * @param string $brokers
      * @param array $topics
      * @param string|null $groupId
@@ -97,10 +99,25 @@ class ConsumerBuilder
     }
 
     /**
-     * @param string $groupId
+     * Set the brokers the kafka consumer should use.
+     *
+     * @param ?string $brokers
      * @return $this
      */
-    public function withConsumerGroupId(string $groupId): self
+    public function withBrokers(?string $brokers): self
+    {
+        $this->brokers = $brokers ?? config('kafka.brokers');
+
+        return $this;
+    }
+
+    /**
+     * Specify the consumer group id.
+     *
+     * @param ?string $groupId
+     * @return $this
+     */
+    public function withConsumerGroupId(?string $groupId): self
     {
         $this->groupId = $groupId;
 
@@ -108,6 +125,8 @@ class ConsumerBuilder
     }
 
     /**
+     * Specify the commit batch size.
+     *
      * @param int $size
      * @return $this
      */
@@ -119,6 +138,8 @@ class ConsumerBuilder
     }
 
     /**
+     * Specify the class used to handle consumed messages.
+     *
      * @param callable $handler
      * @return $this
      */
@@ -129,6 +150,12 @@ class ConsumerBuilder
         return $this;
     }
 
+    /**
+     * Specify the class that should be used to deserialize messages.
+     *
+     * @param MessageDeserializer $deserializer
+     * @return $this
+     */
     public function usingDeserializer(MessageDeserializer $deserializer): self
     {
         $this->deserializer = $deserializer;
@@ -136,6 +163,12 @@ class ConsumerBuilder
         return $this;
     }
 
+    /**
+     * Specify the factory that should be used to build the committer.
+     *
+     * @param CommitterFactory $committerFactory
+     * @return $this
+     */
     public function usingCommitterFactory(CommitterFactory $committerFactory): self
     {
         $this->committerFactory = $committerFactory;
@@ -144,6 +177,8 @@ class ConsumerBuilder
     }
 
     /**
+     * Define the max number of messages that should be consumed.
+     *
      * @param int $maxMessages
      * @return $this
      */
@@ -155,6 +190,8 @@ class ConsumerBuilder
     }
 
     /**
+     * Specify the max retries attempts.
+     *
      * @param int $maxCommitRetries
      * @return $this
      */
@@ -183,6 +220,8 @@ class ConsumerBuilder
     }
 
     /**
+     * Set the Sasl configuration.
+     *
      * @param Sasl $saslConfig
      * @return $this
      */
@@ -194,8 +233,8 @@ class ConsumerBuilder
     }
 
     /**
+     * Specify middlewares to be executed before handling the message.
      * The middlewares get executed in the order they are defined.
-     *
      * The middleware is a callable in which the first argument is the message itself and the second is the next handler
      *
      * @param callable(mixed, callable): void $middleware
@@ -209,6 +248,8 @@ class ConsumerBuilder
     }
 
     /**
+     * Specify the security protocol that should be used.
+     *
      * @param string $securityProtocol
      * @return $this
      */
@@ -220,17 +261,20 @@ class ConsumerBuilder
     }
 
     /**
+     * Enable or disable consumer auto commit option.
+     *
      * @return $this
      */
-    public function withAutoCommit(): self
+    public function withAutoCommit(bool $autoCommit = true): self
     {
-        $this->autoCommit = true;
+        $this->autoCommit = $autoCommit;
 
         return $this;
     }
 
     /**
      * Set the configuration options.
+     *
      * @param array $options
      * @return $this
      */
@@ -245,6 +289,7 @@ class ConsumerBuilder
 
     /**
      * Set a specific configuration option.
+     *
      * @param string $name
      * @param string $value
      * @return $this
@@ -256,6 +301,11 @@ class ConsumerBuilder
         return $this;
     }
 
+    /**
+     * Build the Kafka consumer.
+     *
+     * @return Consumer
+     */
     public function build(): Consumer
     {
         $config = new Config(
@@ -276,6 +326,12 @@ class ConsumerBuilder
         return new Consumer($config, $this->deserializer, $this->committerFactory);
     }
 
+    /**
+     * Validates each topic before subscribing.
+     *
+     * @param mixed $topic
+     * @return void
+     */
     private function validateTopic(mixed $topic)
     {
         if (! is_string($topic)) {

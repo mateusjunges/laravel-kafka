@@ -13,7 +13,7 @@ syntax usage syntax or, if it does, the test process with these packages are ver
 
 This package provides a nice way of producing and consuming kafka messages in your Laravel projects.
 
-Follow these docs to install this package and start using kafka with ease.
+Follow these docs to install this package and start using kafka in your laravel projects.
 
 - [1. Installation](#installation)
 - [2. Usage](#usage)
@@ -319,7 +319,7 @@ class Handler
     }
 }
 
-$consumer = \Junges\Kafka\Facades\Kafka::createConsumer()->withHandler(Handler::class)
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer()->withHandler(new Handler)
 ```
 
 The `KafkaConsumerMessage` contract gives you some handy methods to get the message properties: 
@@ -357,7 +357,7 @@ function gracefulShutdown(Consumer $consumer) {
 
 $consumer = Kafka::createConsumer(['topic'])
     ->withConsumerGroupId('group')
-    ->withHandler(Handler::class)
+    ->withHandler(new Handler)
     ->build();
     
 pcntl_signal(SIGINT, fn() => gracefulShutdown($consumer));
