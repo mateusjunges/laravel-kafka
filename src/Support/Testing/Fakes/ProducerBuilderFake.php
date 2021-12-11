@@ -4,14 +4,13 @@ namespace Junges\Kafka\Support\Testing\Fakes;
 
 use Closure;
 use InvalidArgumentException;
-use Junges\Kafka\Cluster;
+use Junges\Kafka\Config\Cluster;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Contracts\CanProduceMessages;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
 use Junges\Kafka\Contracts\MessageSerializer;
 use Junges\Kafka\Message\Message;
-use Junges\Kafka\Producers\ProducerBuilder;
 
 class ProducerBuilderFake implements CanProduceMessages
 {
@@ -249,14 +248,7 @@ class ProducerBuilderFake implements CanProduceMessages
 
     private function buildClusterConfiguration(): void
     {
-        if ($this->cluster->isSaslEnabled()) {
-            $this->saslConfig = new Sasl(
-                username: $this->cluster->getSaslUsername(),
-                password: $this->cluster->getSaslPassword(),
-                mechanisms: $this->cluster->getSaslMechanism(),
-                securityProtocol: $this->cluster->getSaslSecurityProtocol()
-            );
-        }
+        $this->saslConfig = $this->cluster->getSasl();
 
         if ($this->cluster->isDebugEnabled()) {
             $this->withDebugEnabled();

@@ -52,6 +52,7 @@ class Consumer
     /**
      * @param \Junges\Kafka\Config\Config $config
      * @param MessageDeserializer $deserializer
+     * @param CommitterFactory|null $committerFactory
      */
     public function __construct(private Config $config, MessageDeserializer $deserializer, CommitterFactory $committerFactory = null)
     {
@@ -113,6 +114,8 @@ class Consumer
 
     /**
      * Count the number of messages consumed by this consumer
+     *
+     * @return int
      */
     public function consumedMessagesCount(): int
     {
@@ -125,7 +128,7 @@ class Consumer
      * @throws KafkaConsumerException
      * @throws \RdKafka\Exception|\Throwable
      */
-    private function doConsume()
+    private function doConsume(): void
     {
         $message = $this->consumer->consume(2000);
         $this->handleMessage($message);
@@ -204,12 +207,23 @@ class Consumer
     private function sendToDlq(Message $message): void
     {
         $topic = $this->producer->newTopic($this->config->getDlq());
-        $topic->produce(
-            partition: RD_KAFKA_PARTITION_UA,
-            msgflags: 0,
-            payload: $message->payload,
-            key: $this->config->getConsumer()->producerKey($message->payload)
-        );
+
+        if (method_exists($topic, 'producev')) {
+            $topic->producev(
+                partition: RD_KAFKA_PARTITION_UA,
+                msgflags: 0,
+                payload: $message->payload,
+                key: $this->config->getConsumer()->producerKey($message->payload),
+                headers: $message->headers
+            );
+        } else {
+            $topic->produce(
+                partition: RD_KAFKA_PARTITION_UA,
+                msgflags: 0,
+                payload: $message->payload,
+                key: $this->config->getConsumer()->producerKey($message->payload)
+            );
+        }
 
         if (method_exists($this->producer, 'flush')) {
             $this->producer->flush(12000);

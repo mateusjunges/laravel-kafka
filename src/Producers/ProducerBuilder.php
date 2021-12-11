@@ -3,7 +3,7 @@
 namespace Junges\Kafka\Producers;
 
 use InvalidArgumentException;
-use Junges\Kafka\Cluster;
+use Junges\Kafka\Config\Cluster;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Contracts\CanProduceMessages;
@@ -200,14 +200,7 @@ class ProducerBuilder implements CanProduceMessages
 
     private function buildClusterConfiguration(): void
     {
-        if ($this->cluster->isSaslEnabled()) {
-            $this->saslConfig = new Sasl(
-                username: $this->cluster->getSaslUsername(),
-                password: $this->cluster->getSaslPassword(),
-                mechanisms: $this->cluster->getSaslMechanism(),
-                securityProtocol: $this->cluster->getSaslSecurityProtocol()
-            );
-        }
+        $this->saslConfig = $this->cluster->getSasl();
 
         if ($this->cluster->isDebugEnabled()) {
             $this->withDebugEnabled();

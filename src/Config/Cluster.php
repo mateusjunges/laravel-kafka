@@ -1,6 +1,6 @@
 <?php
 
-namespace Junges\Kafka;
+namespace Junges\Kafka\Config;
 
 use JetBrains\PhpStorm\Pure;
 
@@ -16,8 +16,7 @@ class Cluster
         private ?string $saslUsername = null,
         private ?string $saslPassword = null,
         private ?string $saslMechanism = null,
-    )
-    {
+    ) {
     }
 
     /**
@@ -82,9 +81,19 @@ class Cluster
         return $this->saslMechanism;
     }
 
-    public function isDebugEnabled(): bool
+    #[Pure]
+    public function getSasl(): ?Sasl
     {
-        return $this->debug;
+        if (! $this->isSaslEnabled()) {
+            return null;
+        }
+
+        return new Sasl(
+            username: $this->getSaslUsername(),
+            password: $this->getSaslPassword(),
+            mechanisms: $this->getSaslMechanism(),
+            securityProtocol: $this->getSaslSecurityProtocol()
+        );
     }
 
     public function isSaslEnabled(): bool
@@ -93,5 +102,10 @@ class Cluster
             && $this->saslPassword !== null
             && $this->saslUsername !== null
             && $this->saslSecurityProtocol !== null;
+    }
+
+    public function isDebugEnabled(): bool
+    {
+        return $this->debug;
     }
 }
