@@ -278,10 +278,12 @@ class ProducerBuilderFake implements CanProduceMessages
      */
     private function makeProducer(Config $config): ProducerFake
     {
+        /** @var ProducerFake $producerFake */
         $producerFake = app(ProducerFake::class, [
             'config' => $config,
             'topic' => $this->getTopic(),
         ]);
+
         if ($this->producerCallback) {
             $producerFake->withProduceCallback($this->producerCallback);
         }

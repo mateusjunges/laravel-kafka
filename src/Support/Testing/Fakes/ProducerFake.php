@@ -35,6 +35,7 @@ class ProducerFake
     public function produce(Message $message): bool
     {
         if ($this->produceCallback !== null) {
+            /** @var Closure $callback */
             $callback = $this->produceCallback;
             $callback($message);
         }
