@@ -76,22 +76,28 @@ To publish your messages to Kafka, you can use the `publishOn` method, of `Junge
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-Kafka::publishOn('topic');
+Kafka::publishOn('cluster');
 ```
 
-You can also specify the broker where you want to publish the message:
+The cluster is defined in a `clusters` array inside `config/kafka.php`
 
-```php
-use Junges\Kafka\Facades\Kafka;
-
-Kafka::publishOn('topic', 'broker');
-```
+The `publishOn` method throws a `InvalidArgumentException if the specified cluster is not defined.
 
 This method returns a `Junges\Kafka\Producers\ProducerBuilder::class` instance, and you can configure your message.
 
 The `ProducerBuilder` class contains a few methods to configure your kafka producer. The following lines describes these methods.
 
 ## ProducerBuilder configuration methods
+
+### Specifying the topic in which the message should be published
+
+The `onTopic` method specifies the topic in which the message should be published. It accepts a string as argument:
+
+```php
+Kafka::publishOn('cluster')->onTopic('your-topic');
+```
+
+### Defining configuration options
 The `withConfigOption` method sets a `\RdKafka\Conf::class` option. You can check all available options [here][rdkafka_config].
 This methods set one config per call, and you can use `withConfigOptions` passing an array of config name and config value 
 as argument. Here's an example:
@@ -99,7 +105,7 @@ as argument. Here's an example:
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-Kafka::publishOn('topic')
+Kafka::publishOn('cluster')
     ->withConfigOption('property-name', 'property-value')
     ->withConfigOptions([
         'property-name' => 'property-value'
@@ -112,7 +118,8 @@ To disable debug mode, you can use `->withDebugEnabled(false)`, or `withDebugDis
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-Kafka::publishOn('topic')
+Kafka::publishOn('cluster')
+    ->onTopic('topic')
     ->withConfigOption('property-name', 'property-value')
     ->withConfigOptions([
         'property-name' => 'property-value'
@@ -125,7 +132,9 @@ Kafka::publishOn('topic')
 ### Using custom serializers
 To use custom serializers, you must use the `usingSerializer` method:
 ```php
-$producer = \Junges\Kafka\Facades\Kafka::publishOn('topic')->usingSerializer(new MyCustomSerializer());
+$producer = \Junges\Kafka\Facades\Kafka::publishOn('cluster')
+    ->onTopic('topic')
+    ->usingSerializer(new MyCustomSerializer());
 ```
 
 ### Using AVRO serializer
@@ -177,7 +186,8 @@ To configure the message headers, use the `withHeaders` method:
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-Kafka::publishOn('topic')
+Kafka::publishOn('cluster')
+    ->onTopic('topic')
     ->withHeaders([
         'header-key' => 'header-value'
     ])
@@ -200,7 +210,7 @@ $message = new Message(
     key: 'kafka key here'  
 )
 
-Kafka::publishOn('topic')->withMessage($message);
+Kafka::publishOn('cluster')->onTopic('topic')->withMessage($message);
 ```
 
 The `withBodyKey` method sets only a key in your message.
@@ -208,7 +218,7 @@ The `withBodyKey` method sets only a key in your message.
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-Kafka::publishOn('topic')->withBodyKey('key', 'value');
+Kafka::publishOn('cluster')->onTopic('topic')->withBodyKey('key', 'value');
 ```
 
 ### Using Kafka Keys
@@ -218,7 +228,7 @@ If you want to use a key in your message, you should use the `withKafkaKey` meth
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-Kafka::publishOn('topic')->withKafkaKey('your-kafka-key');
+Kafka::publishOn('cluster')->onTopic('topic')->withKafkaKey('your-kafka-key');
 ```
 
 ## Sending the message to Kafka
@@ -228,7 +238,8 @@ After configuring all your message options, you must use the `send` method, to s
 use Junges\Kafka\Facades\Kafka;
 
 /** @var \Junges\Kafka\Producers\ProducerBuilder $producer */
-$producer = Kafka::publishOn('topic')
+$producer = Kafka::publishOn('cluster')
+    ->onTopic('topic')
     ->withConfigOptions(['key' => 'value'])
     ->withKafkaKey('your-kafka-key')
     ->withKafkaKey('kafka-key')
