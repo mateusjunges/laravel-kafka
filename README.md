@@ -319,7 +319,7 @@ class Handler
     }
 }
 
-$consumer = \Junges\Kafka\Facades\Kafka::createConsumer()->withHandler(Handler::class)
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer()->withHandler(new Handler)
 ```
 
 The `KafkaConsumerMessage` contract gives you some handy methods to get the message properties: 
@@ -357,7 +357,7 @@ function gracefulShutdown(Consumer $consumer) {
 
 $consumer = Kafka::createConsumer(['topic'])
     ->withConsumerGroupId('group')
-    ->withHandler(Handler::class)
+    ->withHandler(new Handler)
     ->build();
     
 pcntl_signal(SIGINT, fn() => gracefulShutdown($consumer));
