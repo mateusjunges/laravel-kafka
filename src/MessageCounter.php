@@ -10,6 +10,11 @@ class MessageCounter
     {
     }
 
+    /**
+     * Increases the message count.
+     *
+     * @return $this
+     */
     public function add(): self
     {
         $this->messageCount++;
@@ -17,11 +22,21 @@ class MessageCounter
         return $this;
     }
 
+    /**
+     * Gets the number of messages consumed.
+     *
+     * @return int
+     */
     public function messagesCounted(): int
     {
         return $this->messageCount;
     }
 
+    /**
+     * Determine if the max messages limit was reached.
+     *
+     * @return bool
+     */
     public function maxMessagesLimitReached(): bool
     {
         return $this->maxMessages === $this->messageCount;

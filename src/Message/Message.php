@@ -76,6 +76,11 @@ class Message extends AbstractMessage implements Arrayable, KafkaProducerMessage
         return $this;
     }
 
+    /**
+     * Converts the message to array.
+     *
+     * @return array
+     */
     #[ArrayShape(['payload' => "array", 'key' => "null|string", 'headers' => "array"])]
     public function toArray(): array
     {
@@ -86,6 +91,12 @@ class Message extends AbstractMessage implements Arrayable, KafkaProducerMessage
         ];
     }
 
+    /**
+     * Set the message body.
+     *
+     * @param mixed $body
+     * @return KafkaProducerMessage
+     */
     public function withBody(mixed $body): KafkaProducerMessage
     {
         $this->body = $body;
@@ -93,6 +104,13 @@ class Message extends AbstractMessage implements Arrayable, KafkaProducerMessage
         return $this;
     }
 
+    /**
+     * Set the given message header key with the given value.
+     *
+     * @param string $key
+     * @param mixed $value
+     * @return KafkaProducerMessage
+     */
     public function withHeader(string $key, mixed $value): KafkaProducerMessage
     {
         $this->headers[$key] = $value;
