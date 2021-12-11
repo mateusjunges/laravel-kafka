@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Producers;
 
+use InvalidArgumentException;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Contracts\CanProduceMessages;
@@ -40,6 +41,17 @@ class ProducerBuilder implements CanProduceMessages
             topic: $topic,
             broker: $broker ?? config('kafka.brokers')
         );
+    }
+
+    public function usingCluster(string $cluster = 'default')
+    {
+        $clusterConfig = config('kafka.clusters.'.$cluster);
+
+        if ($clusterConfig === null) {
+            throw new InvalidArgumentException("Cluster [{$cluster}] is not defined.");
+        }
+
+
     }
 
     public function withConfigOption(string $name, string $option): self
