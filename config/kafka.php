@@ -43,6 +43,9 @@ return [
      */
     'debug' => env('KAFKA_DEBUG', false),
 
+    /*
+     | Define your Kafka clusters configuration here.
+     */
     'clusters' => [
         'default' => [
             'brokers' => env('KAFKA_BROKERS', 'localhost:9092'),
@@ -50,6 +53,25 @@ return [
             'compression' => env('KAFKA_COMPRESSION_TYPE', 'snappy'),
             'debug' => env('KAFKA_DEBUG', false),
             'security_protocol' => env('KAFKA_SECURITY_PROTOCOL', 'plaintext'),
+        ]
+    ],
+
+    /*
+     | Define your consumers configuration here.
+     */
+    'consumers' => [
+        'default' => [
+            'brokers' => 'localhost:9092',
+            'topics' => '',
+            'dlq_topic' => '',
+            'group_id' => '',
+            'offset_reset' => '',
+            'auto_commit' => true,
+            'max_commit_retries' => 6,
+            'commit_batch_size' => null,
+            'max_messages' => -1,
+            'security_protocol' => 'plaintext',
+            'options' => [],
         ]
     ]
 ];

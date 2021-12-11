@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka;
 
+use InvalidArgumentException;
 use Junges\Kafka\Consumers\ConsumerBuilder;
 use Junges\Kafka\Contracts\CanProduceMessages;
 use Junges\Kafka\Contracts\CanPublishMessagesToKafka;
@@ -39,5 +40,22 @@ class Kafka implements CanPublishMessagesToKafka
             topics: $topics,
             groupId: $groupId ?? config('kafka.consumer_group_id')
         );
+    }
+
+    /**
+     * Creates a new ConsumerBuilder instance based on pre-defined configuration.
+     *
+     * @param string $consumer
+     * @return ConsumerBuilder
+     */
+    public function consumeUsing(string $consumer): ConsumerBuilder
+    {
+        $consumerConfig = config('kafka.consumers.'.$consumer);
+
+        if ($consumerConfig === null) {
+            throw new InvalidArgumentException("THe consumer [{$consumer}] is not defined.");
+        }
+
+        return ConsumerBuilder::createFromConsumerConfig($consumerConfig);
     }
 }

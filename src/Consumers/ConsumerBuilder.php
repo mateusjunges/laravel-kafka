@@ -12,7 +12,7 @@ use Junges\Kafka\Contracts\MessageDeserializer;
 class ConsumerBuilder
 {
     private array $topics;
-    private int $commit;
+    private ?int $commit;
     private ?string $groupId;
     private Closure $handler;
     private int $maxMessages;
@@ -76,6 +76,30 @@ class ConsumerBuilder
     }
 
     /**
+     * Creates a new ConsumerBuilder instance based on a pre-configured consumer.
+     *
+     * @param array $config
+     * @return ConsumerBuilder
+     */
+    public static function createFromConsumerConfig(array $config): ConsumerBuilder
+    {
+        return
+            (new static(
+                brokers: $config['brokers'],
+                topics: $config['topics'],
+                groupId: $config['group_id']
+            ))
+            ->withAutoCommit($config['auto_commit'])
+            ->withDlq($config['dlq_topic'])
+            ->withMaxCommitRetries($config['max_commit_retries'])
+            ->withCommitBatchSize($config['commit_batch_size'])
+            ->withMaxMessages($config['max_messages'])
+            ->withSecurityProtocol($config['security_protocol'])
+            ->withOption('auto.offset.reset', $config['offset_reset'])
+            ->withOptions($config['options']);
+    }
+
+    /**
      * Subscribe to a Kafka topic.
      *
      * @param mixed ...$topics
@@ -127,10 +151,10 @@ class ConsumerBuilder
     /**
      * Specify the commit batch size.
      *
-     * @param int $size
+     * @param ?int $size
      * @return $this
      */
-    public function withCommitBatchSize(int $size): self
+    public function withCommitBatchSize(?int $size): self
     {
         $this->commit = $size;
 
