@@ -12,16 +12,20 @@ use Junges\Kafka\Message\Serializers\NullSerializer;
 use Junges\Kafka\Producers\ProducerBuilder;
 use Mockery as m;
 use RdKafka\Producer;
+use RdKafka\ProducerTopic;
 
 class KafkaTest extends LaravelKafkaTestCase
 {
     public function testItCanPublishMessagesToKafka()
     {
+        $mockedProducerTopic = m::mock(ProducerTopic::class)
+            ->shouldReceive('producev')->once()
+            ->andReturn(m::self())
+            ->getMock();
+
         $mockedProducer = m::mock(Producer::class)
             ->shouldReceive('newTopic')
-            ->andReturn(m::self())
-            ->shouldReceive('producev')
-            ->andReturn(m::self())
+            ->andReturn($mockedProducerTopic)
             ->shouldReceive('poll')
             ->andReturn(m::self())
             ->shouldReceive('flush')
@@ -47,11 +51,14 @@ class KafkaTest extends LaravelKafkaTestCase
 
     public function testICanSwitchSerializersOnTheFly()
     {
+        $mockedProducerTopic = m::mock(ProducerTopic::class)
+            ->shouldReceive('producev')->once()
+            ->andReturn(m::self())
+            ->getMock();
+
         $mockedProducer = m::mock(Producer::class)
             ->shouldReceive('newTopic')
-            ->andReturn(m::self())
-            ->shouldReceive('producev')
-            ->andReturn(m::self())
+            ->andReturn($mockedProducerTopic)
             ->shouldReceive('poll')
             ->andReturn(m::self())
             ->shouldReceive('flush')
@@ -112,11 +119,14 @@ class KafkaTest extends LaravelKafkaTestCase
 
     public function testICanSetTheEntireMessageWithMessageObject()
     {
+        $mockedProducerTopic = m::mock(ProducerTopic::class)
+            ->shouldReceive('producev')->times(2)
+            ->andReturn(m::self())
+            ->getMock();
+
         $mockedProducer = m::mock(Producer::class)
             ->shouldReceive('newTopic')
-            ->andReturn(m::self())
-            ->shouldReceive('producev')
-            ->andReturn(m::self())
+            ->andReturn($mockedProducerTopic)
             ->shouldReceive('poll')
             ->andReturn(m::self())
             ->shouldReceive('flush')
@@ -156,11 +166,14 @@ class KafkaTest extends LaravelKafkaTestCase
 
     public function testICanDisableDebugUsingWithDebugDisabledMethod()
     {
+        $mockedProducerTopic = m::mock(ProducerTopic::class)
+            ->shouldReceive('producev')->once()
+            ->andReturn(m::self())
+            ->getMock();
+
         $mockedProducer = m::mock(Producer::class)
             ->shouldReceive('newTopic')
-            ->andReturn(m::self())
-            ->shouldReceive('producev')
-            ->andReturn(m::self())
+            ->andReturn($mockedProducerTopic)
             ->shouldReceive('poll')
             ->andReturn(m::self())
             ->shouldReceive('flush')
@@ -233,11 +246,14 @@ class KafkaTest extends LaravelKafkaTestCase
 
         $this->expectExceptionMessage("Sent messages may not be completed yet.");
 
+        $mockedProducerTopic = m::mock(ProducerTopic::class)
+            ->shouldReceive('producev')->once()
+            ->andReturn(m::self())
+            ->getMock();
+
         $mockedProducer = m::mock(Producer::class)
             ->shouldReceive('newTopic')
-            ->andReturn(m::self())
-            ->shouldReceive('producev')
-            ->andReturn(m::self())
+            ->andReturn($mockedProducerTopic)
             ->shouldReceive('poll')
             ->andReturn(m::self())
             ->shouldReceive('flush')

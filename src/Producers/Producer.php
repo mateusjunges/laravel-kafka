@@ -53,13 +53,22 @@ class Producer
 
         $message = $this->serializer->serialize($message);
 
-        $topic->producev(
-            partition: $message->getPartition(),
-            msgflags: RD_KAFKA_MSG_F_BLOCK,
-            payload: $message->getBody(),
-            key: $message->getKey(),
-            headers: $message->getHeaders()
-        );
+        if (method_exists($topic, 'producev')) {
+            $topic->producev(
+                partition: $message->getPartition(),
+                msgflags: RD_KAFKA_MSG_F_BLOCK,
+                payload: $message->getBody(),
+                key: $message->getKey(),
+                headers: $message->getHeaders()
+            );
+        } else {
+            $topic->produce(
+                partition: $message->getPartition(),
+                msgflags: 0,
+                payload: $message->getBody(),
+                key: $message->getKey()
+            );
+        }
 
         $this->producer->poll(0);
 
