@@ -162,17 +162,21 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
     public function testItCanSetSasl()
     {
         $consumer = ConsumerBuilder::create('broker')
-            ->withSasl($sasl = new Sasl(
+            ->withSasl(
                 'username',
                 'password',
                 'mechanisms'
-            ));
+            );
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
 
         $saslConfig = $this->getPropertyWithReflection('saslConfig', $consumer);
 
-        $this->assertEquals($sasl, $saslConfig);
+        $this->assertEquals(new Sasl(
+            'username',
+            'password',
+            'mechanisms'
+        ), $saslConfig);
     }
 
     public function testItCanAddMiddlewaresToTheHandler()
