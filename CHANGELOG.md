@@ -2,6 +2,21 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [202X-XX-XX v2.0.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.5.x...v2.0.0)
+### Versioning Scheme
+Laravel Kafka now follows [Semantic Versioning](https://semver.org/). From now on, minor and patch releases should never contain breaking changes.
+When referencing this package from your application, you should always use a version constraint such as `^2.0`, since major releases
+do include breaking changes.
+
+### Added
+- Added `consumeUsing` method, allowing to pass a `consumer` defined in `config/kafka.php` ([#46](https://github.com/mateusjunges/laravel-kafka/pull/46))
+- Added `withBrokers` method to `ProducerBuilder`, which allows to set the `brokers` property ([#46](https://github.com/mateusjunges/laravel-kafka/pull/46))
+- Added `onTopic` method to `ProducerBuilder`, which allows to specify the topic in which the message should be published ([#46](https://github.com/mateusjunges/laravel-kafka/pull/46))
+
+### Changed
+- The `publishOn` method now accepts a pre-defined `cluster` configuration ([#46](https://github.com/mateusjunges/laravel-kafka/pull/46))
+- The `broker` argument on  `createConsumer` method now is required ([#46](https://github.com/mateusjunges/laravel-kafka/pull/46))
+
 ## [2021-12-10 v1.5.1](https://github.com/mateusjunges/laravel-kafka/compare/v1.5.0...v1.5.1)
 ### Added
 - Added a `withBrokers` setter to the consumer api, allowing to set brokers on the run ([#6a639ce](https://github.com/mateusjunges/laravel-kafka/commit/6a639ce3670ef1df25c79d11923fcb13b37d4f8f))
