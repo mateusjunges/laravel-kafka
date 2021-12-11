@@ -53,7 +53,7 @@ class Kafka implements CanPublishMessagesToKafka
         $consumerConfig = config('kafka.consumers.'.$consumer);
 
         if ($consumerConfig === null) {
-            throw new InvalidArgumentException("THe consumer [{$consumer}] is not defined.");
+            throw new InvalidArgumentException("Consumer [{$consumer}] is not defined.");
         }
 
         return ConsumerBuilder::createFromConsumerConfig($consumerConfig);

@@ -229,6 +229,19 @@ class KafkaTest extends LaravelKafkaTestCase
         $consumer = Kafka::createConsumer();
 
         $this->assertInstanceOf(ConsumerBuilder::class, $consumer);
+
+        $consumer = Kafka::consumeUsing('default');
+
+        $this->assertInstanceOf(ConsumerBuilder::class, $consumer);
+    }
+
+    public function testItThrowsInvalidArgumentExceptionIfClusterIsNotDefined()
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->expectDeprecationMessage("Consumer [undefined] is not defined.");
+
+        Kafka::consumeUsing('undefined');
     }
 
     public function testCreateConsumerDefaultConfigs()
