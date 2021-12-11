@@ -13,7 +13,7 @@ syntax usage syntax or, if it does, the test process with these packages are ver
 
 This package provides a nice way of producing and consuming kafka messages in your Laravel projects.
 
-Follow these docs to install this package and start using kafka with ease.
+Follow these docs to install this package and start using kafka in your laravel projects.
 
 - [1. Installation](#installation)
 - [2. Usage](#usage)
