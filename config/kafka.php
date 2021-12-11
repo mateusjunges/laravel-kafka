@@ -42,4 +42,14 @@ return [
      | Choose if debug is enabled or not.
      */
     'debug' => env('KAFKA_DEBUG', false),
+
+    'clusters' => [
+        'default' => [
+            'brokers' => env('KAFKA_BROKERS', 'localhost:9092'),
+            'partition' => env('KAFKA_PARTITION', 0),
+            'compression' => env('KAFKA_COMPRESSION_TYPE', 'snappy'),
+            'debug' => env('KAFKA_DEBUG', false),
+            'security_protocol' => env('KAFKA_SECURITY_PROTOCOL', 'plaintext'),
+        ]
+    ]
 ];

@@ -33,6 +33,12 @@ class LaravelKafkaTestCase extends Orchestra
         $app['config']->set('kafka.partition', 0);
         $app['config']->set('kafka.compression', 'snappy');
         $app['config']->set('kafka.debug', false);
+
+        $app['config']->set('kafka.clusters.default.brokers', 'localhost:9092');
+        $app['config']->set('kafka.clusters.default.partition', 0);
+        $app['config']->set('kafka.clusters.default.compression', 'snappy');
+        $app['config']->set('kafka.clusters.default.debug', false);
+        $app['config']->set('kafka.clusters.default.security_protocol', 'plaintext');
     }
 
     protected function getPackageProviders($app): array

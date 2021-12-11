@@ -3,12 +3,12 @@
 namespace Junges\Kafka\Producers;
 
 use InvalidArgumentException;
+use Junges\Kafka\Cluster;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Contracts\CanProduceMessages;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
 use Junges\Kafka\Contracts\MessageSerializer;
-use Junges\Kafka\Message\Message;
 
 class ProducerBuilder implements CanProduceMessages
 {
@@ -17,6 +17,7 @@ class ProducerBuilder implements CanProduceMessages
     private MessageSerializer $serializer;
     private ?Sasl $saslConfig = null;
     private string $broker;
+    private ?Cluster $cluster = null;
 
     public function __construct(
         private string $topic,
@@ -43,7 +44,13 @@ class ProducerBuilder implements CanProduceMessages
         );
     }
 
-    public function usingCluster(string $cluster = 'default')
+    /**
+     * Create a Cluster instance with the given cluster configuration.
+     *
+     * @param string $cluster
+     * @return $this
+     */
+    public function usingCluster(string $cluster = 'default'): self
     {
         $clusterConfig = config('kafka.clusters.'.$cluster);
 
@@ -51,7 +58,9 @@ class ProducerBuilder implements CanProduceMessages
             throw new InvalidArgumentException("Cluster [{$cluster}] is not defined.");
         }
 
+        $this->cluster = Cluster::createFromConfig($clusterConfig);
 
+        return $this;
     }
 
     public function withConfigOption(string $name, string $option): self
@@ -166,8 +175,12 @@ class ProducerBuilder implements CanProduceMessages
 
     private function build(): Producer
     {
+        if ($this->isUsingCluster()) {
+            $this->buildClusterConfiguration();
+        }
+
         $conf = new Config(
-            broker: $this->broker,
+            broker: $this->cluster ? $this->cluster->getBrokers() : $this->broker,
             topics: [$this->getTopic()],
             sasl: $this->saslConfig,
             customOptions: $this->options,
@@ -178,5 +191,29 @@ class ProducerBuilder implements CanProduceMessages
             'topic' => $this->topic,
             'serializer' => $this->serializer,
         ]);
+    }
+
+    private function isUsingCluster(): bool
+    {
+        return $this->cluster !== null;
+    }
+
+    private function buildClusterConfiguration(): void
+    {
+        if ($this->cluster->isSaslEnabled()) {
+            $this->saslConfig = new Sasl(
+                username: $this->cluster->getSaslUsername(),
+                password: $this->cluster->getSaslPassword(),
+                mechanisms: $this->cluster->getSaslMechanism(),
+                securityProtocol: $this->cluster->getSaslSecurityProtocol()
+            );
+        }
+
+        if ($this->cluster->isDebugEnabled()) {
+            $this->withDebugEnabled();
+        }
+
+        $this->withConfigOption('compression.codec', $this->cluster->getCompression());
+        $this->broker = $this->cluster->getBrokers();
     }
 }

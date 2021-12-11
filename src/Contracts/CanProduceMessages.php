@@ -9,6 +9,8 @@ interface CanProduceMessages
 {
     public static function create(string $topic, string $broker = null): self;
 
+    public function usingCluster(string $cluster): self;
+
     public function withConfigOption(string $name, string $option): self;
 
     public function withConfigOptions(array $options): self;

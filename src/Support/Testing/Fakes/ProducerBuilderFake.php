@@ -3,12 +3,15 @@
 namespace Junges\Kafka\Support\Testing\Fakes;
 
 use Closure;
+use InvalidArgumentException;
+use Junges\Kafka\Cluster;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Contracts\CanProduceMessages;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
 use Junges\Kafka\Contracts\MessageSerializer;
 use Junges\Kafka\Message\Message;
+use Junges\Kafka\Producers\ProducerBuilder;
 
 class ProducerBuilderFake implements CanProduceMessages
 {
@@ -17,6 +20,7 @@ class ProducerBuilderFake implements CanProduceMessages
     private MessageSerializer $serializer;
     private ?Sasl $saslConfig = null;
     private ?Closure $producerCallback = null;
+    private ?Cluster $cluster = null;
 
     public function __construct(
         private string $topic,
@@ -42,6 +46,25 @@ class ProducerBuilderFake implements CanProduceMessages
     public static function create(string $topic, string $broker = null): self
     {
         return new ProducerBuilderFake($broker, $topic);
+    }
+
+    /**
+     * Create a Cluster instance with the given cluster configuration.
+     *
+     * @param string $cluster
+     * @return $this
+     */
+    public function usingCluster(string $cluster = 'default'): self
+    {
+        $clusterConfig = config('kafka.clusters.'.$cluster);
+
+        if ($clusterConfig === null) {
+            throw new InvalidArgumentException("Cluster [{$cluster}] is not defined.");
+        }
+
+        $this->cluster = Cluster::createFromConfig($clusterConfig);
+
+        return $this;
     }
 
     public function withProducerCallback(callable $callback): self
@@ -205,6 +228,10 @@ class ProducerBuilderFake implements CanProduceMessages
      */
     private function build(): ProducerFake
     {
+        if ($this->isUsingCluster()) {
+            $this->buildClusterConfiguration();
+        }
+
         $conf = new Config(
             broker: $this->broker ?? config('kafka.brokers'),
             topics: [$this->getTopic()],
@@ -213,5 +240,29 @@ class ProducerBuilderFake implements CanProduceMessages
         );
 
         return $this->makeProducer($conf);
+    }
+
+    private function isUsingCluster(): bool
+    {
+        return $this->cluster !== null;
+    }
+
+    private function buildClusterConfiguration(): void
+    {
+        if ($this->cluster->isSaslEnabled()) {
+            $this->saslConfig = new Sasl(
+                username: $this->cluster->getSaslUsername(),
+                password: $this->cluster->getSaslPassword(),
+                mechanisms: $this->cluster->getSaslMechanism(),
+                securityProtocol: $this->cluster->getSaslSecurityProtocol()
+            );
+        }
+
+        if ($this->cluster->isDebugEnabled()) {
+            $this->withDebugEnabled();
+        }
+
+        $this->withConfigOption('compression.codec', $this->cluster->getCompression());
+        $this->broker = $this->cluster->getBrokers();
     }
 }
