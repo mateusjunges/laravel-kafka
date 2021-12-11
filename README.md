@@ -305,6 +305,14 @@ $consumer = Kafka::createConsumer('brokers')->subscribe([
 ]);
 ```
 
+## Unsubscribe from a topic
+
+To unsubscribe from a kafka topic, you can use the `unsubcribe` method:
+
+```php
+$consumer->unsubscribe('topicX');
+```
+
 ## Configuring consumer groups
 Kafka consumers belonging to the same consumer group share a group id. THe consumers in a group divides the topic partitions as fairly amongst themselves as possible by
 establishing that each partition is only consumed by a single consumer from the group.

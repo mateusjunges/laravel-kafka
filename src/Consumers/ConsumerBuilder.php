@@ -127,6 +127,29 @@ class ConsumerBuilder
     }
 
     /**
+     * Unsubscribe from a kafka topic.
+     *
+     * @param ...$topics
+     * @return $this
+     */
+    public function unsubscribe(...$topics): self
+    {
+        if (is_array($topics[0])) {
+            $topics = $topics[0];
+        }
+
+        foreach ($topics as $topic) {
+            if (! is_string($topic)) {
+                continue;
+            }
+
+            unset($this->topics[array_search($topic, $this->topics)]);
+        }
+
+        return $this;
+    }
+
+    /**
      * Set the brokers the kafka consumer should use.
      *
      * @param ?string $brokers
