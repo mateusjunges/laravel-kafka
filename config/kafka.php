@@ -44,7 +44,7 @@ return [
     'debug' => env('KAFKA_DEBUG', false),
 
     'sasl' => [
-        'security_protocol' => env('KAFKA_SECURITY_PROTOCOL','plaintext'),
+        'security_protocol' => env('KAFKA_SECURITY_PROTOCOL','SASL_PLAINTEXT'),
         'mechanisms' => env('KAFKA_SASL_MECHANISM',null),
         'username' => env('KAFKA_SASL_USER',null),
         'password' => env('KAFKA_SASL_PASS',null),
