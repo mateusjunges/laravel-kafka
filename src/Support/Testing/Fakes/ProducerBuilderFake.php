@@ -143,6 +143,16 @@ class ProducerBuilderFake implements CanProduceMessages
     }
 
     /**
+     * Disables debug on kafka producer.
+     *
+     * @return $this
+     */
+    public function withDebugDisabled(): self
+    {
+        return $this->withDebugEnabled(false);
+    }
+
+    /**
      * Get the kafka topic to be used.
      * @return string
      */
@@ -156,9 +166,23 @@ class ProducerBuilderFake implements CanProduceMessages
         return $this->message;
     }
 
-    public function withSasl(Sasl $saslConfig): CanProduceMessages
+    /**
+     * Set the Sasl configuration.
+     *
+     * @param string $username
+     * @param string $password
+     * @param string $mechanisms
+     * @param string $securityProtocol
+     * @return $this
+     */
+    public function withSasl(string $username, string $password, string $mechanisms, string $securityProtocol = 'SASL_PLAINTEXT'): self
     {
-        $this->saslConfig = $saslConfig;
+        $this->saslConfig = new Sasl(
+            username: $username,
+            password: $password,
+            mechanisms: $mechanisms,
+            securityProtocol: $securityProtocol
+        );
 
         return $this;
     }
