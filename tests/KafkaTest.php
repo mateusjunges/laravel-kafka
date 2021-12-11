@@ -3,6 +3,7 @@
 namespace Junges\Kafka\Tests;
 
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 use Junges\Kafka\Consumers\ConsumerBuilder;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
 use Junges\Kafka\Exceptions\CouldNotPublishMessage;
@@ -290,6 +291,18 @@ class KafkaTest extends LaravelKafkaTestCase
 
         Kafka::publishOn('test')
             ->usingCluster('default')
+            ->withBodyKey('foo', 'bar')
+            ->send();
+    }
+
+    public function testItThrowInvalidArgumentExceptionIfClusterIsNotDefined()
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->expectExceptionMessage("Cluster [undefined] is not defined.");
+
+        Kafka::publishOn('test')
+            ->usingCluster('undefined')
             ->withBodyKey('foo', 'bar')
             ->send();
     }
