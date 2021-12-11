@@ -12,7 +12,6 @@ use Junges\Kafka\Message\Serializers\NullSerializer;
 use Junges\Kafka\Producers\ProducerBuilder;
 use Mockery as m;
 use RdKafka\Producer;
-use RdKafka\ProducerTest;
 use RdKafka\ProducerTopic;
 
 class KafkaTest extends LaravelKafkaTestCase
