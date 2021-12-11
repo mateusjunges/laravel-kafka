@@ -21,6 +21,12 @@ class AvroDeserializer implements AvroMessageDeserializer
         return $this->registry;
     }
 
+    /**
+     * Deserializes the message.
+     *
+     * @param KafkaConsumerMessage $message
+     * @return KafkaConsumerMessage
+     */
     public function deserialize(KafkaConsumerMessage $message): KafkaConsumerMessage
     {
         return new ConsumedMessage(

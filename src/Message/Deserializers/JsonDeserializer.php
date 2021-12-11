@@ -9,9 +9,10 @@ use Junges\Kafka\Message\ConsumedMessage;
 class JsonDeserializer implements MessageDeserializer
 {
     /**
+     * Deserializes the message.
+     *
      * @param KafkaConsumerMessage $message
      * @return KafkaConsumerMessage
-     * @throws \JsonException
      */
     public function deserialize(KafkaConsumerMessage $message): KafkaConsumerMessage
     {
