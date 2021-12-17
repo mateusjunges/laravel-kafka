@@ -2,7 +2,6 @@
 
 namespace Junges\Kafka\Message\Serializers;
 
-use JsonException;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
 use Junges\Kafka\Contracts\MessageSerializer;
 

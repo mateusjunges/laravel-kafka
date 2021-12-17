@@ -37,7 +37,6 @@ class KafkaFake implements CanPublishMessagesToKafka
      */
     public function cluster(string $cluster): ProducerBuilderFake
     {
-
     }
 
     /**

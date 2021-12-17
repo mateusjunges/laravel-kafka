@@ -224,7 +224,7 @@ class KafkaTest extends LaravelKafkaTestCase
                 'sasl.mechanisms' => 'PLAIN',
                 'sasl.username' => '[API_KEY]',
                 'sasl.password' => '[API_KEY]',
-                'compression.codec' => 'snappy'
+                'compression.codec' => 'snappy',
             ]);
 
         $options = $this->getPropertyWithReflection('options', $producer);
