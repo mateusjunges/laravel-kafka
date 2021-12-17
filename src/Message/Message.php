@@ -18,7 +18,7 @@ class Message extends AbstractMessage implements Arrayable, KafkaProducerMessage
      * @return Message
      */
     #[Pure]
-    public static function create(string $topicName = null, int $partition = RD_KAFKA_PARTITION_UA): KafkaProducerMessage
+    public static function create(?string $topicName = null, int $partition = RD_KAFKA_PARTITION_UA): KafkaProducerMessage
     {
         return new self($topicName, $partition);
     }

@@ -21,7 +21,7 @@ class ProducerBuilder implements CanProduceMessages
     {
         /** @var KafkaProducerMessage $message */
         $message = app(KafkaProducerMessage::class);
-        $this->message = $message->create('');
+        $this->message = $message->create();
         $this->serializer = app(MessageSerializer::class);
         $this->brokers = $broker ?? config('kafka.brokers');
     }
@@ -67,6 +67,13 @@ class ProducerBuilder implements CanProduceMessages
         return $this;
     }
 
+    /**
+     * Set the given configuration option with the given value on KafkaProducer.
+     *
+     * @param string $name
+     * @param string $option
+     * @return $this
+     */
     public function withConfigOption(string $name, string $option): self
     {
         $this->options[$name] = $option;
@@ -74,6 +81,12 @@ class ProducerBuilder implements CanProduceMessages
         return $this;
     }
 
+    /**
+     * Sets the given configuration options based on given key/value array.
+     *
+     * @param array $options
+     * @return $this
+     */
     public function withConfigOptions(array $options): self
     {
         foreach ($options as $name => $value) {
@@ -85,6 +98,7 @@ class ProducerBuilder implements CanProduceMessages
 
     /**
      * Set the message headers.
+     *
      * @param array $headers
      * @return $this
      */
@@ -97,6 +111,7 @@ class ProducerBuilder implements CanProduceMessages
 
     /**
      * Set the message key.
+     *
      * @param string $key
      * @return $this
      */
@@ -109,6 +124,7 @@ class ProducerBuilder implements CanProduceMessages
 
     /**
      * Set a message array key.
+     *
      * @param string $key
      * @param mixed $message
      * @return ProducerBuilder
@@ -120,6 +136,12 @@ class ProducerBuilder implements CanProduceMessages
         return $this;
     }
 
+    /**
+     * Sets the entire Message to be produced.
+     *
+     * @param KafkaProducerMessage $message
+     * @return $this
+     */
     public function withMessage(KafkaProducerMessage $message): self
     {
         $this->message = $message;
@@ -127,6 +149,12 @@ class ProducerBuilder implements CanProduceMessages
         return $this;
     }
 
+    /**
+     * Enables debug.
+     *
+     * @param bool $enabled
+     * @return $this
+     */
     public function withDebugEnabled(bool $enabled = true): self
     {
         if ($enabled) {
@@ -143,6 +171,8 @@ class ProducerBuilder implements CanProduceMessages
     }
 
     /**
+     * Set the Sasl configuration
+     *
      * @param Sasl $saslConfig
      * @return $this
      */
@@ -153,6 +183,12 @@ class ProducerBuilder implements CanProduceMessages
         return $this;
     }
 
+    /**
+     * Specify which class should be used to serialize messages.
+     *
+     * @param MessageSerializer $serializer
+     * @return CanProduceMessages
+     */
     public function usingSerializer(MessageSerializer $serializer): CanProduceMessages
     {
         $this->serializer = $serializer;
@@ -160,16 +196,32 @@ class ProducerBuilder implements CanProduceMessages
         return $this;
     }
 
+    /**
+     * Disables debug on kafka producer.
+     *
+     * @return $this
+     */
     public function withDebugDisabled(): self
     {
         return $this->withDebugEnabled(false);
     }
 
+    /**
+     * Returns the message where the message should be published.
+     *
+     * @return string
+     */
     public function getTopic(): string
     {
         return $this->topic;
     }
 
+    /**
+     * Produces the message on Kafka.
+     *
+     * @return bool
+     * @throws \Exception
+     */
     public function send(): bool
     {
         $producer = $this->build();
@@ -177,6 +229,11 @@ class ProducerBuilder implements CanProduceMessages
         return $producer->produce($this->message);
     }
 
+    /**
+     * Build the Producer with the specified configuration options.
+     *
+     * @return Producer
+     */
     private function build(): Producer
     {
         $conf = new Config(
