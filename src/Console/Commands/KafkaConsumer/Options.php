@@ -7,16 +7,16 @@ use Junges\Kafka\Config\Sasl;
 
 class Options
 {
-    private ?array $topics;
-    private ?string $consumer;
-    private ?string $groupId;
-    private ?int $commit;
-    private ?string $dlq;
-    private ?int $maxMessages;
+    private ?array $topics = null;
+    private ?string $consumer = null;
+    private ?string $groupId = null;
+    private ?int $commit = 1;
+    private ?string $dlq = null;
+    private int $maxMessages = -1;
+    private ?string $securityProtocol = 'plaintext';
     private ?string $saslUsername;
     private ?string $saslPassword;
     private ?string $saslMechanisms;
-    private ?string $securityProtocol;
     private array $config;
 
     #[Pure]
@@ -46,7 +46,7 @@ class Options
         return $this->consumer;
     }
 
-    public function getGroupId(): string
+    public function getGroupId(): ?string
     {
         return strlen($this->groupId) > 1 ? $this->groupId : $this->config['groupId'];
     }
