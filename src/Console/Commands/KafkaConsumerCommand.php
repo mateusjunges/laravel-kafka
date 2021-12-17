@@ -15,8 +15,8 @@ use Junges\Kafka\MessageCounter;
 class KafkaConsumerCommand extends Command
 {
     protected $signature = 'kafka:consume 
-            {--topic*= : The topics to listen for messages (topic1,topic2,...,topicN)} 
-            {--consumer=* : The consumer which will consume messages in the specified topic} 
+            {--topics=* : The topics to listen for messages (topic1,topic2,...,topicN)} 
+            {--consumer= : The consumer which will consume messages in the specified topic} 
             {--groupId=? : The consumer group id} 
             {--commit=1} 
             {--dlq=? : The Dead Letter Queue} 
@@ -32,7 +32,7 @@ class KafkaConsumerCommand extends Command
         parent::__construct();
 
         $this->config = [
-            'broker' => config('kafka.brokers'),
+            'brokers' => config('kafka.brokers'),
             'groupId' => config('kafka.group_id'),
             'securityProtocol' => config('kafka.securityProtocol'),
             'sasl' => [
@@ -65,6 +65,7 @@ class KafkaConsumerCommand extends Command
             maxMessages: $options->getMaxMessages()
         );
 
+        /** @var Consumer $consumer */
         $consumer = app(Consumer::class, [
             'config' => $config,
             'deserializer' => app(MessageDeserializer::class)
