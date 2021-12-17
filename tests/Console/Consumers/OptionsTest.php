@@ -15,7 +15,7 @@ class OptionsTest extends LaravelKafkaTestCase
         parent::setUp();
 
         $this->config = [
-            'broker' => config('kafka.brokers'),
+            'brokers' => config('kafka.brokers'),
             'groupId' => config('kafka.group_id'),
             'securityProtocol' => config('kafka.securityProtocol'),
             'sasl' => [
@@ -41,13 +41,15 @@ class OptionsTest extends LaravelKafkaTestCase
 
         $options = new Options($commandLineOptions, $this->config);
 
-        $this->assertEquals(['test-topic', 'test-topic-1'], $this->getPropertyWithReflection('topics', $options));
-        $this->assertEquals('test', $this->getPropertyWithReflection('groupId', $options));
-        $this->assertEquals(1, $this->getPropertyWithReflection('commit', $options));
-        $this->assertEquals('test-dlq', $this->getPropertyWithReflection('dlq', $options));
-        $this->assertEquals(2, $this->getPropertyWithReflection('maxMessages', $options));
-        $this->assertEquals('plaintext', $this->getPropertyWithReflection('securityProtocol', $options));
-        $this->assertEquals(null, $options->getSasl());
+        $this->assertEquals('localhost:9092', $options->getBroker());
+        $this->assertEquals(['test-topic', 'test-topic-1'], $options->getTopics());
+        $this->assertEquals(FakeHandler::class, $options->getConsumer());
+        $this->assertEquals('test', $options->getGroupId());
+        $this->assertEquals(1, $options->getCommit());
+        $this->assertEquals('test-dlq', $options->getDlq());
+        $this->assertEquals(2, $options->getMaxMessages());
+        $this->assertEquals('plaintext', $options->getSecurityProtocol());
+        $this->assertNull($options->getSasl());
     }
 
     public function testItInstantiatesUsingOnlyRequiredOptions()
@@ -59,13 +61,14 @@ class OptionsTest extends LaravelKafkaTestCase
 
         $options = new Options($options, $this->config);
 
-
-        $this->assertEquals(['test-topic', 'test-topic-1'], $this->getPropertyWithReflection('topics', $options));
-        $this->assertNull($this->getPropertyWithReflection('groupId', $options));
-        $this->assertEquals(1, $this->getPropertyWithReflection('commit', $options));
-        $this->assertNull($this->getPropertyWithReflection('dlq', $options));
-        $this->assertEquals(-1, $this->getPropertyWithReflection('maxMessages', $options));
-        $this->assertEquals('plaintext', $this->getPropertyWithReflection('securityProtocol', $options));
-        $this->assertEquals(null, $options->getSasl());
+        $this->assertEquals('localhost:9092', $options->getBroker());
+        $this->assertEquals(['test-topic', 'test-topic-1'], $options->getTopics());
+        $this->assertEquals(FakeHandler::class, $options->getConsumer());
+        $this->assertNull($options->getGroupId());
+        $this->assertEquals(1, $options->getCommit());
+        $this->assertNull($options->getDlq());
+        $this->assertEquals(-1, $options->getMaxMessages());
+        $this->assertEquals('plaintext', $options->getSecurityProtocol());
+        $this->assertNull($options->getSasl());
     }
 }

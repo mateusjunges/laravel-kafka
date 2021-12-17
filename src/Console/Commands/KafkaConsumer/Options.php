@@ -61,7 +61,7 @@ class Options
         return strlen($this->dlq) > 1 ? $this->dlq : null;
     }
 
-    public function getMaxMessage(): int
+    public function getMaxMessages(): int
     {
         return $this->maxMessages >= 1 ? $this->maxMessages : -1;
     }
@@ -83,5 +83,10 @@ class Options
     public function getSecurityProtocol(): ?string
     {
         return $this->securityProtocol;
+    }
+
+    public function getBroker()
+    {
+        return $this->config['brokers'];
     }
 }

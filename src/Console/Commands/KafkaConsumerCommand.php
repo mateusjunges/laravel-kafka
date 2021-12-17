@@ -21,6 +21,7 @@ class KafkaConsumerCommand extends Command
             {--dlq=? : The Dead Letter Queue} 
             {--maxMessage=? : The max number of messages that should be handled}
             {--securityProtocol=?}';
+
     protected $description = 'A Kafka Consumer for Laravel.';
 
     private array $config;
@@ -52,7 +53,7 @@ class KafkaConsumerCommand extends Command
         $consumer = $options->getConsumer();
 
         $config = new Config(
-            broker: $this->config['broker'],
+            broker: $options->getBroker(),
             topics: $options->getTopics(),
             securityProtocol: $options->getSecurityProtocol(),
             commit: $options->getCommit(),
@@ -60,7 +61,7 @@ class KafkaConsumerCommand extends Command
             consumer: new $consumer(),
             sasl: $options->getSasl(),
             dlq: $options->getDlq(),
-            maxMessages: $options->getMaxMessage()
+            maxMessages: $options->getMaxMessages()
         );
 
         (new Consumer($config, new JsonDeserializer(), (
