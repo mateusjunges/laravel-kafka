@@ -79,7 +79,7 @@ class ConsumerBuilder
      * Creates a new ConsumerBuilder instance based on a pre-configured consumer.
      *
      * @param array $config
-     * @return ConsumerBuilder
+     * @return \Junges\Kafka\Consumers\ConsumerBuilder
      */
     public static function createFromConsumerConfig(array $config): ConsumerBuilder
     {
@@ -107,7 +107,7 @@ class ConsumerBuilder
      * Subscribe to a Kafka topic.
      *
      * @param mixed ...$topics
-     * @return $this
+     * @return \Junges\Kafka\Consumers\ConsumerBuilder
      */
     public function subscribe(...$topics): self
     {
@@ -130,7 +130,7 @@ class ConsumerBuilder
      * Unsubscribe from a kafka topic.
      *
      * @param ...$topics
-     * @return $this
+     * @return \Junges\Kafka\Consumers\ConsumerBuilder
      */
     public function unsubscribe(...$topics): self
     {
@@ -153,7 +153,7 @@ class ConsumerBuilder
      * Set the brokers the kafka consumer should use.
      *
      * @param ?string $brokers
-     * @return $this
+     * @return \Junges\Kafka\Consumers\ConsumerBuilder
      */
     public function withBrokers(?string $brokers): self
     {
@@ -166,7 +166,7 @@ class ConsumerBuilder
      * Specify the consumer group id.
      *
      * @param ?string $groupId
-     * @return $this
+     * @return \Junges\Kafka\Consumers\ConsumerBuilder
      */
     public function withConsumerGroupId(?string $groupId): self
     {
@@ -179,7 +179,7 @@ class ConsumerBuilder
      * Specify the commit batch size.
      *
      * @param ?int $size
-     * @return $this
+     * @return \Junges\Kafka\Consumers\ConsumerBuilder
      */
     public function withCommitBatchSize(?int $size): self
     {
@@ -192,7 +192,7 @@ class ConsumerBuilder
      * Specify the class used to handle consumed messages.
      *
      * @param callable $handler
-     * @return $this
+     * @return \Junges\Kafka\Consumers\ConsumerBuilder
      */
     public function withHandler(callable $handler): self
     {
@@ -204,8 +204,8 @@ class ConsumerBuilder
     /**
      * Specify the class that should be used to deserialize messages.
      *
-     * @param MessageDeserializer $deserializer
-     * @return $this
+     * @param \Junges\Kafka\Contracts\MessageDeserializer $deserializer
+     * @return \Junges\Kafka\Consumers\ConsumerBuilder
      */
     public function usingDeserializer(MessageDeserializer $deserializer): self
     {
@@ -217,8 +217,8 @@ class ConsumerBuilder
     /**
      * Specify the factory that should be used to build the committer.
      *
-     * @param CommitterFactory $committerFactory
-     * @return $this
+     * @param \Junges\Kafka\Commit\Contracts\CommitterFactory $committerFactory
+     * @return \Junges\Kafka\Consumers\ConsumerBuilder
      */
     public function usingCommitterFactory(CommitterFactory $committerFactory): self
     {
@@ -231,7 +231,7 @@ class ConsumerBuilder
      * Define the max number of messages that should be consumed.
      *
      * @param int $maxMessages
-     * @return $this
+     * @return \Junges\Kafka\Consumers\ConsumerBuilder
      */
     public function withMaxMessages(int $maxMessages): self
     {
@@ -244,7 +244,7 @@ class ConsumerBuilder
      * Specify the max retries attempts.
      *
      * @param int $maxCommitRetries
-     * @return $this
+     * @return \Junges\Kafka\Consumers\ConsumerBuilder
      */
     public function withMaxCommitRetries(int $maxCommitRetries): self
     {
@@ -257,7 +257,7 @@ class ConsumerBuilder
      * Set the Dead Letter Queue to be used. If null, the dlq is created from the topic name.
      *
      * @param string|null $dlqTopic
-     * @return $this
+     * @return \Junges\Kafka\Consumers\ConsumerBuilder
      */
     public function withDlq(?string $dlqTopic = null): self
     {
@@ -273,8 +273,8 @@ class ConsumerBuilder
     /**
      * Set the Sasl configuration.
      *
-     * @param Sasl $saslConfig
-     * @return $this
+     * @param \Junges\Kafka\Config\Sasl $saslConfig
+     * @return \Junges\Kafka\Consumers\ConsumerBuilder
      */
     public function withSasl(Sasl $saslConfig): self
     {
@@ -289,7 +289,7 @@ class ConsumerBuilder
      * The middleware is a callable in which the first argument is the message itself and the second is the next handler
      *
      * @param callable(mixed, callable): void $middleware
-     * @return $this
+     * @return \Junges\Kafka\Consumers\ConsumerBuilder
      */
     public function withMiddleware(callable $middleware): self
     {
@@ -302,7 +302,7 @@ class ConsumerBuilder
      * Specify the security protocol that should be used.
      *
      * @param string $securityProtocol
-     * @return $this
+     * @return \Junges\Kafka\Consumers\ConsumerBuilder
      */
     public function withSecurityProtocol(string $securityProtocol): self
     {
@@ -314,9 +314,10 @@ class ConsumerBuilder
     /**
      * Enable or disable consumer auto commit option.
      *
-     * @return $this
+     * @param bool $autoCommit
+     * @return \Junges\Kafka\Consumers\ConsumerBuilder
      */
-    public function withAutoCommit(bool $autoCommit = true): self
+    public function withAutoCommit(bool $autoCommit = true): ConsumerBuilder
     {
         $this->autoCommit = $autoCommit;
 
@@ -327,7 +328,7 @@ class ConsumerBuilder
      * Set the configuration options.
      *
      * @param array $options
-     * @return $this
+     * @return \Junges\Kafka\Consumers\ConsumerBuilder
      */
     public function withOptions(array $options): self
     {
@@ -343,7 +344,7 @@ class ConsumerBuilder
      *
      * @param string $name
      * @param string $value
-     * @return $this
+     * @return \Junges\Kafka\Consumers\ConsumerBuilder
      */
     public function withOption(string $name, string $value): self
     {
@@ -355,7 +356,7 @@ class ConsumerBuilder
     /**
      * Build the Kafka consumer.
      *
-     * @return Consumer
+     * @return \Junges\Kafka\Consumers\Consumer
      */
     public function build(): Consumer
     {

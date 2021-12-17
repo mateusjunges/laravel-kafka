@@ -43,7 +43,7 @@ class Producer
     /**
      * Produce the specified message in the kafka topic.
      *
-     * @param KafkaProducerMessage $message
+     * @param \Junges\Kafka\Contracts\KafkaProducerMessage $message
      * @return mixed
      * @throws \Exception
      */

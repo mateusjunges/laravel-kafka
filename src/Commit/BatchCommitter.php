@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Commit;
 
+use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Commit\Contracts\Committer;
 use Junges\Kafka\Message\MessageCounter;
 use RdKafka\Message;
@@ -26,6 +27,7 @@ class BatchCommitter implements Committer
         }
     }
 
+    #[Pure]
     private function maxMessagesLimitReached(): bool
     {
         return $this->messageCounter->maxMessagesLimitReached();

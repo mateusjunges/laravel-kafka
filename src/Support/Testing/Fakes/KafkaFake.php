@@ -18,7 +18,7 @@ class KafkaFake implements CanPublishMessagesToKafka
      * Publish a message in the specified broker/topic.
      *
      * @param string $cluster
-     * @return ProducerBuilderFake
+     * @return \Junges\Kafka\Support\Testing\Fakes\ProducerBuilderFake
      */
     public function publishOn(string $cluster): ProducerBuilderFake
     {
@@ -43,7 +43,7 @@ class KafkaFake implements CanPublishMessagesToKafka
     /**
      * Assert if a messages was published based on a truth-test callback.
      *
-     * @param KafkaProducerMessage|null $expectedMessage
+     * @param \Junges\Kafka\Contracts\KafkaProducerMessage|null $expectedMessage
      * @param callable|null $callback
      */
     public function assertPublished(?KafkaProducerMessage $expectedMessage = null, ?callable $callback = null)
@@ -58,7 +58,7 @@ class KafkaFake implements CanPublishMessagesToKafka
      * Assert if a messages was published based on a truth-test callback.
      *
      * @param int $times
-     * @param KafkaProducerMessage|null $expectedMessage
+     * @param \Junges\Kafka\Contracts\KafkaProducerMessage|null $expectedMessage
      * @param callable|null $callback
      */
     public function assertPublishedTimes(int $times = 1, ?KafkaProducerMessage $expectedMessage = null, ?callable $callback = null)
@@ -75,7 +75,7 @@ class KafkaFake implements CanPublishMessagesToKafka
      * Assert that a message was published on a specific topic.
      *
      * @param string $topic
-     * @param KafkaProducerMessage|null $expectedMessage
+     * @param \Junges\Kafka\Contracts\KafkaProducerMessage|null $expectedMessage
      * @param callable|null $callback
      */
     public function assertPublishedOn(string $topic, ?KafkaProducerMessage $expectedMessage = null, ?callable $callback = null)
@@ -91,7 +91,7 @@ class KafkaFake implements CanPublishMessagesToKafka
      *
      * @param string $topic
      * @param int $times
-     * @param KafkaProducerMessage|null $expectedMessage
+     * @param \Junges\Kafka\Contracts\KafkaProducerMessage|null $expectedMessage
      * @param callable|null $callback
      */
     public function assertPublishedOnTimes(string $topic, int $times = 1, ?KafkaProducerMessage $expectedMessage = null, ?callable $callback = null)
@@ -112,6 +112,12 @@ class KafkaFake implements CanPublishMessagesToKafka
         PHPUnit::assertEmpty($this->getPublishedMessages(), 'Messages were published unexpectedly.');
     }
 
+    /**
+     * Creates a new \Junges\Kafka\Support\Testing\Fakes\ProducerBuilderFake instance.
+     *
+     * @param array $config
+     * @return \Junges\Kafka\Support\Testing\Fakes\ProducerBuilderFake
+     */
     private function makeProducerBuilderFake(array $config): ProducerBuilderFake
     {
         return ProducerBuilderFake::create($config)
@@ -122,7 +128,7 @@ class KafkaFake implements CanPublishMessagesToKafka
      * Get all messages matching a truth-test callback.
      *
      * @param string|null $topic
-     * @param KafkaProducerMessage|null $expectedMessage
+     * @param \Junges\Kafka\Contracts\KafkaProducerMessage|null $expectedMessage
      * @param callable|null $callback
      * @return \Illuminate\Support\Collection
      */

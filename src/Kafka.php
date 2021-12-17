@@ -14,7 +14,7 @@ class Kafka implements CanPublishMessagesToKafka
      * Creates a new ProducerBuilder instance, setting brokers and topic.
      *
      * @param string $cluster
-     * @return CanProduceMessages
+     * @return \Junges\Kafka\Contracts\CanProduceMessages
      */
     public function publishOn(string $cluster): CanProduceMessages
     {
@@ -48,7 +48,7 @@ class Kafka implements CanPublishMessagesToKafka
      * Creates a new ConsumerBuilder instance based on pre-defined configuration.
      *
      * @param string $consumer
-     * @return ConsumerBuilder
+     * @return \Junges\Kafka\Consumers\ConsumerBuilder
      */
     public function consumeUsing(string $consumer): ConsumerBuilder
     {

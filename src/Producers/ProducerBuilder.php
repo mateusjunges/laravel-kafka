@@ -30,7 +30,7 @@ class ProducerBuilder implements CanProduceMessages
      * Return a new Junges\Commit\ProducerBuilder instance
      *
      * @param array $config
-     * @return static
+     * @return \Junges\Kafka\Producers\ProducerBuilder
      */
     public static function create(array $config): self
     {
@@ -45,7 +45,7 @@ class ProducerBuilder implements CanProduceMessages
      * Set the brokers to be used.
      *
      * @param string $brokers
-     * @return $this
+     * @return \Junges\Kafka\Producers\ProducerBuilder
      */
     public function withBrokers(string $brokers): self
     {
@@ -58,7 +58,7 @@ class ProducerBuilder implements CanProduceMessages
      * Set the topic to publish the message.
      *
      * @param string $topic
-     * @return $this
+     * @return \Junges\Kafka\Producers\ProducerBuilder
      */
     public function onTopic(string $topic): self
     {
@@ -72,7 +72,7 @@ class ProducerBuilder implements CanProduceMessages
      *
      * @param string $name
      * @param string $option
-     * @return $this
+     * @return \Junges\Kafka\Producers\ProducerBuilder
      */
     public function withConfigOption(string $name, string $option): self
     {
@@ -85,7 +85,7 @@ class ProducerBuilder implements CanProduceMessages
      * Sets the given configuration options based on given key/value array.
      *
      * @param array $options
-     * @return $this
+     * @return \Junges\Kafka\Producers\ProducerBuilder
      */
     public function withConfigOptions(array $options): self
     {
@@ -100,7 +100,7 @@ class ProducerBuilder implements CanProduceMessages
      * Set the message headers.
      *
      * @param array $headers
-     * @return $this
+     * @return \Junges\Kafka\Producers\ProducerBuilder
      */
     public function withHeaders(array $headers): self
     {
@@ -127,7 +127,7 @@ class ProducerBuilder implements CanProduceMessages
      *
      * @param string $key
      * @param mixed $message
-     * @return ProducerBuilder
+     * @return \Junges\Kafka\Producers\ProducerBuilder
      */
     public function withBodyKey(string $key, mixed $message): self
     {
@@ -140,7 +140,7 @@ class ProducerBuilder implements CanProduceMessages
      * Sets the entire Message to be produced.
      *
      * @param KafkaProducerMessage $message
-     * @return $this
+     * @return \Junges\Kafka\Producers\ProducerBuilder
      */
     public function withMessage(KafkaProducerMessage $message): self
     {
@@ -153,7 +153,7 @@ class ProducerBuilder implements CanProduceMessages
      * Enables debug.
      *
      * @param bool $enabled
-     * @return $this
+     * @return \Junges\Kafka\Producers\ProducerBuilder
      */
     public function withDebugEnabled(bool $enabled = true): self
     {
@@ -171,10 +171,10 @@ class ProducerBuilder implements CanProduceMessages
     }
 
     /**
-     * Set the Sasl configuration
+     * Set the Sasl configuration.
      *
      * @param Sasl $saslConfig
-     * @return $this
+     * @return \Junges\Kafka\Producers\ProducerBuilder
      */
     public function withSasl(Sasl $saslConfig): self
     {
@@ -199,7 +199,7 @@ class ProducerBuilder implements CanProduceMessages
     /**
      * Disables debug on kafka producer.
      *
-     * @return $this
+     * @return \Junges\Kafka\Producers\ProducerBuilder
      */
     public function withDebugDisabled(): self
     {
@@ -220,7 +220,6 @@ class ProducerBuilder implements CanProduceMessages
      * Produces the message on Kafka.
      *
      * @return bool
-     * @throws \Exception
      */
     public function send(): bool
     {
@@ -232,7 +231,7 @@ class ProducerBuilder implements CanProduceMessages
     /**
      * Build the Producer with the specified configuration options.
      *
-     * @return Producer
+     * @return \Junges\Kafka\Producers\Producer
      */
     private function build(): Producer
     {

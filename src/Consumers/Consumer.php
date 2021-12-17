@@ -3,6 +3,7 @@
 namespace Junges\Kafka\Consumers;
 
 use Closure;
+use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Commit\Contracts\Committer;
 use Junges\Kafka\Commit\Contracts\CommitterFactory;
 use Junges\Kafka\Commit\DefaultCommitterFactory;
@@ -51,8 +52,8 @@ class Consumer
 
     /**
      * @param \Junges\Kafka\Config\Config $config
-     * @param MessageDeserializer $deserializer
-     * @param CommitterFactory|null $committerFactory
+     * @param \Junges\Kafka\Contracts\MessageDeserializer $deserializer
+     * @param \Junges\Kafka\Commit\Contracts\CommitterFactory|null $committerFactory
      */
     public function __construct(private Config $config, MessageDeserializer $deserializer, CommitterFactory $committerFactory = null)
     {
@@ -66,8 +67,6 @@ class Consumer
 
     /**
      * Consume messages from a kafka topic in loop.
-     *
-     * @throws \RdKafka\Exception|\Carbon\Exceptions\Exception
      */
     public function consume(): void
     {
@@ -95,7 +94,7 @@ class Consumer
     /**
      * Requests the consumer to stop after it's finished processing any messages to allow graceful exit
      *
-     * @param Closure|null $onStop
+     * @param \Closure|null $onStop
      */
     public function stopConsume(?Closure $onStop = null): void
     {
@@ -117,6 +116,7 @@ class Consumer
      *
      * @return int
      */
+    #[Pure]
     public function consumedMessagesCount(): int
     {
         return $this->messageCounter->messagesCounted();
@@ -124,9 +124,6 @@ class Consumer
 
     /**
      * Execute the consume method on RdKafka consumer.
-     *
-     * @throws KafkaConsumerException
-     * @throws \RdKafka\Exception|\Throwable
      */
     private function doConsume(): void
     {
@@ -153,9 +150,6 @@ class Consumer
 
     /**
      * Tries to handle the message received.
-     *
-     * @param \RdKafka\Message $message
-     * @throws \Throwable
      */
     private function executeMessage(Message $message): void
     {
@@ -177,7 +171,7 @@ class Consumer
      * Handle exceptions while consuming messages.
      *
      * @param \Throwable $exception
-     * @param Message|ConsumedMessage $message
+     * @param \RdKafka\Message|ConsumedMessage $message
      * @return bool
      */
     private function handleException(Throwable $exception, Message|KafkaConsumerMessage $message): bool
