@@ -8,6 +8,7 @@ use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Console\Commands\KafkaConsumer\Options;
 use Junges\Kafka\Consumers\Consumer;
+use Junges\Kafka\Contracts\MessageDeserializer;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
 use Junges\Kafka\MessageCounter;
 
@@ -64,10 +65,11 @@ class KafkaConsumerCommand extends Command
             maxMessages: $options->getMaxMessages()
         );
 
-        (new Consumer($config, new JsonDeserializer(), (
-            new DefaultCommitterFactory(
-                new MessageCounter($config->getMaxMessages())
-            )
-        )))->consume();
+        $consumer = app(Consumer::class, [
+            'config' => $config,
+            'deserializer' => app(MessageDeserializer::class)
+        ]);
+
+        $consumer->consume();
     }
 }
