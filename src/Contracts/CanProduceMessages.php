@@ -7,7 +7,11 @@ use Junges\Kafka\Message\Message;
 
 interface CanProduceMessages
 {
-    public static function create(string $topic, string $broker = null): self;
+    public static function create(array $config): self;
+
+    public function withBrokers(string $brokers): self;
+
+    public function onTopic(string $topic): self;
 
     public function withConfigOption(string $name, string $option): self;
 

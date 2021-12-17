@@ -2,10 +2,11 @@
 
 namespace Junges\Kafka\Commit;
 
+use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Commit\Contracts\Committer;
 use Junges\Kafka\Commit\Contracts\CommitterFactory;
 use Junges\Kafka\Config\Config;
-use Junges\Kafka\MessageCounter;
+use Junges\Kafka\Message\MessageCounter;
 use RdKafka\KafkaConsumer;
 
 class DefaultCommitterFactory implements CommitterFactory
@@ -14,6 +15,7 @@ class DefaultCommitterFactory implements CommitterFactory
     {
     }
 
+    #[Pure]
     public function make(KafkaConsumer $kafkaConsumer, Config $config): Committer
     {
         if ($config->isAutoCommit()) {

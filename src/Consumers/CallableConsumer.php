@@ -5,7 +5,6 @@ namespace Junges\Kafka\Consumers;
 use Closure;
 use Junges\Kafka\Contracts\Consumer;
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
-use RdKafka\Message;
 
 class CallableConsumer extends Consumer
 {
@@ -25,7 +24,7 @@ class CallableConsumer extends Consumer
     /**
      * Handle the received message.
      *
-     * @param KafkaConsumerMessage $message
+     * @param \Junges\Kafka\Contracts\KafkaConsumerMessage $message
      */
     public function handle(KafkaConsumerMessage $message): void
     {

@@ -37,6 +37,19 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertEquals(['foo'], $topics);
     }
 
+    public function testItCanUnsubscribeFromATopic()
+    {
+        $consumer = ConsumerBuilder::create('broker');
+
+        $consumer->subscribe('foo', 'bar');
+
+        $this->assertEquals(['foo', 'bar'], $this->getPropertyWithReflection('topics', $consumer));
+
+        $consumer->unsubscribe('bar');
+
+        $this->assertEquals(['foo'], $this->getPropertyWithReflection('topics', $consumer));
+    }
+
     public function testItDoesNotSubscribeToATopicTwice()
     {
         $consumer = ConsumerBuilder::create('broker');
@@ -280,6 +293,28 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
 
         $committerFactory = $this->getPropertyWithReflection('committerFactory', $consumer);
         $this->assertInstanceOf($adhocCommitterFactory::class, $committerFactory);
+    }
+
+    public function testItCanBuilderFromConsumerConfig()
+    {
+        $consumer = ConsumerBuilder::createFromConsumerConfig(config('kafka.consumers.default'));
+
+        $this->assertEquals(['topic1', 'topic2'], $this->getPropertyWithReflection('topics', $consumer));
+        $this->assertEquals('topic_dlq', $this->getPropertyWithReflection('dlq', $consumer));
+        $this->assertEquals('localhost:9092', $this->getPropertyWithReflection('brokers', $consumer));
+        $this->assertEquals('default', $this->getPropertyWithReflection('groupId', $consumer));
+        $this->assertEquals('default', $this->getPropertyWithReflection('groupId', $consumer));
+        $this->assertEquals('latest', $this->getPropertyWithReflection('options', $consumer)['auto.offset.reset']);
+        $this->assertEquals(10, $this->getPropertyWithReflection('maxCommitRetries', $consumer));
+        $this->assertNull($this->getPropertyWithReflection('commit', $consumer));
+        $this->assertEquals(2, $this->getPropertyWithReflection('maxMessages', $consumer));
+        $this->assertEquals('plaintext', $this->getPropertyWithReflection('securityProtocol', $consumer));
+
+        config()->set('kafka.consumers.default.dlq_topic', null);
+
+        $consumer = ConsumerBuilder::createFromConsumerConfig(config('kafka.consumers.default'));
+
+        $this->assertNull($this->getPropertyWithReflection('dlq', $consumer));
     }
 }
 

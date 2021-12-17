@@ -17,11 +17,6 @@ class RetryableCommitter implements Committer
     private Committer $committer;
     private Retryable $retryable;
 
-    /**
-     * @param Committer $committer
-     * @param Sleeper $sleeper
-     * @param int $maximumRetries
-     */
     #[Pure]
     public function __construct(Committer $committer, Sleeper $sleeper, int $maximumRetries = 6)
     {
@@ -29,17 +24,11 @@ class RetryableCommitter implements Committer
         $this->retryable = new Retryable($sleeper, $maximumRetries, self::RETRYABLE_ERRORS);
     }
 
-    /**
-     * @throws \Carbon\Exceptions\Exception
-     */
     public function commitMessage(Message $message, bool $success): void
     {
         $this->retryable->retry(fn () => $this->committer->commitMessage($message, $success));
     }
 
-    /**
-     * @throws \Carbon\Exceptions\Exception
-     */
     public function commitDlq(Message $message): void
     {
         $this->retryable->retry(fn () => $this->committer->commitDlq($message));

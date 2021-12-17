@@ -15,6 +15,13 @@ abstract class AbstractMessage implements KafkaMessage
     ) {
     }
 
+    public function setPartition(int $partition): self
+    {
+        $this->partition = $partition;
+
+        return $this;
+    }
+
     public function setTopicName(string $topic): self
     {
         $this->topicName = $topic;

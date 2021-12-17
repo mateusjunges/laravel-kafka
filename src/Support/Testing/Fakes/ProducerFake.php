@@ -2,6 +2,8 @@
 
 namespace Junges\Kafka\Support\Testing\Fakes;
 
+use Closure;
+use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Message\Message;
 use RdKafka\Conf;
@@ -9,7 +11,7 @@ use RdKafka\Conf;
 class ProducerFake
 {
     private array $messages = [];
-    private $produceCallback = null;
+    private Closure|null $produceCallback = null;
 
     public function __construct(
         private Config $config,
@@ -17,6 +19,7 @@ class ProducerFake
     ) {
     }
 
+    #[Pure]
     public function setConf(array $options = []): Conf
     {
         return new Conf();

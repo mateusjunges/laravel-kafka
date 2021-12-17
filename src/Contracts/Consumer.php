@@ -9,7 +9,7 @@ abstract class Consumer
     abstract public function handle(KafkaConsumerMessage $message): void;
 
     /**
-     * @throws Throwable
+     * @throws \Throwable
      */
     public function failed(string $message, string $topic, Throwable $exception): void
     {

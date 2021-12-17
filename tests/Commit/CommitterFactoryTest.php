@@ -10,7 +10,7 @@ use Junges\Kafka\Commit\RetryableCommitter;
 use Junges\Kafka\Commit\VoidCommitter;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\Consumer;
-use Junges\Kafka\MessageCounter;
+use Junges\Kafka\Message\MessageCounter;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use RdKafka\KafkaConsumer;
 

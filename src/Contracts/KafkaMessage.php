@@ -4,6 +4,10 @@ namespace Junges\Kafka\Contracts;
 
 interface KafkaMessage
 {
+    public function setTopicName(string $topic): self;
+
+    public function setPartition(int $partition): self;
+
     public function getKey(): mixed;
 
     public function getTopicName(): ?string;

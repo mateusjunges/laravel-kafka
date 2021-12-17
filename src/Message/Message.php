@@ -15,10 +15,10 @@ class Message extends AbstractMessage implements Arrayable, KafkaProducerMessage
      *
      * @param string|null $topicName
      * @param int $partition
-     * @return Message
+     * @return \Junges\Kafka\Message\Message
      */
     #[Pure]
-    public static function create(string $topicName = null, int $partition = RD_KAFKA_PARTITION_UA): KafkaProducerMessage
+    public static function create(?string $topicName = null, int $partition = RD_KAFKA_PARTITION_UA): KafkaProducerMessage
     {
         return new self($topicName, $partition);
     }
@@ -28,7 +28,7 @@ class Message extends AbstractMessage implements Arrayable, KafkaProducerMessage
      *
      * @param string $key
      * @param mixed $message
-     * @return $this
+     * @return \Junges\Kafka\Message\Message
      */
     public function withBodyKey(string $key, mixed $message): Message
     {
@@ -41,7 +41,7 @@ class Message extends AbstractMessage implements Arrayable, KafkaProducerMessage
      * Unset a key in the message array.
      *
      * @param string $key
-     * @return $this
+     * @return \Junges\Kafka\Message\Message
      */
     public function forgetBodyKey(string $key): Message
     {
@@ -54,7 +54,7 @@ class Message extends AbstractMessage implements Arrayable, KafkaProducerMessage
      * Set the message headers.
      *
      * @param array|null $headers
-     * @return $this
+     * @return \Junges\Kafka\Message\Message
      */
     public function withHeaders(?array $headers): Message
     {
@@ -67,7 +67,7 @@ class Message extends AbstractMessage implements Arrayable, KafkaProducerMessage
      * Set the kafka message key.
      *
      * @param string|null $key
-     * @return $this
+     * @return \Junges\Kafka\Message\Message
      */
     public function withKey(?string $key): Message
     {

@@ -13,14 +13,15 @@ class AvroSchemaRegistry implements AvroSchemaRegistryContract
     /**
      * @var array<string, AvroSchemaRegistry[]>
      */
-    private $schemaMapping = [
+    private array $schemaMapping = [
         self::BODY_IDX => [],
         self::KEY_IDX => [],
     ];
 
     /**
      * AvroSchemaRegistry constructor.
-     * @param Registry $registry
+     *
+     * @param \FlixTech\SchemaRegistryApi\Registry $registry
      */
     public function __construct(private Registry $registry)
     {
@@ -28,7 +29,7 @@ class AvroSchemaRegistry implements AvroSchemaRegistryContract
 
     /**
      * @param string $topicName
-     * @param KafkaAvroSchemaRegistry $avroSchema
+     * @param \Junges\Kafka\Contracts\KafkaAvroSchemaRegistry $avroSchema
      * @return void
      */
     public function addBodySchemaMappingForTopic(string $topicName, KafkaAvroSchemaRegistry $avroSchema): void
@@ -38,7 +39,7 @@ class AvroSchemaRegistry implements AvroSchemaRegistryContract
 
     /**
      * @param string $topicName
-     * @param AvroSchemaRegistry $avroSchema
+     * @param \Junges\Kafka\Contracts\KafkaAvroSchemaRegistry $avroSchema
      * @return void
      */
     public function addKeySchemaMappingForTopic(string $topicName, KafkaAvroSchemaRegistry $avroSchema): void
@@ -48,7 +49,7 @@ class AvroSchemaRegistry implements AvroSchemaRegistryContract
 
     /**
      * @param string $topicName
-     * @return KafkaAvroSchemaRegistry
+     * @return \Junges\Kafka\Contracts\KafkaAvroSchemaRegistry
      */
     public function getBodySchemaForTopic(string $topicName): KafkaAvroSchemaRegistry
     {
@@ -57,7 +58,7 @@ class AvroSchemaRegistry implements AvroSchemaRegistryContract
 
     /**
      * @param string $topicName
-     * @return KafkaAvroSchemaRegistry
+     * @return \Junges\Kafka\Contracts\KafkaAvroSchemaRegistry
      */
     public function getKeySchemaForTopic(string $topicName): KafkaAvroSchemaRegistry
     {
@@ -67,7 +68,6 @@ class AvroSchemaRegistry implements AvroSchemaRegistryContract
     /**
      * @param string $topicName
      * @return bool
-     * @throws SchemaRegistryException
      */
     public function hasBodySchemaForTopic(string $topicName): bool
     {
@@ -77,7 +77,6 @@ class AvroSchemaRegistry implements AvroSchemaRegistryContract
     /**
      * @param string $topicName
      * @return bool
-     * @throws SchemaRegistryException
      */
     public function hasKeySchemaForTopic(string $topicName): bool
     {
@@ -87,7 +86,7 @@ class AvroSchemaRegistry implements AvroSchemaRegistryContract
     /**
      * @param string $topicName
      * @param string $type
-     * @return KafkaAvroSchemaRegistry
+     * @return \Junges\Kafka\Contracts\KafkaAvroSchemaRegistry
      * @throws \FlixTech\SchemaRegistryApi\Exception\SchemaRegistryException
      */
     private function getSchemaForTopicAndType(string $topicName, string $type): KafkaAvroSchemaRegistry
@@ -115,8 +114,8 @@ class AvroSchemaRegistry implements AvroSchemaRegistryContract
     }
 
     /**
-     * @param KafkaAvroSchemaRegistry $avroSchema
-     * @return AvroSchema
+     * @param \Junges\Kafka\Contracts\KafkaAvroSchemaRegistry $avroSchema
+     * @return \AvroSchema
      * @throws SchemaRegistryException|\FlixTech\SchemaRegistryApi\Exception\SchemaRegistryException
      */
     private function getSchemaDefinition(KafkaAvroSchemaRegistry $avroSchema): AvroSchema

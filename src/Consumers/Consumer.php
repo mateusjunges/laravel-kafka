@@ -3,6 +3,7 @@
 namespace Junges\Kafka\Consumers;
 
 use Closure;
+use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Commit\Contracts\Committer;
 use Junges\Kafka\Commit\Contracts\CommitterFactory;
 use Junges\Kafka\Commit\DefaultCommitterFactory;
@@ -13,7 +14,7 @@ use Junges\Kafka\Contracts\MessageDeserializer;
 use Junges\Kafka\Exceptions\KafkaConsumerException;
 use Junges\Kafka\Logger;
 use Junges\Kafka\Message\ConsumedMessage;
-use Junges\Kafka\MessageCounter;
+use Junges\Kafka\Message\MessageCounter;
 use Junges\Kafka\Retryable;
 use RdKafka\Conf;
 use RdKafka\KafkaConsumer;
@@ -51,7 +52,8 @@ class Consumer
 
     /**
      * @param \Junges\Kafka\Config\Config $config
-     * @param MessageDeserializer $deserializer
+     * @param \Junges\Kafka\Contracts\MessageDeserializer $deserializer
+     * @param \Junges\Kafka\Commit\Contracts\CommitterFactory|null $committerFactory
      */
     public function __construct(private Config $config, MessageDeserializer $deserializer, CommitterFactory $committerFactory = null)
     {
@@ -65,8 +67,6 @@ class Consumer
 
     /**
      * Consume messages from a kafka topic in loop.
-     *
-     * @throws \RdKafka\Exception|\Carbon\Exceptions\Exception
      */
     public function consume(): void
     {
@@ -94,7 +94,7 @@ class Consumer
     /**
      * Requests the consumer to stop after it's finished processing any messages to allow graceful exit
      *
-     * @param Closure|null $onStop
+     * @param \Closure|null $onStop
      */
     public function stopConsume(?Closure $onStop = null): void
     {
@@ -113,7 +113,10 @@ class Consumer
 
     /**
      * Count the number of messages consumed by this consumer
+     *
+     * @return int
      */
+    #[Pure]
     public function consumedMessagesCount(): int
     {
         return $this->messageCounter->messagesCounted();
@@ -121,11 +124,8 @@ class Consumer
 
     /**
      * Execute the consume method on RdKafka consumer.
-     *
-     * @throws KafkaConsumerException
-     * @throws \RdKafka\Exception|\Throwable
      */
-    private function doConsume()
+    private function doConsume(): void
     {
         $message = $this->consumer->consume(2000);
         $this->handleMessage($message);
@@ -150,9 +150,6 @@ class Consumer
 
     /**
      * Tries to handle the message received.
-     *
-     * @param \RdKafka\Message $message
-     * @throws \Throwable
      */
     private function executeMessage(Message $message): void
     {
@@ -174,7 +171,7 @@ class Consumer
      * Handle exceptions while consuming messages.
      *
      * @param \Throwable $exception
-     * @param Message|ConsumedMessage $message
+     * @param \RdKafka\Message|ConsumedMessage $message
      * @return bool
      */
     private function handleException(Throwable $exception, Message|KafkaConsumerMessage $message): bool
@@ -204,12 +201,23 @@ class Consumer
     private function sendToDlq(Message $message): void
     {
         $topic = $this->producer->newTopic($this->config->getDlq());
-        $topic->produce(
-            partition: RD_KAFKA_PARTITION_UA,
-            msgflags: 0,
-            payload: $message->payload,
-            key: $this->config->getConsumer()->producerKey($message->payload)
-        );
+
+        if (method_exists($topic, 'producev')) {
+            $topic->producev(
+                partition: RD_KAFKA_PARTITION_UA,
+                msgflags: 0,
+                payload: $message->payload,
+                key: $this->config->getConsumer()->producerKey($message->payload),
+                headers: $message->headers
+            );
+        } else {
+            $topic->produce(
+                partition: RD_KAFKA_PARTITION_UA,
+                msgflags: 0,
+                payload: $message->payload,
+                key: $this->config->getConsumer()->producerKey($message->payload)
+            );
+        }
 
         if (method_exists($this->producer, 'flush')) {
             $this->producer->flush(12000);
