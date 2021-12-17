@@ -2,29 +2,38 @@
 
 namespace Junges\Kafka\Console\Commands\KafkaConsumer;
 
+use JetBrains\PhpStorm\Pure;
+use Junges\Kafka\Config\Sasl;
+
 class Options
 {
-    private array $topics;
-    private string $consumer;
-    private string $groupId;
-    private int $commit;
-    private string $dlq;
-    private int $maxMessage;
+    private ?array $topics;
+    private ?string $consumer;
+    private ?string $groupId;
+    private ?int $commit;
+    private ?string $dlq;
+    private ?int $maxMessages;
+    private ?string $saslUsername;
+    private ?string $saslPassword;
+    private ?string $saslMechanisms;
+    private ?string $securityProtocol;
     private array $config;
 
+    #[Pure]
     public function __construct(array $options, array $config)
     {
-        if (is_string($options['topic'])) {
-            $options['topic'] = [$options['topic']];
+        if (is_string($options['topics'])) {
+            $options['topics'] = explode(",", $options['topics']);
+        }
+
+        foreach ($options as $option => $value) {
+            $this->{$option} = $value;
         }
 
         $this->config = $config;
-        $this->topics = $options['topic'];
-        $this->consumer = $options['consumer'];
-        $this->groupId = $options['groupId'];
-        $this->commit = $options['commit'];
-        $this->dlq = $options['dlq'];
-        $this->maxMessage = $options['maxMessage'];
+        $this->saslPassword = $config['sasl']['password'];
+        $this->saslUsername = $config['sasl']['username'];
+        $this->saslMechanisms = $config['sasl']['mechanisms'];
     }
 
     public function getTopics(): array
@@ -54,6 +63,25 @@ class Options
 
     public function getMaxMessage(): int
     {
-        return $this->maxMessage >= 1 ? $this->maxMessage : -1;
+        return $this->maxMessages >= 1 ? $this->maxMessages : -1;
+    }
+
+    #[Pure]
+    public function getSasl(): ?Sasl
+    {
+        if (is_null($this->saslMechanisms) || is_null($this->saslPassword) || is_null($this->saslUsername)) {
+            return null;
+        }
+
+        return new Sasl(
+            username: $this->saslUsername,
+            password: $this->saslPassword,
+            mechanisms: $this->saslMechanisms
+        );
+    }
+
+    public function getSecurityProtocol(): ?string
+    {
+        return $this->securityProtocol;
     }
 }
