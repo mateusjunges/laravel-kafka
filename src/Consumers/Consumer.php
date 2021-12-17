@@ -52,6 +52,7 @@ class Consumer
     /**
      * @param \Junges\Kafka\Config\Config $config
      * @param MessageDeserializer $deserializer
+     * @param \Junges\Kafka\Commit\Contracts\CommitterFactory|null $committerFactory
      */
     public function __construct(private Config $config, MessageDeserializer $deserializer, CommitterFactory $committerFactory = null)
     {
