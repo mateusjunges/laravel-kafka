@@ -13,7 +13,7 @@ use Junges\Kafka\Contracts\MessageDeserializer;
 use Junges\Kafka\Exceptions\KafkaConsumerException;
 use Junges\Kafka\Logger;
 use Junges\Kafka\Message\ConsumedMessage;
-use Junges\Kafka\MessageCounter;
+use Junges\Kafka\Message\MessageCounter;
 use Junges\Kafka\Retryable;
 use RdKafka\Conf;
 use RdKafka\KafkaConsumer;
