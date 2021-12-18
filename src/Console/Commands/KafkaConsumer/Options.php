@@ -22,9 +22,7 @@ class Options
     #[Pure]
     public function __construct(array $options, array $config)
     {
-        if (is_string($options['topics'])) {
-            $options['topics'] = explode(",", $options['topics']);
-        }
+        $options['topics'] = explode(",", $options['topics']);
 
         foreach ($options as $option => $value) {
             $this->{$option} = $value;
