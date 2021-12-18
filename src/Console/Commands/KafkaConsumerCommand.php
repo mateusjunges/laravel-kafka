@@ -15,7 +15,7 @@ use Junges\Kafka\MessageCounter;
 class KafkaConsumerCommand extends Command
 {
     protected $signature = 'kafka:consume 
-            {--topics=* : The topics to listen for messages (topic1,topic2,...,topicN)} 
+            {--topics= : The topics to listen for messages (topic1,topic2,...,topicN)} 
             {--consumer= : The consumer which will consume messages in the specified topic} 
             {--groupId=? : The consumer group id} 
             {--commit=1} 
