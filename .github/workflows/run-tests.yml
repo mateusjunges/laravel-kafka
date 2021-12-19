@@ -19,7 +19,7 @@ jobs:
           - php: 8.1
             extrdkafka: 5.0.0
           - php: 8.0
-          - librdkafka: v1.7.0
+            librdkafka: v1.7.0
             extrdkafka: 5.0.0, 5.0.1
 
     steps:
