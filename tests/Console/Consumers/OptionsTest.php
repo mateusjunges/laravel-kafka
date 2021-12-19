@@ -35,7 +35,7 @@ class OptionsTest extends LaravelKafkaTestCase
             'commit' => 1,
             'dlq' => 'test-dlq',
             'maxMessages' => 2,
-            'securityProtocol' => 'plaintext'
+            'securityProtocol' => 'plaintext',
         ];
 
         $options = new Options($commandLineOptions, $this->config);
