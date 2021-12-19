@@ -3,10 +3,10 @@
 namespace Junges\Kafka\Consumers;
 
 use Closure;
-use Junges\Kafka\Contracts\Consumer;
+use Junges\Kafka\Contracts\Handler;
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
 
-class CallableConsumer extends Consumer
+class CallableHandler extends Handler
 {
     private Closure $handler;
     private array $middlewares;

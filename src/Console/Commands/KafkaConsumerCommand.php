@@ -52,9 +52,10 @@ class KafkaConsumerCommand extends Command
 
             return;
         }
+
         $options = new Options($this->options(), $this->config);
 
-        $consumer = $options->getConsumer();
+        $handler = $options->getHandler();
 
         $config = new Config(
             broker: $options->getBroker(),
@@ -62,18 +63,18 @@ class KafkaConsumerCommand extends Command
             securityProtocol: $options->getSecurityProtocol(),
             commit: $options->getCommit(),
             groupId: $options->getGroupId(),
-            consumer: new $consumer(),
+            handler: new $handler(),
             sasl: $options->getSasl(),
             dlq: $options->getDlq(),
             maxMessages: $options->getMaxMessages()
         );
 
-        /** @var Consumer $consumer */
-        $consumer = app(Consumer::class, [
+        /** @var Consumer $handler */
+        $handler = app(Consumer::class, [
             'config' => $config,
             'deserializer' => app(MessageDeserializer::class),
         ]);
 
-        $consumer->consume();
+        $handler->consume();
     }
 }

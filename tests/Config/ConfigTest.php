@@ -4,7 +4,7 @@ namespace Junges\Kafka\Tests\Config;
 
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\Sasl;
-use Junges\Kafka\Contracts\Consumer;
+use Junges\Kafka\Contracts\Handler;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 
 class ConfigTest extends LaravelKafkaTestCase
@@ -17,7 +17,7 @@ class ConfigTest extends LaravelKafkaTestCase
             securityProtocol: 'security',
             commit: 1,
             groupId: 'group',
-            consumer: $this->createMock(Consumer::class),
+            handler: $this->createMock(Handler::class),
             sasl: null,
             dlq: null,
         );
@@ -45,7 +45,7 @@ class ConfigTest extends LaravelKafkaTestCase
             securityProtocol: 'security',
             commit: 1,
             groupId: 'group',
-            consumer: $this->createMock(Consumer::class),
+            handler: $this->createMock(Handler::class),
             sasl: null,
             dlq: null,
             maxMessages: -1,
@@ -83,7 +83,7 @@ class ConfigTest extends LaravelKafkaTestCase
             securityProtocol: 'SASL_PLAINTEXT',
             commit: 1,
             groupId: 'group',
-            consumer: $this->createMock(Consumer::class),
+            handler: $this->createMock(Handler::class),
             sasl: $sasl,
             dlq: null,
         );
@@ -121,7 +121,7 @@ class ConfigTest extends LaravelKafkaTestCase
             securityProtocol: 'SASL_PLAINTEXT',
             commit: 1,
             groupId: 'group',
-            consumer: $this->createMock(Consumer::class),
+            handler: $this->createMock(Handler::class),
             dlq: null,
             customOptions: $customOptions
         );

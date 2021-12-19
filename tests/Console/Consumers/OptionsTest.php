@@ -42,7 +42,7 @@ class OptionsTest extends LaravelKafkaTestCase
 
         $this->assertEquals('localhost:9092', $options->getBroker());
         $this->assertEquals(['test-topic', 'test-topic-1'], $options->getTopics());
-        $this->assertEquals(FakeHandler::class, $options->getConsumer());
+        $this->assertEquals(FakeHandler::class, $options->getHandler());
         $this->assertEquals('test', $options->getGroupId());
         $this->assertEquals(1, $options->getCommit());
         $this->assertEquals('test-dlq', $options->getDlq());
@@ -62,7 +62,7 @@ class OptionsTest extends LaravelKafkaTestCase
 
         $this->assertEquals('localhost:9092', $options->getBroker());
         $this->assertEquals(['test-topic', 'test-topic-1'], $options->getTopics());
-        $this->assertEquals(FakeHandler::class, $options->getConsumer());
+        $this->assertEquals(FakeHandler::class, $options->getHandler());
         $this->assertEquals('default', $options->getGroupId());
         $this->assertEquals(1, $options->getCommit());
         $this->assertNull($options->getDlq());

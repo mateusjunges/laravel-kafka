@@ -366,7 +366,7 @@ class ConsumerBuilder
             securityProtocol: $this->securityProtocol,
             commit: $this->commit,
             groupId: $this->groupId,
-            consumer: new CallableConsumer($this->handler, $this->middlewares),
+            handler: new CallableHandler($this->handler, $this->middlewares),
             sasl: $this->saslConfig,
             dlq: $this->dlq,
             maxMessages: $this->maxMessages,

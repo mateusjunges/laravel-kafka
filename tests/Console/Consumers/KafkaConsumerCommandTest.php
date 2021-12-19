@@ -32,7 +32,7 @@ class KafkaConsumerCommandTest extends LaravelKafkaTestCase
             securityProtocol: 'security',
             commit: 1,
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: $fakeHandler,
             sasl: null,
             dlq: null,
             maxMessages: 1,

@@ -39,7 +39,7 @@ class Options
         return ! empty($this->topics) ? $this->topics : [];
     }
 
-    public function getConsumer(): ?string
+    public function getHandler(): ?string
     {
         return $this->consumer;
     }
