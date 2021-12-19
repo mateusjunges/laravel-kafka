@@ -44,10 +44,6 @@ class KafkaConsumerCommand extends Command
         ];
     }
 
-    /**
-     * @throws \Carbon\Exceptions\Exception
-     * @throws \RdKafka\Exception
-     */
     public function handle()
     {
         if (empty($this->option('consumer'))) {
