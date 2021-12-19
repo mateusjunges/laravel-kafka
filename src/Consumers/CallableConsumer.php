@@ -5,7 +5,6 @@ namespace Junges\Kafka\Consumers;
 use Closure;
 use Junges\Kafka\Contracts\Consumer;
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
-use RdKafka\Message;
 
 class CallableConsumer extends Consumer
 {
