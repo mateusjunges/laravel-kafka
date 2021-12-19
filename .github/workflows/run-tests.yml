@@ -12,8 +12,8 @@ jobs:
     strategy:
       matrix:
         php: [8.1]
-        librdkafka: [v1.7.0]
-        extrdkafka: [5.0.0]
+        librdkafka: [v1.8.2]
+        extrdkafka: [5.0.2]
         laravel: [8]
     steps:
       - uses: actions/checkout@v2
