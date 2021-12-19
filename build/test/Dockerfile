@@ -1,4 +1,4 @@
-FROM joesantos386/laravel:8.0
+FROM joesantos386/laravel:8.0-v1.5.3-5.0.0-8
 
 ARG LARAVEL_VERSION
 
