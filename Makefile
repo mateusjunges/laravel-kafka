@@ -33,7 +33,7 @@ coverage: up
 
 unit-coverage:
 	@docker-compose exec laravel phpdbg -qrr ./vendor/bin/phpunit tests --whitelist /application/laravel-kafka/src --coverage-html /application/laravel-kafka/coverage --filter Unit
-8.0-v1.6.1-5.0.0-8
+
 integration-coverage:
 	@docker-compose exec laravel phpdbg -qrr ./vendor/bin/phpunit tests --whitelist /application/laravel-kafka/src --coverage-html /application/laravel-kafka/coverage --filter Integration
 
