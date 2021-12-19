@@ -40,6 +40,8 @@ services:
       dockerfile: build/test/Dockerfile
       args:
         TAG: 8.0-v1.6.1-5.0.0-8
+        LIBRDKAFKA_VERSION: v1.6.0
+        EXT_RDKAFKA_VERSION: 5.0.0
         LARAVEL_VERSION: 8
     entrypoint: /application/laravel-kafka/start.sh
     networks:
