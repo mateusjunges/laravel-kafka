@@ -30,7 +30,7 @@ class OptionsTest extends LaravelKafkaTestCase
     {
         $commandLineOptions = [
             'topics' => 'test-topic,test-topic-1',
-            'consumer' => FakeHandler::class,
+            'handler' => FakeHandler::class,
             'groupId' => 'test',
             'commit' => 1,
             'dlq' => 'test-dlq',
@@ -55,7 +55,7 @@ class OptionsTest extends LaravelKafkaTestCase
     {
         $options = [
             'topics' => 'test-topic,test-topic-1',
-            'consumer' => FakeHandler::class,
+            'handler' => FakeHandler::class,
         ];
 
         $options = new Options($options, $this->config);
