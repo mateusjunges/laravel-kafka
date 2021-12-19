@@ -12,7 +12,7 @@ class KafkaConsumerCommand extends Command
 {
     protected $signature = 'kafka:consume 
             {--topics= : The topics to listen for messages (topic1,topic2,...,topicN)} 
-            {--consumer= : The consumer which will consume messages in the specified topic} 
+            {--handler= : The consumer which will consume messages in the specified topic} 
             {--groupId=anonymous : The consumer group id} 
             {--commit=1} 
             {--dlq=? : The Dead Letter Queue} 
@@ -41,8 +41,8 @@ class KafkaConsumerCommand extends Command
 
     public function handle()
     {
-        if (empty($this->option('consumer'))) {
-            $this->error('The [--consumer] option is required.');
+        if (empty($this->option('handler'))) {
+            $this->error('The [--handler] option is required.');
 
             return;
         }
