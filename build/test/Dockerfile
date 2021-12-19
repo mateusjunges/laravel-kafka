@@ -1,6 +1,4 @@
-ARG TAG
-
-FROM joesantos386/laravel:${TAG}
+FROM joesantos386/laravel:8.0
 
 ARG LARAVEL_VERSION
 
