@@ -2,6 +2,10 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2021-12-10 v1.5.2](https://github.com/mateusjunges/laravel-kafka/compare/v1.5.1...v1.5.2)
+### Fixed
+- Fixed built in consumer command ([#50](https://github.com/mateusjunges/laravel-kafka/pull/50))
+
 ## [2021-12-10 v1.5.1](https://github.com/mateusjunges/laravel-kafka/compare/v1.5.0...v1.5.1)
 ### Added
 - Added a `withBrokers` setter to the consumer api, allowing to set brokers on the run ([#6a639ce](https://github.com/mateusjunges/laravel-kafka/commit/6a639ce3670ef1df25c79d11923fcb13b37d4f8f))
