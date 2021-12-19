@@ -81,7 +81,7 @@ Kafka::publishOn('cluster');
 
 The cluster is defined in a `clusters` array inside `config/kafka.php`
 
-The `publishOn` method throws a `InvalidArgumentException if the specified cluster is not defined.
+The `publishOn` method throws a `InvalidArgumentException` if the specified cluster is not defined.
 
 This method returns a `Junges\Kafka\Producers\ProducerBuilder::class` instance, and you can configure your message.
 
