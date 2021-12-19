@@ -15,16 +15,15 @@ class OptionsTest extends LaravelKafkaTestCase
         parent::setUp();
 
         $this->config = [
-            'brokers' => config('kafka.brokers'),
-            'groupId' => config('kafka.group_id'),
-            'securityProtocol' => config('kafka.securityProtocol'),
+            'brokers' => config('kafka.consumers.default.brokers'),
+            'groupId' => config('kafka.consumers.default.group_id'),
+            'securityProtocol' => config('kafka.consumers.security_protocol'),
             'sasl' => [
-                'mechanisms' => config('kafka.sasl.mechanisms'),
-                'username' => config('kafka.sasl.username'),
-                'password' => config('kafka.sasl.password'),
+                'mechanisms' => config('kafka.consumers.default.sasl.mechanisms'),
+                'username' => config('kafka.consumers.default.sasl.username'),
+                'password' => config('kafka.consumers.default.sasl.password'),
             ],
         ];
-
     }
 
     public function testItInstantiateTheClassWithCorrectOptions()
@@ -64,7 +63,7 @@ class OptionsTest extends LaravelKafkaTestCase
         $this->assertEquals('localhost:9092', $options->getBroker());
         $this->assertEquals(['test-topic', 'test-topic-1'], $options->getTopics());
         $this->assertEquals(FakeHandler::class, $options->getConsumer());
-        $this->assertNull($options->getGroupId());
+        $this->assertEquals('default', $options->getGroupId());
         $this->assertEquals(1, $options->getCommit());
         $this->assertNull($options->getDlq());
         $this->assertEquals(-1, $options->getMaxMessages());

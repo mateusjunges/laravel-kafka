@@ -19,7 +19,15 @@ return [
              | Choose if debug is enabled or not.
              */
             'debug' => env('KAFKA_DEBUG', false),
+
             'security_protocol' => env('KAFKA_SECURITY_PROTOCOL', 'plaintext'),
+
+            'sasl' => [
+                'username' => '',
+                'password' => '',
+                'mechanisms' => ''
+            ],
+
             /*
              * The custom configuration options for this cluster.
              */
@@ -80,6 +88,12 @@ return [
              * Custom configuration options for this consumer.
              */
             'options' => [],
+
+            'sasl' => [
+                'username' => '',
+                'password' => '',
+                'mechanisms' => ''
+            ]
         ]
     ]
 ];
