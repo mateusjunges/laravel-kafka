@@ -3,20 +3,27 @@
 namespace Junges\Kafka\Console\Commands;
 
 use Illuminate\Console\Command;
+use Junges\Kafka\Commit\DefaultCommitterFactory;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Console\Commands\KafkaConsumer\Options;
 use Junges\Kafka\Consumers\Consumer;
+use Junges\Kafka\Contracts\MessageDeserializer;
+use Junges\Kafka\Message\Deserializers\JsonDeserializer;
+use Junges\Kafka\MessageCounter;
+use Symfony\Component\Console\Exception\MissingInputException;
 
 class KafkaConsumerCommand extends Command
 {
     protected $signature = 'kafka:consume 
-            {--topic=* : The topic to listen for messages} 
+            {--topics= : The topics to listen for messages (topic1,topic2,...,topicN)} 
             {--consumer= : The consumer which will consume messages in the specified topic} 
-            {--groupId= : The consumer group id} 
+            {--groupId=anonymous : The consumer group id} 
             {--commit=1} 
-            {--dlq= : The Dead Letter Queue} 
-            {--maxMessage= : The max number of messages that should be handled}';
+            {--dlq=? : The Dead Letter Queue} 
+            {--maxMessage=? : The max number of messages that should be handled}
+            {--securityProtocol=?}';
+
     protected $description = 'A Kafka Consumer for Laravel.';
 
     private array $config;
@@ -26,43 +33,52 @@ class KafkaConsumerCommand extends Command
         parent::__construct();
 
         $this->config = [
-            'broker' => config('kafka.brokers'),
-            'groupId' => config('kafka.group_id'),
-            'securityProtocol' => config('kafka.securityProtocol'),
+            'brokers' => config('kafka.consumers.default.brokers'),
+            'groupId' => config('kafka.consumers.default.group_id'),
+            'securityProtocol' => config('kafka.consumers.security_protocol'),
             'sasl' => [
-                'mechanisms' => config('kafka.sasl.mechanisms'),
-                'username' => config('kafka.sasl.username'),
-                'password' => config('kafka.sasl.password'),
+                'mechanisms' => config('kafka.consumers.default.sasl.mechanisms'),
+                'username' => config('kafka.consumers.default.sasl.username'),
+                'password' => config('kafka.consumers.default.sasl.password'),
             ],
         ];
     }
 
-    /**
-     * @throws \Carbon\Exceptions\Exception
-     * @throws \RdKafka\Exception
-     */
     public function handle()
     {
+        if (empty($this->option('consumer'))) {
+            $this->error('The [--consumer] option is required.');
+
+            return;
+        }
+
+        if (empty($this->option('topics'))) {
+            $this->error('The [--topics option is required.');
+
+            return;
+        }
         $options = new Options($this->options(), $this->config);
 
         $consumer = $options->getConsumer();
 
         $config = new Config(
-            broker: $this->config['broker'],
+            broker: $options->getBroker(),
             topics: $options->getTopics(),
-            securityProtocol: $this->config['securityProtocol'],
+            securityProtocol: $options->getSecurityProtocol(),
             commit: $options->getCommit(),
             groupId: $options->getGroupId(),
             consumer: new $consumer(),
-            sasl: new Sasl(
-                username: $this->config['sasl']['username'],
-                password: $this->config['sasl']['password'],
-                mechanisms: $this->config['sasl']['mechanisms']
-            ),
+            sasl: $options->getSasl(),
             dlq: $options->getDlq(),
-            maxMessages: $options->getMaxMessage()
+            maxMessages: $options->getMaxMessages()
         );
 
-        (new Consumer($config))->consume();
+        /** @var Consumer $consumer */
+        $consumer = app(Consumer::class, [
+            'config' => $config,
+            'deserializer' => app(MessageDeserializer::class)
+        ]);
+
+        $consumer->consume();
     }
 }
