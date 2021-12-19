@@ -3,6 +3,7 @@
 namespace Junges\Kafka\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Junges\Kafka\Console\Commands\KafkaConsumerCommand;
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
 use Junges\Kafka\Contracts\MessageDeserializer;
@@ -17,6 +18,12 @@ class LaravelKafkaServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->publishesConfiguration();
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                KafkaConsumerCommand::class,
+            ]);
+        }
     }
 
     public function register()
