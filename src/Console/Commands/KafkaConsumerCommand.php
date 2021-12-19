@@ -11,6 +11,7 @@ use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Contracts\MessageDeserializer;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
 use Junges\Kafka\MessageCounter;
+use Symfony\Component\Console\Exception\MissingInputException;
 
 class KafkaConsumerCommand extends Command
 {
@@ -49,6 +50,17 @@ class KafkaConsumerCommand extends Command
      */
     public function handle()
     {
+        if (empty($this->option('consumer'))) {
+            $this->error('The [--consumer] option is required.');
+
+            return;
+        }
+
+        if (empty($this->option('topics'))) {
+            $this->error('The [--topics option is required.');
+
+            return;
+        }
         $options = new Options($this->options(), $this->config);
 
         $consumer = $options->getConsumer();
