@@ -99,7 +99,7 @@ Kafka::publishOn('cluster')->onTopic('your-topic');
 
 ### Defining configuration options
 The `withConfigOption` method sets a `\RdKafka\Conf::class` option. You can check all available options [here][rdkafka_config].
-This methods set one config per call, and you can use `withConfigOptions` passing an array of config name and config value 
+These methods set one config per call, and you can use `withConfigOptions` passing an array of config name and config value 
 as argument. Here's an example:
 
 ```php
