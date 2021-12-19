@@ -42,7 +42,7 @@ Follow these docs to install this package and start using kafka in your laravel 
   - [4.13 Setting kafka consumer configuration options](#setting-kafka-configuration-options)
   - [4.14 Building the consumer](#building-the-consumer)
   - [4.15 Consuming the kafka message](#consuming-the-kafka-messages)
-  - [4.16 Using the built in consumer command](#using-the-built-in-consumer-command)
+  - [4.16 Using the built-in consumer command](#using-the-built-in-consumer-command)
 - [5. Using custom serializers/deserializers](#using-custom-serializersdeserializers)
 - [6. Using `Kafka::fake()`method](#using-kafkafake)
   - [6.1 `assertPublished` method](#assertpublished-method)
@@ -576,7 +576,7 @@ $consumer = \Junges\Kafka\Facades\Kafka::createConsumer('brokers')->build();
 $consumer->consume();
 ```
 
-## Using the built in consumer command
+## Using the built-in consumer command
 This library provides you a built in consumer command, which you can use to consume messages.
 
 To use this command, you must create a `Consumer` class, which extends `Junges\Kafka\Contracts\Consumer`.
@@ -586,6 +586,8 @@ Then, just use the following command:
 ```bash
 php artisan kafka:consume --consumer=\\App\\Path\\To\\Your\\Consumer --topics=topic-to-consume
 ```
+
+> Note: The default brokers of the default consumer defined in `config/kafka.php` will be used.
 
 # Using custom serializers/deserializers
 Serialization is the process of converting messages to bytes. Deserialization is the inverse process - converting a stream of bytes into and object. In a nutshell,
