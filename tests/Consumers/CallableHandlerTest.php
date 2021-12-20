@@ -9,7 +9,7 @@ use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use RdKafka\Message;
 use stdClass;
 
-class CallableConsumerTest extends LaravelKafkaTestCase
+class CallableHandlerTest extends LaravelKafkaTestCase
 {
     public function testItDecodesMessages()
     {
