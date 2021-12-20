@@ -4,7 +4,7 @@ namespace Junges\Kafka\Contracts;
 
 use Throwable;
 
-abstract class Consumer
+abstract class Handler
 {
     abstract public function handle(KafkaConsumerMessage $message): void;
 

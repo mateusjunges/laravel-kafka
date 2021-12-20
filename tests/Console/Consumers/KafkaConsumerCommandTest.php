@@ -32,7 +32,7 @@ class KafkaConsumerCommandTest extends LaravelKafkaTestCase
             securityProtocol: 'security',
             commit: 1,
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: $fakeHandler,
             sasl: null,
             dlq: null,
             maxMessages: 1,
@@ -43,7 +43,7 @@ class KafkaConsumerCommandTest extends LaravelKafkaTestCase
 
         $this->app->bind(Consumer::class, fn () => $consumer);
 
-        $this->artisan("kafka:consume --topics=test-topic --consumer=\\\\Junges\\\\Kafka\\\\Tests\\\\Fakes\\\\FakeHandler");
+        $this->artisan("kafka:consume --topics=test-topic --handler=\\\\Junges\\\\Kafka\\\\Tests\\\\Fakes\\\\FakeHandler");
 
         $this->assertInstanceOf(ConsumedMessage::class, $fakeHandler->lastMessage());
     }

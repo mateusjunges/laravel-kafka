@@ -156,7 +156,7 @@ class Consumer
         try {
             $consumedMessage = $this->getConsumerMessage($message);
 
-            $this->config->getConsumer()->handle($this->deserializer->deserialize($consumedMessage));
+            $this->config->getHandler()->handle($this->deserializer->deserialize($consumedMessage));
 
             $success = true;
         } catch (Throwable $throwable) {
@@ -177,7 +177,7 @@ class Consumer
     private function handleException(Throwable $exception, Message|KafkaConsumerMessage $message): bool
     {
         try {
-            $this->config->getConsumer()->failed(
+            $this->config->getHandler()->failed(
                 $message->payload,
                 $this->config->getTopics()[0],
                 $exception
@@ -207,7 +207,7 @@ class Consumer
                 partition: RD_KAFKA_PARTITION_UA,
                 msgflags: 0,
                 payload: $message->payload,
-                key: $this->config->getConsumer()->producerKey($message->payload),
+                key: $this->config->getHandler()->producerKey($message->payload),
                 headers: $message->headers
             );
         } else {
@@ -215,7 +215,7 @@ class Consumer
                 partition: RD_KAFKA_PARTITION_UA,
                 msgflags: 0,
                 payload: $message->payload,
-                key: $this->config->getConsumer()->producerKey($message->payload)
+                key: $this->config->getHandler()->producerKey($message->payload)
             );
         }
 
