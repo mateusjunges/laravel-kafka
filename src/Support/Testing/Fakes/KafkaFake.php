@@ -32,14 +32,6 @@ class KafkaFake implements CanPublishMessagesToKafka
     }
 
     /**
-     * @param string $cluster
-     * @return \Junges\Kafka\Support\Testing\Fakes\ProducerBuilderFake
-     */
-    public function cluster(string $cluster): ProducerBuilderFake
-    {
-    }
-
-    /**
      * Assert if a messages was published based on a truth-test callback.
      *
      * @param \Junges\Kafka\Contracts\KafkaProducerMessage|null $expectedMessage
