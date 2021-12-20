@@ -8,7 +8,7 @@ use Junges\Kafka\Config\Sasl;
 class Options
 {
     private ?array $topics = null;
-    private ?string $consumer = null;
+    private ?string $handler = null;
     private ?string $groupId = null;
     private ?int $commit = 1;
     private ?string $dlq = null;
@@ -39,9 +39,9 @@ class Options
         return ! empty($this->topics) ? $this->topics : [];
     }
 
-    public function getConsumer(): ?string
+    public function getHandler(): ?string
     {
-        return $this->consumer;
+        return $this->handler;
     }
 
     public function getGroupId(): ?string

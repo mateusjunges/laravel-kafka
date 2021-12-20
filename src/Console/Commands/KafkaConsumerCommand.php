@@ -12,7 +12,7 @@ class KafkaConsumerCommand extends Command
 {
     protected $signature = 'kafka:consume 
             {--topics= : The topics to listen for messages (topic1,topic2,...,topicN)} 
-            {--consumer= : The consumer which will consume messages in the specified topic} 
+            {--handler= : The consumer which will consume messages in the specified topic} 
             {--groupId=anonymous : The consumer group id} 
             {--commit=1} 
             {--dlq=? : The Dead Letter Queue} 
@@ -41,8 +41,8 @@ class KafkaConsumerCommand extends Command
 
     public function handle()
     {
-        if (empty($this->option('consumer'))) {
-            $this->error('The [--consumer] option is required.');
+        if (empty($this->option('handler'))) {
+            $this->error('The [--handler] option is required.');
 
             return;
         }
@@ -52,9 +52,10 @@ class KafkaConsumerCommand extends Command
 
             return;
         }
+
         $options = new Options($this->options(), $this->config);
 
-        $consumer = $options->getConsumer();
+        $handler = $options->getHandler();
 
         $config = new Config(
             broker: $options->getBroker(),
@@ -62,18 +63,18 @@ class KafkaConsumerCommand extends Command
             securityProtocol: $options->getSecurityProtocol(),
             commit: $options->getCommit(),
             groupId: $options->getGroupId(),
-            consumer: new $consumer(),
+            handler: new $handler(),
             sasl: $options->getSasl(),
             dlq: $options->getDlq(),
             maxMessages: $options->getMaxMessages()
         );
 
-        /** @var Consumer $consumer */
-        $consumer = app(Consumer::class, [
+        /** @var Consumer $handler */
+        $handler = app(Consumer::class, [
             'config' => $config,
             'deserializer' => app(MessageDeserializer::class),
         ]);
 
-        $consumer->consume();
+        $handler->consume();
     }
 }

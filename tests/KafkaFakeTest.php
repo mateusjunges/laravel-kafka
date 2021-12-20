@@ -3,6 +3,7 @@
 namespace Junges\Kafka\Tests;
 
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\Message;
 use Junges\Kafka\Support\Testing\Fakes\KafkaFake;
@@ -196,5 +197,16 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         } catch (ExpectationFailedException $exception) {
             $this->assertThat($exception, new ExceptionMessage('Messages were published unexpectedly.'));
         }
+    }
+
+    public function testItThrowInvalidArgumentExceptionIfClusterIsNotDefined()
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->expectExceptionMessage("Cluster [undefined] is not defined.");
+
+        $this->fake->publishOn('undefined')
+            ->withBodyKey('foo', 'bar')
+            ->send();
     }
 }

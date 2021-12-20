@@ -3,13 +3,13 @@
 namespace Junges\Kafka\Tests\Consumers;
 
 use Illuminate\Support\Str;
-use Junges\Kafka\Consumers\CallableConsumer;
+use Junges\Kafka\Consumers\CallableHandler;
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use RdKafka\Message;
 use stdClass;
 
-class CallableConsumerTest extends LaravelKafkaTestCase
+class CallableHandlerTest extends LaravelKafkaTestCase
 {
     public function testItDecodesMessages()
     {
@@ -21,7 +21,7 @@ class CallableConsumerTest extends LaravelKafkaTestCase
         $message->key = Str::uuid()->toString();
         $message->topic_name = 'test-topic';
 
-        $consumer = new CallableConsumer([$this, 'handleMessage'], [
+        $consumer = new CallableHandler([$this, 'handleMessage'], [
             function (KafkaConsumerMessage $message, callable $next): void {
                 $decoded = json_decode($message->getBody());
                 $next($decoded);
@@ -31,6 +31,12 @@ class CallableConsumerTest extends LaravelKafkaTestCase
                 $next($decoded);
             },
         ]);
+
+        $consumer->handle($this->getConsumerMessage($message));
+
+        $consumer = new CallableHandler(function (KafkaConsumerMessage $message) {
+            $this->assertEquals("{\"foo\": \"bar\"}", $message->getBody());
+        });
 
         $consumer->handle($this->getConsumerMessage($message));
     }
