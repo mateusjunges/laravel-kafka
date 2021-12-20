@@ -42,7 +42,7 @@ Follow these docs to install this package and start using kafka in your laravel 
   - [4.13 Setting kafka consumer configuration options](#setting-kafka-configuration-options)
   - [4.14 Building the consumer](#building-the-consumer)
   - [4.15 Consuming the kafka message](#consuming-the-kafka-messages)
-  - [4.16 Using the built in consumer command](#using-the-built-in-consumer-command)
+  - [4.16 Using the built-in consumer command](#using-the-built-in-consumer-command)
 - [5. Using custom serializers/deserializers](#using-custom-serializersdeserializers)
 - [6. Using `Kafka::fake()`method](#using-kafkafake)
   - [6.1 `assertPublished` method](#assertpublished-method)
@@ -82,7 +82,7 @@ Kafka::publishOn('cluster');
 
 The cluster is defined in a `clusters` array inside `config/kafka.php`
 
-The `publishOn` method throws a `InvalidArgumentException if the specified cluster is not defined.
+The `publishOn` method throws a `InvalidArgumentException` if the specified cluster is not defined.
 
 This method returns a `Junges\Kafka\Producers\ProducerBuilder::class` instance, and you can configure your message.
 
@@ -100,7 +100,7 @@ Kafka::publishOn('cluster')->onTopic('your-topic');
 
 ### Defining configuration options
 The `withConfigOption` method sets a `\RdKafka\Conf::class` option. You can check all available options [here][rdkafka_config].
-This methods set one config per call, and you can use `withConfigOptions` passing an array of config name and config value 
+These methods set one config per call, and you can use `withConfigOptions` passing an array of config name and config value 
 as argument. Here's an example:
 
 ```php
@@ -271,7 +271,7 @@ $consumer = Kafka::createConsumer('broker', ['topic-1', 'topic-2'], 'group-id');
 ```
 
 When using the `consumeUsing` method, you must define your `consumer` configuration options within the `consumers` array, 
-in the `config/kafka.php` configuration file. This methods accept a `consumer` name defined there, and returns 
+in the `config/kafka.php` configuration file. This method accept a `consumer` name defined there, and returns 
 a `ConsumerBuilder` instance, which you can configure later.
 
 ```php
@@ -340,7 +340,7 @@ $consumer->withHandler(function(\Junges\Kafka\Contracts\KafkaConsumerMessage $me
 });
 ```
 
-Or, using a invokable class:
+Or, using an invokable class:
 
 ```php
 class Handler
@@ -370,7 +370,7 @@ kafka consumer:
 $consumer = \Junges\Kafka\Facades\Kafka::createConsumer('brokers')->withMaxMessages(2);
 ```
 
-## Stopping consumer using pcntl
+## Stopping consumer using `pcntl`
 
 Stopping consumers is very useful if you want to ensure you don't kill a process halfway through processing a consumed message.
 
@@ -576,16 +576,18 @@ $consumer = \Junges\Kafka\Facades\Kafka::createConsumer('brokers')->build();
 $consumer->consume();
 ```
 
-## Using the built in consumer command
-This library provides you a built in consumer command, which you can use to consume messages.
+## Using the built-in consumer command
+This library provides you a built-in consumer command, which you can use to consume messages.
 
-To use this command, you must create a `Consumer` class, which extends `Junges\Kafka\Contracts\Consumer`.
+To use this command, you must create a `Handler` class, which extends `Junges\Kafka\Contracts\Handler`.
 
 Then, just use the following command:
 
 ```bash
 php artisan kafka:consume --consumer=\\App\\Path\\To\\Your\\Consumer --topics=topic-to-consume
 ```
+
+> Note: The default brokers of the default consumer defined in `config/kafka.php` will be used.
 
 # Using custom serializers/deserializers
 Serialization is the process of converting messages to bytes. Deserialization is the inverse process - converting a stream of bytes into and object. In a nutshell,
