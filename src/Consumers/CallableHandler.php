@@ -11,7 +11,7 @@ class CallableHandler extends Handler
     private Closure $handler;
     private array $middlewares;
 
-    public function __construct(callable $handler, array $middlewares)
+    public function __construct(callable $handler, array $middlewares = [])
     {
         $this->handler = Closure::fromCallable($handler);
 

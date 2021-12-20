@@ -33,6 +33,12 @@ class CallableHandlerTest extends LaravelKafkaTestCase
         ]);
 
         $consumer->handle($this->getConsumerMessage($message));
+
+        $consumer = new CallableHandler(function (KafkaConsumerMessage $message) {
+            $this->assertEquals("{\"foo\": \"bar\"}", $message->getBody());
+        });
+
+        $consumer->handle($this->getConsumerMessage($message));
     }
 
     public function handleMessage(array $data): void
