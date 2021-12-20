@@ -271,7 +271,7 @@ $consumer = Kafka::createConsumer('broker', ['topic-1', 'topic-2'], 'group-id');
 ```
 
 When using the `consumeUsing` method, you must define your `consumer` configuration options within the `consumers` array, 
-in the `config/kafka.php` configuration file. This methods accept a `consumer` name defined there, and returns 
+in the `config/kafka.php` configuration file. This method accept a `consumer` name defined there, and returns 
 a `ConsumerBuilder` instance, which you can configure later.
 
 ```php
@@ -340,7 +340,7 @@ $consumer->withHandler(function(\Junges\Kafka\Contracts\KafkaConsumerMessage $me
 });
 ```
 
-Or, using a invokable class:
+Or, using an invokable class:
 
 ```php
 class Handler
@@ -370,7 +370,7 @@ kafka consumer:
 $consumer = \Junges\Kafka\Facades\Kafka::createConsumer('brokers')->withMaxMessages(2);
 ```
 
-## Stopping consumer using pcntl
+## Stopping consumer using `pcntl`
 
 Stopping consumers is very useful if you want to ensure you don't kill a process halfway through processing a consumed message.
 
@@ -577,9 +577,9 @@ $consumer->consume();
 ```
 
 ## Using the built-in consumer command
-This library provides you a built in consumer command, which you can use to consume messages.
+This library provides you a built-in consumer command, which you can use to consume messages.
 
-To use this command, you must create a `Consumer` class, which extends `Junges\Kafka\Contracts\Consumer`.
+To use this command, you must create a `Handler` class, which extends `Junges\Kafka\Contracts\Handler`.
 
 Then, just use the following command:
 
