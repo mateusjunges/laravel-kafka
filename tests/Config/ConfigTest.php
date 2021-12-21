@@ -77,7 +77,7 @@ class ConfigTest extends LaravelKafkaTestCase
             securityProtocol: 'SASL_SSL',
             commit: 1,
             groupId: 'group',
-            consumer: $this->createMock(Consumer::class),
+            handler: $this->createMock(Handler::class),
             sasl: new Sasl('foo', 'bar', 'SCRAM-SHA-512', 'SASL_SSL'),
             dlq: null,
             maxMessages: -1,
