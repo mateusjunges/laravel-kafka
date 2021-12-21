@@ -69,6 +69,42 @@ class ConfigTest extends LaravelKafkaTestCase
         );
     }
 
+    public function testItUsesSaslConfigWhenSet()
+    {
+        $config = new Config(
+            broker: 'broker',
+            topics: ['topic'],
+            securityProtocol: 'SASL_SSL',
+            commit: 1,
+            groupId: 'group',
+            handler: $this->createMock(Handler::class),
+            sasl: new Sasl('foo', 'bar', 'SCRAM-SHA-512', 'SASL_SSL'),
+            dlq: null,
+            maxMessages: -1,
+            maxCommitRetries: 6,
+            autoCommit: true,
+            customOptions: ['auto.offset.reset' => 'smallest', 'compression.codec' => 'gzip']
+        );
+
+        $expectedOptions = [
+            'auto.offset.reset' => 'smallest',
+            'enable.auto.commit' => 'true',
+            'compression.codec' => 'gzip',
+            'group.id' => 'group',
+            'bootstrap.servers' => 'broker',
+            'metadata.broker.list' => 'broker',
+            'security.protocol' => 'SASL_SSL',
+            'sasl.username' => 'foo',
+            'sasl.password' => 'bar',
+            'sasl.mechanisms' => 'SCRAM-SHA-512',
+        ];
+
+        $this->assertEquals(
+            $expectedOptions,
+            $config->getConsumerOptions()
+        );
+    }
+
     public function testItReturnsProducerOptions()
     {
         $sasl = new Sasl(

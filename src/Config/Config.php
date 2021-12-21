@@ -73,7 +73,7 @@ class Config
             $options['enable.auto.commit'] = $this->autoCommit === true ? 'true' : 'false';
         }
 
-        return array_merge($options, $this->customOptions);
+        return array_merge($options, $this->customOptions, $this->getSaslOptions());
     }
 
     #[Pure]
