@@ -6,7 +6,7 @@ All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 ### Fixed
 - Included SASL on consumer config when applicable ([#5c028bf](https://github.com/mateusjunges/laravel-kafka/commit/5c028bfd3f6588e411babe5429fa78dc89ed2a22))
 
-## [2021-12-10 v1.5.2](https://github.com/mateusjunges/laravel-kafka/compare/v1.5.1...v1.5.2)
+## [2021-12-19 v1.5.2](https://github.com/mateusjunges/laravel-kafka/compare/v1.5.1...v1.5.2)
 ### Fixed
 - Fixed built in consumer command ([#50](https://github.com/mateusjunges/laravel-kafka/pull/50))
 
