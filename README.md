@@ -1,5 +1,5 @@
 # Laravel Kafka
-![docs/laravel-kafka.png](docs/laravel-kafka.png)
+![art/laravel-kafka.png](art/laravel-kafka.png)
 
 [![Latest Version On Packagist](http://poser.pugx.org/mateusjunges/laravel-kafka/v)](https://packagist.org/packages/mateusjunges/laravel-kafka)
 [![Total Downloads](http://poser.pugx.org/mateusjunges/laravel-kafka/downloads)](https://packagist.org/packages/mateusjunges/laravel-kafka)
