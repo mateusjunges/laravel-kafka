@@ -191,6 +191,16 @@ class ProducerBuilderFake implements CanProduceMessages
     }
 
     /**
+     * Disables debug on kafka producer.
+     *
+     * @return $this
+     */
+    public function withDebugDisabled(): self
+    {
+        return $this->withDebugEnabled(false);
+    }
+
+    /**
      * Get the kafka topic to be used.
      *
      * @return string
@@ -213,12 +223,20 @@ class ProducerBuilderFake implements CanProduceMessages
     /**
      * Set the Sasl configuration.
      *
-     * @param \Junges\Kafka\Config\Sasl $saslConfig
+     * @param string $username
+     * @param string $password
+     * @param string $mechanisms
+     * @param string $securityProtocol
      * @return \Junges\Kafka\Contracts\CanProduceMessages
      */
-    public function withSasl(Sasl $saslConfig): CanProduceMessages
+    public function withSasl(string $username, string $password, string $mechanisms, string $securityProtocol = 'SASL_PLAINTEXT'): self
     {
-        $this->saslConfig = $saslConfig;
+        $this->saslConfig = new Sasl(
+            username: $username,
+            password: $password,
+            mechanisms: $mechanisms,
+            securityProtocol: $securityProtocol
+        );
 
         return $this;
     }
@@ -260,10 +278,12 @@ class ProducerBuilderFake implements CanProduceMessages
      */
     private function makeProducer(Config $config): ProducerFake
     {
+        /** @var ProducerFake $producerFake */
         $producerFake = app(ProducerFake::class, [
             'config' => $config,
             'topic' => $this->getTopic(),
         ]);
+
         if ($this->producerCallback) {
             $producerFake->withProduceCallback($this->producerCallback);
         }

@@ -23,6 +23,12 @@ class AvroSerializer implements AvroMessageSerializer
         return $this->registry;
     }
 
+    /**
+     * Serializes the message.
+     *
+     * @param KafkaProducerMessage $message
+     * @return KafkaProducerMessage
+     */
     public function serialize(KafkaProducerMessage $message): KafkaProducerMessage
     {
         $message = $this->encodeBody($message);

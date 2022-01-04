@@ -90,6 +90,7 @@ return [
             'options' => [],
 
             'sasl' => [
+                'security_protocol' => env('KAFKA_SECURITY_PROTOCOL', 'SASL_PLAINTEXT'),
                 'username' => '',
                 'password' => '',
                 'mechanisms' => ''

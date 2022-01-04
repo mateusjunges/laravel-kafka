@@ -8,6 +8,8 @@ use Junges\Kafka\Contracts\MessageSerializer;
 class JsonSerializer implements MessageSerializer
 {
     /**
+     * Serializes the message.
+     *
      * @param \Junges\Kafka\Contracts\KafkaProducerMessage $message
      * @return \Junges\Kafka\Contracts\KafkaProducerMessage
      * @throws \JsonException

@@ -273,12 +273,20 @@ class ConsumerBuilder
     /**
      * Set the Sasl configuration.
      *
-     * @param \Junges\Kafka\Config\Sasl $saslConfig
+     * @param ?string $username
+     * @param ?string $password
+     * @param ?string $mechanisms
+     * @param ?string $securityProtocol
      * @return \Junges\Kafka\Consumers\ConsumerBuilder
      */
-    public function withSasl(Sasl $saslConfig): self
+    public function withSasl(?string $username, ?string $password, ?string $mechanisms, ?string $securityProtocol = 'SASL_PLAINTEXT'): self
     {
-        $this->saslConfig = $saslConfig;
+        $this->saslConfig = new Sasl(
+            username: $username ?? config('kafka.sasl.username'),
+            password: $password ?? config('kafka.sasl.password'),
+            mechanisms: $mechanisms ?? config('kafka.sasl.mechanisms'),
+            securityProtocol: $securityProtocol ?? config('kafka.sasl.security_protocol')
+        );
 
         return $this;
     }
