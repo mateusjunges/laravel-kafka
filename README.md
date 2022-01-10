@@ -231,7 +231,6 @@ use Junges\Kafka\Facades\Kafka;
 /** @var \Junges\Kafka\Producers\ProducerBuilder $producer */
 $producer = Kafka::publishOn('topic')
     ->withConfigOptions(['key' => 'value'])
-    ->withKafkaKey('your-kafka-key')
     ->withKafkaKey('kafka-key')
     ->withHeaders(['header-key' => 'header-value']);
 
