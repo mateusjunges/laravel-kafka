@@ -1,6 +1,6 @@
 ARG TAG
 
-FROM joesantos386/laravel:${TAG}
+FROM mateusjunges/laravel:${TAG}
 
 ARG LARAVEL_VERSION
 

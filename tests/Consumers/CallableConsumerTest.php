@@ -20,6 +20,9 @@ class CallableConsumerTest extends LaravelKafkaTestCase
             JSON;
         $message->key = Str::uuid()->toString();
         $message->topic_name = 'test-topic';
+        $message->partition = 1;
+        $message->headers = [];
+        $message->offset = 0;
 
         $consumer = new CallableConsumer([$this, 'handleMessage'], [
             function (KafkaConsumerMessage $message, callable $next): void {

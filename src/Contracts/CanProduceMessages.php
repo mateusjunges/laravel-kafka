@@ -13,7 +13,7 @@ interface CanProduceMessages
 
     public function withConfigOptions(array $options): self;
 
-    public function withHeaders(array $headers): self;
+    public function withHeaders(array $headers = []): self;
 
     public function withKafkaKey(string $key): self;
 
