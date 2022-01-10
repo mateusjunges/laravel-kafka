@@ -63,7 +63,7 @@ class ProducerBuilder implements CanProduceMessages
      * @param array $headers
      * @return $this
      */
-    public function withHeaders(array $headers): self
+    public function withHeaders(array $headers = []): self
     {
         $this->message->withHeaders($headers);
 
