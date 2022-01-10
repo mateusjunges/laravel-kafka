@@ -40,6 +40,9 @@ integration-coverage:
 version-test-%:
 	@$(eval TAG = $(@:version-test-%=%))
 	@$(eval LARAVEL_VERSION=$(shell echo ${TAG} | cut -c18))
-	@docker-compose -f docker-compose-test.yaml build --build-arg TAG=${TAG} --build-arg LARAVEL_VERSION=${LARAVEL_VERSION}
+	@$(eval PHP_VERSION=$(shell echo ${TAG:0:3}))
+    @$(eval LIBRDKAFKA_VERSION=$(shell echo ${TAG:4:6}))
+    @$(eval EXT_RDKAFKA_VERSION=$(shell echo ${TAG:11:5}))
+	@docker-compose -f docker-compose-test.yaml build --build-arg PHP_VERSION=${PHP_VERSION} --build-arg TAG=${TAG} --build-arg LARAVEL_VERSION=${LARAVEL_VERSION} --build-arg LIBRDKAFKA_VERSION=${LIBRDKAFKA_VERSION} --build-arg EXT_RDKAFKA_VERSION=${EXT_RDKAFKA_VERSION}
 	@docker-compose -f docker-compose-test.yaml up -d
 	@docker-compose -f docker-compose-test.yaml exec -T test ./vendor/phpunit/phpunit/phpunit tests
