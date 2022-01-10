@@ -3,15 +3,10 @@
 namespace Junges\Kafka\Console\Commands;
 
 use Illuminate\Console\Command;
-use Junges\Kafka\Commit\DefaultCommitterFactory;
 use Junges\Kafka\Config\Config;
-use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Console\Commands\KafkaConsumer\Options;
 use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Contracts\MessageDeserializer;
-use Junges\Kafka\Message\Deserializers\JsonDeserializer;
-use Junges\Kafka\MessageCounter;
-use Symfony\Component\Console\Exception\MissingInputException;
 
 class KafkaConsumerCommand extends Command
 {
@@ -76,7 +71,7 @@ class KafkaConsumerCommand extends Command
         /** @var Consumer $consumer */
         $consumer = app(Consumer::class, [
             'config' => $config,
-            'deserializer' => app(MessageDeserializer::class)
+            'deserializer' => app(MessageDeserializer::class),
         ]);
 
         $consumer->consume();
