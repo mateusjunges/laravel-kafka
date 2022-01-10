@@ -28,7 +28,7 @@ class KafkaTest extends LaravelKafkaTestCase
             ->shouldReceive('newTopic')
             ->andReturn($mockedProducerTopic)
             ->shouldReceive('poll')
-            ->andReturn(m::self())
+            ->andReturn(1)
             ->shouldReceive('flush')
             ->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
             ->getMock();
@@ -62,7 +62,7 @@ class KafkaTest extends LaravelKafkaTestCase
             ->shouldReceive('newTopic')
             ->andReturn($mockedProducerTopic)
             ->shouldReceive('poll')
-            ->andReturn(m::self())
+            ->andReturn(1)
             ->shouldReceive('flush')
             ->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
             ->getMock();
@@ -132,7 +132,7 @@ class KafkaTest extends LaravelKafkaTestCase
             ->shouldReceive('newTopic')
             ->andReturn($mockedProducerTopic)
             ->shouldReceive('poll')
-            ->andReturn(m::self())
+            ->andReturn(1)
             ->shouldReceive('flush')
             ->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
             ->getMock();
@@ -181,7 +181,7 @@ class KafkaTest extends LaravelKafkaTestCase
             ->shouldReceive('newTopic')
             ->andReturn($mockedProducerTopic)
             ->shouldReceive('poll')
-            ->andReturn(m::self())
+            ->andReturn(1)
             ->shouldReceive('flush')
             ->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
             ->getMock();
@@ -276,7 +276,7 @@ class KafkaTest extends LaravelKafkaTestCase
             ->shouldReceive('newTopic')
             ->andReturn($mockedProducerTopic)
             ->shouldReceive('poll')
-            ->andReturn(m::self())
+            ->andReturn(1)
             ->shouldReceive('flush')
             ->andReturn(RD_KAFKA_RESP_ERR__FAIL)
             ->times(10)
@@ -302,7 +302,7 @@ class KafkaTest extends LaravelKafkaTestCase
             ->shouldReceive('newTopic')
             ->andReturn($mockedProducerTopic)
             ->shouldReceive('poll')
-            ->andReturn(m::self())
+            ->andReturn(1)
             ->shouldReceive('flush')
             ->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
             ->getMock();
