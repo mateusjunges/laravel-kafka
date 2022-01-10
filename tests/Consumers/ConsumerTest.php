@@ -30,6 +30,9 @@ class ConsumerTest extends LaravelKafkaTestCase
         $message->key = 'key';
         $message->topic_name = 'test-topic';
         $message->payload = '{"body": "message payload"}';
+        $message->offset = 0;
+        $message->partition = 1;
+        $message->headers = [];
 
         $this->mockConsumerWithMessage($message);
 
@@ -61,6 +64,9 @@ class ConsumerTest extends LaravelKafkaTestCase
         $message->key = 'key';
         $message->topic_name = 'test';
         $message->payload = '{"body": "message payload"}';
+        $message->headers = [];
+        $message->partition = 1;
+        $message->offset = 0;
 
         $this->mockConsumerWithMessage($message);
 
@@ -115,12 +121,18 @@ class ConsumerTest extends LaravelKafkaTestCase
         $message->key = 'key';
         $message->topic_name = 'test';
         $message->payload = '{"body": "message payload"}';
+        $message->offset = 0;
+        $message->partition = 1;
+        $message->headers = [];
 
         $message2 = new Message();
         $message2->err = 0;
         $message2->key = 'key2';
         $message2->topic_name = 'test2';
         $message2->payload = '{"body": "message payload2"}';
+        $message2->offset = 0;
+        $message2->partition = 1;
+        $message2->headers = [];
 
         $this->mockConsumerWithMessage($message, $message2);
 
@@ -152,6 +164,9 @@ class ConsumerTest extends LaravelKafkaTestCase
         $message->key = 'key';
         $message->topic_name = 'test-topic';
         $message->payload = '{"body": "message payload"}';
+        $message->offset = 0;
+        $message->partition = 1;
+        $message->headers = [];
 
         $this->mockConsumerWithMessage($message);
 

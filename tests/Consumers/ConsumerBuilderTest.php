@@ -11,7 +11,7 @@ use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Consumers\ConsumerBuilder;
-use Junges\Kafka\Message\Deserializers\NullDeserializer;
+use Junges\Kafka\Message\Deserializers\JsonDeserializer;
 use Junges\Kafka\Tests\Fakes\FakeConsumer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use RdKafka\KafkaConsumer;
@@ -52,11 +52,11 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
     {
         $consumer = ConsumerBuilder::create('broker');
 
-        $consumer->usingDeserializer(new NullDeserializer());
+        $consumer->usingDeserializer(new JsonDeserializer());
 
         $deserializer = $this->getPropertyWithReflection('deserializer', $consumer);
 
-        $this->assertInstanceOf(NullDeserializer::class, $deserializer);
+        $this->assertInstanceOf(JsonDeserializer::class, $deserializer);
     }
 
     public function testItCanSubscribeToMoreThanOneTopicsAtOnce()
