@@ -2,6 +2,16 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2022-01-10 v1.6.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.5.3...v1.6.0)
+### Added
+- Add support for `ext-rdkafka` v6.0  
+
+### Fixed
+- Changed docker image used for tests to [`mateusjunges/laravel`](https://github.com/mateusjunges/laravel-docker)
+
+### Removed
+- Removed Null Serializer
+
 ## [2021-12-21 v1.5.3](https://github.com/mateusjunges/laravel-kafka/compare/v1.5.2...v1.5.3)
 ### Fixed
 - Included SASL on consumer config when applicable ([#5c028bf](https://github.com/mateusjunges/laravel-kafka/commit/5c028bfd3f6588e411babe5429fa78dc89ed2a22))
