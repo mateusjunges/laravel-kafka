@@ -53,10 +53,11 @@ class Message extends AbstractMessage implements Arrayable, KafkaProducerMessage
     /**
      * Set the message headers.
      *
-     * @param array|null $headers
+     * @param array $headers
      * @return \Junges\Kafka\Message\Message
+     * @return $this
      */
-    public function withHeaders(?array $headers): Message
+    public function withHeaders(array $headers = []): Message
     {
         $this->headers = $headers;
 

@@ -36,7 +36,7 @@ interface CanProduceMessages
      * @param array $headers
      * @return $this
      */
-    public function withHeaders(array $headers): self;
+    public function withHeaders(array $headers = []): self;
 
     /**
      * Set the Kafka key that should be used.

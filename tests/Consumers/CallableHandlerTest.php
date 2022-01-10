@@ -20,6 +20,9 @@ class CallableHandlerTest extends LaravelKafkaTestCase
             JSON;
         $message->key = Str::uuid()->toString();
         $message->topic_name = 'test-topic';
+        $message->partition = 1;
+        $message->headers = [];
+        $message->offset = 0;
 
         $consumer = new CallableHandler([$this, 'handleMessage'], [
             function (KafkaConsumerMessage $message, callable $next): void {

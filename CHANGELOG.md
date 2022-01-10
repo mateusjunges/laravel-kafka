@@ -2,6 +2,7 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+
 ## [202X-XX-XX v2.0.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.5.x...v2.0.0)
 ### Versioning Scheme
 Laravel Kafka now follows [Semantic Versioning](https://semver.org/). From now on, minor and patch releases should never contain breaking changes.
@@ -17,6 +18,16 @@ do include breaking changes.
 - The `publishOn` method now accepts a pre-defined `cluster` configuration ([#46](https://github.com/mateusjunges/laravel-kafka/pull/46))
 - The `broker` argument on  `createConsumer` method now is required ([#46](https://github.com/mateusjunges/laravel-kafka/pull/46))
 
+## [2022-01-10 v1.6.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.5.3...v1.6.0)
+### Added
+- Add support for `ext-rdkafka` v6.0
+
+### Fixed
+- Changed docker image used for tests to [`mateusjunges/laravel`](https://github.com/mateusjunges/laravel-docker)
+
+### Changed
+- Removed Null Serializer
+- Message headers can't be null ([#ea9d97f](https://github.com/mateusjunges/laravel-kafka/commit/ea9d97f))
 ## [2021-12-21 v1.5.3](https://github.com/mateusjunges/laravel-kafka/compare/v1.5.2...v1.5.3)
 ### Fixed
 - Included SASL on consumer config when applicable ([#5c028bf](https://github.com/mateusjunges/laravel-kafka/commit/5c028bfd3f6588e411babe5429fa78dc89ed2a22))

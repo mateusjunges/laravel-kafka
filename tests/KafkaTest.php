@@ -9,7 +9,7 @@ use Junges\Kafka\Contracts\KafkaProducerMessage;
 use Junges\Kafka\Exceptions\CouldNotPublishMessage;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\Message;
-use Junges\Kafka\Message\Serializers\NullSerializer;
+use Junges\Kafka\Message\Serializers\JsonSerializer;
 use Junges\Kafka\Producers\ProducerBuilder;
 use Mockery as m;
 use RdKafka\Producer;
@@ -77,7 +77,7 @@ class KafkaTest extends LaravelKafkaTestCase
                 'metadata.broker.list' => 'broker',
             ])
             ->withKafkaKey(Str::uuid()->toString())
-            ->usingSerializer(new NullSerializer())
+            ->usingSerializer(new JsonSerializer())
             ->withBodyKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
             ->withDebugEnabled();
@@ -89,7 +89,7 @@ class KafkaTest extends LaravelKafkaTestCase
 
         $serializer = $this->getPropertyWithReflection('serializer', $producer);
 
-        $this->assertInstanceOf(NullSerializer::class, $serializer);
+        $this->assertInstanceOf(JsonSerializer::class, $serializer);
     }
 
     public function testItDoesNotSendMessagesToKafkaIfUsingFake()

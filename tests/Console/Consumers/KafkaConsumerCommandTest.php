@@ -23,6 +23,9 @@ class KafkaConsumerCommandTest extends LaravelKafkaTestCase
         $message->key = 'key';
         $message->topic_name = 'test-topic';
         $message->payload = '{"body": "message payload"}';
+        $message->offset = 0;
+        $message->partition = 1;
+        $message->headers = [];
 
         $this->mockConsumerWithMessage($message);
 
