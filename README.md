@@ -13,6 +13,10 @@ syntax usage syntax or, if it does, the test process with these packages are ver
 
 This package provides a nice way of producing and consuming kafka messages in your Laravel projects.
 
+# Documentations
+
+You can [find the documentations for this package here](https://junges.dev/documentation/laravel-kafka/v2/introduction)
+
 # Testing
 Run `composer test` to test this package.
 
