@@ -105,6 +105,7 @@ class Config
 
     private function usingSasl(): bool
     {
-        return $this->securityProtocol === 'SASL_PLAINTEXT' || $this->securityProtocol === 'SASL_SSL';
+        return strtoupper($this->securityProtocol) === 'SASL_PLAINTEXT'
+            || strtoupper($this->securityProtocol) === 'SASL_SSL';
     }
 }
