@@ -7,6 +7,9 @@ use Junges\Kafka\Contracts\Consumer;
 
 class Config
 {
+    const SASL_PLAINTEXT = 'SASL_PLAINTEXT';
+    const SASL_SSL = 'SASL_SSL';
+
     public function __construct(
         private string $broker,
         private array $topics,
@@ -105,7 +108,7 @@ class Config
 
     private function usingSasl(): bool
     {
-        return strtoupper($this->securityProtocol) === 'SASL_PLAINTEXT'
-            || strtoupper($this->securityProtocol) === 'SASL_SSL';
+        return strtoupper($this->securityProtocol) === static::SASL_PLAINTEXT
+            || strtoupper($this->securityProtocol) === static::SASL_SSL;
     }
 }
