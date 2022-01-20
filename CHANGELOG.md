@@ -2,6 +2,10 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2022-01-20 v1.6.1](https://github.com/mateusjunges/laravel-kafka/compare/v1.6.0...v1.6.1)
+### Fixed
+- Fixes [#69](https://github.com/mateusjunges/laravel-kafka/issues/69)
+
 ## [2022-01-10 v1.6.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.5.3...v1.6.0)
 ### Added
 - Add support for `ext-rdkafka` v6.0
