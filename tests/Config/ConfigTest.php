@@ -141,4 +141,38 @@ class ConfigTest extends LaravelKafkaTestCase
             $config->getProducerOptions()
         );
     }
+
+    public function testSaslCanBeUsedWithLowercaseConfigKeys()
+    {
+        $config = new Config(
+            broker: 'broker',
+            topics: ['topic'],
+            securityProtocol: 'sasl_plaintext',
+            commit: 1,
+            groupId: 'group',
+            consumer: $this->createMock(Consumer::class),
+            sasl: new Sasl(
+                username: 'username',
+                password: 'password',
+                mechanisms: 'mechanisms',
+                securityProtocol: 'ssl_plaintext',
+            ),
+            dlq: null
+        );
+
+        $expectedOptions = [
+            'compression.codec' => 'snappy',
+            'bootstrap.servers' => 'broker',
+            'metadata.broker.list' => 'broker',
+            'security.protocol' => 'ssl_plaintext',
+            'sasl.mechanisms' => 'mechanisms',
+            'sasl.username' => 'username',
+            'sasl.password' => 'password',
+        ];
+
+        $this->assertEquals(
+            $expectedOptions,
+            $config->getProducerOptions()
+        );
+    }
 }
