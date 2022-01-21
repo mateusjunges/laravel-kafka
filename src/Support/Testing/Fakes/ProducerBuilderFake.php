@@ -191,6 +191,7 @@ class ProducerBuilderFake implements CanProduceMessages
             'config' => $config,
             'topic' => $this->getTopic(),
         ]);
+
         if ($this->producerCallback) {
             $producerFake->withProduceCallback($this->producerCallback);
         }
