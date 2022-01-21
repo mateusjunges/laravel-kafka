@@ -3,7 +3,7 @@
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
 
-## [202X-XX-XX v2.0.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.5.x...v2.0.0)
+## [2022-XX-XX v2.0.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.5.x...v2.0.0)
 ### Versioning Scheme
 Laravel Kafka now follows [Semantic Versioning](https://semver.org/). From now on, minor and patch releases should never contain breaking changes.
 When referencing this package from your application, you should always use a version constraint such as `^2.0`, since major releases
@@ -18,6 +18,10 @@ do include breaking changes.
 - The `publishOn` method now accepts a pre-defined `cluster` configuration ([#46](https://github.com/mateusjunges/laravel-kafka/pull/46))
 - The `broker` argument on  `createConsumer` method now is required ([#46](https://github.com/mateusjunges/laravel-kafka/pull/46))
 
+## [2022-01-20 v1.6.1](https://github.com/mateusjunges/laravel-kafka/compare/v1.6.0...v1.6.1)
+### Fixed
+- Fixes [#69](https://github.com/mateusjunges/laravel-kafka/issues/69)
+
 ## [2022-01-10 v1.6.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.5.3...v1.6.0)
 ### Added
 - Add support for `ext-rdkafka` v6.0
@@ -28,6 +32,11 @@ do include breaking changes.
 ### Changed
 - Removed Null Serializer
 - Message headers can't be null ([#ea9d97f](https://github.com/mateusjunges/laravel-kafka/commit/ea9d97f))
+
+## [2022-01-21 v1.5.4](https://github.com/mateusjunges/laravel-kafka/compare/v1.5.3...v1.5.4)
+### Fixed
+- Allow using sasl with lowercase config keys ([#1cc7521](https://github.com/mateusjunges/laravel-kafka/commit/1cc75211e96c80de04fbca0784fbe28c4e69ab25))
+
 ## [2021-12-21 v1.5.3](https://github.com/mateusjunges/laravel-kafka/compare/v1.5.2...v1.5.3)
 ### Fixed
 - Included SASL on consumer config when applicable ([#5c028bf](https://github.com/mateusjunges/laravel-kafka/commit/5c028bfd3f6588e411babe5429fa78dc89ed2a22))
@@ -79,6 +88,15 @@ do include breaking changes.
 - Fixed incorrect param ordering on test ([#1022799](https://github.com/mateusjunges/laravel-kafka/commit/10227992b055ea745a29f13015c3f2bbff5d8687))
 - Fixed KafkaFake to store published messages correctly ([#4fe6e96](https://github.com/mateusjunges/laravel-kafka/commit/4fe6e96ab253eab88e0b50233e939a3bbf16e385))
 - Added tests to ensure count of published messages works ([#7ea370f](https://github.com/mateusjunges/laravel-kafka/commit/7ea370f150c9bf122d67b1e4f4b3e1750ef7f7fa))
+
+## [2022-01-20 v1.3.3](https://github.com/mateusjunges/laravel-kafka/compare/v1.3.2...v1.3.3)
+### Fixed 
+- Allow using SASL with lowercase config keys. ([#ca542e21](https://github.com/mateusjunges/laravel-kafka/commit/ca542e21ee085659f33c3bf2b39329fe06e42274))
+
+## [2021-11-25 v1.3.2](https://github.com/mateusjunges/laravel-kafka/compare/v1.3.0...v1.3.1)
+### Fixed
+- Fix incorrect message published count ([#06c3844](https://github.com/mateusjunges/laravel-kafka/commit/06c3844))
+- Fixed exception thrown when kafka cannot complete a flush call ([#9a1fcba](https://github.com/mateusjunges/laravel-kafka/commit/9a1fcbace9b549e54c9a2c17174c74478f87d47e))
 
 ## [2021-11-14 v1.3.1](https://github.com/mateusjunges/laravel-kafka/compare/v1.3.0...v1.3.1)
 ### Changed
