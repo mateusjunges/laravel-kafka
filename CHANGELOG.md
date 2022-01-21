@@ -17,6 +17,10 @@ All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 - Removed Null Serializer
 - Message headers can't be null ([#ea9d97f](https://github.com/mateusjunges/laravel-kafka/commit/ea9d97f))
 
+## [2022-01-21 v1.5.4](https://github.com/mateusjunges/laravel-kafka/compare/v1.5.3...v1.5.4)
+### Fixed
+- Allow using sasl with lowercase config keys ([#1cc7521](https://github.com/mateusjunges/laravel-kafka/commit/1cc75211e96c80de04fbca0784fbe28c4e69ab25))
+
 ## [2021-12-21 v1.5.3](https://github.com/mateusjunges/laravel-kafka/compare/v1.5.2...v1.5.3)
 ### Fixed
 - Included SASL on consumer config when applicable ([#5c028bf](https://github.com/mateusjunges/laravel-kafka/commit/5c028bfd3f6588e411babe5429fa78dc89ed2a22))
