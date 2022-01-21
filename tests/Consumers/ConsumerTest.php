@@ -24,6 +24,9 @@ class ConsumerTest extends LaravelKafkaTestCase
         $message->key = 'key';
         $message->topic_name = 'test-topic';
         $message->payload = '{"body": "message payload"}';
+        $message->partition = 1;
+        $message->headers = [];
+        $message->offset = 1;
 
         $this->mockConsumerWithMessage($message);
 
@@ -55,6 +58,9 @@ class ConsumerTest extends LaravelKafkaTestCase
         $message->key = 'key';
         $message->topic_name = 'test';
         $message->payload = '{"body": "message payload"}';
+        $message->partition = 1;
+        $message->headers = [];
+        $message->offset = 1;
 
         $this->mockConsumerWithMessage($message);
 
