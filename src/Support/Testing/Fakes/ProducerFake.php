@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Support\Testing\Fakes;
 
+use Closure;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Message\Message;
 use RdKafka\Conf;
@@ -9,7 +10,7 @@ use RdKafka\Conf;
 class ProducerFake
 {
     private array $messages = [];
-    private $produceCallback = null;
+    private ?Closure $producerCallback = null;
 
     public function __construct(
         private Config $config,
@@ -24,15 +25,15 @@ class ProducerFake
 
     public function withProduceCallback(callable $callback): self
     {
-        $this->produceCallback = $callback;
+        $this->producerCallback = $callback;
 
         return $this;
     }
 
     public function produce(Message $message): bool
     {
-        if ($this->produceCallback !== null) {
-            $callback = $this->produceCallback;
+        if ($this->producerCallback !== null) {
+            $callback = $this->producerCallback;
             $callback($message);
         }
 

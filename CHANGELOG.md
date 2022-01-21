@@ -69,6 +69,15 @@ All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 - Fixed KafkaFake to store published messages correctly ([#4fe6e96](https://github.com/mateusjunges/laravel-kafka/commit/4fe6e96ab253eab88e0b50233e939a3bbf16e385))
 - Added tests to ensure count of published messages works ([#7ea370f](https://github.com/mateusjunges/laravel-kafka/commit/7ea370f150c9bf122d67b1e4f4b3e1750ef7f7fa))
 
+## [2022-01-20 v1.3.3](https://github.com/mateusjunges/laravel-kafka/compare/v1.3.2...v1.3.3)
+### Fixed 
+- Allow using SASL with lowercase config keys. ([#ca542e21](https://github.com/mateusjunges/laravel-kafka/commit/ca542e21ee085659f33c3bf2b39329fe06e42274))
+
+## [2021-11-25 v1.3.2](https://github.com/mateusjunges/laravel-kafka/compare/v1.3.0...v1.3.1)
+### Fixed
+- Fix incorrect message published count ([#06c3844](https://github.com/mateusjunges/laravel-kafka/commit/06c3844))
+- Fixed exception thrown when kafka cannot complete a flush call ([#9a1fcba](https://github.com/mateusjunges/laravel-kafka/commit/9a1fcbace9b549e54c9a2c17174c74478f87d47e))
+
 ## [2021-11-14 v1.3.1](https://github.com/mateusjunges/laravel-kafka/compare/v1.3.0...v1.3.1)
 ### Changed
 - Fix `assertPublishedOnTimes` to allow usage of callback if the message is null. ([#c5b496](https://github.com/mateusjunges/laravel-kafka/commit/c5b496cf5c7b50e1519e9b7726cff8d2aaf3fda1))
