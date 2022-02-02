@@ -13,7 +13,7 @@ This package provides a nice way of producing and consuming kafka messages in yo
 [![PHP Version Require](http://poser.pugx.org/mateusjunges/laravel-kafka/require/php)](https://packagist.org/packages/mateusjunges/laravel-kafka)
 
 # Documentation
-You can [find the documentations for this package here](https://junges.dev/documentation/laravel-kafka/v1.6.x/introduction)
+You can [find the documentations for this package here](https://junges.dev/documentation/laravel-kafka/v1.6/introduction)
 
 # Testing
 Run `composer test` to test this package.
