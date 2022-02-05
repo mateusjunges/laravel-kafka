@@ -6,7 +6,7 @@ weight: 3
 You can install this package using composer:
 
 ```bash
-composer require mateusjunges/laravel-acl
+composer require mateusjunges/laravel-kafka
 ```
 
 You need to publish the configuration file using
