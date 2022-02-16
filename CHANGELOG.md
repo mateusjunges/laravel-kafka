@@ -18,6 +18,11 @@ do include breaking changes.
 - The `publishOn` method now accepts a pre-defined `cluster` configuration ([#46](https://github.com/mateusjunges/laravel-kafka/pull/46))
 - The `broker` argument on  `createConsumer` method now is required ([#46](https://github.com/mateusjunges/laravel-kafka/pull/46))
 
+## [2022-02-16 v1.6.2](https://github.com/mateusjunges/laravel-kafka/compare/v1.6.1...v1.6.2)
+### Fixed
+- Fixes CONFWARN on consumer on [#75 (issue)](https://github.com/mateusjunges/laravel-kafka/issues/75) with [#76 (pull request)](https://github.com/mateusjunges/laravel-kafka/pull/76)
+- Fixes Sasl authentication not working [#77 (issue)](https://github.com/mateusjunges/laravel-kafka/issues/77) with [#78 (pull request)](https://github.com/mateusjunges/laravel-kafka/pull/78)
+
 ## [2022-01-20 v1.6.1](https://github.com/mateusjunges/laravel-kafka/compare/v1.6.0...v1.6.1)
 ### Fixed
 - Fixes [#69](https://github.com/mateusjunges/laravel-kafka/issues/69)
