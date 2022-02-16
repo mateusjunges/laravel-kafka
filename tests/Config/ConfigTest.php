@@ -25,7 +25,6 @@ class ConfigTest extends LaravelKafkaTestCase
         $expectedOptions = [
             'auto.offset.reset' => 'latest',
             'enable.auto.commit' => 'true',
-            'compression.codec' => 'snappy',
             'group.id' => 'group',
             'bootstrap.servers' => 'broker',
             'metadata.broker.list' => 'broker',
