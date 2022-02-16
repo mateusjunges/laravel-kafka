@@ -157,6 +157,7 @@ class ProducerBuilder implements CanProduceMessages
         $conf = new Config(
             broker: $this->broker,
             topics: [$this->getTopic()],
+            securityProtocol: $this->saslConfig?->getSecurityProtocol(),
             sasl: $this->saslConfig,
             customOptions: $this->options,
         );
