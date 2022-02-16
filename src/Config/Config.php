@@ -29,7 +29,7 @@ class Config
         'delivery.report.only.error',
         'dr_cb',
         'dr_msg_cb',
-        'sticky.partitioning.linger.ms'
+        'sticky.partitioning.linger.ms',
     ];
     const CONSUMER_ONLY_CONFIG_OPTIONS = [
         'partition.assignment.strategy',
@@ -56,7 +56,7 @@ class Config
         'offset_commit_cb',
         'enable.partition.eof',
         'check.crcs',
-        'allow.auto.create.topics'
+        'allow.auto.create.topics',
     ];
 
     public function __construct(
