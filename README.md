@@ -30,7 +30,6 @@ Thank you for considering contributing for the Laravel Kafka package! The contri
 # License
 The Laravel Kafka package is open-sourced software licenced under the [MIT][mit] License. Please see the [License File][license] for more information.
 
-[rdkafka_config]:https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
 [contributing]: .github/CONTRIBUTING.md
 [license]: LICENSE
 [mit]: https://opensource.org/licenses/MIT
