@@ -2,6 +2,10 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2022-02-16 v1.6.3](https://github.com/mateusjunges/laravel-kafka/compare/v1.6.2...v1.6.3)
+### Fixed
+- Added missing `auto.offset.reset` to the consumer only options array.
+
 ## [2022-02-16 v1.6.2](https://github.com/mateusjunges/laravel-kafka/compare/v1.6.1...v1.6.2)
 ### Fixed
 - Fixes CONFWARN on consumer on [#75 (issue)](https://github.com/mateusjunges/laravel-kafka/issues/75) with [#76 (pull request)](https://github.com/mateusjunges/laravel-kafka/pull/76)
