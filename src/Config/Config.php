@@ -57,6 +57,7 @@ class Config
         'enable.partition.eof',
         'check.crcs',
         'allow.auto.create.topics',
+        'auto.offset.reset',
     ];
 
     public function __construct(
