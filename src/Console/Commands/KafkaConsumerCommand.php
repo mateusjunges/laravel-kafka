@@ -29,7 +29,7 @@ class KafkaConsumerCommand extends Command
 
         $this->config = [
             'brokers' => config('kafka.brokers'),
-            'groupId' => config('kafka.group_id'),
+            'groupId' => config('kafka.consumer_group_id'),
             'securityProtocol' => config('kafka.securityProtocol'),
             'sasl' => [
                 'mechanisms' => config('kafka.sasl.mechanisms'),
