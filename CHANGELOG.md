@@ -2,6 +2,10 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2022-02-28 v1.6.4](https://github.com/mateusjunges/laravel-kafka/compare/v1.6.3...v1.6.4)
+### Fixed
+- Use correct consumer group id config key in consumer command
+
 ## [2022-02-16 v1.6.3](https://github.com/mateusjunges/laravel-kafka/compare/v1.6.2...v1.6.3)
 ### Fixed
 - Added missing `auto.offset.reset` to the consumer only options array.
