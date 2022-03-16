@@ -9,6 +9,7 @@ use Junges\Kafka\Exceptions\CouldNotPublishMessage;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\Message;
 use Junges\Kafka\Message\Serializers\JsonSerializer;
+use Junges\Kafka\Producers\MessageBatch;
 use Junges\Kafka\Producers\ProducerBuilder;
 use Mockery as m;
 use RdKafka\Producer;
@@ -27,7 +28,6 @@ class KafkaTest extends LaravelKafkaTestCase
             ->shouldReceive('newTopic')
             ->andReturn($mockedProducerTopic)
             ->shouldReceive('poll')
-            ->andReturn(m::self())
             ->shouldReceive('flush')
             ->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
             ->getMock();
@@ -60,7 +60,6 @@ class KafkaTest extends LaravelKafkaTestCase
             ->shouldReceive('newTopic')
             ->andReturn($mockedProducerTopic)
             ->shouldReceive('poll')
-            ->andReturn(m::self())
             ->shouldReceive('flush')
             ->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
             ->getMock();
@@ -128,7 +127,6 @@ class KafkaTest extends LaravelKafkaTestCase
             ->shouldReceive('newTopic')
             ->andReturn($mockedProducerTopic)
             ->shouldReceive('poll')
-            ->andReturn(m::self())
             ->shouldReceive('flush')
             ->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
             ->getMock();
@@ -175,7 +173,6 @@ class KafkaTest extends LaravelKafkaTestCase
             ->shouldReceive('newTopic')
             ->andReturn($mockedProducerTopic)
             ->shouldReceive('poll')
-            ->andReturn(m::self())
             ->shouldReceive('flush')
             ->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
             ->getMock();
@@ -255,7 +252,6 @@ class KafkaTest extends LaravelKafkaTestCase
             ->shouldReceive('newTopic')
             ->andReturn($mockedProducerTopic)
             ->shouldReceive('poll')
-            ->andReturn(m::self())
             ->shouldReceive('flush')
             ->andReturn(RD_KAFKA_RESP_ERR__FAIL)
             ->times(10)
@@ -266,5 +262,35 @@ class KafkaTest extends LaravelKafkaTestCase
         });
 
         Kafka::publishOn('test')->withBodyKey('foo', 'bar')->send();
+    }
+
+    public function testSendMessageBatch()
+    {
+        $messageBatch = new MessageBatch();
+        $messageBatch->push(new Message());
+        $messageBatch->push(new Message());
+        $messageBatch->push(new Message());
+
+        $mockedProducerTopic = m::mock(ProducerTopic::class)
+            ->shouldReceive('producev')
+            ->times($messageBatch->getMessages()->count())
+            ->andReturn(m::self())
+            ->getMock();
+
+        $mockedProducer = m::mock(Producer::class)
+            ->shouldReceive('newTopic')
+            ->andReturn($mockedProducerTopic)
+            ->shouldReceive('poll')
+            ->times($messageBatch->getMessages()->count())
+            ->shouldReceive('flush')
+            ->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
+            ->once()
+            ->getMock();
+
+        $this->app->bind(Producer::class, function () use ($mockedProducer) {
+            return $mockedProducer;
+        });
+
+        Kafka::publishOn('test')->withBodyKey('foo', 'bar')->sendBatch($messageBatch);
     }
 }

@@ -8,6 +8,7 @@ use Junges\Kafka\Contracts\MessageSerializer;
 use Junges\Kafka\Exceptions\CouldNotPublishMessage;
 use RdKafka\Conf;
 use RdKafka\Producer as KafkaProducer;
+use RdKafka\ProducerTopic;
 
 class Producer
 {
@@ -53,6 +54,42 @@ class Producer
 
         $message = $this->serializer->serialize($message);
 
+        $this->produceMessage($topic, $message);
+
+        $this->producer->poll(0);
+
+        return $this->flush();
+    }
+
+    /**
+     * @throws CouldNotPublishMessage
+     */
+    public function produceBatch(MessageBatch $messageBatch): int
+    {
+        $topic = $this->producer->newTopic($this->topic);
+
+        $messagesIterator = $messageBatch->getMessages();
+
+        $messagesIterator->setIteratorMode(\SplDoublyLinkedList::IT_MODE_FIFO);
+
+        $produced = 0;
+        foreach ($messagesIterator as $message) {
+            $message = $this->serializer->serialize($message);
+
+            $this->produceMessage($topic, $message);
+
+            $this->producer->poll(0);
+
+            $produced++;
+        }
+
+        $this->flush();
+
+        return $produced;
+    }
+
+    private function produceMessage(ProducerTopic $topic, KafkaProducerMessage $message): void
+    {
         if (method_exists($topic, 'producev')) {
             $topic->producev(
                 partition: $message->getPartition(),
@@ -69,9 +106,14 @@ class Producer
                 key: $message->getKey()
             );
         }
+    }
 
-        $this->producer->poll(0);
-
+    /**
+     * @throws CouldNotPublishMessage
+     * @throws \Exception
+     */
+    private function flush(): mixed
+    {
         return retry(10, function () {
             $result = $this->producer->flush(1000);
 

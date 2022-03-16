@@ -5,6 +5,7 @@ namespace Junges\Kafka\Tests;
 use Illuminate\Support\Str;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\Message;
+use Junges\Kafka\Producers\MessageBatch;
 use Junges\Kafka\Support\Testing\Fakes\KafkaFake;
 use PHPUnit\Framework\Constraint\ExceptionMessage;
 use PHPUnit\Framework\ExpectationFailedException;
@@ -189,5 +190,20 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         } catch (ExpectationFailedException $exception) {
             $this->assertThat($exception, new ExceptionMessage('Messages were published unexpectedly.'));
         }
+    }
+
+    public function testPublishMessageBatch()
+    {
+        $messageBatch = new MessageBatch();
+        $messageBatch->push(new Message());
+        $messageBatch->push(new Message());
+        $messageBatch->push(new Message());
+
+        $producer = $this->fake->publishOn('topic')
+            ->withBodyKey('test', ['test'])
+            ->withHeaders(['custom' => 'header'])
+            ->withKafkaKey(Str::uuid()->toString());
+
+        $this->assertEquals(3, $producer->sendBatch($messageBatch));
     }
 }

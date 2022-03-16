@@ -4,6 +4,7 @@ namespace Junges\Kafka\Contracts;
 
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Message\Message;
+use Junges\Kafka\Producers\MessageBatch;
 
 interface CanProduceMessages
 {
@@ -30,4 +31,6 @@ interface CanProduceMessages
     public function getTopic(): string;
 
     public function send(): bool;
+
+    public function sendBatch(MessageBatch $messageBatch): int;
 }

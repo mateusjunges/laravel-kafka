@@ -60,6 +60,8 @@ class Config
         'auto.offset.reset',
     ];
 
+    private BatchConfigInterface $batchConfig;
+
     public function __construct(
         private string $broker,
         private array $topics,
@@ -72,8 +74,10 @@ class Config
         private int $maxMessages = -1,
         private int $maxCommitRetries = 6,
         private bool $autoCommit = true,
-        private array $customOptions = []
+        private array $customOptions = [],
+        ?BatchConfigInterface $batchConfig = null,
     ) {
+        $this->batchConfig = $batchConfig ?? new NullBatchConfig();
     }
 
     public function getCommit(): int
@@ -142,6 +146,11 @@ class Config
         return collect(array_merge($config, $this->customOptions, $this->getSaslOptions()))
             ->reject(fn ($option) => in_array($option, self::CONSUMER_ONLY_CONFIG_OPTIONS))
             ->toArray();
+    }
+
+    public function getBatchConfig(): BatchConfigInterface
+    {
+        return $this->batchConfig;
     }
 
     #[Pure]

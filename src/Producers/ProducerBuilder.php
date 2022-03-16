@@ -152,6 +152,13 @@ class ProducerBuilder implements CanProduceMessages
         return $producer->produce($this->message);
     }
 
+    public function sendBatch(MessageBatch $messageBatch): int
+    {
+        $producer = $this->build();
+
+        return $producer->produceBatch($messageBatch);
+    }
+
     private function build(): Producer
     {
         $conf = new Config(
