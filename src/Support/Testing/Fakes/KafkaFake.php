@@ -131,7 +131,7 @@ class KafkaFake implements CanPublishMessagesToKafka
                 return false;
             }
             if ($callback !== null) {
-                $callback($publishedMessage);
+                return $callback($publishedMessage);
             }
             if ($expectedMessage !== null) {
                 return json_encode($publishedMessage->toArray()) === json_encode($expectedMessage->toArray());
