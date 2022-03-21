@@ -1,6 +1,6 @@
 <?php
 
-namespace Junges\Kafka\Consumers;
+namespace Junges\Kafka\Contracts;
 
 use Illuminate\Support\Collection;
 

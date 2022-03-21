@@ -4,6 +4,7 @@ namespace Junges\Kafka\Consumers;
 
 use Closure;
 use Illuminate\Support\Collection;
+use Junges\Kafka\Contracts\BatchConsumerInterface;
 
 class CallableBatchConsumer implements BatchConsumerInterface
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Junges\Kafka\BatchRepositories;
+namespace Junges\Kafka\Contracts;
 
 use \RdKafka\Message;
 use Illuminate\Support\Collection;

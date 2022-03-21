@@ -2,10 +2,11 @@
 
 namespace Junges\Kafka\Config;
 
-use Junges\Kafka\BatchRepositories\BatchRepositoryInterface;
 use Junges\Kafka\BatchRepositories\NullBatchRepository;
-use Junges\Kafka\Consumers\BatchConsumerInterface;
 use Junges\Kafka\Consumers\NullBatchConsumer;
+use Junges\Kafka\Contracts\BatchConfigInterface;
+use Junges\Kafka\Contracts\BatchConsumerInterface;
+use Junges\Kafka\Contracts\BatchRepositoryInterface;
 use Junges\Kafka\Support\Timer;
 
 final class NullBatchConfig implements BatchConfigInterface

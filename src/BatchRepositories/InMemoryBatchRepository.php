@@ -4,6 +4,7 @@ namespace Junges\Kafka\BatchRepositories;
 
 use \RdKafka\Message;
 use Illuminate\Support\Collection;
+use Junges\Kafka\Contracts\BatchRepositoryInterface;
 
 final class InMemoryBatchRepository implements BatchRepositoryInterface
 {

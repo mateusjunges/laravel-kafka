@@ -1,9 +1,7 @@
 <?php
 
-namespace Junges\Kafka\Config;
+namespace Junges\Kafka\Contracts;
 
-use Junges\Kafka\BatchRepositories\BatchRepositoryInterface;
-use Junges\Kafka\Consumers\BatchConsumerInterface;
 use Junges\Kafka\Support\Timer;
 
 interface BatchConfigInterface

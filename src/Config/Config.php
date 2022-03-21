@@ -3,6 +3,7 @@
 namespace Junges\Kafka\Config;
 
 use JetBrains\PhpStorm\Pure;
+use Junges\Kafka\Contracts\BatchConfigInterface;
 use Junges\Kafka\Contracts\Consumer;
 
 class Config

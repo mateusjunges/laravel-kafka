@@ -6,10 +6,10 @@ use Closure;
 use InvalidArgumentException;
 use Junges\Kafka\Commit\Contracts\CommitterFactory;
 use Junges\Kafka\Config\BatchConfig;
-use Junges\Kafka\Config\BatchConfigInterface;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\NullBatchConfig;
 use Junges\Kafka\Config\Sasl;
+use Junges\Kafka\Contracts\BatchConfigInterface;
 use Junges\Kafka\Contracts\MessageDeserializer;
 use Junges\Kafka\Support\Timer;
 

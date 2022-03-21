@@ -2,9 +2,10 @@
 
 namespace Junges\Kafka\Config;
 
-use Junges\Kafka\BatchRepositories\BatchRepositoryInterface;
-use Junges\Kafka\Consumers\BatchConsumerInterface;
 use Junges\Kafka\Consumers\CallableBatchConsumer;
+use Junges\Kafka\Contracts\BatchConfigInterface;
+use Junges\Kafka\Contracts\BatchConsumerInterface;
+use Junges\Kafka\Contracts\BatchRepositoryInterface;
 use Junges\Kafka\Support\Timer;
 
 class BatchConfig implements BatchConfigInterface
