@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Junges\Kafka\BatchRepositories;
 
 use \RdKafka\Message;
