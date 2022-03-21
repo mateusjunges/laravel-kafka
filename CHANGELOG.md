@@ -2,6 +2,13 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2022-02-28 v1.7.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.6.4...v1.7.0)
+### Fixed
+- Return callback result for published messages filter when callback is provided on [#87](https://github.com/mateusjunges/laravel-kafka/pull/87) by @nmfzone
+
+### Added
+- Added support for Laravel 9 in the tests pipeline on [#88](https://github.com/mateusjunges/laravel-kafka/pull/88) by @mateusjunges
+
 ## [2022-02-28 v1.6.4](https://github.com/mateusjunges/laravel-kafka/compare/v1.6.3...v1.6.4)
 ### Fixed
 - Use correct consumer group id config key in consumer command
