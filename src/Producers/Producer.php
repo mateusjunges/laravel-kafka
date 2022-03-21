@@ -9,6 +9,7 @@ use Junges\Kafka\Exceptions\CouldNotPublishMessage;
 use RdKafka\Conf;
 use RdKafka\Producer as KafkaProducer;
 use RdKafka\ProducerTopic;
+use SplDoublyLinkedList;
 
 class Producer
 {
@@ -70,7 +71,7 @@ class Producer
 
         $messagesIterator = $messageBatch->getMessages();
 
-        $messagesIterator->setIteratorMode(\SplDoublyLinkedList::IT_MODE_FIFO);
+        $messagesIterator->setIteratorMode(SplDoublyLinkedList::IT_MODE_FIFO);
 
         $produced = 0;
         foreach ($messagesIterator as $message) {
