@@ -9,7 +9,7 @@ use Junges\Kafka\Contracts\BatchConsumerInterface;
 use Junges\Kafka\Contracts\BatchRepositoryInterface;
 use Junges\Kafka\Support\Timer;
 
-final class NullBatchConfig implements BatchConfigInterface
+class NullBatchConfig implements BatchConfigInterface
 {
     public function getBatchReleaseIntervalInMilliseconds(): int
     {
