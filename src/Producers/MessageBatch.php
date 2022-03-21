@@ -5,7 +5,7 @@ namespace Junges\Kafka\Producers;
 use Junges\Kafka\Message\Message;
 use SplDoublyLinkedList;
 
-final class MessageBatch
+class MessageBatch
 {
     private SplDoublyLinkedList $messages;
 
