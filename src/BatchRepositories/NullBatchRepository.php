@@ -6,7 +6,7 @@ use \RdKafka\Message;
 use Illuminate\Support\Collection;
 use Junges\Kafka\Contracts\BatchRepositoryInterface;
 
-final class NullBatchRepository implements BatchRepositoryInterface
+class NullBatchRepository implements BatchRepositoryInterface
 {
     public function push(Message $message): void
     {
