@@ -10,7 +10,7 @@ use SplDoublyLinkedList;
  *
  * @see CanProduceMessages::sendBatch
  */
-final class MessageBatch
+class MessageBatch
 {
     /**
      * Storage of messages
