@@ -15,21 +15,33 @@ final class InMemoryBatchRepository implements BatchRepositoryInterface
         $this->reset();
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function push(Message $message): void
     {
         $this->batch->push($message);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getBatch(): Collection
     {
         return $this->batch;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getBatchSize(): int
     {
         return $this->batch->count();
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function reset(): void
     {
         $this->batch = collect([]);

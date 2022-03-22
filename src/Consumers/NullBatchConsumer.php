@@ -7,6 +7,9 @@ use Junges\Kafka\Contracts\BatchConsumerInterface;
 
 final class NullBatchConsumer implements BatchConsumerInterface
 {
+    /**
+     * {@inheritdoc}
+     */
     public function handle(Collection $collection): void
     {
     }

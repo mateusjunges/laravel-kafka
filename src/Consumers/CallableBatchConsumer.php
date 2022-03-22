@@ -13,10 +13,7 @@ class CallableBatchConsumer implements BatchConsumerInterface
     }
 
     /**
-     * Handle received batch of messages
-     *
-     * @param Collection $collection
-     * @return void
+     * {@inheritdoc}
      */
     public function handle(Collection $collection): void
     {
