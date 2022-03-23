@@ -27,7 +27,8 @@ $messageBatch->push($message);
 $messageBatch->push($message);
 
 /** @var \Junges\Kafka\Producers\ProducerBuilder $producer */
-$producer = Kafka::publishOn('topic')
+$producer = Kafka::publishOn('cluster')
+    ->onTopic('topic')
     ->withConfigOptions(['key' => 'value']);
 
 $producer->sendBatch($messageBatch);
