@@ -2,6 +2,10 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2022-02-28 v1.7.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.7.0...v1.7.1)
+### Added
+- Added support for batch producing and handling batch of messages by @vsvp21 in [#86](https://github.com/mateusjunges/laravel-kafka/pull/86)
+
 ## [2022-02-28 v1.7.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.6.4...v1.7.0)
 ### Fixed
 - Return callback result for published messages filter when callback is provided on [#87](https://github.com/mateusjunges/laravel-kafka/pull/87) by @nmfzone
