@@ -96,5 +96,11 @@ return [
                 'mechanisms' => ''
             ]
         ]
-    ]
+    ],
+
+    /*
+     | Repository for batching messages together
+     | Implement BatchRepositoryInterface to save batches in different storage
+     */
+    'batch_repository' => env('KAFKA_BATCH_REPOSITORY', \Junges\Kafka\BatchRepositories\InMemoryBatchRepository::class),
 ];

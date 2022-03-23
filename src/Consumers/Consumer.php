@@ -4,6 +4,7 @@ namespace Junges\Kafka\Consumers;
 
 use Closure;
 use JetBrains\PhpStorm\Pure;
+use Illuminate\Support\Collection;
 use Junges\Kafka\Commit\Contracts\Committer;
 use Junges\Kafka\Commit\Contracts\CommitterFactory;
 use Junges\Kafka\Commit\DefaultCommitterFactory;
@@ -81,6 +82,11 @@ class Consumer
         $this->committer = $this->committerFactory->make($this->consumer, $this->config);
 
         $this->consumer->subscribe($this->config->getTopics());
+
+        $batchConfig = $this->config->getBatchConfig();
+        if ($batchConfig->isBatchingEnabled()) {
+            $batchConfig->getTimer()->start($batchConfig->getBatchReleaseInterval());
+        }
 
         do {
             $this->retryable->retry(fn () => $this->doConsume());
@@ -165,6 +171,63 @@ class Consumer
         }
 
         $this->commit($message, $success);
+    }
+
+    /**
+     * Handles batch of consumed messages by checking two conditions:
+     * 1) if current batch size is greater than or equals to batch size limit
+     * 2) if batch release interval is timed out and current batch size greater than zero
+     *
+     * @return void
+     * @throws Throwable
+     */
+    private function handleBatch(): void
+    {
+        $batchConfig = $this->config->getBatchConfig();
+
+        if ($batchConfig->getBatchRepository()->getBatchSize() >= $batchConfig->getBatchSizeLimit()) {
+            $this->executeBatch($batchConfig->getBatchRepository()->getBatch());
+            $batchConfig->getBatchRepository()->reset();
+
+            return;
+        }
+
+        if ($batchConfig->getTimer()->isTimedOut() && $batchConfig->getBatchRepository()->getBatchSize() > 0) {
+            $this->executeBatch($batchConfig->getBatchRepository()->getBatch());
+            $batchConfig->getBatchRepository()->reset();
+        }
+
+        if ($batchConfig->getTimer()->isTimedOut()) {
+            $batchConfig->getTimer()->start($batchConfig->getBatchReleaseInterval());
+        }
+    }
+
+    /**
+     * Tries to handle received batch of messages
+     *
+     * @param Collection $collection
+     * @return void
+     * @throws Throwable
+     */
+    private function executeBatch(Collection $collection): void
+    {
+        try {
+            $consumedMessages = $collection
+                ->map(
+                    fn (Message $message) =>
+                        $this->deserializer->deserialize($this->getConsumerMessage($message))
+                );
+
+            $this->config->getBatchConfig()->getConsumer()->handle($consumedMessages);
+
+            $collection->each(fn (Message $message) => $this->commit($message, true));
+        } catch (Throwable $throwable) {
+            $collection->each(function (Message $message) use ($throwable) {
+                $this->logger->error($message, $throwable);
+
+                $this->commit($message, $this->handleException($throwable, $message));
+            });
+        }
     }
 
     /**
@@ -267,11 +330,26 @@ class Consumer
      */
     private function handleMessage(Message $message): void
     {
+        $batchConfig = $this->config->getBatchConfig();
+
         if (RD_KAFKA_RESP_ERR_NO_ERROR === $message->err) {
             $this->messageCounter->add();
+
+            if ($batchConfig->isBatchingEnabled()) {
+                $batchConfig->getBatchRepository()->push($message);
+
+                $this->handleBatch();
+
+                return;
+            }
+
             $this->executeMessage($message);
 
             return;
+        }
+
+        if ($batchConfig->isBatchingEnabled()) {
+            $this->handleBatch();
         }
 
         if (! in_array($message->err, self::IGNORABLE_CONSUMER_ERRORS)) {

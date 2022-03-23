@@ -5,9 +5,13 @@ namespace Junges\Kafka\Consumers;
 use Closure;
 use InvalidArgumentException;
 use Junges\Kafka\Commit\Contracts\CommitterFactory;
+use Junges\Kafka\Config\BatchConfig;
 use Junges\Kafka\Config\Config;
+use Junges\Kafka\Config\NullBatchConfig;
 use Junges\Kafka\Config\Sasl;
+use Junges\Kafka\Contracts\HandlesBatchConfiguration;
 use Junges\Kafka\Contracts\MessageDeserializer;
+use Junges\Kafka\Support\Timer;
 
 class ConsumerBuilder
 {
@@ -26,6 +30,9 @@ class ConsumerBuilder
     private array $options;
     private MessageDeserializer $deserializer;
     private ?CommitterFactory $committerFactory = null;
+    private bool $batchingEnabled = false;
+    private int $batchSizeLimit = 0;
+    private int $batchReleaseInterval = 0;
 
     /**
      * @param string $brokers
@@ -362,6 +369,46 @@ class ConsumerBuilder
     }
 
     /**
+     * Enables messages batching
+     *
+     * @return $this
+     */
+    public function enableBatching(): self
+    {
+        $this->batchingEnabled = true;
+
+        return $this;
+    }
+
+    /**
+     * Set batch size limit
+     * Batch of messages will be released after batch size exceeds given limit
+     *
+     * @param int $batchSizeLimit
+     * @return $this
+     */
+    public function withBatchSizeLimit(int $batchSizeLimit): self
+    {
+        $this->batchSizeLimit = $batchSizeLimit;
+
+        return $this;
+    }
+
+    /**
+     * Set batch release interval in milliseconds
+     * Batch of messages will be released after timer exceeds given interval
+     *
+     * @param int $batchReleaseIntervalInMilliseconds
+     * @return $this
+     */
+    public function withBatchReleaseInterval(int $batchReleaseIntervalInMilliseconds): self
+    {
+        $this->batchReleaseInterval = $batchReleaseIntervalInMilliseconds;
+
+        return $this;
+    }
+
+    /**
      * Build the Kafka consumer.
      *
      * @return \Junges\Kafka\Consumers\Consumer
@@ -380,7 +427,8 @@ class ConsumerBuilder
             maxMessages: $this->maxMessages,
             maxCommitRetries: $this->maxCommitRetries,
             autoCommit: $this->autoCommit,
-            customOptions: $this->options
+            customOptions: $this->options,
+            batchConfig: $this->getBatchConfig(),
         );
 
         return new Consumer($config, $this->deserializer, $this->committerFactory);
@@ -399,5 +447,27 @@ class ConsumerBuilder
 
             throw new InvalidArgumentException("The topic name should be a string value. [{$type}] given.");
         }
+    }
+
+    /**
+     * Returns batch config if batching is enabled
+     * if batching is disabled then null config returned
+     *
+     * @return HandlesBatchConfiguration
+     */
+    private function getBatchConfig(): HandlesBatchConfiguration
+    {
+        if (! $this->batchingEnabled) {
+            return new NullBatchConfig();
+        }
+
+        return new BatchConfig(
+            batchConsumer: new CallableBatchConsumer($this->handler),
+            timer: new Timer(),
+            batchRepository: app(config('kafka.batch_repository')),
+            batchingEnabled: $this->batchingEnabled,
+            batchSizeLimit: $this->batchSizeLimit,
+            batchReleaseInterval: $this->batchReleaseInterval
+        );
     }
 }

@@ -6,6 +6,7 @@ use Closure;
 use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Message\Message;
+use Junges\Kafka\Producers\MessageBatch;
 use RdKafka\Conf;
 
 class ProducerFake
@@ -40,5 +41,20 @@ class ProducerFake
         }
 
         return true;
+    }
+
+    public function produceBatch(MessageBatch $messageBatch): int
+    {
+        $produced = 0;
+        if ($this->producerCallback !== null) {
+            $callback = $this->producerCallback;
+
+            foreach ($messageBatch->getMessages() as $message) {
+                $callback($message);
+                $produced++;
+            }
+        }
+
+        return $produced;
     }
 }
