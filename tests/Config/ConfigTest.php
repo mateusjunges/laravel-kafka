@@ -7,8 +7,8 @@ use Junges\Kafka\Config\BatchConfig;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\NullBatchConfig;
 use Junges\Kafka\Config\Sasl;
-use Junges\Kafka\Contracts\Handler;
 use Junges\Kafka\Consumers\CallableBatchConsumer;
+use Junges\Kafka\Contracts\Handler;
 use Junges\Kafka\Support\Timer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 
@@ -259,4 +259,3 @@ class ConfigTest extends LaravelKafkaTestCase
         $this->assertEquals(0, $batchConfig->getBatchSizeLimit());
     }
 }
-
