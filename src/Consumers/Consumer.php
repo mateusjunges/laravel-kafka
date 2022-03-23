@@ -3,8 +3,8 @@
 namespace Junges\Kafka\Consumers;
 
 use Closure;
-use JetBrains\PhpStorm\Pure;
 use Illuminate\Support\Collection;
+use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Commit\Contracts\Committer;
 use Junges\Kafka\Commit\Contracts\CommitterFactory;
 use Junges\Kafka\Commit\DefaultCommitterFactory;

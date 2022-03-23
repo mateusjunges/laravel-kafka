@@ -3,9 +3,9 @@
 namespace Junges\Kafka\Config;
 
 use Junges\Kafka\Consumers\CallableBatchConsumer;
-use Junges\Kafka\Contracts\HandlesBatchConfiguration;
-use Junges\Kafka\Contracts\CanConsumeBatchMessages;
 use Junges\Kafka\Contracts\BatchRepository as BatchRepositoryContract;
+use Junges\Kafka\Contracts\CanConsumeBatchMessages;
+use Junges\Kafka\Contracts\HandlesBatchConfiguration;
 use Junges\Kafka\Support\Timer;
 
 class BatchConfig implements HandlesBatchConfiguration
