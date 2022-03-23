@@ -4,17 +4,17 @@ namespace Junges\Kafka\Config;
 
 use Junges\Kafka\BatchRepositories\NullBatchRepository;
 use Junges\Kafka\Consumers\NullBatchConsumer;
-use Junges\Kafka\Contracts\BatchConfigInterface;
-use Junges\Kafka\Contracts\BatchConsumerInterface;
-use Junges\Kafka\Contracts\BatchRepositoryInterface;
+use Junges\Kafka\Contracts\HandlesBatchConfiguration;
+use Junges\Kafka\Contracts\CanConsumeBatchMessages;
+use Junges\Kafka\Contracts\BatchRepository;
 use Junges\Kafka\Support\Timer;
 
-class NullBatchConfig implements BatchConfigInterface
+class NullBatchConfig implements HandlesBatchConfiguration
 {
     /**
      * {@inheritdoc}
      */
-    public function getBatchReleaseIntervalInMilliseconds(): int
+    public function getBatchReleaseInterval(): int
     {
         return 0;
     }
@@ -22,7 +22,7 @@ class NullBatchConfig implements BatchConfigInterface
     /**
      * {@inheritdoc}
      */
-    public function getConsumer(): BatchConsumerInterface
+    public function getConsumer(): CanConsumeBatchMessages
     {
         return new NullBatchConsumer();
     }
@@ -38,7 +38,7 @@ class NullBatchConfig implements BatchConfigInterface
     /**
      * {@inheritdoc}
      */
-    public function getBatchRepository(): BatchRepositoryInterface
+    public function getBatchRepository(): BatchRepository
     {
         return new NullBatchRepository();
     }

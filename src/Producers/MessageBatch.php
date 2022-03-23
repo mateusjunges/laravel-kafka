@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Producers;
 
+use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Message\Message;
 use SplDoublyLinkedList;
 
@@ -19,6 +20,7 @@ class MessageBatch
      */
     private SplDoublyLinkedList $messages;
 
+    #[Pure]
     public function __construct()
     {
         $this->messages = new SplDoublyLinkedList();

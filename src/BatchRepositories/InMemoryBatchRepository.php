@@ -4,9 +4,9 @@ namespace Junges\Kafka\BatchRepositories;
 
 use \RdKafka\Message;
 use Illuminate\Support\Collection;
-use Junges\Kafka\Contracts\BatchRepositoryInterface;
+use Junges\Kafka\Contracts\BatchRepository as BatchRepositoryContract;
 
-class InMemoryBatchRepository implements BatchRepositoryInterface
+class InMemoryBatchRepository implements BatchRepositoryContract
 {
     private Collection $batch;
 

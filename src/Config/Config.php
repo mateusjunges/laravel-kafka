@@ -3,7 +3,7 @@
 namespace Junges\Kafka\Config;
 
 use JetBrains\PhpStorm\Pure;
-use Junges\Kafka\Contracts\BatchConfigInterface;
+use Junges\Kafka\Contracts\HandlesBatchConfiguration;
 use Junges\Kafka\Contracts\Consumer;
 
 class Config
@@ -61,22 +61,22 @@ class Config
         'auto.offset.reset',
     ];
 
-    private BatchConfigInterface $batchConfig;
+    private HandlesBatchConfiguration $batchConfig;
 
     public function __construct(
         private string $broker,
         private array $topics,
-        private ?string $securityProtocol = null,
-        private ?int $commit = null,
-        private ?string $groupId = null,
-        private ?Consumer $consumer = null,
-        private ?Sasl $sasl = null,
-        private ?string $dlq = null,
-        private int $maxMessages = -1,
-        private int $maxCommitRetries = 6,
-        private bool $autoCommit = true,
-        private array $customOptions = [],
-        ?BatchConfigInterface $batchConfig = null,
+        private ?string            $securityProtocol = null,
+        private ?int               $commit = null,
+        private ?string            $groupId = null,
+        private ?Consumer          $consumer = null,
+        private ?Sasl              $sasl = null,
+        private ?string            $dlq = null,
+        private int                $maxMessages = -1,
+        private int                $maxCommitRetries = 6,
+        private bool               $autoCommit = true,
+        private array              $customOptions = [],
+        ?HandlesBatchConfiguration $batchConfig = null,
     ) {
         $this->batchConfig = $batchConfig ?? new NullBatchConfig();
     }
@@ -149,7 +149,7 @@ class Config
             ->toArray();
     }
 
-    public function getBatchConfig(): BatchConfigInterface
+    public function getBatchConfig(): HandlesBatchConfiguration
     {
         return $this->batchConfig;
     }

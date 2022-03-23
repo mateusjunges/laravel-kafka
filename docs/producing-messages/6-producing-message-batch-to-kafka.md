@@ -3,11 +3,12 @@ title: Producing message batch to kafka
 weight: 6
 ---
 
-You can publish multiple messages at the same time
-First, make sure you have created `MessageBatch`.
-Then create as many messages as you want and push them to `MesageBatch` instance.
-Finally, create your producer, call `ProducerBuilder::sendBatch` and pass `MessageBatch` instance.
+You can publish multiple messages at the same time by using message batches.
+To use a message batch, you must create a `Junges\Kafka\Producers\MessageBatch` instance.
+Then create as many messages as you want and push them to the `MesageBatch` instance.
+Finally, create your producer and call the `sendBatch`, passing the `MessageBatch` instance as a parameter.
 This is helpful when you persist messages in storage before publishing (e.g. TransactionalOutbox Pattern).
+
 ```php
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Producers\MessageBatch;

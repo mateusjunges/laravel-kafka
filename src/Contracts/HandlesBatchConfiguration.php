@@ -4,7 +4,7 @@ namespace Junges\Kafka\Contracts;
 
 use Junges\Kafka\Support\Timer;
 
-interface BatchConfigInterface
+interface HandlesBatchConfiguration
 {
     /**
      * Returns capacity of a batch
@@ -21,18 +21,18 @@ interface BatchConfigInterface
     public function isBatchingEnabled(): bool;
 
     /**
-     * Returns interval in which messages will be released from batch if it is not full
+     * Returns interval in milliseconds in which messages will be released from batch if it is not full
      *
      * @return int
      */
-    public function getBatchReleaseIntervalInMilliseconds(): int;
+    public function getBatchReleaseInterval(): int;
 
     /**
      * Returns BatchConsumerInterface implementation instance
      *
-     * @return BatchConsumerInterface
+     * @return CanConsumeBatchMessages
      */
-    public function getConsumer(): BatchConsumerInterface;
+    public function getConsumer(): CanConsumeBatchMessages;
 
     /**
      * Returns a timer that determines whether batch interval has passed or not
@@ -44,7 +44,7 @@ interface BatchConfigInterface
     /**
      * Returns BatchRepositoryInterface implementation instance
      *
-     * @return BatchRepositoryInterface
+     * @return BatchRepository
      */
-    public function getBatchRepository(): BatchRepositoryInterface;
+    public function getBatchRepository(): BatchRepository;
 }

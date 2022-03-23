@@ -252,5 +252,11 @@ class ConfigTest extends LaravelKafkaTestCase
         );
 
         $this->assertEquals($batchConfig, $config->getBatchConfig());
+        $this->assertInstanceOf(CallableBatchConsumer::class, $batchConfig->getConsumer());
+        $this->assertInstanceOf(Timer::class, $batchConfig->getTimer());
+        $this->assertInstanceOf(NullBatchRepository::class, $batchConfig->getBatchRepository());
+        $this->assertEquals(0, $batchConfig->getBatchReleaseInterval());
+        $this->assertEquals(0, $batchConfig->getBatchSizeLimit());
     }
 }
+

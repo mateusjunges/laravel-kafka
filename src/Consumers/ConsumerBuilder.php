@@ -9,7 +9,7 @@ use Junges\Kafka\Config\BatchConfig;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\NullBatchConfig;
 use Junges\Kafka\Config\Sasl;
-use Junges\Kafka\Contracts\BatchConfigInterface;
+use Junges\Kafka\Contracts\HandlesBatchConfiguration;
 use Junges\Kafka\Contracts\MessageDeserializer;
 use Junges\Kafka\Support\Timer;
 
@@ -32,7 +32,7 @@ class ConsumerBuilder
     private ?CommitterFactory $committerFactory = null;
     private bool $batchingEnabled = false;
     private int $batchSizeLimit = 0;
-    private int $batchReleaseIntervalInMilliseconds = 0;
+    private int $batchReleaseInterval = 0;
 
     /**
      * @param string $brokers
@@ -341,9 +341,9 @@ class ConsumerBuilder
      * @param int $batchReleaseIntervalInMilliseconds
      * @return $this
      */
-    public function withBatchReleaseIntervalInMilliseconds(int $batchReleaseIntervalInMilliseconds): self
+    public function withBatchReleaseInterval(int $batchReleaseIntervalInMilliseconds): self
     {
-        $this->batchReleaseIntervalInMilliseconds = $batchReleaseIntervalInMilliseconds;
+        $this->batchReleaseInterval = $batchReleaseIntervalInMilliseconds;
 
         return $this;
     }
@@ -393,9 +393,9 @@ class ConsumerBuilder
      * Returns batch config if batching is enabled
      * if batching is disabled then null config returned
      *
-     * @return BatchConfigInterface
+     * @return HandlesBatchConfiguration
      */
-    private function getBatchConfig(): BatchConfigInterface
+    private function getBatchConfig(): HandlesBatchConfiguration
     {
         if (! $this->batchingEnabled) {
             return new NullBatchConfig();
@@ -407,7 +407,7 @@ class ConsumerBuilder
             batchRepository: app(config('kafka.batch_repository')),
             batchingEnabled: $this->batchingEnabled,
             batchSizeLimit: $this->batchSizeLimit,
-            batchReleaseIntervalInMilliseconds: $this->batchReleaseIntervalInMilliseconds
+            batchReleaseInterval: $this->batchReleaseInterval
         );
     }
 }

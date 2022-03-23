@@ -4,7 +4,7 @@ namespace Junges\Kafka\Contracts;
 
 use Illuminate\Support\Collection;
 
-interface BatchConsumerInterface
+interface CanConsumeBatchMessages
 {
     /**
      * Handles messages released from batch repository

@@ -5,7 +5,7 @@ namespace Junges\Kafka\Contracts;
 use \RdKafka\Message;
 use Illuminate\Support\Collection;
 
-interface BatchRepositoryInterface
+interface BatchRepository
 {
     /**
      * Pushes new message to batch repository

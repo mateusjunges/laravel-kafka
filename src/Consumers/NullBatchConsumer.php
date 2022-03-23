@@ -3,9 +3,9 @@
 namespace Junges\Kafka\Consumers;
 
 use Illuminate\Support\Collection;
-use Junges\Kafka\Contracts\BatchConsumerInterface;
+use Junges\Kafka\Contracts\CanConsumeBatchMessages;
 
-class NullBatchConsumer implements BatchConsumerInterface
+class NullBatchConsumer implements CanConsumeBatchMessages
 {
     /**
      * {@inheritdoc}

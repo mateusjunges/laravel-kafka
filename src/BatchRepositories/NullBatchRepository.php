@@ -4,9 +4,9 @@ namespace Junges\Kafka\BatchRepositories;
 
 use \RdKafka\Message;
 use Illuminate\Support\Collection;
-use Junges\Kafka\Contracts\BatchRepositoryInterface;
+use Junges\Kafka\Contracts\BatchRepository as BatchRepositoryContract;
 
-class NullBatchRepository implements BatchRepositoryInterface
+class NullBatchRepository implements BatchRepositoryContract
 {
     /**
      * {@inheritdoc}

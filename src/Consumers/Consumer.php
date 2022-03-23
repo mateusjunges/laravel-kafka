@@ -86,7 +86,7 @@ class Consumer
 
         $batchConfig = $this->config->getBatchConfig();
         if ($batchConfig->isBatchingEnabled()) {
-            $batchConfig->getTimer()->start($batchConfig->getBatchReleaseIntervalInMilliseconds());
+            $batchConfig->getTimer()->start($batchConfig->getBatchReleaseInterval());
         }
 
         do {
@@ -202,7 +202,7 @@ class Consumer
         }
 
         if ($batchConfig->getTimer()->isTimedOut()) {
-            $batchConfig->getTimer()->start($batchConfig->getBatchReleaseIntervalInMilliseconds());
+            $batchConfig->getTimer()->start($batchConfig->getBatchReleaseInterval());
         }
     }
 
