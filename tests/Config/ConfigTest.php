@@ -2,9 +2,14 @@
 
 namespace Junges\Kafka\Tests\Config;
 
+use Junges\Kafka\BatchRepositories\NullBatchRepository;
+use Junges\Kafka\Config\BatchConfig;
 use Junges\Kafka\Config\Config;
+use Junges\Kafka\Config\NullBatchConfig;
 use Junges\Kafka\Config\Sasl;
+use Junges\Kafka\Consumers\CallableBatchConsumer;
 use Junges\Kafka\Contracts\Consumer;
+use Junges\Kafka\Support\Timer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 
 class ConfigTest extends LaravelKafkaTestCase
@@ -209,5 +214,43 @@ class ConfigTest extends LaravelKafkaTestCase
             $expectedOptions,
             $config->getProducerOptions()
         );
+    }
+
+    public function testItCreatesNullBatchConfigIfNullIsPassed()
+    {
+        $config = new Config(
+            broker: 'broker',
+            topics: ['topic'],
+            securityProtocol: 'SASL_PLAINTEXT',
+            commit: 1,
+            groupId: 'group',
+            consumer: $this->createMock(Consumer::class),
+            dlq: null,
+        );
+
+        $this->assertInstanceOf(NullBatchConfig::class, $config->getBatchConfig());
+    }
+
+    public function testItReturnsGivenBatchConfigIfInstancePassed()
+    {
+        $batchConfig = new BatchConfig(
+            new CallableBatchConsumer(function () {
+            }),
+            new Timer(),
+            new NullBatchRepository(),
+        );
+
+        $config = new Config(
+            broker: 'broker',
+            topics: ['topic'],
+            securityProtocol: 'SASL_PLAINTEXT',
+            commit: 1,
+            groupId: 'group',
+            consumer: $this->createMock(Consumer::class),
+            dlq: null,
+            batchConfig: $batchConfig,
+        );
+
+        $this->assertEquals($batchConfig, $config->getBatchConfig());
     }
 }

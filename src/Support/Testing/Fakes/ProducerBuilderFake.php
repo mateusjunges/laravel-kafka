@@ -9,6 +9,7 @@ use Junges\Kafka\Contracts\CanProduceMessages;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
 use Junges\Kafka\Contracts\MessageSerializer;
 use Junges\Kafka\Message\Message;
+use Junges\Kafka\Producers\MessageBatch;
 
 class ProducerBuilderFake implements CanProduceMessages
 {
@@ -183,6 +184,13 @@ class ProducerBuilderFake implements CanProduceMessages
         $producer = $this->build();
 
         return $producer->produce($this->getMessage());
+    }
+
+    public function sendBatch(MessageBatch $messageBatch): int
+    {
+        $producer = $this->build();
+
+        return $producer->produceBatch($messageBatch);
     }
 
     private function makeProducer(Config $config): ProducerFake
