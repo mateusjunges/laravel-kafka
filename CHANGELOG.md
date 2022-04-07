@@ -2,6 +2,10 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2022-044-07 v1.6.5](https://github.com/mateusjunges/laravel-kafka/compare/v1.6.4...v1.6.5)
+### Fixed
+- Fix Json Serialize to not serialize the same message twice on [#92](https://github.com/mateusjunges/laravel-kafka/pull/92) by @lukecurtis93
+
 ## [2022-02-28 v1.6.4](https://github.com/mateusjunges/laravel-kafka/compare/v1.6.3...v1.6.4)
 ### Fixed
 - Use correct consumer group id config key in consumer command
