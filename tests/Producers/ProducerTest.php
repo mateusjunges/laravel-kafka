@@ -3,10 +3,10 @@
 namespace Junges\Kafka\Tests\Producers;
 
 use Junges\Kafka\Config\Config;
+use Junges\Kafka\Message\Message;
 use Junges\Kafka\Message\Serializers\JsonSerializer;
 use Junges\Kafka\Producers\Producer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
-use Junges\Kafka\Message\Message;
 
 class ProducerTest extends LaravelKafkaTestCase
 {

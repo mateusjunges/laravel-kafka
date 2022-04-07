@@ -8,10 +8,10 @@ use Junges\Kafka\Producers\Producer;
 use Junges\Kafka\Providers\LaravelKafkaServiceProvider;
 use Mockery as m;
 use Orchestra\Testbench\TestCase as Orchestra;
+use RdKafka\Conf;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
 use RdKafka\Producer as KafkaProducer;
-use RdKafka\Conf;
 
 class LaravelKafkaTestCase extends Orchestra
 {
@@ -61,6 +61,7 @@ class LaravelKafkaTestCase extends Orchestra
 
         $this->mockKafkaProducer();
     }
+
     protected function mockKafkaProducer()
     {
         // We have to get a topic object as a valid response for the mock
