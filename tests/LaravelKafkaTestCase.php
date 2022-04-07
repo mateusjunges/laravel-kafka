@@ -83,6 +83,7 @@ class LaravelKafkaTestCase extends Orchestra
             return $mockedKafkaProducer;
         });
     }
+
     protected function mockConsumerWithMessageFailingCommit(Message $message)
     {
         $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
