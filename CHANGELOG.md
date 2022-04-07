@@ -2,7 +2,7 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
-## [2022-02-28 v1.7.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.7.0...v1.7.1)
+## [2022-02-28 v1.7.1](https://github.com/mateusjunges/laravel-kafka/compare/v1.7.0...v1.7.1)
 ### Added
 - Added support for batch producing and handling batch of messages by @vsvp21 in [#86](https://github.com/mateusjunges/laravel-kafka/pull/86)
 
@@ -12,6 +12,10 @@ All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
 ### Added
 - Added support for Laravel 9 in the tests pipeline on [#88](https://github.com/mateusjunges/laravel-kafka/pull/88) by @mateusjunges
+
+## [2022-044-07 v1.6.5](https://github.com/mateusjunges/laravel-kafka/compare/v1.6.4...v1.6.5)
+### Fixed
+- Fix Json Serialize to not serialize the same message twice on [#92](https://github.com/mateusjunges/laravel-kafka/pull/92) by @lukecurtis93
 
 ## [2022-02-28 v1.6.4](https://github.com/mateusjunges/laravel-kafka/compare/v1.6.3...v1.6.4)
 ### Fixed

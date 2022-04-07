@@ -53,6 +53,8 @@ class Producer
     {
         $topic = $this->producer->newTopic($this->topic);
 
+        $message = clone $message;
+
         $message = $this->serializer->serialize($message);
 
         $this->produceMessage($topic, $message);
