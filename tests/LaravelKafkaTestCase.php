@@ -11,6 +11,7 @@ use Orchestra\Testbench\TestCase as Orchestra;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
 use RdKafka\Producer as KafkaProducer;
+use RdKafka\Conf;
 
 class LaravelKafkaTestCase extends Orchestra
 {
@@ -58,8 +59,23 @@ class LaravelKafkaTestCase extends Orchestra
             return $mockedProducer->getMock();
         });
 
+        $this->mockKafkaProducer();
+    }
+    protected function mockKafkaProducer()
+    {
+        // We have to get a topic object as a valid response for the mock
+        // We stub out this code here to achieve that
+        $conf = new Conf();
+        $conf->set('log_level', 0);
+        $kafka = new KafkaProducer($conf);
+        $topic = $kafka->newTopic('test-topic');
+
         $mockedKafkaProducer = m::mock(KafkaProducer::class)
             ->shouldReceive('flush')
+            ->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
+            ->shouldReceive('newTopic')
+            ->andReturn($topic)
+            ->shouldReceive('poll')
             ->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
             ->getMock();
 

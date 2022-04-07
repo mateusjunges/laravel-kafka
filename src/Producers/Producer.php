@@ -51,6 +51,8 @@ class Producer
     {
         $topic = $this->producer->newTopic($this->topic);
 
+        $message = clone $message;
+
         $message = $this->serializer->serialize($message);
 
         if (method_exists($topic, 'producev')) {
