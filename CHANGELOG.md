@@ -2,6 +2,10 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2022-04-19 v1.7.3](https://github.com/mateusjunges/laravel-kafka/compare/v1.7.2...v1.7.3)
+### Fixed
+- Fixed Kafka Facade docblock on [#93](https://github.com/mateusjunges/laravel-kafka/pull/93) by @nmfzone
+
 ## [2022-04-19 v1.6.6](https://github.com/mateusjunges/laravel-kafka/compare/v1.6.5...v1.6.6)
 ### Fixed
 - Fixed Kafka Facade docblock on [#93](https://github.com/mateusjunges/laravel-kafka/pull/93) by @nmfzone
