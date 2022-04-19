@@ -2,6 +2,10 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2022-04-19 v1.6.6](https://github.com/mateusjunges/laravel-kafka/compare/v1.6.5...v1.6.6)
+### Fixed
+- Fixed Kafka Facade docblock on [#93](https://github.com/mateusjunges/laravel-kafka/pull/93) by @nmfzone
+
 ## [2022-04-07 v1.7.2](https://github.com/mateusjunges/laravel-kafka/compare/v1.7.1...v1.7.2)
 ### Fixed
 - Fix Json Serialize to not serialize the same message twice on [#92](https://github.com/mateusjunges/laravel-kafka/pull/92) by @lukecurtis93
