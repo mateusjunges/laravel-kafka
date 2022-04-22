@@ -12,6 +12,11 @@ Do you use Kafka in your laravel projects? All packages I've seen until today, i
 
 This package provides a nice way of producing and consuming kafka messages in your Laravel projects.
 
+# Buy me a coffee!
+If you think this package helped you in any way, you can [buy me a coffee!](https://www.paypal.com/donate/?hosted_button_id=ECFBTKP2NVKEW)
+
+![art/donation-qr-code.png](art/donation-qr-code.png)
+
 # Documentation
 You can [find the documentations for this package here](https://junges.dev/documentation/laravel-kafka/v1.6/introduction)
 
