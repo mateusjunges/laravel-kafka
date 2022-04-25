@@ -11,6 +11,7 @@ use Junges\Kafka\Config\NullBatchConfig;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Contracts\HandlesBatchConfiguration;
 use Junges\Kafka\Contracts\MessageDeserializer;
+use Junges\Kafka\Exceptions\KafkaConsumerException;
 use Junges\Kafka\Support\Timer;
 
 class ConsumerBuilder
@@ -214,9 +215,14 @@ class ConsumerBuilder
      *
      * @param string|null $dlqTopic
      * @return $this
+     * @throws \Junges\Kafka\Exceptions\KafkaConsumerException
      */
     public function withDlq(?string $dlqTopic = null): self
     {
+        if (! isset($this->topics[0])) {
+            throw KafkaConsumerException::dlqCanNotBeSetWithoutSubscribingToAnyTopics();
+        }
+
         if (null === $dlqTopic) {
             $dlqTopic = $this->topics[0] . '-dlq';
         }
