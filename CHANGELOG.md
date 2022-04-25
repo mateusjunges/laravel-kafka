@@ -2,6 +2,10 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2022-04-19 v1.7.4](https://github.com/mateusjunges/laravel-kafka/compare/v1.7.3...v1.7.4)
+### Fixed
+- Fix undefined offset 0 when trying to set Dead Letter Queues without subscribing to any kafka topics ([#e06849c](https://github.com/mateusjunges/laravel-kafka/commit/e06849c13be412a42206b8931d1afc0d7d5ae155))
+
 ## [2022-04-19 v1.7.3](https://github.com/mateusjunges/laravel-kafka/compare/v1.7.2...v1.7.3)
 ### Fixed
 - Fixed Kafka Facade docblock on [#93](https://github.com/mateusjunges/laravel-kafka/pull/93) by @nmfzone

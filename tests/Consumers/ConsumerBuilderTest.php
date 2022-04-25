@@ -11,6 +11,8 @@ use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Consumers\ConsumerBuilder;
+use Junges\Kafka\Exceptions\KafkaConsumerException;
+use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
 use Junges\Kafka\Tests\Fakes\FakeConsumer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
@@ -139,7 +141,7 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
 
     public function testItCanSetTheDeadLetterQueue()
     {
-        $consumer = ConsumerBuilder::create('broker')->withDlq('test-topic-dlq');
+        $consumer = ConsumerBuilder::create('broker')->subscribe('test')->withDlq('test-topic-dlq');
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
 
@@ -280,6 +282,13 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
 
         $committerFactory = $this->getPropertyWithReflection('committerFactory', $consumer);
         $this->assertInstanceOf($adhocCommitterFactory::class, $committerFactory);
+    }
+
+    public function testItCantCreateAConsumerWithDlqWithoutSubscribingToAnyTopics()
+    {
+        $this->expectException(KafkaConsumerException::class);
+
+        ConsumerBuilder::create('broker')->withDlq();
     }
 }
 
