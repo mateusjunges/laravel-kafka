@@ -74,7 +74,8 @@ class Options
         return new Sasl(
             username: $this->saslUsername,
             password: $this->saslPassword,
-            mechanisms: $this->saslMechanisms
+            mechanisms: $this->saslMechanisms,
+            securityProtocol: $this->securityProtocol
         );
     }
 
