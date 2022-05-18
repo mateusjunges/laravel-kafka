@@ -2,6 +2,9 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2022-05-18 v1.7.6](https://github.com/mateusjunges/laravel-kafka/compare/v1.7.5...v1.7.6)
+- Fixed Passing null to parameter #1 ($string) of type string is deprecated by @elnadrion on [#100](https://github.com/mateusjunges/laravel-kafka/pull/100)
+
 ## [2022-05-01 v1.7.5](https://github.com/mateusjunges/laravel-kafka/compare/v1.7.4...v1.7.5)
 ### Fixed
 - Fixes error when using SASL_SSL with KafkaConsumerCommmand (issue [#96](https://github.com/mateusjunges/laravel-kafka/issues/96), fixed with [#3ea902d](https://github.com/mateusjunges/laravel-kafka/commit/3ea902dbc1a44130395ecbd37ef892b24580e91e))
