@@ -3,14 +3,14 @@
 namespace Junges\Kafka\Config;
 
 use JetBrains\PhpStorm\Pure;
-use Junges\Kafka\Contracts\HandlesBatchConfiguration;
 use Junges\Kafka\Contracts\Consumer;
+use Junges\Kafka\Contracts\HandlesBatchConfiguration;
 
 class Config
 {
-    const SASL_PLAINTEXT = 'SASL_PLAINTEXT';
-    const SASL_SSL = 'SASL_SSL';
-    const PRODUCER_ONLY_CONFIG_OPTIONS = [
+    public const SASL_PLAINTEXT = 'SASL_PLAINTEXT';
+    public const SASL_SSL = 'SASL_SSL';
+    public const PRODUCER_ONLY_CONFIG_OPTIONS = [
         'transactional.id',
         'transaction.timeout.ms',
         'enable.idempotence',
@@ -32,7 +32,7 @@ class Config
         'dr_msg_cb',
         'sticky.partitioning.linger.ms',
     ];
-    const CONSUMER_ONLY_CONFIG_OPTIONS = [
+    public const CONSUMER_ONLY_CONFIG_OPTIONS = [
         'partition.assignment.strategy',
         'session.timeout.ms',
         'heartbeat.interval.ms',
@@ -171,7 +171,8 @@ class Config
 
     private function usingSasl(): bool
     {
-        return strtoupper($this->securityProtocol) === static::SASL_PLAINTEXT
-            || strtoupper($this->securityProtocol) === static::SASL_SSL;
+        return !is_null($this->securityProtocol) &&
+            (strtoupper($this->securityProtocol) === static::SASL_PLAINTEXT ||
+                strtoupper($this->securityProtocol) === static::SASL_SSL);
     }
 }
