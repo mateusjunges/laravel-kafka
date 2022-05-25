@@ -11,8 +11,8 @@ passing a `Junges\Kafka\Config\Sasl` instance as the argument:
 $consumer = \Junges\Kafka\Facades\Kafka::createConsumer()
     ->withSasl(new \Junges\Kafka\Config\Sasl(
         password: 'password',
-        username: 'username'
-        mechanisms: 'authentication mechanism'
+        username: 'username',
+        mechanisms: 'authentication mechanism',
     ));
 ```
 
@@ -22,7 +22,7 @@ You can also set the security protocol used with sasl. It's optional and by defa
 $consumer = \Junges\Kafka\Facades\Kafka::createConsumer()
     ->withSasl(new \Junges\Kafka\Config\Sasl(
         password: 'password',
-        username: 'username'
+        username: 'username',
         mechanisms: 'authentication mechanism',
         securityProtocol: 'SASL_SSL',
     ));
