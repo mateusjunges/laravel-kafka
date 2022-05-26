@@ -34,6 +34,7 @@ class ConsumerBuilder
     private bool $batchingEnabled = false;
     private int $batchSizeLimit = 0;
     private int $batchReleaseInterval = 0;
+    private bool $readingToEnd = false;
 
     /**
      * @param string $brokers
@@ -355,6 +356,19 @@ class ConsumerBuilder
     }
 
     /**
+     * Enable or disable the read to end option
+     *
+     * @param bool $readingToEnd
+     * @return $this
+     */
+    public function withReadingToEnd(bool $readingToEnd = true): self
+    {
+        $this->readingToEnd = $readingToEnd;
+
+        return $this;
+    }
+
+    /**
      * Build the Kafka consumer.
      *
      * @return Consumer
@@ -375,6 +389,7 @@ class ConsumerBuilder
             autoCommit: $this->autoCommit,
             customOptions: $this->options,
             batchConfig: $this->getBatchConfig(),
+            readingToEnd: $this->readingToEnd
         );
 
         return new Consumer($config, $this->deserializer, $this->committerFactory);

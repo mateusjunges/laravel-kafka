@@ -345,6 +345,11 @@ class Consumer
             $this->handleBatch();
         }
 
+        if ($this->config->isReadingToEnd() && RD_KAFKA_RESP_ERR__PARTITION_EOF === $message->err)
+        {
+            $this->stopConsume();
+        }
+
         if (! in_array($message->err, self::IGNORABLE_CONSUMER_ERRORS)) {
             $this->logger->error($message, null, 'CONSUMER');
 
