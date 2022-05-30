@@ -18,7 +18,7 @@ If you think this package helped you in any way, you can <a href="https://www.pa
 ![art/donation-qr-code.png](art/donation-qr-code.png)
 
 # Documentation
-You can [find the documentations for this package here](https://junges.dev/documentation/laravel-kafka/v1.6/introduction)
+You can [find the documentations for this package here](https://junges.dev/documentation/laravel-kafka/v1.7/1-introduction)
 
 # Testing
 Run `composer test` to test this package.
