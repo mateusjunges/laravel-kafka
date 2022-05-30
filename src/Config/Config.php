@@ -118,7 +118,7 @@ class Config
         return $this->autoCommit;
     }
 
-    public function isReadingToEnd(): bool
+    public function shouldStopAfterLastMessage(): bool
     {
         return $this->readingToEnd;
     }

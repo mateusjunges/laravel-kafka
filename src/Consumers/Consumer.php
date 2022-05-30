@@ -345,7 +345,7 @@ class Consumer
             $this->handleBatch();
         }
 
-        if ($this->config->isReadingToEnd() && RD_KAFKA_RESP_ERR__PARTITION_EOF === $message->err)
+        if ($this->config->shouldStopAfterLastMessage() && RD_KAFKA_RESP_ERR__PARTITION_EOF === $message->err)
         {
             $this->stopConsume();
         }

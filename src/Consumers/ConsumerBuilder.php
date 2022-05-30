@@ -361,7 +361,7 @@ class ConsumerBuilder
      * @param bool $readingToEnd
      * @return $this
      */
-    public function withReadingToEnd(bool $readingToEnd = true): self
+    public function stopAfterLastMessage(bool $readingToEnd = true): self
     {
         $this->readingToEnd = $readingToEnd;
 
