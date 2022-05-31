@@ -34,7 +34,7 @@ class ConsumerBuilder
     private bool $batchingEnabled = false;
     private int $batchSizeLimit = 0;
     private int $batchReleaseInterval = 0;
-    private bool $readingToEnd = false;
+    private bool $stopAfterLastMessage = false;
 
     /**
      * @param string $brokers
@@ -358,12 +358,12 @@ class ConsumerBuilder
     /**
      * Enable or disable the read to end option
      *
-     * @param bool $readingToEnd
+     * @param bool $stopAfterLastMessage
      * @return $this
      */
-    public function stopAfterLastMessage(bool $readingToEnd = true): self
+    public function stopAfterLastMessage(bool $stopAfterLastMessage = true): self
     {
-        $this->readingToEnd = $readingToEnd;
+        $this->stopAfterLastMessage = $stopAfterLastMessage;
 
         return $this;
     }
@@ -389,7 +389,7 @@ class ConsumerBuilder
             autoCommit: $this->autoCommit,
             customOptions: $this->options,
             batchConfig: $this->getBatchConfig(),
-            readingToEnd: $this->readingToEnd
+            stopAfterLastMessage: $this->stopAfterLastMessage
         );
 
         return new Consumer($config, $this->deserializer, $this->committerFactory);

@@ -77,7 +77,7 @@ class Config
         private bool               $autoCommit = true,
         private array              $customOptions = [],
         ?HandlesBatchConfiguration $batchConfig = null,
-        private bool               $readingToEnd = false,
+        private bool               $stopAfterLastMessage = false,
     )
     {
         $this->batchConfig = $batchConfig ?? new NullBatchConfig();
@@ -120,7 +120,7 @@ class Config
 
     public function shouldStopAfterLastMessage(): bool
     {
-        return $this->readingToEnd;
+        return $this->stopAfterLastMessage;
     }
 
     public function getConsumerOptions(): array
