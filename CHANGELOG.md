@@ -5,6 +5,8 @@ All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 ## [2022-06-03 v1.7.7](https://github.com/mateusjunges/laravel-kafka/compare/v1.7.6...v1.7.7)
 ### Fixed
 - Fixes Sasl security protocol not being passed to config class. By @gajosu in [#106](https://github.com/mateusjunges/laravel-kafka/pull/106)
+- Link to the current version documentation fixed by @Elnadrion in [#104](https://github.com/mateusjunges/laravel-kafka/pull/104)
+- (Documentation) Added missing comas in the class params by @shanginn in [#101](https://github.com/mateusjunges/laravel-kafka/pull/101)
 
 ## [2022-05-18 v1.7.6](https://github.com/mateusjunges/laravel-kafka/compare/v1.7.5...v1.7.6)
 - Fixed Passing null to parameter #1 ($string) of type string is deprecated by @elnadrion on [#100](https://github.com/mateusjunges/laravel-kafka/pull/100)
