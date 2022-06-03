@@ -238,6 +238,25 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertFalse($autoCommit);
     }
 
+    public function testItCanSetStopAfterLastMessage()
+    {
+        $consumer = ConsumerBuilder::create('broker')->stopAfterLastMessage();
+
+        $this->assertInstanceOf(Consumer::class, $consumer->build());
+
+        $autoCommit = $this->getPropertyWithReflection('stopAfterLastMessage', $consumer);
+
+        $this->assertTrue($autoCommit);
+
+        $consumer = ConsumerBuilder::create('broker')->stopAfterLastMessage(false);
+
+        $this->assertInstanceOf(Consumer::class, $consumer->build());
+
+        $autoCommit = $this->getPropertyWithReflection('stopAfterLastMessage', $consumer);
+
+        $this->assertFalse($autoCommit);
+    }
+
     public function testItCanSetConsumerOptions()
     {
         $consumer = ConsumerBuilder::create('broker')
