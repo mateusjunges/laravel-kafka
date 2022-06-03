@@ -27,3 +27,5 @@ $consumer = \Junges\Kafka\Facades\Kafka::createConsumer()
         securityProtocol: 'SASL_SSL',
     ));
 ```
+
+Note: When using the `withSasl` method, the securityProtocol set in this method takes priority over `withSecurityProtocol` method.
