@@ -364,7 +364,7 @@ class ConsumerBuilder
         $config = new Config(
             broker: $this->brokers,
             topics: $this->topics,
-            securityProtocol: $this->securityProtocol,
+            securityProtocol: $this->getSecurityProtocol(),
             commit: $this->commit,
             groupId: $this->groupId,
             consumer: new CallableConsumer($this->handler, $this->middlewares),
@@ -393,6 +393,18 @@ class ConsumerBuilder
 
             throw new InvalidArgumentException("The topic name should be a string value. [{$type}] given.");
         }
+    }
+
+    /**
+     * Get security protocol depending if sasl is been set.
+     *
+     * @return string
+     */
+    private function getSecurityProtocol(): string
+    {
+        return $this->saslConfig !== null 
+            ? $this->saslConfig->getSecurityProtocol()
+            : $this->securityProtocol;
     }
 
     /**
