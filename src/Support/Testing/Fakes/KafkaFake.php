@@ -2,16 +2,20 @@
 
 namespace Junges\Kafka\Support\Testing\Fakes;
 
-use Illuminate\Support\Collection;
 use JetBrains\PhpStorm\Pure;
-use Junges\Kafka\Contracts\CanPublishMessagesToKafka;
-use Junges\Kafka\Contracts\KafkaProducerMessage;
 use Junges\Kafka\Message\Message;
+use Illuminate\Support\Collection;
 use PHPUnit\Framework\Assert as PHPUnit;
+use Junges\Kafka\Contracts\KafkaConsumerMessage;
+use Junges\Kafka\Contracts\KafkaProducerMessage;
+use Junges\Kafka\Contracts\CanPublishMessagesToKafka;
+use Junges\Kafka\Support\Testing\Fakes\ConsumerBuilderFake;
 
 class KafkaFake implements CanPublishMessagesToKafka
 {
     private array $publishedMessages = [];
+    /** @var \Junges\Kafka\Contracts\KafkaConsumerMessage[] */
+    private array $messagesToConsume = [];
 
     public function __construct()
     {
@@ -30,6 +34,52 @@ class KafkaFake implements CanPublishMessagesToKafka
         return $this->makeProducerBuilderFake($topic, $broker);
     }
 
+    /**
+     * Return a ConsumerBuilder instance.
+     *
+     * @param array $topics
+     * @param string|null $groupId
+     * @param string|null $brokers
+     * @return \Junges\Kafka\Support\Testing\Fakes\ConsumerBuilderFake
+     */
+    public function createConsumer(array $topics = [], string $groupId = null, string $brokers = null): ConsumerBuilderFake
+    {
+        return ConsumerBuilderFake::create(
+            brokers: $brokers ?? config('kafka.brokers'),
+            topics: $topics,
+            groupId: $groupId ?? config('kafka.consumer_group_id')
+        )->setMessages(
+            $this->messagesToConsume
+        );
+    }
+
+    /**
+     * Add a mock messages to consume.
+     *
+     * @param \Junges\Kafka\Contracts\KafkaConsumerMessage|Junges\Kafka\Contracts\KafkaConsumerMessage[] $messages
+     * @return void
+     */
+    public function addMockConsumerMessages(KafkaConsumerMessage|array $messages): void
+    {
+        if (!is_array($messages)) {
+            $messages = [$messages];
+        }
+
+        foreach ($messages as $m) {
+            $this->addConsumerMessage($m);
+        }
+    }
+
+    /**
+     * Add a message to array of messages to be consumed.
+     *
+     * @param \Junges\Kafka\Contracts\KafkaConsumerMessage $message
+     * @return void
+     */
+    private function addConsumerMessage(KafkaConsumerMessage $message): void
+    {
+        $this->messagesToConsume[] = $message;
+    }
     /**
      * Assert if a messages was published based on a truth-test callback.
      *
@@ -104,8 +154,7 @@ class KafkaFake implements CanPublishMessagesToKafka
 
     private function makeProducerBuilderFake(string $topic = '', ?string $broker = null): ProducerBuilderFake
     {
-        return (
-            new ProducerBuilderFake(
+        return (new ProducerBuilderFake(
                 topic: $topic,
                 broker: $broker
             )
@@ -122,7 +171,7 @@ class KafkaFake implements CanPublishMessagesToKafka
      */
     private function published(?callable $callback = null, ?KafkaProducerMessage $expectedMessage = null, ?string $topic = null): Collection
     {
-        if (! $this->hasPublished()) {
+        if (!$this->hasPublished()) {
             return collect();
         }
 
@@ -149,7 +198,7 @@ class KafkaFake implements CanPublishMessagesToKafka
     #[Pure]
     private function hasPublished(): bool
     {
-        return ! empty($this->getPublishedMessages());
+        return !empty($this->getPublishedMessages());
     }
 
     /**

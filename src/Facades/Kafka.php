@@ -14,6 +14,7 @@ use Junges\Kafka\Support\Testing\Fakes\KafkaFake;
  * @method static void assertPublishedOn(string $topic, KafkaProducerMessage $expectedMessage = null, callable $callback = null)
  * @method static void assertPublishedOnTimes(string $topic, int $times = 1, KafkaProducerMessage $expectedMessage = null, callable $callback = null)
  * @method static void assertNothingPublished()
+ * @method static \Junges\Kafka\Contracts\KafkaConsumerMessage addMockConsumerMessages(\Junges\Kafka\Contracts\KafkaConsumerMessage|\Junges\Kafka\Contracts\KafkaConsumerMessage[] $messages)
  * @mixin \Junges\Kafka\Kafka
  *
  * @see \Junges\Kafka\Kafka
