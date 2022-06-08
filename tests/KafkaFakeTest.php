@@ -223,7 +223,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
             timestamp: 0
         );
 
-        Kafka::addMockConsumerMessages(
+        Kafka::shouldReceiveMessages(
             $msg
         );
 
@@ -264,7 +264,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
             ),
         ];
 
-        Kafka::addMockConsumerMessages(
+        Kafka::shouldReceiveMessages(
             $msgs
         );
 
@@ -307,7 +307,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
             ),
         ];
 
-        Kafka::addMockConsumerMessages(
+        Kafka::shouldReceiveMessages(
             $msgs
         );
 

@@ -54,12 +54,12 @@ class KafkaFake implements CanPublishMessagesToKafka
     }
 
     /**
-     * Add a mock messages to consume.
+     * Set the messages to consume.
      *
      * @param \Junges\Kafka\Contracts\KafkaConsumerMessage|Junges\Kafka\Contracts\KafkaConsumerMessage[] $messages
      * @return void
      */
-    public function addMockConsumerMessages(KafkaConsumerMessage|array $messages): void
+    public function shouldReceiveMessages(KafkaConsumerMessage|array $messages): void
     {
         if (!is_array($messages)) {
             $messages = [$messages];
