@@ -396,7 +396,7 @@ class ConsumerBuilder
     }
 
     /**
-     * Get security protocol depending if sasl is been set.
+     * Get security protocol depending on whether sasl is set or not.
      *
      * @return string
      */
