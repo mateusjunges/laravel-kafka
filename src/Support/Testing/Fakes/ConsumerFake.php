@@ -11,7 +11,6 @@ use RdKafka\Conf;
 
 class ConsumerFake
 {
-
     private MessageCounter $messageCounter;
     private bool $stopRequested = false;
     private ?Closure $onStopConsume = null;
@@ -34,7 +33,7 @@ class ConsumerFake
     public function consume(): void
     {
         foreach ($this->messages as $message) {
-            if ($this->maxMessagesLimitReached() || $this->stopRequested) {
+            if ($this->shouldStopConsuming()) {
                 break;
             }
 
@@ -93,6 +92,15 @@ class ConsumerFake
     private function maxMessagesLimitReached(): bool
     {
         return $this->messageCounter->maxMessagesLimitReached();
+    }
+
+    /**
+     * Return if the consumer should stop consuming messages.
+     * @return bool
+     */
+    private function shouldStopConsuming(): bool
+    {
+        return $this->maxMessagesLimitReached() || $this->stopRequested;
     }
 
     /**
