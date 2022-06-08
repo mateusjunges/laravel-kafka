@@ -78,8 +78,7 @@ class Config
         private array              $customOptions = [],
         ?HandlesBatchConfiguration $batchConfig = null,
         private bool               $stopAfterLastMessage = false,
-    )
-    {
+    ) {
         $this->batchConfig = $batchConfig ?? new NullBatchConfig();
     }
 
