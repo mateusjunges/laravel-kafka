@@ -12,16 +12,19 @@ use RdKafka\Conf;
 class ConsumerFake
 {
     private MessageCounter $messageCounter;
-    private bool $stopRequested = false;
-    private ?Closure $onStopConsume = null;
 
     /**
      * @param \Junges\Kafka\Config\Config $config
-     * @param MessageDeserializer $deserializer
-     * @param \Junges\Kafka\Commit\Contracts\CommitterFactory|null $committerFactory
+     * @param \Junges\Kafka\Contracts\KafkaConsumerMessage[] $messages
+     * @param bool $stopRequested
+     * @param \Closure|null $onStopConsume
      */
-    public function __construct(private Config $config, private array $messages = [])
-    {
+    public function __construct(
+        private Config $config,
+        private array $messages = [],
+        private bool $stopRequested = false,
+        private ?Closure $onStopConsume = null
+    ) {
         $this->messageCounter = new MessageCounter($config->getMaxMessages());
     }
 
