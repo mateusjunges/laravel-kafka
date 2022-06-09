@@ -6,13 +6,17 @@ use Illuminate\Support\Str;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\Message;
 use Junges\Kafka\Producers\MessageBatch;
+use Junges\Kafka\Message\ConsumedMessage;
+use Junges\Kafka\Contracts\KafkaConsumerMessage;
+use Junges\Kafka\Support\Testing\Fakes\ConsumerFake;
 use Junges\Kafka\Support\Testing\Fakes\KafkaFake;
-use PHPUnit\Framework\Constraint\ExceptionMessage;
 use PHPUnit\Framework\ExpectationFailedException;
+use PHPUnit\Framework\Constraint\ExceptionMessage;
 
 class KafkaFakeTest extends LaravelKafkaTestCase
 {
     private KafkaFake $fake;
+    private ConsumerFake $consumer;
 
     public function setUp(): void
     {
@@ -205,5 +209,124 @@ class KafkaFakeTest extends LaravelKafkaTestCase
             ->withKafkaKey(Str::uuid()->toString());
 
         $this->assertEquals(3, $producer->sendBatch($messageBatch));
+    }
+
+    public function testFakeConsumer()
+    {
+        Kafka::fake();
+        $msg = new ConsumedMessage(
+            topicName: 'test-topic',
+            partition: 0,
+            headers: [],
+            body: ['test'],
+            key: null,
+            offset: 0,
+            timestamp: 0
+        );
+
+        Kafka::shouldReceiveMessages(
+            $msg
+        );
+
+
+        $consumer = Kafka::createConsumer()
+            ->subscribe(['test-topic'])
+            ->withBrokers('localhost:9092')
+            ->withConsumerGroupId('group')
+            ->withCommitBatchSize(1)
+            ->withHandler(fn (KafkaConsumerMessage $message) => $this->assertEquals($msg, $message))
+            ->build();
+
+
+        $consumer->consume();
+    }
+
+    public function testFakeConsumerWithSingleMultipleMessages()
+    {
+        Kafka::fake();
+        $msgs = [
+            new ConsumedMessage(
+                topicName: 'test-topic',
+                partition: 0,
+                headers: [],
+                body: ['test'],
+                key: null,
+                offset: 0,
+                timestamp: 0
+            ),
+            new ConsumedMessage(
+                topicName: 'test-topic-2',
+                partition: 0,
+                headers: [],
+                body: ['test2'],
+                key: null,
+                offset: 0,
+                timestamp: 0
+            ),
+        ];
+
+        Kafka::shouldReceiveMessages(
+            $msgs
+        );
+
+        $consumedMessages = [];
+
+        $consumer = Kafka::createConsumer(
+            ['test-topic'],
+        )->withHandler(function (KafkaConsumerMessage $message) use (&$consumedMessages) {
+            $consumedMessages[] = $message;
+        })
+            ->build();
+
+        $consumer->consume();
+
+        $this->assertEquals($msgs, $consumedMessages);
+        $this->assertEquals(count($msgs), $consumer->consumedMessagesCount());
+    }
+
+    public function testStopFakeConsumer()
+    {
+        Kafka::fake();
+        $msgs = [
+            new ConsumedMessage(
+                topicName: 'test-topic',
+                partition: 0,
+                headers: [],
+                body: ['test'],
+                key: null,
+                offset: 0,
+                timestamp: 0
+            ),
+            new ConsumedMessage(
+                topicName: 'test-topic-2',
+                partition: 0,
+                headers: [],
+                body: ['test2'],
+                key: null,
+                offset: 0,
+                timestamp: 0
+            ),
+        ];
+
+        Kafka::shouldReceiveMessages(
+            $msgs
+        );
+
+        $stopped = false;
+        $this->consumer = Kafka::createConsumer(
+            ['test-topic'],
+        )->withHandler(function (KafkaConsumerMessage $message) use (&$stopped) {
+            //stop consumer after first message
+            $this->consumer->stopConsume(function () use (&$stopped) {
+                $stopped = true;
+            });
+        })
+            ->build();
+
+        $this->consumer->consume();
+        //testing stop callback
+        $this->assertTrue($stopped);
+        //should have consumed only one message
+        $this->assertEquals(1, $this->consumer->consumedMessagesCount());
     }
 }

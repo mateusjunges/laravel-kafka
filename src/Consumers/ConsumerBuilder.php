@@ -16,32 +16,31 @@ use Junges\Kafka\Support\Timer;
 
 class ConsumerBuilder
 {
-    private array $topics;
-    private int $commit;
-    private ?string $groupId;
-    private Closure $handler;
-    private int $maxMessages;
-    private int $maxCommitRetries;
-    private string $brokers;
-    private array $middlewares;
-    private ?Sasl $saslConfig = null;
-    private ?string $dlq = null;
-    private string $securityProtocol;
-    private bool $autoCommit;
-    private array $options;
-    private MessageDeserializer $deserializer;
-    private ?CommitterFactory $committerFactory = null;
-    private bool $batchingEnabled = false;
-    private int $batchSizeLimit = 0;
-    private int $batchReleaseInterval = 0;
-    private bool $stopAfterLastMessage = false;
+    protected array $topics;
+    protected int $commit;
+    protected ?string $groupId;
+    protected Closure $handler;
+    protected int $maxMessages;
+    protected int $maxCommitRetries;
+    protected string $brokers;
+    protected array $middlewares;
+    protected ?Sasl $saslConfig = null;
+    protected ?string $dlq = null;
+    protected string $securityProtocol;
+    protected bool $autoCommit;
+    protected array $options;
+    protected MessageDeserializer $deserializer;
+    protected ?CommitterFactory $committerFactory = null;
+    protected bool $batchingEnabled = false;
+    protected int $batchSizeLimit = 0;
+    protected int $batchReleaseInterval = 0;
 
     /**
      * @param string $brokers
      * @param array $topics
      * @param string|null $groupId
      */
-    private function __construct(string $brokers, array $topics = [], string $groupId = null)
+    protected function __construct(string $brokers, array $topics = [], string $groupId = null)
     {
         if (count($topics) > 0) {
             foreach ($topics as $topic) {
@@ -371,14 +370,14 @@ class ConsumerBuilder
     /**
      * Build the Kafka consumer.
      *
-     * @return Consumer
+     * @return \Junges\Kafka\Consumers\Consumer
      */
-    public function build(): Consumer
+    public function build()
     {
         $config = new Config(
             broker: $this->brokers,
             topics: $this->topics,
-            securityProtocol: $this->securityProtocol,
+            securityProtocol: $this->getSecurityProtocol(),
             commit: $this->commit,
             groupId: $this->groupId,
             consumer: new CallableConsumer($this->handler, $this->middlewares),
@@ -401,7 +400,7 @@ class ConsumerBuilder
      * @param mixed $topic
      * @return void
      */
-    private function validateTopic(mixed $topic)
+    protected function validateTopic(mixed $topic)
     {
         if (! is_string($topic)) {
             $type = ucfirst(gettype($topic));
@@ -411,12 +410,24 @@ class ConsumerBuilder
     }
 
     /**
+     * Get security protocol depending on whether sasl is set or not.
+     *
+     * @return string
+     */
+    protected function getSecurityProtocol(): string
+    {
+        return $this->saslConfig !== null 
+            ? $this->saslConfig->getSecurityProtocol()
+            : $this->securityProtocol;
+    }
+
+    /**
      * Returns batch config if batching is enabled
      * if batching is disabled then null config returned
      *
      * @return HandlesBatchConfiguration
      */
-    private function getBatchConfig(): HandlesBatchConfiguration
+    protected function getBatchConfig(): HandlesBatchConfiguration
     {
         if (! $this->batchingEnabled) {
             return new NullBatchConfig();
