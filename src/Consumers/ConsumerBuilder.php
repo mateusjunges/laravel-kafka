@@ -34,6 +34,7 @@ class ConsumerBuilder
     protected bool $batchingEnabled = false;
     protected int $batchSizeLimit = 0;
     protected int $batchReleaseInterval = 0;
+    protected bool $stopAfterLastMessage = false;
 
     /**
      * @param string $brokers
