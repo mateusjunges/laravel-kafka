@@ -202,7 +202,7 @@ class ConsumerFake
         $rdKafkaMessage->topic_name = $message->getTopicName();
         $rdKafkaMessage->partition = $message->getPartition();
         $rdKafkaMessage->headers = $message->getHeaders() ?? [];
-        $rdKafkaMessage->payload = $message->getBody();
+        $rdKafkaMessage->payload = serialize($message->getBody());
         $rdKafkaMessage->key = $message->getKey();
         $rdKafkaMessage->offset = $message->getOffset();
         $rdKafkaMessage->timestamp = $message->getTimestamp();
@@ -215,7 +215,7 @@ class ConsumerFake
             'topicName' => $message->topic_name,
             'partition' => $message->partition,
             'headers' => $message->headers ?? [],
-            'body' => $message->payload,
+            'body' => unserialize($message->payload),
             'key' => $message->key,
             'offset' => $message->offset,
             'timestamp' => $message->timestamp,
