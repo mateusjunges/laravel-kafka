@@ -76,8 +76,8 @@ class ConsumerBuilderFake extends ConsumerBuilder
     }
 
     /**
-     * Returns batch config if batching is enabled
-     * if batching is disabled then null config returned
+     * Returns a instance of BatchConfig if batching is enabled.
+     * Otherwise, a instance of NullConfig will be returned.
      *
      * @return HandlesBatchConfiguration
      */
