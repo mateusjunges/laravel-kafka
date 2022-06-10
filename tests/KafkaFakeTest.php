@@ -5,13 +5,14 @@ namespace Junges\Kafka\Tests;
 use Illuminate\Support\Str;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\Message;
+use Illuminate\Support\Collection;
 use Junges\Kafka\Producers\MessageBatch;
 use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
-use Junges\Kafka\Support\Testing\Fakes\ConsumerFake;
 use Junges\Kafka\Support\Testing\Fakes\KafkaFake;
 use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\Constraint\ExceptionMessage;
+use Junges\Kafka\Support\Testing\Fakes\ConsumerFake;
 
 class KafkaFakeTest extends LaravelKafkaTestCase
 {
@@ -228,7 +229,6 @@ class KafkaFakeTest extends LaravelKafkaTestCase
             $msg
         );
 
-
         $consumer = Kafka::createConsumer()
             ->subscribe(['test-topic'])
             ->withBrokers('localhost:9092')
@@ -236,8 +236,6 @@ class KafkaFakeTest extends LaravelKafkaTestCase
             ->withCommitBatchSize(1)
             ->withHandler(fn (KafkaConsumerMessage $message) => $this->assertEquals($msg, $message))
             ->build();
-
-
         $consumer->consume();
     }
 
@@ -328,5 +326,138 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         $this->assertTrue($stopped);
         //should have consumed only one message
         $this->assertEquals(1, $this->consumer->consumedMessagesCount());
+    }
+
+    public function testFakeBatchConsumer()
+    {
+        Kafka::fake();
+        $msgs = [
+            new ConsumedMessage(
+                topicName: 'test-topic',
+                partition: 0,
+                headers: [],
+                body: ['test'],
+                key: null,
+                offset: 0,
+                timestamp: 0
+            ),
+            new ConsumedMessage(
+                topicName: 'test-topic-2',
+                partition: 0,
+                headers: [],
+                body: ['test2'],
+                key: null,
+                offset: 0,
+                timestamp: 0
+            ),
+        ];
+
+        Kafka::shouldReceiveMessages(
+            $msgs
+        );
+
+        $consumedMessages = [];
+        $consumer = Kafka::createConsumer(
+            ['test-topic'],
+        )
+            ->enableBatching()
+            ->withBatchSizeLimit(10)
+            ->withHandler(function (Collection $messages) use (&$consumedMessages) {
+                $consumedMessages = $messages->toArray();
+            })
+            ->build();
+
+        $consumer->consume();
+        $this->assertTrue($msgs == $consumedMessages);
+        $this->assertEquals(count($msgs), $consumer->consumedMessagesCount());
+    }
+
+    public function testFakeMultipleBatchConsumer()
+    {
+        Kafka::fake();
+        $msgs = [
+            new ConsumedMessage(
+                topicName: 'test-topic',
+                partition: 0,
+                headers: [],
+                body: ['test'],
+                key: null,
+                offset: 0,
+                timestamp: 0
+            ),
+
+            new ConsumedMessage(
+                topicName: 'test-topic-2',
+                partition: 0,
+                headers: [],
+                body: ['test2'],
+                key: null,
+                offset: 0,
+                timestamp: 0
+            ),
+
+            new ConsumedMessage(
+                topicName: 'test-topic-3',
+                partition: 0,
+                headers: [],
+                body: ['test3'],
+                key: null,
+                offset: 0,
+                timestamp: 0
+            ),
+
+            new ConsumedMessage(
+                topicName: 'test-topic-4',
+                partition: 0,
+                headers: [],
+                body: ['test4'],
+                key: null,
+                offset: 0,
+                timestamp: 0
+            ),
+
+            new ConsumedMessage(
+                topicName: 'test-topic-5',
+                partition: 0,
+                headers: [],
+                body: ['test5'],
+                key: null,
+                offset: 0,
+                timestamp: 0
+            ),
+        ];
+
+        Kafka::shouldReceiveMessages(
+            $msgs
+        );
+
+        $firstBatch = [];
+        $secondBatch = [];
+        $thirdBatch = [];
+
+        $consumer = Kafka::createConsumer(
+            ['test-topic'],
+        )
+            ->enableBatching()
+            ->withBatchSizeLimit(2)
+            ->withHandler(function (Collection $messages) use (&$firstBatch, &$secondBatch, &$thirdBatch) {
+                if (count($firstBatch) == 0) {
+                    $firstBatch = $messages->toArray();
+                    $this->assertEquals(2, $messages->count());
+                } else if (count($secondBatch) == 0) {
+                    $secondBatch = $messages->toArray();
+                    $this->assertEquals(2, $messages->count());
+                } else {
+                    $thirdBatch = $messages->toArray();
+                    $this->assertEquals(1, $messages->count());
+                }
+            })
+            ->build();
+
+        $consumer->consume();
+
+        $consumedMessages = array_merge($firstBatch, $secondBatch, $thirdBatch);
+        $this->assertTrue($msgs == $consumedMessages);
+        $this->assertEquals(count($msgs), $consumer->consumedMessagesCount());
     }
 }
