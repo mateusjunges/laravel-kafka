@@ -368,7 +368,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
             ->build();
 
         $consumer->consume();
-        $this->assertTrue($msgs == $consumedMessages);
+        $this->assertEquals($msgs, $consumedMessages);
         $this->assertEquals(count($msgs), $consumer->consumedMessagesCount());
     }
 
@@ -457,7 +457,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         $consumer->consume();
 
         $consumedMessages = array_merge($firstBatch, $secondBatch, $thirdBatch);
-        $this->assertTrue($msgs == $consumedMessages);
+        $this->assertEquals($msgs, $consumedMessages);
         $this->assertEquals(count($msgs), $consumer->consumedMessagesCount());
     }
 }
