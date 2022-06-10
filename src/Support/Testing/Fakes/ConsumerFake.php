@@ -177,9 +177,9 @@ class ConsumerFake
     {
         $consumedMessages = $collection
             ->map(
-                fn (Message $message) =>
-                $this->getConsumerMessage($message)
+                fn (Message $message) =>$this->getConsumerMessage($message)
             );
+
         $this->config->getBatchConfig()->getConsumer()->handle($consumedMessages);
     }
 
