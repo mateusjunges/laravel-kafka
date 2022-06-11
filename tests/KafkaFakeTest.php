@@ -269,11 +269,10 @@ class KafkaFakeTest extends LaravelKafkaTestCase
 
         $consumedMessages = [];
 
-        $consumer = Kafka::createConsumer(
-            ['test-topic'],
-        )->withHandler(function (KafkaConsumerMessage $message) use (&$consumedMessages) {
-            $consumedMessages[] = $message;
-        })
+        $consumer = Kafka::createConsumer(['test-topic'])
+            ->withHandler(function (KafkaConsumerMessage $message) use (&$consumedMessages) {
+                $consumedMessages[] = $message;
+            })
             ->build();
 
         $consumer->consume();
@@ -311,14 +310,13 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         );
 
         $stopped = false;
-        $this->consumer = Kafka::createConsumer(
-            ['test-topic'],
-        )->withHandler(function (KafkaConsumerMessage $message) use (&$stopped) {
-            //stop consumer after first message
-            $this->consumer->stopConsume(function () use (&$stopped) {
-                $stopped = true;
-            });
-        })
+        $this->consumer = Kafka::createConsumer(['test-topic'])
+            ->withHandler(function (KafkaConsumerMessage $message) use (&$stopped) {
+                //stop consumer after first message
+                $this->consumer->stopConsume(function () use (&$stopped) {
+                    $stopped = true;
+                });
+            })
             ->build();
 
         $this->consumer->consume();
@@ -357,9 +355,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         );
 
         $consumedMessages = [];
-        $consumer = Kafka::createConsumer(
-            ['test-topic'],
-        )
+        $consumer = Kafka::createConsumer(['test-topic'])
             ->enableBatching()
             ->withBatchSizeLimit(10)
             ->withHandler(function (Collection $messages) use (&$consumedMessages) {
@@ -435,9 +431,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         $secondBatch = [];
         $thirdBatch = [];
 
-        $consumer = Kafka::createConsumer(
-            ['test-topic'],
-        )
+        $consumer = Kafka::createConsumer(['test-topic'])
             ->enableBatching()
             ->withBatchSizeLimit(2)
             ->withHandler(function (Collection $messages) use (&$firstBatch, &$secondBatch, &$thirdBatch) {
