@@ -456,8 +456,63 @@ class KafkaFakeTest extends LaravelKafkaTestCase
 
         $consumer->consume();
 
-        $consumedMessages = array_merge($firstBatch, $secondBatch, $thirdBatch);
-        $this->assertEquals($msgs, $consumedMessages);
+        $this->assertEquals($msgs, array_merge($firstBatch, $secondBatch, $thirdBatch));
         $this->assertEquals(count($msgs), $consumer->consumedMessagesCount());
+    }
+
+    public function testStopFakeBatchConsumer()
+    {
+        Kafka::fake();
+        $msgs = [
+            new ConsumedMessage(
+                topicName: 'test-topic',
+                partition: 0,
+                headers: [],
+                body: ['test'],
+                key: null,
+                offset: 0,
+                timestamp: 0
+            ),
+            new ConsumedMessage(
+                topicName: 'test-topic-2',
+                partition: 0,
+                headers: [],
+                body: ['test2'],
+                key: null,
+                offset: 0,
+                timestamp: 0
+            ),
+            new ConsumedMessage(
+                topicName: 'test-topic-3',
+                partition: 0,
+                headers: [],
+                body: ['test3'],
+                key: null,
+                offset: 0,
+                timestamp: 0
+            ),
+        ];
+
+        Kafka::shouldReceiveMessages(
+            $msgs
+        );
+
+        $stopped = false;
+        $this->consumer = Kafka::createConsumer(['test-topic'])
+            ->enableBatching()
+            ->withBatchSizeLimit(2)
+            ->withHandler(function (Collection $messages) use (&$stopped) {
+                //stop consumer after first batch
+                $this->consumer->stopConsume(function () use (&$stopped) {
+                    $stopped = true;
+                });
+            })
+            ->build();
+
+        $this->consumer->consume();
+        //testing stop callback
+        $this->assertTrue($stopped);
+        //should have consumed only two messages
+        $this->assertEquals(2, $this->consumer->consumedMessagesCount());
     }
 }
