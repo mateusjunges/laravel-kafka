@@ -14,7 +14,6 @@ use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Support\Testing\Fakes\KafkaFake;
 use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\Constraint\ExceptionMessage;
-use Spatie\TestTime\TestTime;
 
 class KafkaFakeTest extends LaravelKafkaTestCase
 {
@@ -288,22 +287,23 @@ class KafkaFakeTest extends LaravelKafkaTestCase
 
         $now = Carbon::create(1998, 8, 11, 4, 30);
 
+        $posts = [
+             1 => [
+                'id' => 1,
+                 'published_at' => null,
+                 'title' => 'Hey Jude',
+                 'content' => "Don't make it bad, take a sad song and make it better"
+            ]
+        ];
+
         Carbon::setTestNow($now);
-
-        $this->configureDatabase($this->app);
-
-        $post = Post::query()->create([
-            'published_at' => null,
-            'title' => 'Hey Jude',
-            'content' => "Don't make it bad, take a sad song and make it better"
-        ]);
 
         $messages = [
             new ConsumedMessage(
                 topicName: 'mark-post-as-published-topic',
                 partition: 0,
                 headers: [],
-                body: ['post_id' => $post->id],
+                body: ['post_id' => 1],
                 key: null,
                 offset: 0,
                 timestamp: 0
@@ -313,19 +313,19 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         Kafka::shouldReceiveMessages($messages);
 
         $consumer = Kafka::createConsumer(['mark-post-as-published-topic'])
-            ->withHandler(function (KafkaConsumerMessage $message) {
-                $post = Post::query()->find($message->getBody()['post_id']);
+            ->withHandler(function (KafkaConsumerMessage $message) use (&$posts) {
+                $post = $posts[$message->getBody()['post_id']];
 
-                $post->update([
-                    'published_at' => now()->format("Y-m-d H:i:s")
-                ]);
+                $post['published_at'] = now()->format("Y-m-d H:i:s");
+
+                $posts[1] = $post;
 
                 return 0;
             })->build();
 
         $consumer->consume();
 
-        $this->assertEquals('1998-08-11 04:30:00', $post->refresh()->published_at);
+        $this->assertEquals('1998-08-11 04:30:00', $posts[1]['published_at']);
     }
 
     public function testStopFakeConsumer()

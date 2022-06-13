@@ -26,17 +26,6 @@ class LaravelKafkaTestCase extends Orchestra
         app()->instance(Logger::class, $this->getMockedLogger());
     }
 
-    protected function configureDatabase($app): void
-    {
-        $app['db']->connection()->getSchemaBuilder()->create('posts', function (Blueprint $table) {
-            $table->id();
-            $table->dateTime('published_at')->nullable();
-            $table->string('content')->nullable();
-            $table->string('title');
-            $table->timestamps();
-        });
-    }
-
     public function getEnvironmentSetUp($app)
     {
         $app['config']->set('kafka.brokers', 'localhost:9092');
