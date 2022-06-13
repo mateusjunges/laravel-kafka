@@ -21,6 +21,8 @@ class LaravelKafkaTestCase extends Orchestra
     {
         parent::setUp();
 
+        $this->configureDatabase($this->app);
+
         (new LaravelKafkaServiceProvider($this->app))->boot();
 
         app()->instance(Logger::class, $this->getMockedLogger());
@@ -33,6 +35,7 @@ class LaravelKafkaTestCase extends Orchestra
             $table->dateTime('published_at')->nullable();
             $table->string('content')->nullable();
             $table->string('title');
+            $table->timestamps();
         });
     }
 
