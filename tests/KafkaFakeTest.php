@@ -372,7 +372,8 @@ class KafkaFakeTest extends LaravelKafkaTestCase
     public function testFakeBatchConsumer()
     {
         Kafka::fake();
-        $msgs = [
+
+        $messages = [
             new ConsumedMessage(
                 topicName: 'test-topic',
                 partition: 0,
@@ -393,9 +394,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
             ),
         ];
 
-        Kafka::shouldReceiveMessages(
-            $msgs
-        );
+        Kafka::shouldReceiveMessages($messages);
 
         $consumedMessages = [];
         $consumer = Kafka::createConsumer(['test-topic'])
@@ -407,14 +406,15 @@ class KafkaFakeTest extends LaravelKafkaTestCase
             ->build();
 
         $consumer->consume();
-        $this->assertEquals($msgs, $consumedMessages);
-        $this->assertEquals(count($msgs), $consumer->consumedMessagesCount());
+        $this->assertEquals($messages, $consumedMessages);
+        $this->assertEquals(count($messages), $consumer->consumedMessagesCount());
     }
 
     public function testFakeMultipleBatchConsumer()
     {
         Kafka::fake();
-        $msgs = [
+
+        $messages = [
             new ConsumedMessage(
                 topicName: 'test-topic',
                 partition: 0,
@@ -466,9 +466,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
             ),
         ];
 
-        Kafka::shouldReceiveMessages(
-            $msgs
-        );
+        Kafka::shouldReceiveMessages($messages);
 
         $firstBatch = [];
         $secondBatch = [];
@@ -481,7 +479,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
                 if (count($firstBatch) == 0) {
                     $firstBatch = $messages->toArray();
                     $this->assertEquals(2, $messages->count());
-                } else if (count($secondBatch) == 0) {
+                } elseif (count($secondBatch) == 0) {
                     $secondBatch = $messages->toArray();
                     $this->assertEquals(2, $messages->count());
                 } else {
@@ -493,14 +491,15 @@ class KafkaFakeTest extends LaravelKafkaTestCase
 
         $consumer->consume();
 
-        $this->assertEquals($msgs, array_merge($firstBatch, $secondBatch, $thirdBatch));
-        $this->assertEquals(count($msgs), $consumer->consumedMessagesCount());
+        $this->assertEquals($messages, array_merge($firstBatch, $secondBatch, $thirdBatch));
+        $this->assertEquals(count($messages), $consumer->consumedMessagesCount());
     }
 
     public function testStopFakeBatchConsumer()
     {
         Kafka::fake();
-        $msgs = [
+
+        $messages = [
             new ConsumedMessage(
                 topicName: 'test-topic',
                 partition: 0,
@@ -530,9 +529,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
             ),
         ];
 
-        Kafka::shouldReceiveMessages(
-            $msgs
-        );
+        Kafka::shouldReceiveMessages($messages);
 
         $stopped = false;
         $this->consumer = Kafka::createConsumer(['test-topic'])
@@ -547,8 +544,9 @@ class KafkaFakeTest extends LaravelKafkaTestCase
             ->build();
 
         $this->consumer->consume();
+
         //testing stop callback
-        $this->assertTrue($stopped);
+        $this->assertTrue((bool)$stopped);
         //should have consumed only two messages
         $this->assertEquals(2, $this->consumer->consumedMessagesCount());
     }
