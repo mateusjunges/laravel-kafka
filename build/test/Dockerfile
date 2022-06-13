@@ -8,9 +8,9 @@ RUN apk add libzip-dev
 
 RUN apk add unzip
 
-RUN pecl install zip
+RUN apk add sqlite3
 
-RUN pecl install sqlite3-alpha
+RUN pecl install zip
 
 COPY dev/php.ini /usr/local/etc/php/conf.d
 
