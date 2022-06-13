@@ -4,7 +4,6 @@ namespace Junges\Kafka\Tests;
 
 use Illuminate\Support\Str;
 use Junges\Kafka\Contracts\CanConsumeMessages;
-use Junges\Kafka\Contracts\ConsumerBuilder;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\Message;
 use Illuminate\Support\Collection;
@@ -14,7 +13,6 @@ use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Support\Testing\Fakes\KafkaFake;
 use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\Constraint\ExceptionMessage;
-use Junges\Kafka\Support\Testing\Fakes\ConsumerFake;
 use Spatie\TestTime\TestTime;
 
 class KafkaFakeTest extends LaravelKafkaTestCase

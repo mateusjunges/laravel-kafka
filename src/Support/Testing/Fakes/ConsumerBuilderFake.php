@@ -2,12 +2,16 @@
 
 namespace Junges\Kafka\Support\Testing\Fakes;
 
+use Junges\Kafka\Config\BatchConfig;
 use Junges\Kafka\Config\Config;
+use Junges\Kafka\Config\NullBatchConfig;
+use Junges\Kafka\Consumers\CallableBatchConsumer;
 use Junges\Kafka\Contracts\CanConsumeMessages;
 use Junges\Kafka\Contracts\ConsumerBuilder as ConsumerBuilderContract;
 use Junges\Kafka\Consumers\ConsumerBuilder;
 use Junges\Kafka\Consumers\CallableConsumer;
 use Junges\Kafka\Contracts\HandlesBatchConfiguration;
+use Junges\Kafka\Support\Timer;
 
 class ConsumerBuilderFake extends ConsumerBuilder implements ConsumerBuilderContract
 {
