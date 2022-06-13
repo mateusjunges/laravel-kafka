@@ -3,15 +3,18 @@
 namespace Junges\Kafka\Support\Testing\Fakes;
 
 use Closure;
-use Junges\Kafka\Config\Config;
-use Junges\Kafka\Contracts\KafkaConsumerMessage;
-use Junges\Kafka\Contracts\MessageDeserializer;
-use Junges\Kafka\MessageCounter;
 use RdKafka\Conf;
+use RdKafka\Message;
+use Junges\Kafka\Config\Config;
+use Junges\Kafka\MessageCounter;
+use Illuminate\Support\Collection;
+use Junges\Kafka\Contracts\KafkaConsumerMessage;
+use Junges\Kafka\Contracts\HandlesBatchConfiguration;
 
 class ConsumerFake
 {
     private MessageCounter $messageCounter;
+    private HandlesBatchConfiguration $batchConfig;
 
     /**
      * @param \Junges\Kafka\Config\Config $config
@@ -26,6 +29,7 @@ class ConsumerFake
         private ?Closure $onStopConsume = null
     ) {
         $this->messageCounter = new MessageCounter($config->getMaxMessages());
+        $this->batchConfig = $this->config->getBatchConfig();
     }
 
     /**
@@ -35,12 +39,10 @@ class ConsumerFake
      */
     public function consume(): void
     {
-        foreach ($this->messages as $message) {
-            if ($this->shouldStopConsuming()) {
-                break;
-            }
-
-            $this->handleMessage($message);
+        if ($this->batchConfig->isBatchingEnabled()) {
+            $this->batchConsume();
+        } else {
+            $this->defaultConsume();
         }
 
         if ($this->onStopConsume) {
@@ -107,6 +109,81 @@ class ConsumerFake
     }
 
     /**
+     * Consume messages
+     *
+     * @return void
+     */
+    public function defaultConsume(): void
+    {
+        foreach ($this->messages as $message) {
+            if ($this->shouldStopConsuming()) {
+                break;
+            }
+
+            $this->handleMessage($message);
+        }
+    }
+
+    /**
+     * Consume messages in batches
+     * 
+     * @return void
+     */
+    public function batchConsume(): void
+    {
+        foreach ($this->messages as $message) {
+            if ($this->shouldStopConsuming()) {
+                break;
+            }
+
+            $this->messageCounter->add();
+            $this->batchConfig->getBatchRepository()->push(
+                $this->getRdKafkaMessage($message)
+            );
+            $this->handleBatch();
+        }
+
+        $this->handleIncompleteBatch();
+    }
+
+    /**
+     * Handles batch
+     *
+     * @return void
+     */
+    private function handleBatch(): void
+    {
+        if ($this->batchConfig->getBatchRepository()->getBatchSize() >= $this->batchConfig->getBatchSizeLimit()) {
+            $this->executeBatch($this->batchConfig->getBatchRepository()->getBatch());
+            $this->batchConfig->getBatchRepository()->reset();
+        }
+    }
+
+    private function handleIncompleteBatch(): void
+    {
+        if ($this->batchConfig->getBatchRepository()->getBatchSize() > 0) {
+            $this->executeBatch($this->batchConfig->getBatchRepository()->getBatch());
+            $this->batchConfig->getBatchRepository()->reset();
+        }
+    }
+
+    /**
+     * Tries to handle received batch of messages
+     *
+     * @param Collection $consumedMessages
+     * @return void
+     */
+    private function executeBatch(Collection $collection): void
+    {
+        $consumedMessages = $collection
+            ->map(
+                fn (Message $message) =>$this->getConsumerMessage($message)
+            );
+
+        $this->config->getBatchConfig()->getConsumer()->handle($consumedMessages);
+    }
+
+    /**
      * Handle the message.
      *
      * @var \Junges\Kafka\Contracts\KafkaConsumerMessage $consumer
@@ -116,5 +193,32 @@ class ConsumerFake
     {
         $this->config->getConsumer()->handle($message);
         $this->messageCounter->add();
+    }
+
+    private function getRdKafkaMessage(KafkaConsumerMessage $message): Message
+    {
+        $rdKafkaMessage = new Message();
+        $rdKafkaMessage->err = 0;
+        $rdKafkaMessage->topic_name = $message->getTopicName();
+        $rdKafkaMessage->partition = $message->getPartition();
+        $rdKafkaMessage->headers = $message->getHeaders() ?? [];
+        $rdKafkaMessage->payload = serialize($message->getBody());
+        $rdKafkaMessage->key = $message->getKey();
+        $rdKafkaMessage->offset = $message->getOffset();
+        $rdKafkaMessage->timestamp = $message->getTimestamp();
+        return $rdKafkaMessage;
+    }
+
+    private function getConsumerMessage(Message $message): KafkaConsumerMessage
+    {
+        return app(KafkaConsumerMessage::class, [
+            'topicName' => $message->topic_name,
+            'partition' => $message->partition,
+            'headers' => $message->headers ?? [],
+            'body' => unserialize($message->payload),
+            'key' => $message->key,
+            'offset' => $message->offset,
+            'timestamp' => $message->timestamp,
+        ]);
     }
 }
