@@ -175,6 +175,14 @@ interface ConsumerBuilder
     public function withBatchReleaseInterval(int $batchReleaseIntervalInMilliseconds): self;
 
     /**
+     * Enable or disable the read to end option
+     *
+     * @param bool $stopAfterLastMessage
+     * @return \Junges\Kafka\Consumers\ConsumerBuilder
+     */
+    public function stopAfterLastMessage(bool $stopAfterLastMessage = true): self;
+
+    /**
      * Build the Kafka consumer.
      *
      * @return \Junges\Kafka\Contracts\CanConsumeMessages

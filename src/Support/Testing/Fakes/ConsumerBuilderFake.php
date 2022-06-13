@@ -63,6 +63,7 @@ class ConsumerBuilderFake extends ConsumerBuilder implements ConsumerBuilderCont
             autoCommit: $this->autoCommit,
             customOptions: $this->options,
             batchConfig: $this->getBatchConfig(),
+            stopAfterLastMessage: $this->stopAfterLastMessage,
         );
 
         return new ConsumerFake(

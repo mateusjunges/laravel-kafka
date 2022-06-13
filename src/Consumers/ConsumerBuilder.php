@@ -292,10 +292,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
     }
 
     /**
-     * Enable or disable the read to end option
-     *
-     * @param bool $stopAfterLastMessage
-     * @return $this
+     * @inheritDoc
      */
     public function stopAfterLastMessage(bool $stopAfterLastMessage = true): self
     {
