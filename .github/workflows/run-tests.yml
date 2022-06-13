@@ -24,13 +24,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php }}
-          extensions: mbstring, zip, sqlite3
-          coverage: pcov
       - name: Test ${{ matrix.php }}-${{ matrix.librdkafka }}-${{ matrix.extrdkafka }}-${{ matrix.laravel }}
         run:
           make version-test-${{ matrix.php }}-${{ matrix.librdkafka }}-${{ matrix.extrdkafka }}-${{ matrix.laravel }}
