@@ -10,7 +10,7 @@ RUN apk add unzip
 
 RUN pecl install zip
 
-RUN docker-php-ext-install sqlite3
+RUN pecl install sqlite3
 
 COPY dev/php.ini /usr/local/etc/php/conf.d
 
