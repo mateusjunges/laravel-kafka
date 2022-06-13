@@ -2,33 +2,24 @@
 
 namespace Junges\Kafka\Support\Testing\Fakes;
 
-use Closure;
-use InvalidArgumentException;
-use Junges\Kafka\Config\Sasl;
-use Junges\Kafka\Config\Config;
-use Junges\Kafka\Support\Timer;
 use Junges\Kafka\Config\BatchConfig;
+use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\NullBatchConfig;
+use Junges\Kafka\Consumers\CallableBatchConsumer;
+use Junges\Kafka\Contracts\CanConsumeMessages;
+use Junges\Kafka\Contracts\ConsumerBuilder as ConsumerBuilderContract;
 use Junges\Kafka\Consumers\ConsumerBuilder;
 use Junges\Kafka\Consumers\CallableConsumer;
-use Junges\Kafka\Contracts\MessageDeserializer;
-use Junges\Kafka\Commit\Contracts\CommitterFactory;
-use Junges\Kafka\Exceptions\KafkaConsumerException;
-use Junges\Kafka\Support\Testing\Fakes\ConsumerFake;
 use Junges\Kafka\Contracts\HandlesBatchConfiguration;
+use Junges\Kafka\Support\Timer;
 
-class ConsumerBuilderFake extends ConsumerBuilder
+class ConsumerBuilderFake extends ConsumerBuilder implements ConsumerBuilderContract
 {
     /** @var \Junges\Kafka\Contracts\KafkaConsumerMessage[] */
     private array $messages = [];
 
     /**
-     * Creates a new ConsumerBuilder instance.
-     *
-     * @param string $brokers
-     * @param array $topics
-     * @param string|null $groupId
-     * @return static
+     * @inheritDoc
      */
     public static function create(string $brokers, array $topics = [], string $groupId = null): self
     {
@@ -54,9 +45,9 @@ class ConsumerBuilderFake extends ConsumerBuilder
     /**
      * Build the Kafka consumer.
      *
-     * @return \Junges\Kafka\Support\Testing\Fakes\ConsumerFake
+     * @return \Junges\Kafka\Contracts\CanConsumeMessages
      */
-    public function build()
+    public function build(): CanConsumeMessages
     {
         $config = new Config(
             broker: $this->brokers,
@@ -77,6 +68,28 @@ class ConsumerBuilderFake extends ConsumerBuilder
         return new ConsumerFake(
             $config,
             $this->messages
+        );
+    }
+
+    /**
+     * Returns a instance of BatchConfig if batching is enabled.
+     * Otherwise, a instance of NullConfig will be returned.
+     *
+     * @return HandlesBatchConfiguration
+     */
+    protected function getBatchConfig(): HandlesBatchConfiguration
+    {
+        if (!$this->batchingEnabled) {
+            return new NullBatchConfig();
+        }
+
+        return new BatchConfig(
+            batchConsumer: new CallableBatchConsumer($this->handler),
+            timer: new Timer(),
+            batchRepository: app(\Junges\Kafka\BatchRepositories\InMemoryBatchRepository::class),
+            batchingEnabled: $this->batchingEnabled,
+            batchSizeLimit: $this->batchSizeLimit,
+            batchReleaseInterval: $this->batchReleaseInterval
         );
     }
 }

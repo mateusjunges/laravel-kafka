@@ -9,12 +9,14 @@ use Junges\Kafka\Config\BatchConfig;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\NullBatchConfig;
 use Junges\Kafka\Config\Sasl;
+use Junges\Kafka\Contracts\CanConsumeMessages;
+use Junges\Kafka\Contracts\ConsumerBuilder as ConsumerBuilderContract;
 use Junges\Kafka\Contracts\HandlesBatchConfiguration;
 use Junges\Kafka\Contracts\MessageDeserializer;
 use Junges\Kafka\Exceptions\KafkaConsumerException;
 use Junges\Kafka\Support\Timer;
 
-class ConsumerBuilder
+class ConsumerBuilder implements ConsumerBuilderContract
 {
     protected array $topics;
     protected int $commit;
@@ -68,12 +70,7 @@ class ConsumerBuilder
     }
 
     /**
-     * Creates a new ConsumerBuilder instance.
-     *
-     * @param string $brokers
-     * @param array $topics
-     * @param string|null $groupId
-     * @return static
+     * @inheritDoc
      */
     public static function create(string $brokers, array $topics = [], string $groupId = null): self
     {
@@ -85,10 +82,7 @@ class ConsumerBuilder
     }
 
     /**
-     * Subscribe to a Kafka topic.
-     *
-     * @param mixed ...$topics
-     * @return $this
+     * @inheritDoc
      */
     public function subscribe(...$topics): self
     {
@@ -108,10 +102,7 @@ class ConsumerBuilder
     }
 
     /**
-     * Set the brokers the kafka consumer should use.
-     *
-     * @param ?string $brokers
-     * @return $this
+     * @inheritDoc
      */
     public function withBrokers(?string $brokers): self
     {
@@ -121,10 +112,7 @@ class ConsumerBuilder
     }
 
     /**
-     * Specify the consumer group id.
-     *
-     * @param ?string $groupId
-     * @return $this
+     * @inheritDoc
      */
     public function withConsumerGroupId(?string $groupId): self
     {
@@ -134,10 +122,7 @@ class ConsumerBuilder
     }
 
     /**
-     * Specify the commit batch size.
-     *
-     * @param int $size
-     * @return $this
+     * @inheritDoc
      */
     public function withCommitBatchSize(int $size): self
     {
@@ -147,10 +132,7 @@ class ConsumerBuilder
     }
 
     /**
-     * Specify the class used to handle consumed messages.
-     *
-     * @param callable $handler
-     * @return $this
+     * @inheritDoc
      */
     public function withHandler(callable $handler): self
     {
@@ -160,10 +142,7 @@ class ConsumerBuilder
     }
 
     /**
-     * Specify the class that should be used to deserialize messages.
-     *
-     * @param MessageDeserializer $deserializer
-     * @return $this
+     * @inheritDoc
      */
     public function usingDeserializer(MessageDeserializer $deserializer): self
     {
@@ -173,10 +152,7 @@ class ConsumerBuilder
     }
 
     /**
-     * Specify the factory that should be used to build the committer.
-     *
-     * @param CommitterFactory $committerFactory
-     * @return $this
+     * @inheritDoc
      */
     public function usingCommitterFactory(CommitterFactory $committerFactory): self
     {
@@ -186,10 +162,7 @@ class ConsumerBuilder
     }
 
     /**
-     * Define the max number of messages that should be consumed.
-     *
-     * @param int $maxMessages
-     * @return $this
+     * @inheritDoc
      */
     public function withMaxMessages(int $maxMessages): self
     {
@@ -199,10 +172,7 @@ class ConsumerBuilder
     }
 
     /**
-     * Specify the max retries attempts.
-     *
-     * @param int $maxCommitRetries
-     * @return $this
+     * @inheritDoc
      */
     public function withMaxCommitRetries(int $maxCommitRetries): self
     {
@@ -212,11 +182,7 @@ class ConsumerBuilder
     }
 
     /**
-     * Set the Dead Letter Queue to be used. If null, the dlq is created from the topic name.
-     *
-     * @param string|null $dlqTopic
-     * @return $this
-     * @throws \Junges\Kafka\Exceptions\KafkaConsumerException
+     * @inheritDoc
      */
     public function withDlq(?string $dlqTopic = null): self
     {
@@ -234,10 +200,7 @@ class ConsumerBuilder
     }
 
     /**
-     * Set the Sasl configuration.
-     *
-     * @param Sasl $saslConfig
-     * @return $this
+     * @inheritDoc
      */
     public function withSasl(Sasl $saslConfig): self
     {
@@ -247,12 +210,7 @@ class ConsumerBuilder
     }
 
     /**
-     * Specify middlewares to be executed before handling the message.
-     * The middlewares get executed in the order they are defined.
-     * The middleware is a callable in which the first argument is the message itself and the second is the next handler
-     *
-     * @param callable(mixed, callable): void $middleware
-     * @return $this
+     * @inheritDoc
      */
     public function withMiddleware(callable $middleware): self
     {
@@ -262,10 +220,7 @@ class ConsumerBuilder
     }
 
     /**
-     * Specify the security protocol that should be used.
-     *
-     * @param string $securityProtocol
-     * @return $this
+     * @inheritDoc
      */
     public function withSecurityProtocol(string $securityProtocol): self
     {
@@ -275,9 +230,7 @@ class ConsumerBuilder
     }
 
     /**
-     * Enable or disable consumer auto commit option.
-     *
-     * @return $this
+     * @inheritDoc
      */
     public function withAutoCommit(bool $autoCommit = true): self
     {
@@ -287,10 +240,7 @@ class ConsumerBuilder
     }
 
     /**
-     * Set the configuration options.
-     *
-     * @param array $options
-     * @return $this
+     * @inheritDoc
      */
     public function withOptions(array $options): self
     {
@@ -302,11 +252,7 @@ class ConsumerBuilder
     }
 
     /**
-     * Set a specific configuration option.
-     *
-     * @param string $name
-     * @param string $value
-     * @return $this
+     * @inheritDoc
      */
     public function withOption(string $name, string $value): self
     {
@@ -316,9 +262,7 @@ class ConsumerBuilder
     }
 
     /**
-     * Enables messages batching
-     *
-     * @return $this
+     * @inheritDoc
      */
     public function enableBatching(): self
     {
@@ -328,11 +272,7 @@ class ConsumerBuilder
     }
 
     /**
-     * Set batch size limit
-     * Batch of messages will be released after batch size exceeds given limit
-     *
-     * @param int $batchSizeLimit
-     * @return $this
+     * @inheritDoc
      */
     public function withBatchSizeLimit(int $batchSizeLimit): self
     {
@@ -342,11 +282,7 @@ class ConsumerBuilder
     }
 
     /**
-     * Set batch release interval in milliseconds
-     * Batch of messages will be released after timer exceeds given interval
-     *
-     * @param int $batchReleaseIntervalInMilliseconds
-     * @return $this
+     * @inheritDoc
      */
     public function withBatchReleaseInterval(int $batchReleaseIntervalInMilliseconds): self
     {
@@ -369,11 +305,9 @@ class ConsumerBuilder
     }
 
     /**
-     * Build the Kafka consumer.
-     *
-     * @return \Junges\Kafka\Consumers\Consumer
+     * @inheritDoc
      */
-    public function build()
+    public function build(): CanConsumeMessages
     {
         $config = new Config(
             broker: $this->brokers,
@@ -401,7 +335,7 @@ class ConsumerBuilder
      * @param mixed $topic
      * @return void
      */
-    protected function validateTopic(mixed $topic)
+    protected function validateTopic(mixed $topic): void
     {
         if (! is_string($topic)) {
             $type = ucfirst(gettype($topic));
@@ -417,7 +351,7 @@ class ConsumerBuilder
      */
     protected function getSecurityProtocol(): string
     {
-        return $this->saslConfig !== null 
+        return $this->saslConfig !== null
             ? $this->saslConfig->getSecurityProtocol()
             : $this->securityProtocol;
     }

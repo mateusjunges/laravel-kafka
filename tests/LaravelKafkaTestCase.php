@@ -2,6 +2,8 @@
 
 namespace Junges\Kafka\Tests;
 
+use Closure;
+use Illuminate\Database\Schema\Blueprint;
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Logger;
 use Junges\Kafka\Producers\Producer;
