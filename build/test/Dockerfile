@@ -10,6 +10,8 @@ RUN apk add unzip
 
 RUN pecl install zip
 
+RUN docker-php-ext-install sqlite3
+
 COPY dev/php.ini /usr/local/etc/php/conf.d
 
 COPY build/composer-files/composer.json-${LARAVEL_VERSION} /application/laravel-test/composer.json
