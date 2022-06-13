@@ -15,6 +15,7 @@ use Junges\Kafka\Support\Testing\Fakes\KafkaFake;
 use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\Constraint\ExceptionMessage;
 use Junges\Kafka\Support\Testing\Fakes\ConsumerFake;
+use Spatie\TestTime\TestTime;
 
 class KafkaFakeTest extends LaravelKafkaTestCase
 {
@@ -217,7 +218,8 @@ class KafkaFakeTest extends LaravelKafkaTestCase
     public function testFakeConsumer()
     {
         Kafka::fake();
-        $msg = new ConsumedMessage(
+
+        $message = new ConsumedMessage(
             topicName: 'test-topic',
             partition: 0,
             headers: [],
@@ -227,16 +229,14 @@ class KafkaFakeTest extends LaravelKafkaTestCase
             timestamp: 0
         );
 
-        Kafka::shouldReceiveMessages(
-            $msg
-        );
+        Kafka::shouldReceiveMessages($message);
 
         $consumer = Kafka::createConsumer()
             ->subscribe(['test-topic'])
             ->withBrokers('localhost:9092')
             ->withConsumerGroupId('group')
             ->withCommitBatchSize(1)
-            ->withHandler(fn (KafkaConsumerMessage $message) => $this->assertEquals($msg, $message))
+            ->withHandler(fn (KafkaConsumerMessage $message) => $this->assertEquals($message, $message))
             ->build();
 
         $consumer->consume();
@@ -245,7 +245,8 @@ class KafkaFakeTest extends LaravelKafkaTestCase
     public function testFakeConsumerWithSingleMultipleMessages()
     {
         Kafka::fake();
-        $msgs = [
+
+        $messages = [
             new ConsumedMessage(
                 topicName: 'test-topic',
                 partition: 0,
@@ -266,9 +267,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
             ),
         ];
 
-        Kafka::shouldReceiveMessages(
-            $msgs
-        );
+        Kafka::shouldReceiveMessages($messages);
 
         $consumedMessages = [];
 
@@ -280,8 +279,52 @@ class KafkaFakeTest extends LaravelKafkaTestCase
 
         $consumer->consume();
 
-        $this->assertEquals($msgs, $consumedMessages);
-        $this->assertEquals(count($msgs), $consumer->consumedMessagesCount());
+        $this->assertEquals($messages, $consumedMessages);
+        $this->assertEquals(count($messages), $consumer->consumedMessagesCount());
+    }
+
+    public function testAReceivedMessageDoesItsJob()
+    {
+        Kafka::fake();
+
+        TestTime::freeze();
+
+        TestTime::setTestNow('1998-08-11 04:30:00');
+
+        $post = Post::query()->create([
+            'published_at' => null,
+            'title' => 'Hey Jude',
+            'content' => "Don't make it bad, take a sad song and make it better"
+        ]);
+
+        $messages = [
+            new ConsumedMessage(
+                topicName: 'mark-post-as-published-topic',
+                partition: 0,
+                headers: [],
+                body: ['post_id' => $post->id],
+                key: null,
+                offset: 0,
+                timestamp: 0
+            )
+        ];
+
+        Kafka::shouldReceiveMessages($messages);
+
+        $consumer = Kafka::createConsumer(['mark-post-as-published-topic'])
+            ->withHandler(function (KafkaConsumerMessage $message) {
+                $post = Post::query()->find($message->getBody()['post_id']);
+
+                $post->update([
+                    'published_at' => now()->format("Y-m-d H:i:s")
+                ]);
+
+                return 0;
+            })->build();
+
+        $consumer->consume();
+
+        $this->assertEquals('1998-08-11 04:30:00', $post->refresh()->published_at);
     }
 
     public function testStopFakeConsumer()
@@ -309,9 +352,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
             ),
         ];
 
-        Kafka::shouldReceiveMessages(
-            $messages
-        );
+        Kafka::shouldReceiveMessages($messages);
 
         $stopped = false;
         $this->consumer = Kafka::createConsumer(['test-topic'])
