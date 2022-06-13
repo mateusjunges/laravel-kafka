@@ -64,8 +64,8 @@ class Config
     private HandlesBatchConfiguration $batchConfig;
 
     public function __construct(
-        private string $broker,
-        private array $topics,
+        private string             $broker,
+        private array              $topics,
         private ?string            $securityProtocol = null,
         private ?int               $commit = null,
         private ?string            $groupId = null,
@@ -77,6 +77,7 @@ class Config
         private bool               $autoCommit = true,
         private array              $customOptions = [],
         ?HandlesBatchConfiguration $batchConfig = null,
+        private bool               $stopAfterLastMessage = false,
     ) {
         $this->batchConfig = $batchConfig ?? new NullBatchConfig();
     }
@@ -114,6 +115,11 @@ class Config
     public function isAutoCommit(): bool
     {
         return $this->autoCommit;
+    }
+
+    public function shouldStopAfterLastMessage(): bool
+    {
+        return $this->stopAfterLastMessage;
     }
 
     public function getConsumerOptions(): array

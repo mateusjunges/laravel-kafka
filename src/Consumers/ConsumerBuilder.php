@@ -36,6 +36,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
     protected bool $batchingEnabled = false;
     protected int $batchSizeLimit = 0;
     protected int $batchReleaseInterval = 0;
+    protected bool $stopAfterLastMessage = false;
 
     /**
      * @param string $brokers
@@ -291,6 +292,19 @@ class ConsumerBuilder implements ConsumerBuilderContract
     }
 
     /**
+     * Enable or disable the read to end option
+     *
+     * @param bool $stopAfterLastMessage
+     * @return $this
+     */
+    public function stopAfterLastMessage(bool $stopAfterLastMessage = true): self
+    {
+        $this->stopAfterLastMessage = $stopAfterLastMessage;
+
+        return $this;
+    }
+
+    /**
      * @inheritDoc
      */
     public function build(): CanConsumeMessages
@@ -309,6 +323,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
             autoCommit: $this->autoCommit,
             customOptions: $this->options,
             batchConfig: $this->getBatchConfig(),
+            stopAfterLastMessage: $this->stopAfterLastMessage
         );
 
         return new Consumer($config, $this->deserializer, $this->committerFactory);
