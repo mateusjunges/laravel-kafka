@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Tests;
 
+use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Junges\Kafka\Contracts\CanConsumeMessages;
 use Junges\Kafka\Facades\Kafka;
@@ -285,9 +286,9 @@ class KafkaFakeTest extends LaravelKafkaTestCase
     {
         Kafka::fake();
 
-        TestTime::freeze();
+        $now = Carbon::create(1998, 8, 11, 4, 30);
 
-        TestTime::setTestNow('1998-08-11 04:30:00');
+        Carbon::setTestNow($now);
 
         $this->configureDatabase($this->app);
 
