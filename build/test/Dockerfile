@@ -10,7 +10,7 @@ RUN apk add unzip
 
 RUN pecl install zip
 
-RUN pecl install sqlite3
+RUN pecl install sqlite3-alpha
 
 COPY dev/php.ini /usr/local/etc/php/conf.d
 
