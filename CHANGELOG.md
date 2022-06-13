@@ -2,6 +2,17 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2022-06-13 v1.8.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.7.7...v1.8.0)
+### Added
+- Message consumer Mock, by @gajosu in [#107](https://github.com/mateusjunges/laravel-kafka/pull/107)
+- Add Batch Support for Message consumer Mock, by @gajosu in [#109](https://github.com/mateusjunges/laravel-kafka/pull/109)
+- Added consumer contracts, by @mateusjunges in [#110](https://github.com/mateusjunges/laravel-kafka/pull/110)
+- Add docs for mocking consumers, by @mateusjunges in [#111](https://github.com/mateusjunges/laravel-kafka/pull/111)
+- Additional option to stop consumer after last message on topic, by @StounhandJ in [#103](https://github.com/mateusjunges/laravel-kafka/pull/103)
+
+### Fixed
+- Fix docker file by @gajosu in [#108](https://github.com/mateusjunges/laravel-kafka/pull/108)
+
 ## [2022-06-03 v1.7.7](https://github.com/mateusjunges/laravel-kafka/compare/v1.7.6...v1.7.7)
 ### Fixed
 - Fixes Sasl security protocol not being passed to config class. By @gajosu in [#106](https://github.com/mateusjunges/laravel-kafka/pull/106)
