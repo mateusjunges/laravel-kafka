@@ -289,6 +289,8 @@ class KafkaFakeTest extends LaravelKafkaTestCase
 
         TestTime::setTestNow('1998-08-11 04:30:00');
 
+        $this->configureDatabase($this->app);
+
         $post = Post::query()->create([
             'published_at' => null,
             'title' => 'Hey Jude',

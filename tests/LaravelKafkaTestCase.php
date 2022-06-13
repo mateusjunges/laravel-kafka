@@ -21,14 +21,12 @@ class LaravelKafkaTestCase extends Orchestra
     {
         parent::setUp();
 
-        $this->configureDatabase($this->app);
-
         (new LaravelKafkaServiceProvider($this->app))->boot();
 
         app()->instance(Logger::class, $this->getMockedLogger());
     }
 
-    private function configureDatabase($app): void
+    protected function configureDatabase($app): void
     {
         $app['db']->connection()->getSchemaBuilder()->create('posts', function (Blueprint $table) {
             $table->id();
