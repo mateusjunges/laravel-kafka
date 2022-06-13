@@ -6,12 +6,13 @@ use Closure;
 use RdKafka\Conf;
 use RdKafka\Message;
 use Junges\Kafka\Config\Config;
+use Junges\Kafka\Contracts\CanConsumeMessages;
 use Junges\Kafka\MessageCounter;
 use Illuminate\Support\Collection;
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Contracts\HandlesBatchConfiguration;
 
-class ConsumerFake
+class ConsumerFake implements CanConsumeMessages
 {
     private MessageCounter $messageCounter;
     private HandlesBatchConfiguration $batchConfig;
@@ -35,7 +36,7 @@ class ConsumerFake
     /**
      * Consume messages from a kafka topic in loop.
      *
-     * @throws \RdKafka\Exception|\Carbon\Exceptions\Exception
+     * @return void
      */
     public function consume(): void
     {
@@ -126,7 +127,7 @@ class ConsumerFake
 
     /**
      * Consume messages in batches
-     * 
+     *
      * @return void
      */
     public function batchConsume(): void
@@ -189,7 +190,7 @@ class ConsumerFake
      * @var \Junges\Kafka\Contracts\KafkaConsumerMessage $consumer
      * @return void
      */
-    private function handleMessage(KafkaConsumerMessage $message)
+    private function handleMessage(KafkaConsumerMessage $message): void
     {
         $this->config->getConsumer()->handle($message);
         $this->messageCounter->add();

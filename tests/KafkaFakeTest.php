@@ -3,6 +3,8 @@
 namespace Junges\Kafka\Tests;
 
 use Illuminate\Support\Str;
+use Junges\Kafka\Contracts\CanConsumeMessages;
+use Junges\Kafka\Contracts\ConsumerBuilder;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\Message;
 use Illuminate\Support\Collection;
@@ -17,7 +19,7 @@ use Junges\Kafka\Support\Testing\Fakes\ConsumerFake;
 class KafkaFakeTest extends LaravelKafkaTestCase
 {
     private KafkaFake $fake;
-    private ConsumerFake $consumer;
+    private CanConsumeMessages $consumer;
 
     public function setUp(): void
     {
@@ -236,6 +238,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
             ->withCommitBatchSize(1)
             ->withHandler(fn (KafkaConsumerMessage $message) => $this->assertEquals($msg, $message))
             ->build();
+
         $consumer->consume();
     }
 
@@ -284,7 +287,8 @@ class KafkaFakeTest extends LaravelKafkaTestCase
     public function testStopFakeConsumer()
     {
         Kafka::fake();
-        $msgs = [
+
+        $messages = [
             new ConsumedMessage(
                 topicName: 'test-topic',
                 partition: 0,
@@ -306,7 +310,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         ];
 
         Kafka::shouldReceiveMessages(
-            $msgs
+            $messages
         );
 
         $stopped = false;
@@ -321,7 +325,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
 
         $this->consumer->consume();
         //testing stop callback
-        $this->assertTrue($stopped);
+        $this->assertTrue((bool)$stopped);
         //should have consumed only one message
         $this->assertEquals(1, $this->consumer->consumedMessagesCount());
     }

@@ -2,6 +2,8 @@
 
 namespace Junges\Kafka\Tests;
 
+use Closure;
+use Illuminate\Database\Schema\Blueprint;
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Logger;
 use Junges\Kafka\Producers\Producer;
@@ -22,6 +24,16 @@ class LaravelKafkaTestCase extends Orchestra
         (new LaravelKafkaServiceProvider($this->app))->boot();
 
         app()->instance(Logger::class, $this->getMockedLogger());
+    }
+
+    private function configureDatabase($app): void
+    {
+        $app['db']->connection()->getSchemaBuilder()->create('posts', function (Blueprint $table) {
+            $table->id();
+            $table->dateTime('published_at')->nullable();
+            $table->string('content')->nullable();
+            $table->string('title');
+        });
     }
 
     public function getEnvironmentSetUp($app)

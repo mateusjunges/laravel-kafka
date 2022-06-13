@@ -3,27 +3,19 @@
 namespace Junges\Kafka\Support\Testing\Fakes;
 
 use Junges\Kafka\Config\Config;
-use Junges\Kafka\Support\Timer;
-use Junges\Kafka\Config\BatchConfig;
-use Junges\Kafka\Config\NullBatchConfig;
+use Junges\Kafka\Contracts\CanConsumeMessages;
+use Junges\Kafka\Contracts\ConsumerBuilder as ConsumerBuilderContract;
 use Junges\Kafka\Consumers\ConsumerBuilder;
 use Junges\Kafka\Consumers\CallableConsumer;
-use Junges\Kafka\Consumers\CallableBatchConsumer;
-use Junges\Kafka\Support\Testing\Fakes\ConsumerFake;
 use Junges\Kafka\Contracts\HandlesBatchConfiguration;
 
-class ConsumerBuilderFake extends ConsumerBuilder
+class ConsumerBuilderFake extends ConsumerBuilder implements ConsumerBuilderContract
 {
     /** @var \Junges\Kafka\Contracts\KafkaConsumerMessage[] */
     private array $messages = [];
 
     /**
-     * Creates a new ConsumerBuilder instance.
-     *
-     * @param string $brokers
-     * @param array $topics
-     * @param string|null $groupId
-     * @return static
+     * @inheritDoc
      */
     public static function create(string $brokers, array $topics = [], string $groupId = null): self
     {
@@ -49,9 +41,9 @@ class ConsumerBuilderFake extends ConsumerBuilder
     /**
      * Build the Kafka consumer.
      *
-     * @return \Junges\Kafka\Support\Testing\Fakes\ConsumerFake
+     * @return \Junges\Kafka\Contracts\CanConsumeMessages
      */
-    public function build()
+    public function build(): CanConsumeMessages
     {
         $config = new Config(
             broker: $this->brokers,
