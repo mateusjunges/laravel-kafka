@@ -2,14 +2,13 @@
 
 namespace Junges\Kafka\Support\Testing\Fakes;
 
-use JetBrains\PhpStorm\Pure;
-use Junges\Kafka\Message\Message;
 use Illuminate\Support\Collection;
-use PHPUnit\Framework\Assert as PHPUnit;
+use JetBrains\PhpStorm\Pure;
+use Junges\Kafka\Contracts\CanPublishMessagesToKafka;
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
-use Junges\Kafka\Contracts\CanPublishMessagesToKafka;
-use Junges\Kafka\Support\Testing\Fakes\ConsumerBuilderFake;
+use Junges\Kafka\Message\Message;
+use PHPUnit\Framework\Assert as PHPUnit;
 
 class KafkaFake implements CanPublishMessagesToKafka
 {
@@ -61,7 +60,7 @@ class KafkaFake implements CanPublishMessagesToKafka
      */
     public function shouldReceiveMessages(KafkaConsumerMessage|array $messages): void
     {
-        if (!is_array($messages)) {
+        if (! is_array($messages)) {
             $messages = [$messages];
         }
 
@@ -80,6 +79,7 @@ class KafkaFake implements CanPublishMessagesToKafka
     {
         $this->messagesToConsume[] = $message;
     }
+
     /**
      * Assert if a messages was published based on a truth-test callback.
      *
@@ -155,9 +155,9 @@ class KafkaFake implements CanPublishMessagesToKafka
     private function makeProducerBuilderFake(string $topic = '', ?string $broker = null): ProducerBuilderFake
     {
         return (new ProducerBuilderFake(
-                topic: $topic,
-                broker: $broker
-            )
+            topic: $topic,
+            broker: $broker
+        )
         )->withProducerCallback(fn (Message $message) => $this->publishedMessages[] = $message);
     }
 
@@ -171,7 +171,7 @@ class KafkaFake implements CanPublishMessagesToKafka
      */
     private function published(?callable $callback = null, ?KafkaProducerMessage $expectedMessage = null, ?string $topic = null): Collection
     {
-        if (!$this->hasPublished()) {
+        if (! $this->hasPublished()) {
             return collect();
         }
 
@@ -198,7 +198,7 @@ class KafkaFake implements CanPublishMessagesToKafka
     #[Pure]
     private function hasPublished(): bool
     {
-        return !empty($this->getPublishedMessages());
+        return ! empty($this->getPublishedMessages());
     }
 
     /**

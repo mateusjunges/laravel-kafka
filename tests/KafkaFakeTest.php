@@ -3,17 +3,17 @@
 namespace Junges\Kafka\Tests;
 
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Junges\Kafka\Contracts\CanConsumeMessages;
-use Junges\Kafka\Facades\Kafka;
-use Junges\Kafka\Message\Message;
-use Illuminate\Support\Collection;
-use Junges\Kafka\Producers\MessageBatch;
-use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
+use Junges\Kafka\Facades\Kafka;
+use Junges\Kafka\Message\ConsumedMessage;
+use Junges\Kafka\Message\Message;
+use Junges\Kafka\Producers\MessageBatch;
 use Junges\Kafka\Support\Testing\Fakes\KafkaFake;
-use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\Constraint\ExceptionMessage;
+use PHPUnit\Framework\ExpectationFailedException;
 
 class KafkaFakeTest extends LaravelKafkaTestCase
 {
@@ -292,8 +292,8 @@ class KafkaFakeTest extends LaravelKafkaTestCase
                 'id' => 1,
                  'published_at' => null,
                  'title' => 'Hey Jude',
-                 'content' => "Don't make it bad, take a sad song and make it better"
-            ]
+                 'content' => "Don't make it bad, take a sad song and make it better",
+            ],
         ];
 
         Carbon::setTestNow($now);
@@ -307,7 +307,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
                 key: null,
                 offset: 0,
                 timestamp: 0
-            )
+            ),
         ];
 
         Kafka::shouldReceiveMessages($messages);

@@ -3,8 +3,8 @@
 namespace Junges\Kafka\Config;
 
 use JetBrains\PhpStorm\Pure;
-use Junges\Kafka\Contracts\HandlesBatchConfiguration;
 use Junges\Kafka\Contracts\Consumer;
+use Junges\Kafka\Contracts\HandlesBatchConfiguration;
 
 class Config
 {
@@ -177,7 +177,7 @@ class Config
 
     private function usingSasl(): bool
     {
-        return !is_null($this->securityProtocol)
+        return ! is_null($this->securityProtocol)
             && (strtoupper($this->securityProtocol) === static::SASL_PLAINTEXT
                 || strtoupper($this->securityProtocol) === static::SASL_SSL);
     }

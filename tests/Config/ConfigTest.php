@@ -259,4 +259,3 @@ class ConfigTest extends LaravelKafkaTestCase
         $this->assertEquals(0, $batchConfig->getBatchSizeLimit());
     }
 }
-

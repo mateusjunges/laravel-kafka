@@ -3,14 +3,14 @@
 namespace Junges\Kafka\Support\Testing\Fakes;
 
 use Closure;
-use RdKafka\Conf;
-use RdKafka\Message;
+use Illuminate\Support\Collection;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\CanConsumeMessages;
-use Junges\Kafka\MessageCounter;
-use Illuminate\Support\Collection;
-use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Contracts\HandlesBatchConfiguration;
+use Junges\Kafka\Contracts\KafkaConsumerMessage;
+use Junges\Kafka\MessageCounter;
+use RdKafka\Conf;
+use RdKafka\Message;
 
 class ConsumerFake implements CanConsumeMessages
 {
@@ -178,7 +178,7 @@ class ConsumerFake implements CanConsumeMessages
     {
         $consumedMessages = $collection
             ->map(
-                fn (Message $message) =>$this->getConsumerMessage($message)
+                fn (Message $message) => $this->getConsumerMessage($message)
             );
 
         $this->config->getBatchConfig()->getConsumer()->handle($consumedMessages);
@@ -187,7 +187,7 @@ class ConsumerFake implements CanConsumeMessages
     /**
      * Handle the message.
      *
-     * @var \Junges\Kafka\Contracts\KafkaConsumerMessage $consumer
+     * @var \Junges\Kafka\Contracts\KafkaConsumerMessage
      * @return void
      */
     private function handleMessage(KafkaConsumerMessage $message): void
@@ -207,6 +207,7 @@ class ConsumerFake implements CanConsumeMessages
         $rdKafkaMessage->key = $message->getKey();
         $rdKafkaMessage->offset = $message->getOffset();
         $rdKafkaMessage->timestamp = $message->getTimestamp();
+
         return $rdKafkaMessage;
     }
 
