@@ -24,6 +24,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, zip
+          tools: prestissimo
+          coverage: pcov
       - name: Test ${{ matrix.php }}-${{ matrix.librdkafka }}-${{ matrix.extrdkafka }}-${{ matrix.laravel }}
         run:
           make version-test-${{ matrix.php }}-${{ matrix.librdkafka }}-${{ matrix.extrdkafka }}-${{ matrix.laravel }}
