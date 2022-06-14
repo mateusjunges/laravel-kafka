@@ -241,7 +241,7 @@ class KafkaTest extends LaravelKafkaTestCase
     {
         $this->expectException(CouldNotPublishMessage::class);
 
-        $this->expectExceptionMessage("Sent messages may not be completed yet.");
+        $this->expectExceptionMessage("Your message could not be published. Flush returned with error code -196: 'Local: Communication failure with broker'");
 
         $mockedProducerTopic = m::mock(ProducerTopic::class)
             ->shouldReceive('producev')->once()
