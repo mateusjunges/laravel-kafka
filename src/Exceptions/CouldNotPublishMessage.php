@@ -11,4 +11,9 @@ class CouldNotPublishMessage extends LaravelKafkaException
     {
         return new static($message);
     }
+
+    public static function withMessage(string $message, int $code): self
+    {
+        return new static("Your message could not be published. Flush returned with error code $code: '$message'");
+    }
 }

@@ -124,7 +124,9 @@ class Producer
                 return true;
             }
 
-            throw CouldNotPublishMessage::flushError();
+            $message = rd_kafka_err2str($result);
+
+            throw CouldNotPublishMessage::withMessage($message, $result);
         });
     }
 }
