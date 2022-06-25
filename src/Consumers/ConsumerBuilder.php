@@ -37,6 +37,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
     protected int $batchSizeLimit = 0;
     protected int $batchReleaseInterval = 0;
     protected bool $stopAfterLastMessage = false;
+
     /**
      * @param string $brokers
      * @param array $topics
