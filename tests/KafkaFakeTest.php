@@ -2,8 +2,10 @@
 
 namespace Junges\Kafka\Tests;
 
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 use Junges\Kafka\Contracts\CanConsumeMessages;
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Facades\Kafka;
@@ -554,6 +556,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
 
         $stopped = false;
         $this->consumer = Kafka::createConsumer(['test-topic'])
+            ->withBrokers('localhost')
             ->enableBatching()
             ->withBatchSizeLimit(2)
             ->withHandler(function (Collection $messages) use (&$stopped) {

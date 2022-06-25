@@ -8,7 +8,7 @@ use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\CanConsumeMessages;
 use Junges\Kafka\Contracts\HandlesBatchConfiguration;
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
-use Junges\Kafka\MessageCounter;
+use Junges\Kafka\Message\MessageCounter;
 use RdKafka\Conf;
 use RdKafka\Message;
 
@@ -192,7 +192,7 @@ class ConsumerFake implements CanConsumeMessages
      */
     private function handleMessage(KafkaConsumerMessage $message): void
     {
-        $this->config->getConsumer()->handle($message);
+        $this->config->getHandler()->handle($message);
         $this->messageCounter->add();
     }
 

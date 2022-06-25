@@ -18,24 +18,24 @@ use Junges\Kafka\Support\Timer;
 
 class ConsumerBuilder implements ConsumerBuilderContract
 {
-    private array $topics;
-    private ?int $commit;
-    private ?string $groupId;
-    private Closure $handler;
-    private int $maxMessages;
-    private int $maxCommitRetries;
-    private string $brokers;
-    private array $middlewares;
-    private ?Sasl $saslConfig = null;
-    private ?string $dlq = null;
-    private string $securityProtocol;
-    private bool $autoCommit;
-    private array $options;
-    private MessageDeserializer $deserializer;
-    private ?CommitterFactory $committerFactory = null;
-    private bool $batchingEnabled = false;
-    private int $batchSizeLimit = 0;
-    private int $batchReleaseInterval = 0;
+    protected array $topics;
+    protected ?int $commit;
+    protected ?string $groupId;
+    protected Closure $handler;
+    protected int $maxMessages;
+    protected int $maxCommitRetries;
+    protected string $brokers;
+    protected array $middlewares;
+    protected ?Sasl $saslConfig = null;
+    protected ?string $dlq = null;
+    protected string $securityProtocol;
+    protected bool $autoCommit;
+    protected array $options;
+    protected MessageDeserializer $deserializer;
+    protected ?CommitterFactory $committerFactory = null;
+    protected bool $batchingEnabled = false;
+    protected int $batchSizeLimit = 0;
+    protected int $batchReleaseInterval = 0;
     protected bool $stopAfterLastMessage = false;
     /**
      * @param string $brokers

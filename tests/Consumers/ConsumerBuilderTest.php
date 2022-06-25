@@ -239,12 +239,10 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
     {
         $consumer = ConsumerBuilder::create('broker', ['foo'], 'group')
             ->withSasl(
-                $sasl = new Sasl(
-                    'username',
-                    'password',
-                    'mechanisms',
-                    'protocol'
-                )
+                'username',
+                'password',
+                'mechanisms',
+                'protocol'
             );
 
         $consummerBuilt = $consumer->build();

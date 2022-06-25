@@ -9,7 +9,7 @@ use Junges\Kafka\Support\Testing\Fakes\KafkaFake;
 /**
  * @method static \Junges\Kafka\Contracts\CanProduceMessages publishOn(string $cluster)
  * @method static \Junges\Kafka\Consumers\ConsumerBuilder consumeUsing(string $consumer)
- * @method static \Junges\Kafka\Consumers\ConsumerBuilder createConsumer(string $brokers, array $topics = [], string $groupId = null)
+ * @method static \Junges\Kafka\Consumers\ConsumerBuilder createConsumer(array $topics = [], string $groupId = null, string $brokers = null)
  * @method static void assertPublished(KafkaProducerMessage $expectedMessage = null, callable $callback = null)
  * @method static void assertPublishedTimes(int $times = 1, KafkaProducerMessage $expectedMessage = null, callable $callback = null)
  * @method static void assertPublishedOn(string $topic, KafkaProducerMessage $expectedMessage = null, callable $callback = null)

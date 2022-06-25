@@ -6,7 +6,7 @@ use Junges\Kafka\Config\BatchConfig;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\NullBatchConfig;
 use Junges\Kafka\Consumers\CallableBatchConsumer;
-use Junges\Kafka\Consumers\CallableConsumer;
+use Junges\Kafka\Consumers\CallableHandler;
 use Junges\Kafka\Consumers\ConsumerBuilder;
 use Junges\Kafka\Contracts\CanConsumeMessages;
 use Junges\Kafka\Contracts\ConsumerBuilder as ConsumerBuilderContract;
@@ -56,7 +56,7 @@ class ConsumerBuilderFake extends ConsumerBuilder implements ConsumerBuilderCont
             securityProtocol: $this->getSecurityProtocol(),
             commit: $this->commit,
             groupId: $this->groupId,
-            consumer: new CallableConsumer($this->handler, $this->middlewares),
+            handler: new CallableHandler($this->handler, $this->middlewares),
             sasl: $this->saslConfig,
             dlq: $this->dlq,
             maxMessages: $this->maxMessages,

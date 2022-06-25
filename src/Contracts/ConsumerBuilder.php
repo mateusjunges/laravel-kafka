@@ -101,10 +101,13 @@ interface ConsumerBuilder
     /**
      * Set the Sasl configuration.
      *
-     * @param Sasl $saslConfig
+     * @param  string|null  $username
+     * @param  string|null  $password
+     * @param  string|null  $mechanisms
+     * @param  string|null  $securityProtocol
      * @return \Junges\Kafka\Consumers\ConsumerBuilder
      */
-    public function withSasl(Sasl $saslConfig): self;
+    public function withSasl(?string $username, ?string $password, ?string $mechanisms, ?string $securityProtocol = 'SASL_PLAINTEXT'): self;
 
     /**
      * Specify middlewares to be executed before handling the message.

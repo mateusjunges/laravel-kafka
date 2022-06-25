@@ -45,7 +45,7 @@ class KafkaFake implements CanPublishMessagesToKafka
     public function createConsumer(array $topics = [], string $groupId = null, string $brokers = null): ConsumerBuilderFake
     {
         return ConsumerBuilderFake::create(
-            brokers: $brokers ?? config('kafka.brokers'),
+            brokers: $brokers ?? config('kafka.clusters.default.brokers'),
             topics: $topics,
             groupId: $groupId ?? config('kafka.consumer_group_id')
         )->setMessages(
