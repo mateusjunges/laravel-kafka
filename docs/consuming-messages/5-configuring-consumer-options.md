@@ -13,10 +13,10 @@ To create a `dlq` in this package, you can use the `withDlq` method. If you don'
 adding the `-dlq` suffix to the topic name.
 
 ```php
-$consumer = \Junges\Kafka\Facades\Kafka::createConsumer()->withDlq();
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer()->subscribe('topic')->withDlq();
 
 //Or, specifying the dlq topic name:
-$consumer = \Junges\Kafka\Facades\Kafka::createConsumer()->withDlq('your-dlq-topic-name')
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer()->subscribe('topic')->withDlq('your-dlq-topic-name')
 ```
 
 ### Using auto commit

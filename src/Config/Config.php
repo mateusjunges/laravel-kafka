@@ -77,6 +77,7 @@ class Config
         private bool $autoCommit = true,
         private array $customOptions = [],
         ?HandlesBatchConfiguration $batchConfig = null,
+        private bool               $stopAfterLastMessage = false,
     ) {
         $this->batchConfig = $batchConfig ?? new NullBatchConfig();
     }
@@ -114,6 +115,11 @@ class Config
     public function isAutoCommit(): bool
     {
         return $this->autoCommit;
+    }
+
+    public function shouldStopAfterLastMessage(): bool
+    {
+        return $this->stopAfterLastMessage;
     }
 
     public function getConsumerOptions(): array
@@ -171,7 +177,8 @@ class Config
 
     private function usingSasl(): bool
     {
-        return strtoupper($this->securityProtocol) === static::SASL_PLAINTEXT
-            || strtoupper($this->securityProtocol) === static::SASL_SSL;
+        return ! is_null($this->securityProtocol)
+            && (strtoupper($this->securityProtocol) === static::SASL_PLAINTEXT
+                || strtoupper($this->securityProtocol) === static::SASL_SSL);
     }
 }

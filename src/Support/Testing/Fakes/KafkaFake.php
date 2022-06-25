@@ -6,6 +6,7 @@ use Illuminate\Support\Collection;
 use InvalidArgumentException;
 use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Contracts\CanPublishMessagesToKafka;
+use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
 use Junges\Kafka\Message\Message;
 use PHPUnit\Framework\Assert as PHPUnit;
@@ -13,6 +14,8 @@ use PHPUnit\Framework\Assert as PHPUnit;
 class KafkaFake implements CanPublishMessagesToKafka
 {
     private array $publishedMessages = [];
+    /** @var \Junges\Kafka\Contracts\KafkaConsumerMessage[] */
+    private array $messagesToConsume = [];
 
     /**
      * Publish a message in the specified broker/topic.
@@ -29,6 +32,53 @@ class KafkaFake implements CanPublishMessagesToKafka
         }
 
         return $this->makeProducerBuilderFake($clusterConfig);
+    }
+
+    /**
+     * Return a ConsumerBuilder instance.
+     *
+     * @param array $topics
+     * @param string|null $groupId
+     * @param string|null $brokers
+     * @return \Junges\Kafka\Support\Testing\Fakes\ConsumerBuilderFake
+     */
+    public function createConsumer(array $topics = [], string $groupId = null, string $brokers = null): ConsumerBuilderFake
+    {
+        return ConsumerBuilderFake::create(
+            brokers: $brokers ?? config('kafka.brokers'),
+            topics: $topics,
+            groupId: $groupId ?? config('kafka.consumer_group_id')
+        )->setMessages(
+            $this->messagesToConsume
+        );
+    }
+
+    /**
+     * Set the messages to consume.
+     *
+     * @param \Junges\Kafka\Contracts\KafkaConsumerMessage|Junges\Kafka\Contracts\KafkaConsumerMessage[] $messages
+     * @return void
+     */
+    public function shouldReceiveMessages(KafkaConsumerMessage|array $messages): void
+    {
+        if (! is_array($messages)) {
+            $messages = [$messages];
+        }
+
+        foreach ($messages as $m) {
+            $this->addConsumerMessage($m);
+        }
+    }
+
+    /**
+     * Add a message to array of messages to be consumed.
+     *
+     * @param \Junges\Kafka\Contracts\KafkaConsumerMessage $message
+     * @return void
+     */
+    private function addConsumerMessage(KafkaConsumerMessage $message): void
+    {
+        $this->messagesToConsume[] = $message;
     }
 
     /**

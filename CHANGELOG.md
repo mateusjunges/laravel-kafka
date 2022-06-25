@@ -19,6 +19,51 @@ do include breaking changes.
 - The `broker` argument on  `createConsumer` method now is required ([#46](https://github.com/mateusjunges/laravel-kafka/pull/46))
 
 ## [2022-02-28 v1.7.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.7.0...v1.7.1)
+## [2022-06-13 v1.8.1](https://github.com/mateusjunges/laravel-kafka/compare/v1.8.0...v1.8.1)
+### Added 
+- Improved exception handling when a call to `flush` returns an error, by @mateusjunges in [#112](https://github.com/mateusjunges/laravel-kafka/pull/112)
+
+## [2022-06-13 v1.8.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.7.7...v1.8.0)
+### Added
+- Message consumer Mock, by @gajosu in [#107](https://github.com/mateusjunges/laravel-kafka/pull/107)
+- Add Batch Support for Message consumer Mock, by @gajosu in [#109](https://github.com/mateusjunges/laravel-kafka/pull/109)
+- Added consumer contracts, by @mateusjunges in [#110](https://github.com/mateusjunges/laravel-kafka/pull/110)
+- Add docs for mocking consumers, by @mateusjunges in [#111](https://github.com/mateusjunges/laravel-kafka/pull/111)
+- Additional option to stop consumer after last message on topic, by @StounhandJ in [#103](https://github.com/mateusjunges/laravel-kafka/pull/103)
+
+### Fixed
+- Fix docker file by @gajosu in [#108](https://github.com/mateusjunges/laravel-kafka/pull/108)
+
+## [2022-06-03 v1.7.7](https://github.com/mateusjunges/laravel-kafka/compare/v1.7.6...v1.7.7)
+### Fixed
+- Fixes Sasl security protocol not being passed to config class. By @gajosu in [#106](https://github.com/mateusjunges/laravel-kafka/pull/106)
+- Link to the current version documentation fixed by @Elnadrion in [#104](https://github.com/mateusjunges/laravel-kafka/pull/104)
+- (Documentation) Added missing comas in the class params by @shanginn in [#101](https://github.com/mateusjunges/laravel-kafka/pull/101)
+
+## [2022-05-18 v1.7.6](https://github.com/mateusjunges/laravel-kafka/compare/v1.7.5...v1.7.6)
+- Fixed Passing null to parameter #1 ($string) of type string is deprecated by @elnadrion on [#100](https://github.com/mateusjunges/laravel-kafka/pull/100)
+
+## [2022-05-01 v1.7.5](https://github.com/mateusjunges/laravel-kafka/compare/v1.7.4...v1.7.5)
+### Fixed
+- Fixes error when using SASL_SSL with KafkaConsumerCommmand (issue [#96](https://github.com/mateusjunges/laravel-kafka/issues/96), fixed with [#3ea902d](https://github.com/mateusjunges/laravel-kafka/commit/3ea902dbc1a44130395ecbd37ef892b24580e91e))
+
+## [2022-04-19 v1.7.4](https://github.com/mateusjunges/laravel-kafka/compare/v1.7.3...v1.7.4)
+### Fixed
+- Fix undefined offset 0 when trying to set Dead Letter Queues without subscribing to any kafka topics ([#e06849c](https://github.com/mateusjunges/laravel-kafka/commit/e06849c13be412a42206b8931d1afc0d7d5ae155))
+
+## [2022-04-19 v1.7.3](https://github.com/mateusjunges/laravel-kafka/compare/v1.7.2...v1.7.3)
+### Fixed
+- Fixed Kafka Facade docblock on [#93](https://github.com/mateusjunges/laravel-kafka/pull/93) by @nmfzone
+
+## [2022-04-19 v1.6.6](https://github.com/mateusjunges/laravel-kafka/compare/v1.6.5...v1.6.6)
+### Fixed
+- Fixed Kafka Facade docblock on [#93](https://github.com/mateusjunges/laravel-kafka/pull/93) by @nmfzone
+
+## [2022-04-07 v1.7.2](https://github.com/mateusjunges/laravel-kafka/compare/v1.7.1...v1.7.2)
+### Fixed
+- Fix Json Serialize to not serialize the same message twice on [#92](https://github.com/mateusjunges/laravel-kafka/pull/92) by @lukecurtis93
+
+## [2022-02-28 v1.7.1](https://github.com/mateusjunges/laravel-kafka/compare/v1.7.0...v1.7.1)
 ### Added
 - Added support for batch producing and handling batch of messages by @vsvp21 in [#86](https://github.com/mateusjunges/laravel-kafka/pull/86)
 
@@ -28,6 +73,10 @@ do include breaking changes.
 
 ### Added
 - Added support for Laravel 9 in the tests pipeline on [#88](https://github.com/mateusjunges/laravel-kafka/pull/88) by @mateusjunges
+
+## [2022-044-07 v1.6.5](https://github.com/mateusjunges/laravel-kafka/compare/v1.6.4...v1.6.5)
+### Fixed
+- Fix Json Serialize to not serialize the same message twice on [#92](https://github.com/mateusjunges/laravel-kafka/pull/92) by @lukecurtis93
 
 ## [2022-02-28 v1.6.4](https://github.com/mateusjunges/laravel-kafka/compare/v1.6.3...v1.6.4)
 ### Fixed

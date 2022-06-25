@@ -53,6 +53,8 @@ class Producer
     {
         $topic = $this->producer->newTopic($this->topic);
 
+        $message = clone $message;
+
         $message = $this->serializer->serialize($message);
 
         $this->produceMessage($topic, $message);
@@ -122,7 +124,9 @@ class Producer
                 return true;
             }
 
-            throw CouldNotPublishMessage::flushError();
+            $message = rd_kafka_err2str($result);
+
+            throw CouldNotPublishMessage::withMessage($message, $result);
         });
     }
 }

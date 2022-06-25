@@ -11,6 +11,7 @@ use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Consumers\ConsumerBuilder;
+use Junges\Kafka\Exceptions\KafkaConsumerException;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
 use Junges\Kafka\Tests\Fakes\FakeConsumer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
@@ -152,7 +153,7 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
 
     public function testItCanSetTheDeadLetterQueue()
     {
-        $consumer = ConsumerBuilder::create('broker')->withDlq('test-topic-dlq');
+        $consumer = ConsumerBuilder::create('broker')->subscribe('test')->withDlq('test-topic-dlq');
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
 
@@ -234,6 +235,27 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertEquals('security', $securityProtocol);
     }
 
+    public function testItCanSetSecurityProtocolViaSaslConfig()
+    {
+        $consumer = ConsumerBuilder::create('broker', ['foo'], 'group')
+            ->withSasl(
+                $sasl = new Sasl(
+                    'username',
+                    'password',
+                    'mechanisms',
+                    'protocol'
+                )
+            );
+
+        $consummerBuilt = $consumer->build();
+        $this->assertInstanceOf(Consumer::class, $consummerBuilt);
+
+        $consumerConfig = $this->getPropertyWithReflection('config', $consummerBuilt);
+        $securityProtocol = $this->getPropertyWithReflection('securityProtocol', $consumerConfig);
+
+        $this->assertEquals('protocol', $securityProtocol);
+    }
+
     public function testItCanSetAutoCommit()
     {
         $consumer = ConsumerBuilder::create('broker')->withAutoCommit();
@@ -249,6 +271,25 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertInstanceOf(Consumer::class, $consumer->build());
 
         $autoCommit = $this->getPropertyWithReflection('autoCommit', $consumer);
+
+        $this->assertFalse($autoCommit);
+    }
+
+    public function testItCanSetStopAfterLastMessage()
+    {
+        $consumer = ConsumerBuilder::create('broker')->stopAfterLastMessage();
+
+        $this->assertInstanceOf(Consumer::class, $consumer->build());
+
+        $autoCommit = $this->getPropertyWithReflection('stopAfterLastMessage', $consumer);
+
+        $this->assertTrue($autoCommit);
+
+        $consumer = ConsumerBuilder::create('broker')->stopAfterLastMessage(false);
+
+        $this->assertInstanceOf(Consumer::class, $consumer->build());
+
+        $autoCommit = $this->getPropertyWithReflection('stopAfterLastMessage', $consumer);
 
         $this->assertFalse($autoCommit);
     }
@@ -319,6 +360,13 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
         $consumer = ConsumerBuilder::createFromConsumerConfig(config('kafka.consumers.default'));
 
         $this->assertNull($this->getPropertyWithReflection('dlq', $consumer));
+    }
+
+    public function testItCantCreateAConsumerWithDlqWithoutSubscribingToAnyTopics()
+    {
+        $this->expectException(KafkaConsumerException::class);
+
+        ConsumerBuilder::create('broker')->withDlq();
     }
 }
 
