@@ -26,7 +26,7 @@ class Retryable
         int $currentRetries = 0,
         int $delayInSeconds = 1,
         bool $exponentially = true
-    ) {
+    ): void {
         try {
             $function();
         } catch (Exception $exception) {
