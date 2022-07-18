@@ -4,7 +4,6 @@ namespace Junges\Kafka\Console\Commands;
 
 use Illuminate\Console\Command;
 use Junges\Kafka\Config\Config;
-use Illuminate\Support\Facades\App;
 use Junges\Kafka\Console\Commands\KafkaConsumer\Options;
 use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Contracts\MessageDeserializer;
@@ -63,7 +62,7 @@ class KafkaConsumerCommand extends Command
             securityProtocol: $options->getSecurityProtocol(),
             commit: $options->getCommit(),
             groupId: $options->getGroupId(),
-            consumer: App::make($consumer),
+            consumer: app($consumer),
             sasl: $options->getSasl(),
             dlq: $options->getDlq(),
             maxMessages: $options->getMaxMessages()
