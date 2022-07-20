@@ -62,7 +62,7 @@ class KafkaConsumerCommand extends Command
             securityProtocol: $options->getSecurityProtocol(),
             commit: $options->getCommit(),
             groupId: $options->getGroupId(),
-            consumer: new $consumer(),
+            consumer: app($consumer),
             sasl: $options->getSasl(),
             dlq: $options->getDlq(),
             maxMessages: $options->getMaxMessages()
