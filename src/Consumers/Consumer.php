@@ -3,25 +3,27 @@
 namespace Junges\Kafka\Consumers;
 
 use Closure;
-use Illuminate\Support\Collection;
-use Junges\Kafka\Commit\Contracts\Committer;
-use Junges\Kafka\Commit\Contracts\CommitterFactory;
-use Junges\Kafka\Commit\DefaultCommitterFactory;
-use Junges\Kafka\Commit\NativeSleeper;
-use Junges\Kafka\Config\Config;
-use Junges\Kafka\Contracts\CanConsumeMessages;
-use Junges\Kafka\Contracts\KafkaConsumerMessage;
-use Junges\Kafka\Contracts\MessageDeserializer;
-use Junges\Kafka\Exceptions\KafkaConsumerException;
-use Junges\Kafka\Logger;
-use Junges\Kafka\Message\ConsumedMessage;
-use Junges\Kafka\MessageCounter;
-use Junges\Kafka\Retryable;
-use RdKafka\Conf;
-use RdKafka\KafkaConsumer;
-use RdKafka\Message;
-use RdKafka\Producer as KafkaProducer;
 use Throwable;
+use RdKafka\Conf;
+use RdKafka\Message;
+use Junges\Kafka\Logger;
+use RdKafka\KafkaConsumer;
+use Junges\Kafka\Retryable;
+use Junges\Kafka\Config\Config;
+use Junges\Kafka\MessageCounter;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
+use Junges\Kafka\Commit\NativeSleeper;
+use RdKafka\Producer as KafkaProducer;
+use Junges\Kafka\Message\ConsumedMessage;
+use Junges\Kafka\Commit\Contracts\Committer;
+use Junges\Kafka\Contracts\CanConsumeMessages;
+use Junges\Kafka\Contracts\MessageDeserializer;
+use Junges\Kafka\Commit\DefaultCommitterFactory;
+use Junges\Kafka\Contracts\KafkaConsumerMessage;
+use Junges\Kafka\Commit\Contracts\CommitterFactory;
+use Junges\Kafka\Exceptions\KafkaConsumerException;
+use Junges\Kafka\Support\Timer;
 
 class Consumer implements CanConsumeMessages
 {
@@ -50,6 +52,8 @@ class Consumer implements CanConsumeMessages
     private MessageDeserializer $deserializer;
     private bool $stopRequested = false;
     private ?Closure $onStopConsume = null;
+    protected int $lastRestart = 0;
+    protected Timer $restartTimer;
 
     /**
      * @param \Junges\Kafka\Config\Config $config
@@ -74,6 +78,8 @@ class Consumer implements CanConsumeMessages
     public function consume(): void
     {
         $this->cancelStopConsume();
+        $this->configureRestartTimer();
+
         $this->consumer = app(KafkaConsumer::class, [
             'conf' => $this->setConf($this->config->getConsumerOptions()),
         ]);
@@ -92,6 +98,7 @@ class Consumer implements CanConsumeMessages
 
         do {
             $this->retryable->retry(fn () => $this->doConsume());
+            $this->checkForRestart();
         } while (! $this->maxMessagesLimitReached() && ! $this->stopRequested);
 
         if ($this->onStopConsume) {
@@ -368,5 +375,29 @@ class Consumer implements CanConsumeMessages
             'offset' => $message->offset,
             'timestamp' => $message->timestamp,
         ]);
+    }
+
+    protected function configureRestartTimer(): void
+    {
+        $this->lastRestart = $this->getLastRestart();
+        $this->restartTimer = new Timer();
+        $this->restartTimer->start($this->config->getRestartInterval());
+    }
+
+    protected function checkForRestart(): void
+    {
+        if(!$this->restartTimer->isTimedOut()) {
+            return;
+        }
+
+        $this->restartTimer->start($this->config->getRestartInterval());
+        if ($this->lastRestart !== $this->getLastRestart()) {
+            $this->stopRequested = true;
+        }
+    }
+
+    protected function getLastRestart(): int
+    {
+        return Cache::get('laravel-kafka:consumer:restart', 0);
     }
 }
