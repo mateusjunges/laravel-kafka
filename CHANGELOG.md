@@ -2,6 +2,10 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2022-07-21 v1.8.2](https://github.com/mateusjunges/laravel-kafka/compare/v1.8.1...v1.8.2)
+### Added 
+- Resolve consumer instance using service container, by @cragonnyunt in [#118](https://github.com/mateusjunges/laravel-kafka/pull/118)
+
 ## [2022-06-13 v1.8.1](https://github.com/mateusjunges/laravel-kafka/compare/v1.8.0...v1.8.1)
 ### Added 
 - Improved exception handling when a call to `flush` returns an error, by @mateusjunges in [#112](https://github.com/mateusjunges/laravel-kafka/pull/112)
