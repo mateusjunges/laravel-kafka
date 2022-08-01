@@ -322,10 +322,18 @@ class Consumer implements CanConsumeMessages
      * @throws \Junges\Kafka\Exceptions\KafkaConsumerException
      * @throws \Throwable
      */
-    private function handleMessage(Message $message): void
+    private function handleMessage(?Message $message): void
     {
+        if (null === $message) {
+            if ($this->config->shouldStopAfterLastMessage()) {
+                $this->stopConsume();
+            }
+            
+            return;
+        }
+        
         $batchConfig = $this->config->getBatchConfig();
-
+        
         if (RD_KAFKA_RESP_ERR_NO_ERROR === $message->err) {
             $this->messageCounter->add();
 
