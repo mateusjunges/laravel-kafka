@@ -34,7 +34,7 @@ class Consumer implements CanConsumeMessages
 
     private const CONSUME_STOP_EOF_ERRORS = [
         RD_KAFKA_RESP_ERR__PARTITION_EOF,
-        RD_KAFKA_RESP_ERR__TIMED_OUT
+        RD_KAFKA_RESP_ERR__TIMED_OUT,
     ];
 
     private const TIMEOUT_ERRORS = [
@@ -351,7 +351,7 @@ class Consumer implements CanConsumeMessages
             $this->handleBatch();
         }
 
-        if ($this->config->shouldStopAfterLastMessage() &&  in_array($message->err, self::CONSUME_STOP_EOF_ERRORS)) {
+        if ($this->config->shouldStopAfterLastMessage() && in_array($message->err, self::CONSUME_STOP_EOF_ERRORS)) {
             $this->stopConsume();
         }
 
