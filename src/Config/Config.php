@@ -141,11 +141,10 @@ class Config
             ->toArray();
     }
 
-    #[Pure]
     public function getProducerOptions(): array
     {
         $config = [
-            'compression.codec' => 'snappy',
+            'compression.codec' => config('kafka.compression', 'snappy'),
             'bootstrap.servers' => $this->broker,
             'metadata.broker.list' => $this->broker,
         ];
