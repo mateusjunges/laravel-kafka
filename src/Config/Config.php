@@ -78,6 +78,7 @@ class Config
         private array              $customOptions = [],
         ?HandlesBatchConfiguration $batchConfig = null,
         private bool               $stopAfterLastMessage = false,
+        private int                $restartInterval = 1000,
     ) {
         $this->batchConfig = $batchConfig ?? new NullBatchConfig();
     }
@@ -157,6 +158,11 @@ class Config
     public function getBatchConfig(): HandlesBatchConfiguration
     {
         return $this->batchConfig;
+    }
+
+    public function getRestartInterval(): int
+    {
+        return $this->restartInterval;
     }
 
     #[Pure]
