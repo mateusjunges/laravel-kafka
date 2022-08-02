@@ -2,17 +2,17 @@
 
 namespace Junges\Kafka\Providers;
 
-use Junges\Kafka\Message\Message;
 use Illuminate\Support\ServiceProvider;
-use Junges\Kafka\Message\ConsumedMessage;
-use Junges\Kafka\Contracts\MessageSerializer;
-use Junges\Kafka\Contracts\MessageDeserializer;
+use Junges\Kafka\Console\Commands\KafkaConsumerCommand;
+use Junges\Kafka\Console\Commands\KafkaRestartConsumersCommand;
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
-use Junges\Kafka\Message\Serializers\JsonSerializer;
-use Junges\Kafka\Console\Commands\KafkaConsumerCommand;
+use Junges\Kafka\Contracts\MessageDeserializer;
+use Junges\Kafka\Contracts\MessageSerializer;
+use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
-use Junges\Kafka\Console\Commands\KafkaRestartConsumersCommand;
+use Junges\Kafka\Message\Message;
+use Junges\Kafka\Message\Serializers\JsonSerializer;
 
 class LaravelKafkaServiceProvider extends ServiceProvider
 {
@@ -23,7 +23,7 @@ class LaravelKafkaServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 KafkaConsumerCommand::class,
-                KafkaRestartConsumersCommand::class
+                KafkaRestartConsumersCommand::class,
             ]);
         }
     }

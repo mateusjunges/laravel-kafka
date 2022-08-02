@@ -2,20 +2,20 @@
 
 namespace Junges\Kafka\Tests\Consumers;
 
-use RdKafka\Message;
-use Junges\Kafka\Config\Config;
-use Junges\Kafka\Facades\Kafka;
-use Junges\Kafka\Consumers\Consumer;
-use Junges\Kafka\Commit\VoidCommitter;
-use Junges\Kafka\Message\ConsumedMessage;
-use Junges\Kafka\Tests\Fakes\FakeHandler;
-use Junges\Kafka\Tests\Fakes\FakeConsumer;
-use Junges\Kafka\Consumers\CallableConsumer;
-use Junges\Kafka\Tests\LaravelKafkaTestCase;
-use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Commit\Contracts\CommitterFactory;
+use Junges\Kafka\Commit\VoidCommitter;
+use Junges\Kafka\Config\Config;
+use Junges\Kafka\Consumers\CallableConsumer;
+use Junges\Kafka\Consumers\Consumer;
+use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Exceptions\KafkaConsumerException;
+use Junges\Kafka\Facades\Kafka;
+use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
+use Junges\Kafka\Tests\Fakes\FakeConsumer;
+use Junges\Kafka\Tests\Fakes\FakeHandler;
+use Junges\Kafka\Tests\LaravelKafkaTestCase;
+use RdKafka\Message;
 
 class ConsumerTest extends LaravelKafkaTestCase
 {
@@ -226,10 +226,10 @@ class ConsumerTest extends LaravelKafkaTestCase
 
         $fakeHandler = new CallableConsumer(
             function (KafkaConsumerMessage $message) {
-                    // sleep 100 miliseconds to simulate restart interval check
-                    usleep(100 * 1000);
-                    $this->artisan('kafka:restart-consumers');
-            }, 
+                // sleep 100 miliseconds to simulate restart interval check
+                usleep(100 * 1000);
+                $this->artisan('kafka:restart-consumers');
+            },
             []
         );
 

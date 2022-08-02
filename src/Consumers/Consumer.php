@@ -3,27 +3,27 @@
 namespace Junges\Kafka\Consumers;
 
 use Closure;
-use Throwable;
-use RdKafka\Conf;
-use RdKafka\Message;
-use Junges\Kafka\Logger;
-use RdKafka\KafkaConsumer;
-use Junges\Kafka\Retryable;
-use Junges\Kafka\Config\Config;
-use Junges\Kafka\MessageCounter;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
-use Junges\Kafka\Commit\NativeSleeper;
-use RdKafka\Producer as KafkaProducer;
-use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\Commit\Contracts\Committer;
-use Junges\Kafka\Contracts\CanConsumeMessages;
-use Junges\Kafka\Contracts\MessageDeserializer;
-use Junges\Kafka\Commit\DefaultCommitterFactory;
-use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Commit\Contracts\CommitterFactory;
+use Junges\Kafka\Commit\DefaultCommitterFactory;
+use Junges\Kafka\Commit\NativeSleeper;
+use Junges\Kafka\Config\Config;
+use Junges\Kafka\Contracts\CanConsumeMessages;
+use Junges\Kafka\Contracts\KafkaConsumerMessage;
+use Junges\Kafka\Contracts\MessageDeserializer;
 use Junges\Kafka\Exceptions\KafkaConsumerException;
+use Junges\Kafka\Logger;
+use Junges\Kafka\Message\ConsumedMessage;
+use Junges\Kafka\MessageCounter;
+use Junges\Kafka\Retryable;
 use Junges\Kafka\Support\Timer;
+use RdKafka\Conf;
+use RdKafka\KafkaConsumer;
+use RdKafka\Message;
+use RdKafka\Producer as KafkaProducer;
+use Throwable;
 
 class Consumer implements CanConsumeMessages
 {
@@ -391,7 +391,7 @@ class Consumer implements CanConsumeMessages
 
     protected function checkForRestart(): void
     {
-        if(!$this->restartTimer->isTimedOut()) {
+        if (! $this->restartTimer->isTimedOut()) {
             return;
         }
 
