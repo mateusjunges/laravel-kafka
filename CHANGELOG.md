@@ -2,6 +2,10 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2022-08-02 v1.8.4](https://github.com/mateusjunges/laravel-kafka/compare/v1.8.3...v1.8.4)
+## Fixes
+- Fixes [#113](https://github.com/mateusjunges/laravel-kafka/issues/113) with [#123](https://github.com/mateusjunges/laravel-kafka/pull/123) by @mateusjunges
+
 ## [2022-08-02 v1.8.3](https://github.com/mateusjunges/laravel-kafka/compare/v1.8.2...v1.8.3)
 ## Fixes
 - Fixes [#120](https://github.com/mateusjunges/laravel-kafka/issues/120) with [#122](https://github.com/mateusjunges/laravel-kafka/pull/122) by @mateusjunges 
