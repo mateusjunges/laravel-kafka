@@ -18,6 +18,8 @@ COPY tests /application/laravel-test/tests
 
 COPY build/laravel-kernels/kernel.php /application/laravel-test/app/Console/Kernel.php
 
+RUN sed -i 's/__LARAVEL_NAMESPACE__/App\\Console/g' /application/laravel-test/app/Console/Kernel.php
+
 COPY dev/kafka.php /application/laravel-test/config
 
 COPY src /application/laravel-kafka/src/

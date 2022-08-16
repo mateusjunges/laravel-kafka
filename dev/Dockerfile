@@ -12,6 +12,8 @@ COPY build/composer-files/composer.json-8 /application/laravel-test/composer.jso
 
 COPY build/laravel-kernels/kernel.php /application/laravel-test/app/Console/Kernel.php
 
+RUN sed -i 's/__LARAVEL_CONSOLE_NAMESPACE__/App\\Console/g' /application/laravel-test/app/Console/Kernel.php
+
 COPY dev/kafka.php /application/laravel-test/config
 
 COPY composer.json /application/laravel-kafka/composer.json
