@@ -10,9 +10,9 @@ COPY dev/php.ini /usr/local/etc/php/conf.d
 
 COPY build/composer-files/composer.json-8 /application/laravel-test/composer.json
 
-RUN sed -i 's/__LARAVEL_CONSOLE_NAMESPACE__/App\\Console/g' /build/laravel-kernels/kernel.php
-
 COPY build/laravel-kernels/kernel.php /application/laravel-test/app/Console/Kernel.php
+
+RUN sed -i 's/__LARAVEL_CONSOLE_NAMESPACE__/App\\Console/g' /application/laravel-test/app/Console/Kernel.php
 
 COPY dev/kafka.php /application/laravel-test/config
 
