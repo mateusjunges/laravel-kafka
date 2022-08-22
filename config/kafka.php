@@ -14,6 +14,8 @@ return [
      */
     'consumer_group_id' => env('KAFKA_CONSUMER_GROUP_ID', 'group'),
 
+    'consumer_timeout_ms' => env("KAFKA_CONSUMER_DEFAULT_TIMEOUT", 2000),
+
     /*
      | After the consumer receives its assignment from the coordinator,
      | it must determine the initial position for each assigned partition.
