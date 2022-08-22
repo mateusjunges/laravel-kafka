@@ -2,7 +2,11 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
-## [2022-08-17 v1.8.6](https://github.com/mateusjunges/laravel-kafka/compare/v1.8.4...v1.8.5)
+## [2022-08-22 v1.8.7](https://github.com/mateusjunges/laravel-kafka/compare/v1.8.6...v1.8.7)
+## Fixes
+- Make consumer timeout configurable (fixes #132) by @mateusjunges in [#134](https://github.com/mateusjunges/laravel-kafka/pull/134)
+
+## [2022-08-17 v1.8.6](https://github.com/mateusjunges/laravel-kafka/compare/v1.8.5...v1.8.6)
 ## Fixes
 - Fixes [#126](https://github.com/mateusjunges/laravel-kafka/issues/126) using stub files, with [#129](https://github.com/mateusjunges/laravel-kafka/pull/129) by @smortexa
 
