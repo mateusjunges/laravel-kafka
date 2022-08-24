@@ -43,6 +43,8 @@ public function test_post_is_marked_as_published()
 
         })->build();
         
+    $consumer->consume();
+
     // Now, you can test if the post published_at field is not empty, or anything else you want to test:
     
     $this->assertNotNull($post->refresh()->published_at);
