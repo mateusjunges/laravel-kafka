@@ -144,10 +144,10 @@ interface ConsumerBuilder extends InteractsWithConfigCallbacks
      * Set a specific configuration option.
      *
      * @param string $name
-     * @param string $value
+     * @param mixed $value
      * @return \Junges\Kafka\Consumers\ConsumerBuilder
      */
-    public function withOption(string $name, string $value): self;
+    public function withOption(string $name, mixed $value): self;
 
     /**
      * Enables messages batching

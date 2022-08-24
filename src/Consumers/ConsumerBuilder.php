@@ -257,7 +257,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
     /**
      * @inheritDoc
      */
-    public function withOption(string $name, string $value): self
+    public function withOption(string $name, mixed $value): self
     {
         $this->options[$name] = $value;
 
