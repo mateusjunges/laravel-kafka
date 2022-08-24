@@ -2,17 +2,18 @@
 
 namespace Junges\Kafka\Producers;
 
+use Junges\Kafka\Concerns\InteractsWithConfigCallbacks;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Contracts\CanProduceMessages;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
 use Junges\Kafka\Contracts\MessageSerializer;
-use Junges\Kafka\Message\Message;
 
 class ProducerBuilder implements CanProduceMessages
 {
+    use InteractsWithConfigCallbacks;
+
     private array $options = [];
-    private array $config = [];
     private KafkaProducerMessage $message;
     private MessageSerializer $serializer;
     private ?Sasl $saslConfig = null;
@@ -53,97 +54,6 @@ class ProducerBuilder implements CanProduceMessages
     public function withConfigOption(string $name, mixed $option): self
     {
         $this->options[$name] = $option;
-
-        return $this;
-    }
-
-    /**
-     * Set the configuration error callback.
-     *
-     * @param  callable  $callback
-     * @return $this
-     */
-    public function withErrorCb(callable $callback): self
-    {
-        $this->config['setErrorCb'] = $callback;
-
-        return $this;
-    }
-
-    /**
-     * Sets the delivery report callback.
-     *
-     * @param  callable  $callback
-     * @return $this
-     */
-    public function withDrMsgCb(callable $callback): self
-    {
-        $this->config['setDrMsgCb'] = $callback;
-
-        return $this;
-    }
-
-    /**
-     * Set consume callback to use with poll.
-     *
-     * @param  callable  $callback
-     * @return $this
-     */
-    public function withConsumeCb(callable $callback): self
-    {
-        $this->config['setConsumeCb'] = $callback;
-
-        return $this;
-    }
-
-    /**
-     * Set the log callback.
-     *
-     * @param  callable  $callback
-     * @return $this
-     */
-    public function withLogCb(callable $callback): self
-    {
-        $this->config['setLogCb'] = $callback;
-
-        return $this;
-    }
-
-    /**
-     * Set offset commit callback to use with consumer groups.
-     *
-     * @param  callable  $callback
-     * @return $this
-     */
-    public function withOffsetCommitCb(callable $callback): self
-    {
-        $this->config['setOffsetCommitCb'] = $callback;
-
-        return $this;
-    }
-
-    /**
-     * Set rebalance callback for  use with coordinated consumer group balancing.
-     *
-     * @param  callable  $callback
-     * @return $this
-     */
-    public function withRebalanceCb(callable $callback): self
-    {
-        $this->config['setRebalanceCb'] = $callback;
-
-        return $this;
-    }
-
-    /**
-     * Set statistics callback.
-     *
-     * @param  callable  $callback
-     * @return $this
-     */
-    public function withStatsCb(callable $callback): self
-    {
-        $this->config['setStatsCb'] = $callback;
 
         return $this;
     }

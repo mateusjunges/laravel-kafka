@@ -9,7 +9,7 @@ use Junges\Kafka\Producers\MessageBatch;
 /**
  * @internal
  */
-interface CanProduceMessages
+interface CanProduceMessages extends InteractsWithConfigCallbacks
 {
     /**
      * Return a new Junges\Commit\ProducerBuilder instance
@@ -27,38 +27,6 @@ interface CanProduceMessages
      * @return $this
      */
     public function withConfigOption(string $name, mixed $option): self;
-
-    /**
-     * Set the configuration error callback.
-     *
-     * @param  callable  $callback
-     * @return $this
-     */
-    public function withErrorCb(callable $callback): self;
-
-    /**
-     * Sets the delivery report callback.
-     *
-     * @param  callable  $callback
-     * @return $this
-     */
-    public function withDrMsgCb(callable $callback): self;
-
-    /**
-     * Set consume callback to use with poll.
-     *
-     * @param  callable  $callback
-     * @return $this
-     */
-    public function withConsumeCb(callable $callback): self;
-
-    /**
-     * Set the log callback.
-     *
-     * @param  callable  $callback
-     * @return $this
-     */
-    public function withLogCb(callable $callback): self;
 
     /**
      * Set offset commit callback to use with consumer groups.
@@ -165,7 +133,6 @@ interface CanProduceMessages
      * @return bool
      */
     public function send(): bool;
-
 
     /**
      * Send a message batch to Kafka.
