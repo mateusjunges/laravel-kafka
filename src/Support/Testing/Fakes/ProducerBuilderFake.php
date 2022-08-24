@@ -235,7 +235,8 @@ class ProducerBuilderFake implements CanProduceMessages
             broker: $this->broker ?? config('kafka.brokers'),
             topics: [$this->getTopic()],
             sasl: $this->saslConfig,
-            customOptions: $this->options
+            customOptions: $this->options,
+            callbacks: $this->callbacks,
         );
 
         return $this->makeProducer($conf);

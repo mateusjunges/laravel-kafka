@@ -228,6 +228,7 @@ class ProducerBuilder implements CanProduceMessages
             securityProtocol: $this->saslConfig?->getSecurityProtocol(),
             sasl: $this->saslConfig,
             customOptions: $this->options,
+            callbacks: $this->callbacks,
         );
 
         return app(Producer::class, [

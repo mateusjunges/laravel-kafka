@@ -323,7 +323,8 @@ class ConsumerBuilder implements ConsumerBuilderContract
             autoCommit: $this->autoCommit,
             customOptions: $this->options,
             batchConfig: $this->getBatchConfig(),
-            stopAfterLastMessage: $this->stopAfterLastMessage
+            stopAfterLastMessage: $this->stopAfterLastMessage,
+            callbacks: $this->callbacks,
         );
 
         return new Consumer($config, $this->deserializer, $this->committerFactory);
