@@ -12,6 +12,7 @@ use Junges\Kafka\Message\Message;
 class ProducerBuilder implements CanProduceMessages
 {
     private array $options = [];
+    private array $config = [];
     private KafkaProducerMessage $message;
     private MessageSerializer $serializer;
     private ?Sasl $saslConfig = null;
@@ -42,13 +43,117 @@ class ProducerBuilder implements CanProduceMessages
         );
     }
 
-    public function withConfigOption(string $name, string $option): self
+    /**
+     * Sets a specific config option.
+     *
+     * @param  string  $name
+     * @param  mixed  $option
+     * @return $this
+     */
+    public function withConfigOption(string $name, mixed $option): self
     {
         $this->options[$name] = $option;
 
         return $this;
     }
 
+    /**
+     * Set the configuration error callback.
+     *
+     * @param  callable  $callback
+     * @return $this
+     */
+    public function withErrorCb(callable $callback): self
+    {
+        $this->config['setErrorCb'] = $callback;
+
+        return $this;
+    }
+
+    /**
+     * Sets the delivery report callback.
+     *
+     * @param  callable  $callback
+     * @return $this
+     */
+    public function withDrMsgCb(callable $callback): self
+    {
+        $this->config['setDrMsgCb'] = $callback;
+
+        return $this;
+    }
+
+    /**
+     * Set consume callback to use with poll.
+     *
+     * @param  callable  $callback
+     * @return $this
+     */
+    public function withConsumeCb(callable $callback): self
+    {
+        $this->config['setConsumeCb'] = $callback;
+
+        return $this;
+    }
+
+    /**
+     * Set the log callback.
+     *
+     * @param  callable  $callback
+     * @return $this
+     */
+    public function withLogCb(callable $callback): self
+    {
+        $this->config['setLogCb'] = $callback;
+
+        return $this;
+    }
+
+    /**
+     * Set offset commit callback to use with consumer groups.
+     *
+     * @param  callable  $callback
+     * @return $this
+     */
+    public function withOffsetCommitCb(callable $callback): self
+    {
+        $this->config['setOffsetCommitCb'] = $callback;
+
+        return $this;
+    }
+
+    /**
+     * Set rebalance callback for  use with coordinated consumer group balancing.
+     *
+     * @param  callable  $callback
+     * @return $this
+     */
+    public function withRebalanceCb(callable $callback): self
+    {
+        $this->config['setRebalanceCb'] = $callback;
+
+        return $this;
+    }
+
+    /**
+     * Set statistics callback.
+     *
+     * @param  callable  $callback
+     * @return $this
+     */
+    public function withStatsCb(callable $callback): self
+    {
+        $this->config['setStatsCb'] = $callback;
+
+        return $this;
+    }
+
+    /**
+     * Sets configuration options.
+     *
+     * @param  array  $options
+     * @return $this
+     */
     public function withConfigOptions(array $options): self
     {
         foreach ($options as $name => $value) {
@@ -60,6 +165,7 @@ class ProducerBuilder implements CanProduceMessages
 
     /**
      * Set the message headers.
+     *
      * @param array $headers
      * @return $this
      */
@@ -72,6 +178,7 @@ class ProducerBuilder implements CanProduceMessages
 
     /**
      * Set the message key.
+     *
      * @param string $key
      * @return $this
      */
@@ -84,9 +191,10 @@ class ProducerBuilder implements CanProduceMessages
 
     /**
      * Set a message array key.
+     *
      * @param string $key
      * @param mixed $message
-     * @return ProducerBuilder
+     * @return $this
      */
     public function withBodyKey(string $key, mixed $message): self
     {
@@ -95,6 +203,12 @@ class ProducerBuilder implements CanProduceMessages
         return $this;
     }
 
+    /**
+     * Set the message to be published.
+     *
+     * @param  \Junges\Kafka\Contracts\KafkaProducerMessage  $message
+     * @return $this
+     */
     public function withMessage(KafkaProducerMessage $message): self
     {
         $this->message = $message;
@@ -102,6 +216,12 @@ class ProducerBuilder implements CanProduceMessages
         return $this;
     }
 
+    /**
+     * Enables or disable debug.
+     *
+     * @param  bool  $enabled
+     * @return $this
+     */
     public function withDebugEnabled(bool $enabled = true): self
     {
         if ($enabled) {
@@ -118,6 +238,8 @@ class ProducerBuilder implements CanProduceMessages
     }
 
     /**
+     * Set Sasl configuration.
+     *
      * @param Sasl $saslConfig
      * @return $this
      */
@@ -128,6 +250,12 @@ class ProducerBuilder implements CanProduceMessages
         return $this;
     }
 
+    /**
+     * Specifies which serializer should be used.
+     *
+     * @param  \Junges\Kafka\Contracts\MessageSerializer  $serializer
+     * @return \Junges\Kafka\Contracts\CanProduceMessages
+     */
     public function usingSerializer(MessageSerializer $serializer): CanProduceMessages
     {
         $this->serializer = $serializer;
@@ -135,16 +263,32 @@ class ProducerBuilder implements CanProduceMessages
         return $this;
     }
 
+    /**
+     * Disables debug.
+     *
+     * @return $this
+     */
     public function withDebugDisabled(): self
     {
         return $this->withDebugEnabled(false);
     }
 
+    /**
+     * Returns the topic where the message will be published.
+     *
+     * @return string
+     */
     public function getTopic(): string
     {
         return $this->topic;
     }
 
+    /**
+     * Send the given message to Kakfa.
+     *
+     * @throws \Exception
+     * @return bool
+     */
     public function send(): bool
     {
         $producer = $this->build();
@@ -152,6 +296,13 @@ class ProducerBuilder implements CanProduceMessages
         return $producer->produce($this->message);
     }
 
+    /**
+     * Send a message batch to Kafka.
+     *
+     * @param  \Junges\Kafka\Producers\MessageBatch  $messageBatch
+     * @throws \Junges\Kafka\Exceptions\CouldNotPublishMessage
+     * @return int
+     */
     public function sendBatch(MessageBatch $messageBatch): int
     {
         $producer = $this->build();

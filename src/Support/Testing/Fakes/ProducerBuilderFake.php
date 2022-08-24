@@ -52,7 +52,7 @@ class ProducerBuilderFake implements CanProduceMessages
         return $this;
     }
 
-    public function withConfigOption(string $name, string $option): self
+    public function withConfigOption(string $name, mixed $option): self
     {
         $this->options[$name] = $option;
 
