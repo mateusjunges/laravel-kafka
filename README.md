@@ -18,11 +18,7 @@ If you think this package helped you in any way, you can sponsor me on GitHub!
 [![Sponsor Me](art/sponsor.png)](https://github.com/sponsors/mateusjunges)
 
 # Documentation
-> **Note**
->
-> You must temporarily access the documentation using the direct IP address. I'm upgrading my server to use Laravel Forge.
-
-You can [find the documentations for this package here](http://137.184.142.165/documentation/laravel-kafka/v1.8/1-introduction)
+You can [find the documentations for this package here](https://junges.dev/documentation/laravel-kafka/v1.8/1-introduction)
 
 # Testing
 Run `composer test` to test this package.
