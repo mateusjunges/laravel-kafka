@@ -5,6 +5,7 @@ namespace Junges\Kafka\Concerns;
 trait InteractsWithConfigCallbacks
 {
     protected array $callbacks = [];
+
     /**
      * Set the configuration error callback.
      *
