@@ -2,6 +2,9 @@
 
 namespace Junges\Kafka\Contracts;
 
+/**
+ * @internal
+ */
 interface InteractsWithConfigCallbacks
 {
     /**
