@@ -5,7 +5,10 @@ namespace Junges\Kafka\Contracts;
 use Junges\Kafka\Commit\Contracts\CommitterFactory;
 use Junges\Kafka\Config\Sasl;
 
-interface ConsumerBuilder
+/**
+ * @internal
+ */
+interface ConsumerBuilder extends InteractsWithConfigCallbacks
 {
     /**
      * Creates a new ConsumerBuilder instance.
@@ -144,10 +147,10 @@ interface ConsumerBuilder
      * Set a specific configuration option.
      *
      * @param string $name
-     * @param string $value
+     * @param mixed $value
      * @return \Junges\Kafka\Consumers\ConsumerBuilder
      */
-    public function withOption(string $name, string $value): self;
+    public function withOption(string $name, mixed $value): self;
 
     /**
      * Enables messages batching

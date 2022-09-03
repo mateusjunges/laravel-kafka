@@ -3,6 +3,7 @@
 namespace Junges\Kafka\Support\Testing\Fakes;
 
 use Closure;
+use Junges\Kafka\Concerns\InteractsWithConfigCallbacks;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Contracts\CanProduceMessages;
@@ -13,6 +14,8 @@ use Junges\Kafka\Producers\MessageBatch;
 
 class ProducerBuilderFake implements CanProduceMessages
 {
+    use InteractsWithConfigCallbacks;
+
     private array $options = [];
     private KafkaProducerMessage $message;
     private MessageSerializer $serializer;
@@ -52,7 +55,7 @@ class ProducerBuilderFake implements CanProduceMessages
         return $this;
     }
 
-    public function withConfigOption(string $name, string $option): self
+    public function withConfigOption(string $name, mixed $option): self
     {
         $this->options[$name] = $option;
 
@@ -101,7 +104,7 @@ class ProducerBuilderFake implements CanProduceMessages
      * Set a message array key.
      * @param string $key
      * @param mixed $message
-     * @return ProducerBuilderFake
+     * @return $this
      */
     public function withBodyKey(string $key, mixed $message): self
     {
@@ -113,10 +116,10 @@ class ProducerBuilderFake implements CanProduceMessages
     /**
      * Set the entire message.
      *
-     * @param Message $message
+     * @param \Junges\Kafka\Contracts\KafkaProducerMessage $message
      * @return $this
      */
-    public function withMessage(Message $message): self
+    public function withMessage(KafkaProducerMessage $message): self
     {
         $this->message = $message;
 
@@ -125,6 +128,7 @@ class ProducerBuilderFake implements CanProduceMessages
 
     /**
      * Enable or disable kafka debug.
+     *
      * @param bool $enabled
      * @return $this
      */
@@ -164,6 +168,12 @@ class ProducerBuilderFake implements CanProduceMessages
         return $this;
     }
 
+    /**
+     * Specifies which serializer should be used.
+     *
+     * @param  \Junges\Kafka\Contracts\MessageSerializer  $serializer
+     * @return \Junges\Kafka\Contracts\CanProduceMessages
+     */
     public function usingSerializer(MessageSerializer $serializer): CanProduceMessages
     {
         $this->serializer = $serializer;
@@ -173,6 +183,7 @@ class ProducerBuilderFake implements CanProduceMessages
 
     /**
      * Send the message to the producer to be published on kafka.
+     *
      * @return bool
      */
     public function send(): bool
@@ -186,6 +197,12 @@ class ProducerBuilderFake implements CanProduceMessages
         return $producer->produce($this->getMessage());
     }
 
+    /**
+     * Send a message batch to Kafka.
+     *
+     * @param  \Junges\Kafka\Producers\MessageBatch  $messageBatch
+     * @return int
+     */
     public function sendBatch(MessageBatch $messageBatch): int
     {
         $producer = $this->build();
@@ -218,7 +235,8 @@ class ProducerBuilderFake implements CanProduceMessages
             broker: $this->broker ?? config('kafka.brokers'),
             topics: [$this->getTopic()],
             sasl: $this->saslConfig,
-            customOptions: $this->options
+            customOptions: $this->options,
+            callbacks: $this->callbacks,
         );
 
         return $this->makeProducer($conf);

@@ -79,6 +79,7 @@ class Config
         ?HandlesBatchConfiguration $batchConfig = null,
         private bool               $stopAfterLastMessage = false,
         private int                $restartInterval = 1000,
+        private array              $callbacks = [],
     ) {
         $this->batchConfig = $batchConfig ?? new NullBatchConfig();
     }
@@ -163,6 +164,11 @@ class Config
     public function getRestartInterval(): int
     {
         return $this->restartInterval;
+    }
+
+    public function getConfigCallbacks(): array
+    {
+        return $this->callbacks;
     }
 
     #[Pure]

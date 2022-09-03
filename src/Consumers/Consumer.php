@@ -165,6 +165,10 @@ class Consumer implements CanConsumeMessages
             $conf->set($key, $value);
         }
 
+        foreach ($this->config->getConfigCallbacks() as $method => $callback) {
+            $conf->{$method}($callback);
+        }
+
         return $conf;
     }
 

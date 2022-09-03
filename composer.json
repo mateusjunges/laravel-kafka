@@ -14,7 +14,8 @@
         "phpunit/phpunit": "^9.5",
         "orchestra/testbench": "^6.20",
         "predis/predis": "^1.1",
-        "friendsofphp/php-cs-fixer": "^3.0"
+        "friendsofphp/php-cs-fixer": "^3.0",
+        "kwn/php-rdkafka-stubs": "^2.2"
     },
     "autoload": {
         "psr-4": {
