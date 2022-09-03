@@ -52,7 +52,6 @@ interface CanProduceMessages extends InteractsWithConfigCallbacks
      */
     public function withStatsCb(callable $callback): self;
 
-
     /**
      * Sets configuration options.
      *
@@ -109,7 +108,6 @@ interface CanProduceMessages extends InteractsWithConfigCallbacks
      * @return \Junges\Kafka\Contracts\CanProduceMessages
      */
     public function usingSerializer(MessageSerializer $serializer): self;
-
 
     /**
      * Enables or disable debug.

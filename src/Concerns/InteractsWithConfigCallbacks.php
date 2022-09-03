@@ -96,6 +96,4 @@ trait InteractsWithConfigCallbacks
 
         return $this;
     }
-
-
 }
