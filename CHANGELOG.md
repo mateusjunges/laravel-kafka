@@ -2,6 +2,33 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2022-08-22 v1.8.7](https://github.com/mateusjunges/laravel-kafka/compare/v1.8.6...v1.8.7)
+## Fixes
+- Make consumer timeout configurable (fixes #132) by @mateusjunges in [#134](https://github.com/mateusjunges/laravel-kafka/pull/134)
+
+## [2022-08-17 v1.8.6](https://github.com/mateusjunges/laravel-kafka/compare/v1.8.5...v1.8.6)
+## Fixes
+- Fixes [#126](https://github.com/mateusjunges/laravel-kafka/issues/126) using stub files, with [#129](https://github.com/mateusjunges/laravel-kafka/pull/129) by @smortexa
+
+## [2022-08-16 v1.8.5](https://github.com/mateusjunges/laravel-kafka/compare/v1.8.4...v1.8.5)
+## Fixes
+- Fixes [#126](https://github.com/mateusjunges/laravel-kafka/issues/126) with [#128](https://github.com/mateusjunges/laravel-kafka/pull/128) by @mateusjunges
+- Add Restart command in [#119](https://github.com/mateusjunges/laravel-kafka/pull/119) by @gasoju
+
+
+## [2022-08-02 v1.8.4](https://github.com/mateusjunges/laravel-kafka/compare/v1.8.3...v1.8.4)
+## Fixes
+- Fixes [#113](https://github.com/mateusjunges/laravel-kafka/issues/113) with [#123](https://github.com/mateusjunges/laravel-kafka/pull/123) by @mateusjunges
+
+## [2022-08-02 v1.8.3](https://github.com/mateusjunges/laravel-kafka/compare/v1.8.2...v1.8.3)
+## Fixes
+- Fixes [#120](https://github.com/mateusjunges/laravel-kafka/issues/120) with [#122](https://github.com/mateusjunges/laravel-kafka/pull/122) by @mateusjunges 
+
+
+## [2022-07-21 v1.8.2](https://github.com/mateusjunges/laravel-kafka/compare/v1.8.1...v1.8.2)
+### Added 
+- Resolve consumer instance using service container, by @cragonnyunt in [#118](https://github.com/mateusjunges/laravel-kafka/pull/118)
+
 ## [2022-06-13 v1.8.1](https://github.com/mateusjunges/laravel-kafka/compare/v1.8.0...v1.8.1)
 ### Added 
 - Improved exception handling when a call to `flush` returns an error, by @mateusjunges in [#112](https://github.com/mateusjunges/laravel-kafka/pull/112)

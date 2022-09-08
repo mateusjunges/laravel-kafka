@@ -78,6 +78,8 @@ class Config
         private array              $customOptions = [],
         ?HandlesBatchConfiguration $batchConfig = null,
         private bool               $stopAfterLastMessage = false,
+        private int                $restartInterval = 1000,
+        private array              $callbacks = [],
     ) {
         $this->batchConfig = $batchConfig ?? new NullBatchConfig();
     }
@@ -141,11 +143,10 @@ class Config
             ->toArray();
     }
 
-    #[Pure]
     public function getProducerOptions(): array
     {
         $config = [
-            'compression.codec' => 'snappy',
+            'compression.codec' => config('kafka.compression', 'snappy'),
             'bootstrap.servers' => $this->broker,
             'metadata.broker.list' => $this->broker,
         ];
@@ -158,6 +159,16 @@ class Config
     public function getBatchConfig(): HandlesBatchConfiguration
     {
         return $this->batchConfig;
+    }
+
+    public function getRestartInterval(): int
+    {
+        return $this->restartInterval;
+    }
+
+    public function getConfigCallbacks(): array
+    {
+        return $this->callbacks;
     }
 
     #[Pure]

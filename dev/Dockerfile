@@ -10,7 +10,7 @@ COPY dev/php.ini /usr/local/etc/php/conf.d
 
 COPY build/composer-files/composer.json-8 /application/laravel-test/composer.json
 
-COPY build/laravel-kernels/kernel.php /application/laravel-test/app/Console/Kernel.php
+COPY build/laravel-kernels/kernel.php.stub /application/laravel-test/app/Console/Kernel.php
 
 COPY dev/kafka.php /application/laravel-test/config
 

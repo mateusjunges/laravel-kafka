@@ -5,6 +5,7 @@ namespace Junges\Kafka\Tests\Consumers;
 use Junges\Kafka\Commit\Contracts\CommitterFactory;
 use Junges\Kafka\Commit\VoidCommitter;
 use Junges\Kafka\Config\Config;
+use Junges\Kafka\Consumers\CallableConsumer;
 use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Exceptions\KafkaConsumerException;
@@ -197,5 +198,59 @@ class ConsumerTest extends LaravelKafkaTestCase
 
         $committer = $this->getPropertyWithReflection('committer', $consumer);
         $this->assertInstanceOf(VoidCommitter::class, $committer);
+    }
+
+    public function testItCanRestartConsumer()
+    {
+        $message = new Message();
+        $message->err = 0;
+        $message->key = 'key';
+        $message->topic_name = 'test';
+        $message->payload = '{"body": "message payload"}';
+        $message->offset = 0;
+        $message->partition = 1;
+        $message->headers = [];
+
+        $message2 = new Message();
+        $message2->err = 0;
+        $message2->key = 'key2';
+        $message2->topic_name = 'test';
+        $message2->payload = '{"body": "message payload2"}';
+        $message2->offset = 0;
+        $message2->partition = 1;
+        $message2->headers = [];
+
+        $this->mockConsumerWithMessage($message, $message2);
+        $this->mockProducer();
+        
+
+        $fakeHandler = new CallableConsumer(
+            function (KafkaConsumerMessage $message) {
+                // sleep 100 miliseconds to simulate restart interval check
+                usleep(100 * 1000);
+                $this->artisan('kafka:restart-consumers');
+            },
+            []
+        );
+
+        $config = new Config(
+            broker: 'broker',
+            topics: ['test-topic'],
+            securityProtocol: 'security',
+            commit: 1,
+            groupId: 'group',
+            consumer: $fakeHandler,
+            sasl: null,
+            dlq: null,
+            maxMessages: 2,
+            maxCommitRetries: 1,
+            restartInterval : 100
+        );
+
+        $consumer = new Consumer($config, new JsonDeserializer());
+        $consumer->consume();
+
+        //finaly only one message should be consumed
+        $this->assertEquals(1, $consumer->consumedMessagesCount());
     }
 }

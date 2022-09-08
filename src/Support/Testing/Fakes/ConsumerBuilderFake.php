@@ -65,6 +65,7 @@ class ConsumerBuilderFake extends ConsumerBuilder implements ConsumerBuilderCont
             customOptions: $this->options,
             batchConfig: $this->getBatchConfig(),
             stopAfterLastMessage: $this->stopAfterLastMessage,
+            callbacks: $this->callbacks,
         );
 
         return new ConsumerFake(
