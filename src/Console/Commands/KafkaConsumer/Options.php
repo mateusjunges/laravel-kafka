@@ -9,6 +9,7 @@ class Options
 {
     private ?array $topics = null;
     private ?string $consumer = null;
+    private ?string $deserializer = null;
     private ?string $groupId = null;
     private ?int $commit = 1;
     private ?string $dlq = null;
@@ -36,12 +37,17 @@ class Options
 
     public function getTopics(): array
     {
-        return ! empty($this->topics) ? $this->topics : [];
+        return !empty($this->topics) ? $this->topics : [];
     }
 
     public function getConsumer(): ?string
     {
         return $this->consumer;
+    }
+
+    public function getDeserializer(): ?string
+    {
+        return $this->deserializer;
     }
 
     public function getGroupId(): ?string
