@@ -4,15 +4,16 @@ namespace Junges\Kafka\Console\Commands;
 
 use Illuminate\Console\Command;
 use Junges\Kafka\Config\Config;
-use Junges\Kafka\Console\Commands\KafkaConsumer\Options;
 use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Contracts\MessageDeserializer;
+use Junges\Kafka\Console\Commands\KafkaConsumer\Options;
 
 class KafkaConsumerCommand extends Command
 {
     protected $signature = 'kafka:consume 
             {--topics= : The topics to listen for messages (topic1,topic2,...,topicN)} 
             {--consumer= : The consumer which will consume messages in the specified topic} 
+            {--deserializer= : The deserializer class to use when consuming message}
             {--groupId=anonymous : The consumer group id} 
             {--commit=1} 
             {--dlq=? : The Dead Letter Queue} 
@@ -55,6 +56,7 @@ class KafkaConsumerCommand extends Command
         $options = new Options($this->options(), $this->config);
 
         $consumer = $options->getConsumer();
+        $deserializer = $options->getDeserializer();
 
         $config = new Config(
             broker: $options->getBroker(),
@@ -71,7 +73,7 @@ class KafkaConsumerCommand extends Command
         /** @var Consumer $consumer */
         $consumer = app(Consumer::class, [
             'config' => $config,
-            'deserializer' => app(MessageDeserializer::class),
+            'deserializer' => app($deserializer ?? MessageDeserializer::class),
         ]);
 
         $consumer->consume();
