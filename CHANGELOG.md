@@ -2,6 +2,11 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2022-09-12 v1.8.8](https://github.com/mateusjunges/laravel-kafka/compare/v1.8.7...v1.8.8)
+- Fix docs by @mateusjunges in [#137](https://github.com/mateusjunges/laravel-kafka/pull/137)
+- Add methods to configure config callbacks by @mateusjunges in [#136](https://github.com/mateusjunges/laravel-kafka/pull/136)
+- Allows to customize the Deserializer in `kafka:consume` Command  by @cragonnyunt in [#140](https://github.com/mateusjunges/laravel-kafka/pull/140)
+
 ## [2022-08-22 v1.8.7](https://github.com/mateusjunges/laravel-kafka/compare/v1.8.6...v1.8.7)
 ## Fixes
 - Make consumer timeout configurable (fixes #132) by @mateusjunges in [#134](https://github.com/mateusjunges/laravel-kafka/pull/134)
