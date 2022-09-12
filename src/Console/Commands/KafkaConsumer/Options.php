@@ -37,7 +37,7 @@ class Options
 
     public function getTopics(): array
     {
-        return !empty($this->topics) ? $this->topics : [];
+        return ! empty($this->topics) ? $this->topics : [];
     }
 
     public function getConsumer(): ?string

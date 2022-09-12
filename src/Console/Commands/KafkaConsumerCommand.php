@@ -4,9 +4,9 @@ namespace Junges\Kafka\Console\Commands;
 
 use Illuminate\Console\Command;
 use Junges\Kafka\Config\Config;
+use Junges\Kafka\Console\Commands\KafkaConsumer\Options;
 use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Contracts\MessageDeserializer;
-use Junges\Kafka\Console\Commands\KafkaConsumer\Options;
 
 class KafkaConsumerCommand extends Command
 {
