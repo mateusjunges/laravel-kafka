@@ -213,7 +213,8 @@ class Consumer implements CanConsumeMessages
 
         match (true) {
             $batchConfig->getBatchRepository()->getBatchSize() >= $batchConfig->getBatchSizeLimit(),
-            $batchConfig->getTimer()->isTimedOut() && $batchConfig->getBatchRepository()->getBatchSize() > 0 => $executeBatchCallback()
+            $batchConfig->getTimer()->isTimedOut() && $batchConfig->getBatchRepository()->getBatchSize() > 0 => $executeBatchCallback(),
+            default => null
         };
 
         if ($batchConfig->getTimer()->isTimedOut()) {
