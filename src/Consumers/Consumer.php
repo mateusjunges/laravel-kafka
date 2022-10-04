@@ -206,17 +206,15 @@ class Consumer implements CanConsumeMessages
     {
         $batchConfig = $this->config->getBatchConfig();
 
-        if ($batchConfig->getBatchRepository()->getBatchSize() >= $batchConfig->getBatchSizeLimit()) {
+        $executeBatchCallback = function () use ($batchConfig) {
             $this->executeBatch($batchConfig->getBatchRepository()->getBatch());
             $batchConfig->getBatchRepository()->reset();
+        };
 
-            return;
-        }
-
-        if ($batchConfig->getTimer()->isTimedOut() && $batchConfig->getBatchRepository()->getBatchSize() > 0) {
-            $this->executeBatch($batchConfig->getBatchRepository()->getBatch());
-            $batchConfig->getBatchRepository()->reset();
-        }
+        match (true) {
+            $batchConfig->getBatchRepository()->getBatchSize() >= $batchConfig->getBatchSizeLimit(),
+            $batchConfig->getTimer()->isTimedOut() && $batchConfig->getBatchRepository()->getBatchSize() > 0 => $executeBatchCallback()
+        };
 
         if ($batchConfig->getTimer()->isTimedOut()) {
             $batchConfig->getTimer()->start($batchConfig->getBatchReleaseInterval());
