@@ -4,11 +4,12 @@ namespace Junges\Kafka;
 
 use InvalidArgumentException;
 use Junges\Kafka\Consumers\ConsumerBuilder;
+use Junges\Kafka\Contracts\CanConsumeMessagesFromKafka;
 use Junges\Kafka\Contracts\CanProduceMessages;
 use Junges\Kafka\Contracts\CanPublishMessagesToKafka;
 use Junges\Kafka\Producers\ProducerBuilder;
 
-class Kafka implements CanPublishMessagesToKafka
+class Kafka implements CanPublishMessagesToKafka, CanConsumeMessagesFromKafka
 {
     /**
      * Creates a new ProducerBuilder instance, setting brokers and topic.
