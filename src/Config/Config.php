@@ -152,7 +152,7 @@ class Config
         ];
 
         return collect(array_merge($config, $this->customOptions, $this->getSaslOptions()))
-            ->reject(fn ($option) => in_array($option, self::CONSUMER_ONLY_CONFIG_OPTIONS))
+            ->reject(fn (string|int $option, string $key) => in_array($key, self::CONSUMER_ONLY_CONFIG_OPTIONS))
             ->toArray();
     }
 
