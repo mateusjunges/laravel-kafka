@@ -24,7 +24,7 @@ class ConsumerFake implements CanConsumeMessages
      * @param \Closure|null $onStopConsume
      */
     public function __construct(
-        private Config $config,
+        private readonly Config $config,
         private array $messages = [],
         private bool $stopRequested = false,
         private ?Closure $onStopConsume = null

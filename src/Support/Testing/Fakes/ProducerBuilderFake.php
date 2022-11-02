@@ -37,12 +37,7 @@ class ProducerBuilderFake implements CanProduceMessages
         $this->makeProducer($conf);
     }
 
-    /**
-     * Return a new Junges\Commit\ProducerBuilder instance
-     * @param string $topic
-     * @param string|null $broker
-     * @return static
-     */
+    /** Return a new Junges\Commit\ProducerBuilder instance */
     public static function create(string $topic, string $broker = null): self
     {
         return new ProducerBuilderFake($broker, $topic);
@@ -62,11 +57,7 @@ class ProducerBuilderFake implements CanProduceMessages
         return $this;
     }
 
-    /**
-     * Set config options
-     * @param array $options
-     * @return $this
-     */
+    /** Set config options */
     public function withConfigOptions(array $options): self
     {
         foreach ($options as $name => $value) {
@@ -76,11 +67,7 @@ class ProducerBuilderFake implements CanProduceMessages
         return $this;
     }
 
-    /**
-     * Set the message headers.
-     * @param array $headers
-     * @return $this
-     */
+    /** Set the message headers. */
     public function withHeaders(array $headers = []): self
     {
         $this->message->withHeaders($headers);
@@ -88,11 +75,7 @@ class ProducerBuilderFake implements CanProduceMessages
         return $this;
     }
 
-    /**
-     * Set the message key.
-     * @param string $key
-     * @return $this
-     */
+    /** Set the message key. */
     public function withKafkaKey(string $key): self
     {
         $this->message->withKey($key);
@@ -100,12 +83,7 @@ class ProducerBuilderFake implements CanProduceMessages
         return $this;
     }
 
-    /**
-     * Set a message array key.
-     * @param string $key
-     * @param mixed $message
-     * @return $this
-     */
+    /** Set a message array key. */
     public function withBodyKey(string $key, mixed $message): self
     {
         $this->message->withBodyKey($key, $message);
@@ -113,12 +91,7 @@ class ProducerBuilderFake implements CanProduceMessages
         return $this;
     }
 
-    /**
-     * Set the entire message.
-     *
-     * @param \Junges\Kafka\Contracts\KafkaProducerMessage $message
-     * @return $this
-     */
+    /** Set the entire message. */
     public function withMessage(KafkaProducerMessage $message): self
     {
         $this->message = $message;
@@ -126,12 +99,7 @@ class ProducerBuilderFake implements CanProduceMessages
         return $this;
     }
 
-    /**
-     * Enable or disable kafka debug.
-     *
-     * @param bool $enabled
-     * @return $this
-     */
+    /** Enable or disable kafka debug. */
     public function withDebugEnabled(bool $enabled = true): self
     {
         if ($enabled) {
@@ -147,10 +115,7 @@ class ProducerBuilderFake implements CanProduceMessages
         return $this;
     }
 
-    /**
-     * Get the kafka topic to be used.
-     * @return string
-     */
+    /** Get the kafka topic to be used. */
     public function getTopic(): string
     {
         return $this->topic;
@@ -168,12 +133,7 @@ class ProducerBuilderFake implements CanProduceMessages
         return $this;
     }
 
-    /**
-     * Specifies which serializer should be used.
-     *
-     * @param  \Junges\Kafka\Contracts\MessageSerializer  $serializer
-     * @return \Junges\Kafka\Contracts\CanProduceMessages
-     */
+    /** Specifies which serializer should be used. */
     public function usingSerializer(MessageSerializer $serializer): CanProduceMessages
     {
         $this->serializer = $serializer;
@@ -181,11 +141,7 @@ class ProducerBuilderFake implements CanProduceMessages
         return $this;
     }
 
-    /**
-     * Send the message to the producer to be published on kafka.
-     *
-     * @return bool
-     */
+    /** Send the message to the producer to be published on kafka. */
     public function send(): bool
     {
         if ($this->getMessage()->getTopicName() === null) {
@@ -197,12 +153,7 @@ class ProducerBuilderFake implements CanProduceMessages
         return $producer->produce($this->getMessage());
     }
 
-    /**
-     * Send a message batch to Kafka.
-     *
-     * @param  \Junges\Kafka\Producers\MessageBatch  $messageBatch
-     * @return int
-     */
+    /** Send a message batch to Kafka. */
     public function sendBatch(MessageBatch $messageBatch): int
     {
         $producer = $this->build();
@@ -224,11 +175,7 @@ class ProducerBuilderFake implements CanProduceMessages
         return $producerFake;
     }
 
-    /**
-     * Build the producer.
-     *
-     * @return ProducerFake
-     */
+    /** Build the producer. */
     private function build(): ProducerFake
     {
         $conf = new Config(

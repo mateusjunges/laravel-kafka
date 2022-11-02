@@ -8,9 +8,9 @@ use Junges\Kafka\Commit\Contracts\Sleeper;
 class Retryable
 {
     public function __construct(
-        private Sleeper $sleeper,
-        private int $maximumRetries,
-        private ?array $retryableErrors
+        private readonly Sleeper $sleeper,
+        private readonly int $maximumRetries,
+        private readonly ?array $retryableErrors
     ) {
     }
 

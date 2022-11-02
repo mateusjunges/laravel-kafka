@@ -8,7 +8,7 @@ use Junges\Kafka\Contracts\CanConsumeBatchMessages;
 
 class CallableBatchConsumer implements CanConsumeBatchMessages
 {
-    public function __construct(private Closure $batchHandler)
+    public function __construct(private readonly Closure $batchHandler)
     {
     }
 

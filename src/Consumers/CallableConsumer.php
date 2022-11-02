@@ -8,12 +8,9 @@ use Junges\Kafka\Contracts\KafkaConsumerMessage;
 
 class CallableConsumer extends Consumer
 {
-    private Closure $handler;
-    private array $middlewares;
-
-    public function __construct(callable $handler, array $middlewares)
+    public function __construct(private Closure $handler, private array $middlewares)
     {
-        $this->handler = Closure::fromCallable($handler);
+        $this->handler = $handler(...);
 
         $this->middlewares = array_map([$this, 'wrapMiddleware'], $middlewares);
         $this->middlewares[] = $this->wrapMiddleware(

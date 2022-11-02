@@ -65,7 +65,7 @@ class Consumer implements CanConsumeMessages
      * @param MessageDeserializer $deserializer
      * @param \Junges\Kafka\Commit\Contracts\CommitterFactory|null $committerFactory
      */
-    public function __construct(private Config $config, MessageDeserializer $deserializer, CommitterFactory $committerFactory = null)
+    public function __construct(private readonly Config $config, MessageDeserializer $deserializer, CommitterFactory $committerFactory = null)
     {
         $this->logger = app(Logger::class);
         $this->messageCounter = new MessageCounter($config->getMaxMessages());

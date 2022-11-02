@@ -10,26 +10,14 @@ use Junges\Kafka\Contracts\KafkaProducerMessage;
 
 class Message extends AbstractMessage implements Arrayable, KafkaProducerMessage
 {
-    /**
-     * Creates a new message instance.
-     *
-     * @param string|null $topicName
-     * @param int $partition
-     * @return Message
-     */
+    /** Creates a new message instance.*/
     #[Pure]
     public static function create(string $topicName = null, int $partition = RD_KAFKA_PARTITION_UA): KafkaProducerMessage
     {
         return new self($topicName, $partition);
     }
 
-    /**
-     * Set a key in the message array.
-     *
-     * @param string $key
-     * @param mixed $message
-     * @return $this
-     */
+    /** Set a key in the message array */
     public function withBodyKey(string $key, mixed $message): Message
     {
         $this->body[$key] = $message;
@@ -37,12 +25,7 @@ class Message extends AbstractMessage implements Arrayable, KafkaProducerMessage
         return $this;
     }
 
-    /**
-     * Unset a key in the message array.
-     *
-     * @param string $key
-     * @return $this
-     */
+    /** Unset a key in the message array. */
     public function forgetBodyKey(string $key): Message
     {
         unset($this->body[$key]);
@@ -50,12 +33,7 @@ class Message extends AbstractMessage implements Arrayable, KafkaProducerMessage
         return $this;
     }
 
-    /**
-     * Set the message headers.
-     *
-     * @param array $headers
-     * @return $this
-     */
+    /** Set the message headers. */
     public function withHeaders(array $headers = []): Message
     {
         $this->headers = $headers;
@@ -63,12 +41,7 @@ class Message extends AbstractMessage implements Arrayable, KafkaProducerMessage
         return $this;
     }
 
-    /**
-     * Set the kafka message key.
-     *
-     * @param string|null $key
-     * @return $this
-     */
+    /** Set the kafka message key. */
     public function withKey(?string $key): Message
     {
         $this->key = $key;

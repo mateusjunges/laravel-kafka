@@ -61,25 +61,23 @@ class Config
         'auto.offset.reset',
     ];
 
-    private HandlesBatchConfiguration $batchConfig;
-
     public function __construct(
-        private string             $broker,
-        private array              $topics,
-        private ?string            $securityProtocol = null,
-        private ?int               $commit = null,
-        private ?string            $groupId = null,
-        private ?Consumer          $consumer = null,
-        private ?Sasl              $sasl = null,
-        private ?string            $dlq = null,
-        private int                $maxMessages = -1,
-        private int                $maxCommitRetries = 6,
-        private bool               $autoCommit = true,
-        private array              $customOptions = [],
-        ?HandlesBatchConfiguration $batchConfig = null,
-        private bool               $stopAfterLastMessage = false,
-        private int                $restartInterval = 1000,
-        private array              $callbacks = [],
+        private readonly string             $broker,
+        private readonly array              $topics,
+        private readonly ?string            $securityProtocol = null,
+        private readonly ?int               $commit = null,
+        private readonly ?string            $groupId = null,
+        private readonly ?Consumer          $consumer = null,
+        private readonly ?Sasl              $sasl = null,
+        private readonly ?string            $dlq = null,
+        private readonly int                $maxMessages = -1,
+        private readonly int                $maxCommitRetries = 6,
+        private readonly bool               $autoCommit = true,
+        private readonly array              $customOptions = [],
+        private ?HandlesBatchConfiguration  $batchConfig = null,
+        private readonly bool               $stopAfterLastMessage = false,
+        private readonly int                $restartInterval = 1000,
+        private readonly array              $callbacks = [],
     ) {
         $this->batchConfig = $batchConfig ?? new NullBatchConfig();
     }

@@ -10,7 +10,7 @@ use Junges\Kafka\Retryable;
 
 class RetryableHandler
 {
-    public function __construct(private Closure $handler, private RetryStrategy $retryStrategy, private Sleeper $sleeper)
+    public function __construct(private readonly Closure $handler, private readonly RetryStrategy $retryStrategy, private readonly Sleeper $sleeper)
     {
     }
 

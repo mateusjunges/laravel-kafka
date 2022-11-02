@@ -16,21 +16,16 @@ class Producer
     private KafkaProducer $producer;
 
     public function __construct(
-        private Config $config,
-        private string $topic,
-        private MessageSerializer $serializer
+        private readonly Config $config,
+        private readonly string $topic,
+        private readonly MessageSerializer $serializer
     ) {
         $this->producer = app(KafkaProducer::class, [
             'conf' => $this->setConf($this->config->getProducerOptions()),
         ]);
     }
 
-    /**
-     * Set the Kafka Configuration.
-     *
-     * @param array $options
-     * @return \RdKafka\Conf
-     */
+    /** Set the Kafka Configuration. */
     public function setConf(array $options): Conf
     {
         $conf = new Conf();
@@ -49,8 +44,6 @@ class Producer
     /**
      * Produce the specified message in the kafka topic.
      *
-     * @param KafkaProducerMessage $message
-     * @return mixed
      * @throws \Exception
      */
     public function produce(KafkaProducerMessage $message): bool
@@ -68,9 +61,7 @@ class Producer
         return $this->flush();
     }
 
-    /**
-     * @throws CouldNotPublishMessage
-     */
+    /** @throws CouldNotPublishMessage */
     public function produceBatch(MessageBatch $messageBatch): int
     {
         $topic = $this->producer->newTopic($this->topic);
@@ -115,10 +106,7 @@ class Producer
         }
     }
 
-    /**
-     * @throws CouldNotPublishMessage
-     * @throws \Exception
-     */
+    /** @throws CouldNotPublishMessage|\Exception */
     private function flush(): mixed
     {
         return retry(10, function () {

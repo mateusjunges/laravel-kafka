@@ -61,7 +61,6 @@ class ConfigTest extends LaravelKafkaTestCase
         $expectedOptions = [
             'auto.offset.reset' => 'smallest',
             'enable.auto.commit' => 'true',
-            'compression.codec' => 'gzip',
             'group.id' => 'group',
             'bootstrap.servers' => 'broker',
             'metadata.broker.list' => 'broker',
@@ -93,7 +92,6 @@ class ConfigTest extends LaravelKafkaTestCase
         $expectedOptions = [
             'auto.offset.reset' => 'smallest',
             'enable.auto.commit' => 'true',
-            'compression.codec' => 'gzip',
             'group.id' => 'group',
             'bootstrap.servers' => 'broker',
             'metadata.broker.list' => 'broker',

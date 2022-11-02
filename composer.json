@@ -3,7 +3,7 @@
     "description": "A kafka driver for laravel",
     "type": "library",
     "require": {
-        "php": "^8.0",
+        "php": "^8.1",
         "ext-rdkafka": "^4.0|^5.0|^6.0",
         "monolog/monolog": "^2.3",
         "flix-tech/avro-serde-php": "^1.7",

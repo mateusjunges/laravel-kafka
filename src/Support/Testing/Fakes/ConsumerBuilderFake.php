@@ -75,10 +75,8 @@ class ConsumerBuilderFake extends ConsumerBuilder implements ConsumerBuilderCont
     }
 
     /**
-     * Returns a instance of BatchConfig if batching is enabled.
-     * Otherwise, a instance of NullConfig will be returned.
-     *
-     * @return HandlesBatchConfiguration
+     * Returns an instance of BatchConfig if batching is enabled.
+     * Otherwise, an instance of NullConfig will be returned.
      */
     protected function getBatchConfig(): HandlesBatchConfiguration
     {

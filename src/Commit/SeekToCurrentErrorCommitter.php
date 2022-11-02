@@ -8,7 +8,7 @@ use RdKafka\Message;
 
 class SeekToCurrentErrorCommitter implements Committer
 {
-    public function __construct(private KafkaConsumer $consumer, private Committer $committer)
+    public function __construct(private readonly KafkaConsumer $consumer, private readonly Committer $committer)
     {
     }
 

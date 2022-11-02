@@ -10,7 +10,7 @@ use RdKafka\KafkaConsumer;
 
 class DefaultCommitterFactory implements CommitterFactory
 {
-    public function __construct(private MessageCounter $messageCounter)
+    public function __construct(private readonly MessageCounter $messageCounter)
     {
     }
 

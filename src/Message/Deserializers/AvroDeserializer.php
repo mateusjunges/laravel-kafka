@@ -11,8 +11,8 @@ use Junges\Kafka\Message\ConsumedMessage;
 class AvroDeserializer implements AvroMessageDeserializer
 {
     public function __construct(
-        private AvroSchemaRegistry $registry,
-        private RecordSerializer   $recordSerializer
+        private readonly AvroSchemaRegistry $registry,
+        private readonly RecordSerializer   $recordSerializer
     ) {
     }
 
