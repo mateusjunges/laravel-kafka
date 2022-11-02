@@ -2,6 +2,9 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2022-10-28 v1.9.1](https://github.com/mateusjunges/laravel-kafka/compare/v1.9.0...v1.9.1)
+- Filter config options for consumer and producers by @mateusjunges in [#151](https://github.com/mateusjunges/laravel-kafka/pull/151)
+
 ## [2022-10-28 v1.9.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.8.9...v1.9.0)
 - Make Kafka class usable through interface injection by @mosharaf13 in [#150](https://github.com/mateusjunges/laravel-kafka/pull/150)
 
