@@ -121,6 +121,8 @@ class Producer
      */
     private function flush(): mixed
     {
+        $sleepMilliseconds = config('kafka.flush_retry_sleep_in_ms', 100);
+
         return retry(10, function () {
             $result = $this->producer->flush(1000);
 
@@ -131,6 +133,6 @@ class Producer
             $message = rd_kafka_err2str($result);
 
             throw CouldNotPublishMessage::withMessage($message, $result);
-        });
+        }, $sleepMilliseconds);
     }
 }
