@@ -2,6 +2,9 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2022-11-29 v1.9.2](https://github.com/mateusjunges/laravel-kafka/compare/v1.9.1...v1.9.2)
+- Allow to configure sleep timeout when Producer is retrying `flush` by @mateusjunges in [#156](https://github.com/mateusjunges/laravel-kafka/pull/156)
+
 ## [2022-10-28 v1.9.1](https://github.com/mateusjunges/laravel-kafka/compare/v1.9.0...v1.9.1)
 - Filter config options for consumer and producers by @mateusjunges in [#151](https://github.com/mateusjunges/laravel-kafka/pull/151)
 
