@@ -9,8 +9,6 @@ use Junges\Kafka\Contracts\MessageSerializer;
 class JsonSerializer implements MessageSerializer
 {
     /**
-     * @param KafkaProducerMessage $message
-     * @return KafkaProducerMessage
      * @throws JsonException
      */
     public function serialize(KafkaProducerMessage $message): KafkaProducerMessage

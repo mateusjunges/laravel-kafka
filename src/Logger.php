@@ -11,7 +11,7 @@ use Throwable;
 
 class Logger
 {
-    private MonologLogger $logger;
+    private readonly MonologLogger $logger;
 
     public function __construct()
     {
@@ -32,9 +32,7 @@ class Logger
     /**
      * Log an error message.
      *
-     * @param Message $message
      * @param \Throwable|null $e
-     * @param string $prefix
      */
     public function error(Message $message, Throwable $e = null, string $prefix = 'ERROR'): void
     {

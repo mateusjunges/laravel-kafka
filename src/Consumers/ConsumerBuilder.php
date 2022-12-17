@@ -23,11 +23,9 @@ class ConsumerBuilder implements ConsumerBuilderContract
 
     protected array $topics;
     protected int $commit;
-    protected ?string $groupId;
     protected Closure $handler;
     protected int $maxMessages;
     protected int $maxCommitRetries;
-    protected string $brokers;
     protected array $middlewares;
     protected ?Sasl $saslConfig = null;
     protected ?string $dlq = null;
@@ -41,21 +39,13 @@ class ConsumerBuilder implements ConsumerBuilderContract
     protected int $batchReleaseInterval = 0;
     protected bool $stopAfterLastMessage = false;
 
-    /**
-     * @param string $brokers
-     * @param array $topics
-     * @param string|null $groupId
-     */
-    protected function __construct(string $brokers, array $topics = [], string $groupId = null)
+    protected function __construct(protected string $brokers, array $topics = [], protected ?string $groupId = null)
     {
         if (count($topics) > 0) {
             foreach ($topics as $topic) {
                 $this->validateTopic($topic);
             }
         }
-
-        $this->brokers = $brokers;
-        $this->groupId = $groupId;
         $this->topics = array_unique($topics);
 
         $this->commit = 1;
@@ -332,9 +322,6 @@ class ConsumerBuilder implements ConsumerBuilderContract
 
     /**
      * Validates each topic before subscribing.
-     *
-     * @param mixed $topic
-     * @return void
      */
     protected function validateTopic(mixed $topic): void
     {
@@ -347,8 +334,6 @@ class ConsumerBuilder implements ConsumerBuilderContract
 
     /**
      * Get security protocol depending on whether sasl is set or not.
-     *
-     * @return string
      */
     protected function getSecurityProtocol(): string
     {
@@ -360,8 +345,6 @@ class ConsumerBuilder implements ConsumerBuilderContract
     /**
      * Returns batch config if batching is enabled
      * if batching is disabled then null config returned
-     *
-     * @return HandlesBatchConfiguration
      */
     protected function getBatchConfig(): HandlesBatchConfiguration
     {

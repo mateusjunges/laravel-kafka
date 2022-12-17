@@ -17,10 +17,10 @@ class ProducerBuilder implements CanProduceMessages
     private KafkaProducerMessage $message;
     private MessageSerializer $serializer;
     private ?Sasl $saslConfig = null;
-    private string $broker;
+    private readonly string $broker;
 
     public function __construct(
-        private string $topic,
+        private readonly string $topic,
         ?string $broker = null,
     ) {
         /** @var KafkaProducerMessage $message */
@@ -32,7 +32,6 @@ class ProducerBuilder implements CanProduceMessages
 
     /**
      * Return a new Junges\Commit\ProducerBuilder instance
-     * @param string $topic
      * @param string|null $broker
      * @return static
      */
@@ -47,8 +46,6 @@ class ProducerBuilder implements CanProduceMessages
     /**
      * Sets a specific config option.
      *
-     * @param  string  $name
-     * @param  mixed  $option
      * @return $this
      */
     public function withConfigOption(string $name, mixed $option): self
@@ -61,7 +58,6 @@ class ProducerBuilder implements CanProduceMessages
     /**
      * Sets configuration options.
      *
-     * @param  array  $options
      * @return $this
      */
     public function withConfigOptions(array $options): self
@@ -76,7 +72,6 @@ class ProducerBuilder implements CanProduceMessages
     /**
      * Set the message headers.
      *
-     * @param array $headers
      * @return $this
      */
     public function withHeaders(array $headers = []): self
@@ -89,7 +84,6 @@ class ProducerBuilder implements CanProduceMessages
     /**
      * Set the message key.
      *
-     * @param string $key
      * @return $this
      */
     public function withKafkaKey(string $key): self
@@ -102,8 +96,6 @@ class ProducerBuilder implements CanProduceMessages
     /**
      * Set a message array key.
      *
-     * @param string $key
-     * @param mixed $message
      * @return $this
      */
     public function withBodyKey(string $key, mixed $message): self
@@ -116,7 +108,6 @@ class ProducerBuilder implements CanProduceMessages
     /**
      * Set the message to be published.
      *
-     * @param  \Junges\Kafka\Contracts\KafkaProducerMessage  $message
      * @return $this
      */
     public function withMessage(KafkaProducerMessage $message): self
@@ -129,7 +120,6 @@ class ProducerBuilder implements CanProduceMessages
     /**
      * Enables or disable debug.
      *
-     * @param  bool  $enabled
      * @return $this
      */
     public function withDebugEnabled(bool $enabled = true): self
@@ -150,7 +140,6 @@ class ProducerBuilder implements CanProduceMessages
     /**
      * Set Sasl configuration.
      *
-     * @param Sasl $saslConfig
      * @return $this
      */
     public function withSasl(Sasl $saslConfig): self
@@ -162,9 +151,6 @@ class ProducerBuilder implements CanProduceMessages
 
     /**
      * Specifies which serializer should be used.
-     *
-     * @param  \Junges\Kafka\Contracts\MessageSerializer  $serializer
-     * @return \Junges\Kafka\Contracts\CanProduceMessages
      */
     public function usingSerializer(MessageSerializer $serializer): CanProduceMessages
     {
@@ -185,8 +171,6 @@ class ProducerBuilder implements CanProduceMessages
 
     /**
      * Returns the topic where the message will be published.
-     *
-     * @return string
      */
     public function getTopic(): string
     {
@@ -197,7 +181,6 @@ class ProducerBuilder implements CanProduceMessages
      * Send the given message to Kakfa.
      *
      * @throws \Exception
-     * @return bool
      */
     public function send(): bool
     {
@@ -209,9 +192,7 @@ class ProducerBuilder implements CanProduceMessages
     /**
      * Send a message batch to Kafka.
      *
-     * @param  \Junges\Kafka\Producers\MessageBatch  $messageBatch
      * @throws \Junges\Kafka\Exceptions\CouldNotPublishMessage
-     * @return int
      */
     public function sendBatch(MessageBatch $messageBatch): int
     {

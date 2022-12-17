@@ -13,12 +13,12 @@ use SplDoublyLinkedList;
 
 class Producer
 {
-    private KafkaProducer $producer;
+    private readonly KafkaProducer $producer;
 
     public function __construct(
-        private Config $config,
-        private string $topic,
-        private MessageSerializer $serializer
+        private readonly Config $config,
+        private readonly string $topic,
+        private readonly MessageSerializer $serializer
     ) {
         $this->producer = app(KafkaProducer::class, [
             'conf' => $this->setConf($this->config->getProducerOptions()),
@@ -27,9 +27,6 @@ class Producer
 
     /**
      * Set the Kafka Configuration.
-     *
-     * @param array $options
-     * @return \RdKafka\Conf
      */
     public function setConf(array $options): Conf
     {
@@ -49,7 +46,6 @@ class Producer
     /**
      * Produce the specified message in the kafka topic.
      *
-     * @param KafkaProducerMessage $message
      * @return mixed
      * @throws \Exception
      */

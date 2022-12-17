@@ -23,8 +23,6 @@ class Kafka extends Facade
 {
     /**
      * Replace the bound instance with a fake.
-     *
-     * @return \Junges\Kafka\Support\Testing\Fakes\KafkaFake
      */
     public static function fake(): KafkaFake
     {

@@ -7,7 +7,6 @@ interface CanConsumeMessagesFromKafka
     /**
      * Return a ConsumerBuilder instance.
      *
-     * @param array $topics
      * @param string|null $groupId
      * @param string|null $brokers
      * @return \Junges\Kafka\Consumers\ConsumerBuilder

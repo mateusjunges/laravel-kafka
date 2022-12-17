@@ -33,17 +33,11 @@ class LaravelKafkaServiceProvider extends ServiceProvider
 
     public function register()
     {
-        $this->app->bind(MessageSerializer::class, function () {
-            return new JsonSerializer();
-        });
+        $this->app->bind(MessageSerializer::class, fn() => new JsonSerializer());
 
-        $this->app->bind(MessageDeserializer::class, function () {
-            return new JsonDeserializer();
-        });
+        $this->app->bind(MessageDeserializer::class, fn() => new JsonDeserializer());
 
-        $this->app->bind(KafkaProducerMessage::class, function () {
-            return new Message('');
-        });
+        $this->app->bind(KafkaProducerMessage::class, fn() => new Message(''));
 
         $this->app->bind(KafkaConsumerMessage::class, ConsumedMessage::class);
 

@@ -45,8 +45,6 @@ class ConsumerBuilderFake extends ConsumerBuilder implements ConsumerBuilderCont
 
     /**
      * Build the Kafka consumer.
-     *
-     * @return \Junges\Kafka\Contracts\CanConsumeMessages
      */
     public function build(): CanConsumeMessages
     {
@@ -77,8 +75,6 @@ class ConsumerBuilderFake extends ConsumerBuilder implements ConsumerBuilderCont
     /**
      * Returns a instance of BatchConfig if batching is enabled.
      * Otherwise, a instance of NullConfig will be returned.
-     *
-     * @return HandlesBatchConfiguration
      */
     protected function getBatchConfig(): HandlesBatchConfiguration
     {

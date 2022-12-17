@@ -15,21 +15,18 @@ class Options
     private ?string $dlq = null;
     private int $maxMessages = -1;
     private ?string $securityProtocol = 'plaintext';
-    private ?string $saslUsername;
-    private ?string $saslPassword;
-    private ?string $saslMechanisms;
-    private array $config;
+    private readonly ?string $saslUsername;
+    private readonly ?string $saslPassword;
+    private readonly ?string $saslMechanisms;
 
     #[Pure]
-    public function __construct(array $options, array $config)
+    public function __construct(array $options, private readonly array $config)
     {
-        $options['topics'] = explode(",", $options['topics']);
+        $options['topics'] = explode(",", (string) $options['topics']);
 
         foreach ($options as $option => $value) {
             $this->{$option} = $value;
         }
-
-        $this->config = $config;
         $this->saslPassword = $config['sasl']['password'];
         $this->saslUsername = $config['sasl']['username'];
         $this->saslMechanisms = $config['sasl']['mechanisms'];

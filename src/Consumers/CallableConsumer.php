@@ -8,14 +8,14 @@ use Junges\Kafka\Contracts\KafkaConsumerMessage;
 
 class CallableConsumer extends Consumer
 {
-    private Closure $handler;
+    private readonly Closure $handler;
     private array $middlewares;
 
     public function __construct(callable $handler, array $middlewares)
     {
         $this->handler = Closure::fromCallable($handler);
 
-        $this->middlewares = array_map([$this, 'wrapMiddleware'], $middlewares);
+        $this->middlewares = array_map($this->wrapMiddleware(...), $middlewares);
         $this->middlewares[] = $this->wrapMiddleware(
             fn ($message, callable $next) => $next($message)
         );
@@ -23,8 +23,6 @@ class CallableConsumer extends Consumer
 
     /**
      * Handle the received message.
-     *
-     * @param KafkaConsumerMessage $message
      */
     public function handle(KafkaConsumerMessage $message): void
     {
@@ -40,9 +38,6 @@ class CallableConsumer extends Consumer
 
     /**
      * Wrap the message with a given middleware.
-     *
-     * @param callable $middleware
-     * @return callable
      */
     private function wrapMiddleware(callable $middleware): callable
     {

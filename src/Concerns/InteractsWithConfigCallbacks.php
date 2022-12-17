@@ -9,7 +9,6 @@ trait InteractsWithConfigCallbacks
     /**
      * Set the configuration error callback.
      *
-     * @param  callable  $callback
      * @return $this
      */
     public function withErrorCb(callable $callback): self
@@ -22,7 +21,6 @@ trait InteractsWithConfigCallbacks
     /**
      * Sets the delivery report callback.
      *
-     * @param  callable  $callback
      * @return $this
      */
     public function withDrMsgCb(callable $callback): self
@@ -35,7 +33,6 @@ trait InteractsWithConfigCallbacks
     /**
      * Set consume callback to use with poll.
      *
-     * @param  callable  $callback
      * @return $this
      */
     public function withConsumeCb(callable $callback): self
@@ -48,7 +45,6 @@ trait InteractsWithConfigCallbacks
     /**
      * Set the log callback.
      *
-     * @param  callable  $callback
      * @return $this
      */
     public function withLogCb(callable $callback): self
@@ -61,7 +57,6 @@ trait InteractsWithConfigCallbacks
     /**
      * Set offset commit callback to use with consumer groups.
      *
-     * @param  callable  $callback
      * @return $this
      */
     public function withOffsetCommitCb(callable $callback): self
@@ -74,7 +69,6 @@ trait InteractsWithConfigCallbacks
     /**
      * Set rebalance callback for  use with coordinated consumer group balancing.
      *
-     * @param  callable  $callback
      * @return $this
      */
     public function withRebalanceCb(callable $callback): self
@@ -87,7 +81,6 @@ trait InteractsWithConfigCallbacks
     /**
      * Set statistics callback.
      *
-     * @param  callable  $callback
      * @return $this
      */
     public function withStatsCb(callable $callback): self

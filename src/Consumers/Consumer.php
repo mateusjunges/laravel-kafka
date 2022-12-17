@@ -47,30 +47,26 @@ class Consumer implements CanConsumeMessages
         RD_KAFKA_RESP_ERR__NO_OFFSET,
     ];
 
-    private Logger $logger;
+    private readonly Logger $logger;
     private KafkaConsumer $consumer;
     private KafkaProducer $producer;
-    private MessageCounter $messageCounter;
+    private readonly MessageCounter $messageCounter;
     private Committer $committer;
-    private Retryable $retryable;
-    private CommitterFactory $committerFactory;
-    private MessageDeserializer $deserializer;
+    private readonly Retryable $retryable;
+    private readonly CommitterFactory $committerFactory;
     private bool $stopRequested = false;
     private ?Closure $onStopConsume = null;
     protected int $lastRestart = 0;
     protected Timer $restartTimer;
 
     /**
-     * @param \Junges\Kafka\Config\Config $config
-     * @param MessageDeserializer $deserializer
      * @param \Junges\Kafka\Commit\Contracts\CommitterFactory|null $committerFactory
      */
-    public function __construct(private Config $config, MessageDeserializer $deserializer, CommitterFactory $committerFactory = null)
+    public function __construct(private readonly Config $config, private readonly MessageDeserializer $deserializer, CommitterFactory $committerFactory = null)
     {
         $this->logger = app(Logger::class);
         $this->messageCounter = new MessageCounter($config->getMaxMessages());
         $this->retryable = new Retryable(new NativeSleeper(), 6, self::TIMEOUT_ERRORS);
-        $this->deserializer = $deserializer;
 
         $this->committerFactory = $committerFactory ?? new DefaultCommitterFactory($this->messageCounter);
     }
@@ -113,8 +109,6 @@ class Consumer implements CanConsumeMessages
 
     /**
      * Requests the consumer to stop after it's finished processing any messages to allow graceful exit
-     *
-     * @param Closure|null $onStop
      */
     public function stopConsume(?Closure $onStop = null): void
     {
@@ -153,9 +147,6 @@ class Consumer implements CanConsumeMessages
 
     /**
      * Set the consumer configuration.
-     *
-     * @param array $options
-     * @return \RdKafka\Conf
      */
     private function setConf(array $options): Conf
     {
@@ -175,7 +166,6 @@ class Consumer implements CanConsumeMessages
     /**
      * Tries to handle the message received.
      *
-     * @param \RdKafka\Message $message
      * @throws \Throwable
      */
     private function executeMessage(Message $message): void
@@ -199,7 +189,6 @@ class Consumer implements CanConsumeMessages
      * 1) if current batch size is greater than or equals to batch size limit
      * 2) if batch release interval is timed out and current batch size greater than zero
      *
-     * @return void
      * @throws Throwable
      */
     private function handleBatch(): void
@@ -225,8 +214,6 @@ class Consumer implements CanConsumeMessages
     /**
      * Tries to handle received batch of messages
      *
-     * @param Collection $collection
-     * @return void
      * @throws Throwable
      */
     private function executeBatch(Collection $collection): void
@@ -253,9 +240,7 @@ class Consumer implements CanConsumeMessages
     /**
      * Handle exceptions while consuming messages.
      *
-     * @param \Throwable $exception
      * @param Message|ConsumedMessage $message
-     * @return bool
      */
     private function handleException(Throwable $exception, Message|KafkaConsumerMessage $message): bool
     {
@@ -278,8 +263,6 @@ class Consumer implements CanConsumeMessages
 
     /**
      * Send a message to the Dead Letter Queue.
-     *
-     * @param \RdKafka\Message $message
      */
     private function sendToDlq(Message $message): void
     {
@@ -297,8 +280,6 @@ class Consumer implements CanConsumeMessages
     }
 
     /**
-     * @param \RdKafka\Message $message
-     * @param bool $success
      * @throws \Throwable
      */
     private function commit(Message $message, bool $success): void
@@ -323,8 +304,6 @@ class Consumer implements CanConsumeMessages
 
     /**
      * Determine if the max message limit is reached.
-     *
-     * @return bool
      */
     private function maxMessagesLimitReached(): bool
     {

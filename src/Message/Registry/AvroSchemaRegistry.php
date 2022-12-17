@@ -13,60 +13,42 @@ class AvroSchemaRegistry implements AvroSchemaRegistryContract
     /**
      * @var array<string, AvroSchemaRegistry[]>
      */
-    private $schemaMapping = [
+    private array $schemaMapping = [
         self::BODY_IDX => [],
         self::KEY_IDX => [],
     ];
 
     /**
      * AvroSchemaRegistry constructor.
-     * @param Registry $registry
      */
-    public function __construct(private Registry $registry)
+    public function __construct(private readonly Registry $registry)
     {
     }
 
-    /**
-     * @param string $topicName
-     * @param KafkaAvroSchemaRegistry $avroSchema
-     * @return void
-     */
     public function addBodySchemaMappingForTopic(string $topicName, KafkaAvroSchemaRegistry $avroSchema): void
     {
         $this->schemaMapping[self::BODY_IDX][$topicName] = $avroSchema;
     }
 
     /**
-     * @param string $topicName
      * @param AvroSchemaRegistry $avroSchema
-     * @return void
      */
     public function addKeySchemaMappingForTopic(string $topicName, KafkaAvroSchemaRegistry $avroSchema): void
     {
         $this->schemaMapping[self::KEY_IDX][$topicName] = $avroSchema;
     }
 
-    /**
-     * @param string $topicName
-     * @return KafkaAvroSchemaRegistry
-     */
     public function getBodySchemaForTopic(string $topicName): KafkaAvroSchemaRegistry
     {
         return $this->getSchemaForTopicAndType($topicName, self::BODY_IDX);
     }
 
-    /**
-     * @param string $topicName
-     * @return KafkaAvroSchemaRegistry
-     */
     public function getKeySchemaForTopic(string $topicName): KafkaAvroSchemaRegistry
     {
         return $this->getSchemaForTopicAndType($topicName, self::KEY_IDX);
     }
 
     /**
-     * @param string $topicName
-     * @return bool
      * @throws SchemaRegistryException
      */
     public function hasBodySchemaForTopic(string $topicName): bool
@@ -75,8 +57,6 @@ class AvroSchemaRegistry implements AvroSchemaRegistryContract
     }
 
     /**
-     * @param string $topicName
-     * @return bool
      * @throws SchemaRegistryException
      */
     public function hasKeySchemaForTopic(string $topicName): bool
@@ -85,9 +65,6 @@ class AvroSchemaRegistry implements AvroSchemaRegistryContract
     }
 
     /**
-     * @param string $topicName
-     * @param string $type
-     * @return KafkaAvroSchemaRegistry
      * @throws \FlixTech\SchemaRegistryApi\Exception\SchemaRegistryException
      */
     private function getSchemaForTopicAndType(string $topicName, string $type): KafkaAvroSchemaRegistry
@@ -115,8 +92,6 @@ class AvroSchemaRegistry implements AvroSchemaRegistryContract
     }
 
     /**
-     * @param KafkaAvroSchemaRegistry $avroSchema
-     * @return AvroSchema
      * @throws SchemaRegistryException|\FlixTech\SchemaRegistryApi\Exception\SchemaRegistryException
      */
     private function getSchemaDefinition(KafkaAvroSchemaRegistry $avroSchema): AvroSchema

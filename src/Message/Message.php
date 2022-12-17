@@ -14,7 +14,6 @@ class Message extends AbstractMessage implements Arrayable, KafkaProducerMessage
      * Creates a new message instance.
      *
      * @param string|null $topicName
-     * @param int $partition
      * @return Message
      */
     #[Pure]
@@ -25,10 +24,6 @@ class Message extends AbstractMessage implements Arrayable, KafkaProducerMessage
 
     /**
      * Set a key in the message array.
-     *
-     * @param string $key
-     * @param mixed $message
-     * @return $this
      */
     public function withBodyKey(string $key, mixed $message): Message
     {
@@ -39,9 +34,6 @@ class Message extends AbstractMessage implements Arrayable, KafkaProducerMessage
 
     /**
      * Unset a key in the message array.
-     *
-     * @param string $key
-     * @return $this
      */
     public function forgetBodyKey(string $key): Message
     {
@@ -52,9 +44,6 @@ class Message extends AbstractMessage implements Arrayable, KafkaProducerMessage
 
     /**
      * Set the message headers.
-     *
-     * @param array $headers
-     * @return $this
      */
     public function withHeaders(array $headers = []): Message
     {
@@ -65,9 +54,6 @@ class Message extends AbstractMessage implements Arrayable, KafkaProducerMessage
 
     /**
      * Set the kafka message key.
-     *
-     * @param string|null $key
-     * @return $this
      */
     public function withKey(?string $key): Message
     {

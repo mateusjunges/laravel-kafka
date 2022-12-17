@@ -11,7 +11,7 @@ abstract class Consumer
     /**
      * @throws Throwable
      */
-    public function failed(string $message, string $topic, Throwable $exception): void
+    public function failed(string $message, string $topic, Throwable $exception): never
     {
         throw $exception;
     }

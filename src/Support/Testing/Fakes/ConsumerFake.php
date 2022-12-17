@@ -14,18 +14,15 @@ use RdKafka\Message;
 
 class ConsumerFake implements CanConsumeMessages
 {
-    private MessageCounter $messageCounter;
-    private HandlesBatchConfiguration $batchConfig;
+    private readonly MessageCounter $messageCounter;
+    private readonly HandlesBatchConfiguration $batchConfig;
 
     /**
-     * @param \Junges\Kafka\Config\Config $config
      * @param \Junges\Kafka\Contracts\KafkaConsumerMessage[] $messages
-     * @param bool $stopRequested
-     * @param \Closure|null $onStopConsume
      */
     public function __construct(
-        private Config $config,
-        private array $messages = [],
+        private readonly Config $config,
+        private readonly array $messages = [],
         private bool $stopRequested = false,
         private ?Closure $onStopConsume = null
     ) {
@@ -35,8 +32,6 @@ class ConsumerFake implements CanConsumeMessages
 
     /**
      * Consume messages from a kafka topic in loop.
-     *
-     * @return void
      */
     public function consume(): void
     {
@@ -53,8 +48,6 @@ class ConsumerFake implements CanConsumeMessages
 
     /**
      * Requests the consumer to stop after it's finished processing any messages to allow graceful exit
-     *
-     * @param Closure|null $onStop
      */
     public function stopConsume(?Closure $onStop = null): void
     {
@@ -81,9 +74,6 @@ class ConsumerFake implements CanConsumeMessages
 
     /**
      * Set the consumer configuration.
-     *
-     * @param array $options
-     * @return \RdKafka\Conf
      */
     public function setConf(array $options = []): Conf
     {
@@ -92,8 +82,6 @@ class ConsumerFake implements CanConsumeMessages
 
     /**
      * Determine if the max message limit is reached.
-     *
-     * @return bool
      */
     private function maxMessagesLimitReached(): bool
     {
@@ -102,7 +90,6 @@ class ConsumerFake implements CanConsumeMessages
 
     /**
      * Return if the consumer should stop consuming messages.
-     * @return bool
      */
     private function shouldStopConsuming(): bool
     {
@@ -111,8 +98,6 @@ class ConsumerFake implements CanConsumeMessages
 
     /**
      * Consume messages
-     *
-     * @return void
      */
     public function defaultConsume(): void
     {
@@ -127,8 +112,6 @@ class ConsumerFake implements CanConsumeMessages
 
     /**
      * Consume messages in batches
-     *
-     * @return void
      */
     public function batchConsume(): void
     {
@@ -149,8 +132,6 @@ class ConsumerFake implements CanConsumeMessages
 
     /**
      * Handles batch
-     *
-     * @return void
      */
     private function handleBatch(): void
     {
@@ -172,7 +153,6 @@ class ConsumerFake implements CanConsumeMessages
      * Tries to handle received batch of messages
      *
      * @param Collection $consumedMessages
-     * @return void
      */
     private function executeBatch(Collection $collection): void
     {
@@ -188,7 +168,6 @@ class ConsumerFake implements CanConsumeMessages
      * Handle the message.
      *
      * @var \Junges\Kafka\Contracts\KafkaConsumerMessage
-     * @return void
      */
     private function handleMessage(KafkaConsumerMessage $message): void
     {

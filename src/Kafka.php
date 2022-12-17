@@ -14,8 +14,6 @@ class Kafka implements CanPublishMessagesToKafka, CanConsumeMessagesFromKafka
      * Creates a new ProducerBuilder instance, setting brokers and topic.
      *
      * @param string|null $broker
-     * @param string $topic
-     * @return CanProduceMessages
      */
     public function publishOn(string $topic, string $broker = null): CanProduceMessages
     {
@@ -28,10 +26,8 @@ class Kafka implements CanPublishMessagesToKafka, CanConsumeMessagesFromKafka
     /**
      * Return a ConsumerBuilder instance.
      *
-     * @param array $topics
      * @param string|null $groupId
      * @param string|null $brokers
-     * @return \Junges\Kafka\Consumers\ConsumerBuilder
      */
     public function createConsumer(array $topics = [], string $groupId = null, string $brokers = null): ConsumerBuilder
     {

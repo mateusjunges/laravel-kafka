@@ -18,7 +18,7 @@ class MessageBatch
      *
      * @var SplDoublyLinkedList
      */
-    private SplDoublyLinkedList $messages;
+    private readonly SplDoublyLinkedList $messages;
 
     #[Pure]
     public function __construct()
@@ -29,7 +29,6 @@ class MessageBatch
     /**
      * Pushes messages to batch
      *
-     * @param Message $message
      * @return void
      */
     public function push(Message $message)
@@ -39,8 +38,6 @@ class MessageBatch
 
     /**
      * Returns all messages from batch before producing them to kafka
-     *
-     * @return SplDoublyLinkedList
      */
     public function getMessages(): SplDoublyLinkedList
     {

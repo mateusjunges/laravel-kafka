@@ -13,19 +13,11 @@ class RetryableCommitter implements Committer
     private const RETRYABLE_ERRORS = [
         RD_KAFKA_RESP_ERR_REQUEST_TIMED_OUT,
     ];
+    private readonly Retryable $retryable;
 
-    private Committer $committer;
-    private Retryable $retryable;
-
-    /**
-     * @param Committer $committer
-     * @param Sleeper $sleeper
-     * @param int $maximumRetries
-     */
     #[Pure]
-    public function __construct(Committer $committer, Sleeper $sleeper, int $maximumRetries = 6)
+    public function __construct(private readonly Committer $committer, Sleeper $sleeper, int $maximumRetries = 6)
     {
-        $this->committer = $committer;
         $this->retryable = new Retryable($sleeper, $maximumRetries, self::RETRYABLE_ERRORS);
     }
 

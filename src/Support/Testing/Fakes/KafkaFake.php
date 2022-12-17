@@ -23,10 +23,6 @@ class KafkaFake implements CanPublishMessagesToKafka
 
     /**
      * Publish a message in the specified broker/topic.
-     *
-     * @param string $topic
-     * @param string|null $broker
-     * @return ProducerBuilderFake
      */
     public function publishOn(string $topic, ?string $broker = null): ProducerBuilderFake
     {
@@ -36,10 +32,8 @@ class KafkaFake implements CanPublishMessagesToKafka
     /**
      * Return a ConsumerBuilder instance.
      *
-     * @param array $topics
      * @param string|null $groupId
      * @param string|null $brokers
-     * @return \Junges\Kafka\Support\Testing\Fakes\ConsumerBuilderFake
      */
     public function createConsumer(array $topics = [], string $groupId = null, string $brokers = null): ConsumerBuilderFake
     {
@@ -56,7 +50,6 @@ class KafkaFake implements CanPublishMessagesToKafka
      * Set the messages to consume.
      *
      * @param \Junges\Kafka\Contracts\KafkaConsumerMessage|Junges\Kafka\Contracts\KafkaConsumerMessage[] $messages
-     * @return void
      */
     public function shouldReceiveMessages(KafkaConsumerMessage|array $messages): void
     {
@@ -71,9 +64,6 @@ class KafkaFake implements CanPublishMessagesToKafka
 
     /**
      * Add a message to array of messages to be consumed.
-     *
-     * @param \Junges\Kafka\Contracts\KafkaConsumerMessage $message
-     * @return void
      */
     private function addConsumerMessage(KafkaConsumerMessage $message): void
     {
@@ -82,9 +72,6 @@ class KafkaFake implements CanPublishMessagesToKafka
 
     /**
      * Assert if a messages was published based on a truth-test callback.
-     *
-     * @param KafkaProducerMessage|null $expectedMessage
-     * @param callable|null $callback
      */
     public function assertPublished(?KafkaProducerMessage $expectedMessage = null, ?callable $callback = null)
     {
@@ -96,10 +83,6 @@ class KafkaFake implements CanPublishMessagesToKafka
 
     /**
      * Assert if a messages was published based on a truth-test callback.
-     *
-     * @param int $times
-     * @param KafkaProducerMessage|null $expectedMessage
-     * @param callable|null $callback
      */
     public function assertPublishedTimes(int $times = 1, ?KafkaProducerMessage $expectedMessage = null, ?callable $callback = null)
     {
@@ -113,10 +96,6 @@ class KafkaFake implements CanPublishMessagesToKafka
 
     /**
      * Assert that a message was published on a specific topic.
-     *
-     * @param string $topic
-     * @param KafkaProducerMessage|null $expectedMessage
-     * @param callable|null $callback
      */
     public function assertPublishedOn(string $topic, ?KafkaProducerMessage $expectedMessage = null, ?callable $callback = null)
     {
@@ -128,11 +107,6 @@ class KafkaFake implements CanPublishMessagesToKafka
 
     /**
      * Assert that a message was published on a specific topic.
-     *
-     * @param string $topic
-     * @param int $times
-     * @param KafkaProducerMessage|null $expectedMessage
-     * @param callable|null $callback
      */
     public function assertPublishedOnTimes(string $topic, int $times = 1, ?KafkaProducerMessage $expectedMessage = null, ?callable $callback = null)
     {
@@ -163,11 +137,6 @@ class KafkaFake implements CanPublishMessagesToKafka
 
     /**
      * Get all messages matching a truth-test callback.
-     *
-     * @param string|null $topic
-     * @param KafkaProducerMessage|null $expectedMessage
-     * @param callable|null $callback
-     * @return \Illuminate\Support\Collection
      */
     private function published(?callable $callback = null, ?KafkaProducerMessage $expectedMessage = null, ?string $topic = null): Collection
     {
@@ -183,7 +152,7 @@ class KafkaFake implements CanPublishMessagesToKafka
                 return $callback($publishedMessage);
             }
             if ($expectedMessage !== null) {
-                return json_encode($publishedMessage->toArray()) === json_encode($expectedMessage->toArray());
+                return json_encode($publishedMessage->toArray(), JSON_THROW_ON_ERROR) === json_encode($expectedMessage->toArray(), JSON_THROW_ON_ERROR);
             }
 
             return true;
@@ -192,8 +161,6 @@ class KafkaFake implements CanPublishMessagesToKafka
 
     /**
      * Check if the producer has published messages.
-     *
-     * @return bool
      */
     #[Pure]
     private function hasPublished(): bool
@@ -203,8 +170,6 @@ class KafkaFake implements CanPublishMessagesToKafka
 
     /**
      * Get published messages.
-     *
-     * @return array
      */
     #[Pure]
     private function getPublishedMessages(): array

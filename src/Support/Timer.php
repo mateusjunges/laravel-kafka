@@ -20,8 +20,6 @@ class Timer
 
     /**
      * Determines if the timer has timed out
-     *
-     * @return bool
      */
     public function isTimedOut(): bool
     {
@@ -32,9 +30,6 @@ class Timer
      * Starts a timer
      * Captures a start time
      * Captures a timeout in milliseconds
-     *
-     * @param int $timeoutInMilliseconds
-     * @return void
      */
     public function start(int $timeoutInMilliseconds): void
     {

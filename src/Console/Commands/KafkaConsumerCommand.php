@@ -22,7 +22,7 @@ class KafkaConsumerCommand extends Command
 
     protected $description = 'A Kafka Consumer for Laravel.';
 
-    private array $config;
+    private readonly array $config;
 
     public function __construct()
     {
