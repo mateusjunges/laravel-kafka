@@ -4,12 +4,6 @@ FROM mateusjunges/laravel:${TAG}
 
 ARG LARAVEL_VERSION
 
-RUN apk add libzip-dev
-
-RUN apk add unzip
-
-RUN pecl install zip
-
 COPY dev/php.ini /usr/local/etc/php/conf.d
 
 COPY build/composer-files/composer.json-${LARAVEL_VERSION} /application/laravel-test/composer.json
