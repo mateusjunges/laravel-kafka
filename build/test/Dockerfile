@@ -4,7 +4,8 @@ FROM mateusjunges/laravel:${TAG}
 
 ARG LARAVEL_VERSION
 
-RUN apk add libzip-dev
+RUN apk add libzip-dev && \
+    docker-php-ext-install zip
 
 RUN apk add unzip
 
