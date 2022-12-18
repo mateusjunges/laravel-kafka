@@ -18,7 +18,7 @@ php artisan vendor:publish --tag=laravel-kafka-config
 This is the default content of the configuration file:
 
 ```php
-<?php
+<?php declare(strict_types=1);
 
 return [
     /*

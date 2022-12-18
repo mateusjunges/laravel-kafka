@@ -6,7 +6,7 @@ weight: 9
 Consumer classes are very simple, and it is basically a Laravel Command class. To get started, let's take a look at an example consumer.
 
 ```php
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Console\Commands\Consumers;
 
