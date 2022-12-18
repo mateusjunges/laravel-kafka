@@ -20,49 +20,33 @@ class BatchConfig implements HandlesBatchConfiguration
     ) {
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function isBatchingEnabled(): bool
     {
         return $this->batchingEnabled;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getBatchSizeLimit(): int
     {
         return $this->batchSizeLimit;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+
     public function getBatchReleaseInterval(): int
     {
         return $this->batchReleaseInterval;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getConsumer(): CanConsumeBatchMessages
     {
         return $this->batchConsumer;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getTimer(): Timer
     {
         return $this->timer;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+
     public function getBatchRepository(): BatchRepositoryContract
     {
         return $this->batchRepository;
