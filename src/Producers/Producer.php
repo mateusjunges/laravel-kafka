@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka\Producers;
 
@@ -33,7 +33,7 @@ class Producer
         $conf = new Conf();
 
         foreach ($options as $key => $value) {
-            $conf->set($key, $value);
+            $conf->set($key, (string) $value);
         }
 
         foreach ($this->config->getConfigCallbacks() as $method => $callback) {

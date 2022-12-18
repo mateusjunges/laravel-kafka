@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka\Tests;
 
@@ -67,7 +67,7 @@ class LaravelKafkaTestCase extends Orchestra
         // We have to get a topic object as a valid response for the mock
         // We stub out this code here to achieve that
         $conf = new Conf();
-        $conf->set('log_level', 0);
+        $conf->set('log_level', '0');
         $kafka = new KafkaProducer($conf);
         $topic = $kafka->newTopic('test-topic');
 

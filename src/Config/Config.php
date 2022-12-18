@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka\Config;
 
@@ -65,7 +65,7 @@ class Config
         private readonly string $broker,
         private readonly array $topics,
         private readonly ?string $securityProtocol = null,
-        private readonly ?int $commit = null,
+        private readonly int|string|null $commit = null,
         private readonly ?string $groupId = null,
         private readonly ?Consumer $consumer = null,
         private readonly ?Sasl $sasl = null,
