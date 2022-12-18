@@ -6,11 +6,7 @@ trait InteractsWithConfigCallbacks
 {
     protected array $callbacks = [];
 
-    /**
-     * Set the configuration error callback.
-     *
-     * @return $this
-     */
+    /** Set the configuration error callback. */
     public function withErrorCb(callable $callback): self
     {
         $this->callbacks['setErrorCb'] = $callback;
@@ -18,11 +14,7 @@ trait InteractsWithConfigCallbacks
         return $this;
     }
 
-    /**
-     * Sets the delivery report callback.
-     *
-     * @return $this
-     */
+    /** Sets the delivery report callback. */
     public function withDrMsgCb(callable $callback): self
     {
         $this->callbacks['setDrMsgCb'] = $callback;
@@ -30,11 +22,7 @@ trait InteractsWithConfigCallbacks
         return $this;
     }
 
-    /**
-     * Set consume callback to use with poll.
-     *
-     * @return $this
-     */
+    /** Set consume callback to use with poll. */
     public function withConsumeCb(callable $callback): self
     {
         $this->callbacks['setConsumeCb'] = $callback;
@@ -42,11 +30,7 @@ trait InteractsWithConfigCallbacks
         return $this;
     }
 
-    /**
-     * Set the log callback.
-     *
-     * @return $this
-     */
+    /** Set the log callback. */
     public function withLogCb(callable $callback): self
     {
         $this->callbacks['setLogCb'] = $callback;
@@ -54,11 +38,7 @@ trait InteractsWithConfigCallbacks
         return $this;
     }
 
-    /**
-     * Set offset commit callback to use with consumer groups.
-     *
-     * @return $this
-     */
+    /** Set offset commit callback to use with consumer groups. */
     public function withOffsetCommitCb(callable $callback): self
     {
         $this->callbacks['setOffsetCommitCb'] = $callback;
@@ -66,11 +46,7 @@ trait InteractsWithConfigCallbacks
         return $this;
     }
 
-    /**
-     * Set rebalance callback for  use with coordinated consumer group balancing.
-     *
-     * @return $this
-     */
+    /** Set rebalance callback for  use with coordinated consumer group balancing. */
     public function withRebalanceCb(callable $callback): self
     {
         $this->callbacks['setRebalanceCb'] = $callback;
@@ -78,11 +54,7 @@ trait InteractsWithConfigCallbacks
         return $this;
     }
 
-    /**
-     * Set statistics callback.
-     *
-     * @return $this
-     */
+    /** Set statistics callback. */
     public function withStatsCb(callable $callback): self
     {
         $this->callbacks['setStatsCb'] = $callback;
