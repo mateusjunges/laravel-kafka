@@ -2,7 +2,12 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
-## [2022-11-29 v1.9.3](https://github.com/mateusjunges/laravel-kafka/compare/v1.9.3...v1.9.3)
+## [2022-12-17 v1.10.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.9.3...v1.10.0)
+- Added support for PHP 8.2 by @mateusjunges in [#159](https://github.com/mateusjunges/laravel-kafka/pull/159)
+- Dropped support for `ext-rdkafka` v4.0 by @mateusjunges in [#159](https://github.com/mateusjunges/laravel-kafka/pull/159)
+- Dropped support for PHP 8.0 by @mateusjunges in [#159](https://github.com/mateusjunges/laravel-kafka/pull/159)
+
+## [2022-11-29 v1.9.3](https://github.com/mateusjunges/laravel-kafka/compare/v1.9.2...v1.9.3)
 - Fixes `kafka.php` config file
 
 ## [2022-11-29 v1.9.2](https://github.com/mateusjunges/laravel-kafka/compare/v1.9.1...v1.9.2)
