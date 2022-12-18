@@ -152,9 +152,14 @@ class ProducerBuilderFake implements MessageProducer
         return $this->message;
     }
 
-    public function withSasl(Sasl $saslConfig): MessageProducer
+    public function withSasl(string $username, string $password, string $mechanisms, string $securityProtocol = 'SASL_PLAINTEXT'): MessageProducer
     {
-        $this->saslConfig = $saslConfig;
+        $this->saslConfig = new Sasl(
+            username: $username,
+            password: $password,
+            mechanisms: $mechanisms,
+            securityProtocol: $securityProtocol
+        );
 
         return $this;
     }

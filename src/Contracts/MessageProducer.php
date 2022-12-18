@@ -42,7 +42,7 @@ interface MessageProducer extends InteractsWithConfigCallbacks
     public function withMessage(ProducerMessage $message): self;
 
     /** Set Sasl configuration. */
-    public function withSasl(Sasl $saslConfig): self;
+    public function withSasl(string $username, string $password, string $mechanisms, string $securityProtocol = 'SASL_PLAINTEXT'): self;
 
     /** Specifies which serializer should be used. */
     public function usingSerializer(MessageSerializer $serializer): self;
