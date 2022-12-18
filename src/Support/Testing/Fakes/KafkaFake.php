@@ -21,20 +21,13 @@ class KafkaFake implements MessagePublisher
         $this->makeProducerBuilderFake();
     }
 
-    /**
-     * Publish a message in the specified broker/topic.
-     */
+    /** Publish a message in the specified broker/topic. */
     public function publishOn(string $topic, ?string $broker = null): ProducerBuilderFake
     {
         return $this->makeProducerBuilderFake($topic, $broker);
     }
 
-    /**
-     * Return a ConsumerBuilder instance.
-     *
-     * @param string|null $groupId
-     * @param string|null $brokers
-     */
+    /** Return a ConsumerBuilder instance. */
     public function createConsumer(array $topics = [], string $groupId = null, string $brokers = null): ConsumerBuilderFake
     {
         return ConsumerBuilderFake::create(
@@ -46,11 +39,7 @@ class KafkaFake implements MessagePublisher
         );
     }
 
-    /**
-     * Set the messages to consume.
-     *
-     * @param \Junges\Kafka\Contracts\ConsumerMessage|Junges\Kafka\Contracts\KafkaConsumerMessage[] $messages
-     */
+    /** Set the messages to consume. */
     public function shouldReceiveMessages(ConsumerMessage|array $messages): void
     {
         if (! is_array($messages)) {
@@ -62,17 +51,13 @@ class KafkaFake implements MessagePublisher
         }
     }
 
-    /**
-     * Add a message to array of messages to be consumed.
-     */
+    /** Add a message to array of messages to be consumed. */
     private function addConsumerMessage(ConsumerMessage $message): void
     {
         $this->messagesToConsume[] = $message;
     }
 
-    /**
-     * Assert if a messages was published based on a truth-test callback.
-     */
+    /** Assert if a messages was published based on a truth-test callback. */
     public function assertPublished(?ProducerMessage $expectedMessage = null, ?callable $callback = null)
     {
         PHPUnit::assertTrue(
@@ -81,9 +66,7 @@ class KafkaFake implements MessagePublisher
         );
     }
 
-    /**
-     * Assert if a messages was published based on a truth-test callback.
-     */
+    /** Assert if a messages was published based on a truth-test callback. */
     public function assertPublishedTimes(int $times = 1, ?ProducerMessage $expectedMessage = null, ?callable $callback = null)
     {
         $count = $this->published($callback, $expectedMessage)->count();
@@ -94,9 +77,7 @@ class KafkaFake implements MessagePublisher
         );
     }
 
-    /**
-     * Assert that a message was published on a specific topic.
-     */
+    /** Assert that a message was published on a specific topic. */
     public function assertPublishedOn(string $topic, ?ProducerMessage $expectedMessage = null, ?callable $callback = null)
     {
         PHPUnit::assertTrue(
@@ -105,9 +86,7 @@ class KafkaFake implements MessagePublisher
         );
     }
 
-    /**
-     * Assert that a message was published on a specific topic.
-     */
+    /** Assert that a message was published on a specific topic. */
     public function assertPublishedOnTimes(string $topic, int $times = 1, ?ProducerMessage $expectedMessage = null, ?callable $callback = null)
     {
         $count = $this->published($callback, $expectedMessage, $topic)->count();
@@ -118,9 +97,7 @@ class KafkaFake implements MessagePublisher
         );
     }
 
-    /**
-     * Assert that no messages were published.
-     */
+    /** Assert that no messages were published. */
     public function assertNothingPublished()
     {
         PHPUnit::assertEmpty($this->getPublishedMessages(), 'Messages were published unexpectedly.');
@@ -135,9 +112,7 @@ class KafkaFake implements MessagePublisher
         )->withProducerCallback(fn (Message $message) => $this->publishedMessages[] = $message);
     }
 
-    /**
-     * Get all messages matching a truth-test callback.
-     */
+    /*** Get all messages matching a truth-test callback. */
     private function published(?callable $callback = null, ?ProducerMessage $expectedMessage = null, ?string $topic = null): Collection
     {
         if (! $this->hasPublished()) {
@@ -159,18 +134,14 @@ class KafkaFake implements MessagePublisher
         });
     }
 
-    /**
-     * Check if the producer has published messages.
-     */
+    /** Check if the producer has published messages. */
     #[Pure]
     private function hasPublished(): bool
     {
         return ! empty($this->getPublishedMessages());
     }
 
-    /**
-     * Get published messages.
-     */
+    /** Get published messages. */
     #[Pure]
     private function getPublishedMessages(): array
     {

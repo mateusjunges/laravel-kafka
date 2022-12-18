@@ -8,9 +8,7 @@ use Junges\Kafka\Contracts\MessageSerializer;
 
 class JsonSerializer implements MessageSerializer
 {
-    /**
-     * @throws JsonException
-     */
+    /** @throws JsonException  */
     public function serialize(ProducerMessage $message): ProducerMessage
     {
         $body = json_encode($message->getBody(), JSON_THROW_ON_ERROR);

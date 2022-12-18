@@ -11,7 +11,6 @@ use Junges\Kafka\Support\Timer;
 
 class NullBatchConfig implements HandlesBatchConfiguration
 {
-
     public function getBatchReleaseInterval(): int
     {
         return 0;
@@ -21,25 +20,20 @@ class NullBatchConfig implements HandlesBatchConfiguration
     {
         return new NullBatchConsumer();
     }
-
-
     public function getTimer(): Timer
     {
         return new Timer();
     }
-
 
     public function getBatchRepository(): BatchRepository
     {
         return new NullBatchRepository();
     }
 
-
     public function getBatchSizeLimit(): int
     {
         return 0;
     }
-
 
     public function isBatchingEnabled(): bool
     {

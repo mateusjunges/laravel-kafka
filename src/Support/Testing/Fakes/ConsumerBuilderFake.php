@@ -30,12 +30,7 @@ class ConsumerBuilderFake extends ConsumerBuilder implements ConsumerBuilderCont
         );
     }
 
-    /**
-     * Set fake messages to the consumer.
-     *
-     * @param \Junges\Kafka\Contracts\ConsumerMessage[] $messages
-     * @return $this
-     */
+    /** Set fake messages to the consumer.  */
     public function setMessages(array $messages): self
     {
         $this->messages = $messages;
@@ -43,9 +38,7 @@ class ConsumerBuilderFake extends ConsumerBuilder implements ConsumerBuilderCont
         return $this;
     }
 
-    /**
-     * Build the Kafka consumer.
-     */
+    /** Build the Kafka consumer. */
     public function build(): CanConsumeMessages
     {
         $config = new Config(
@@ -73,8 +66,8 @@ class ConsumerBuilderFake extends ConsumerBuilder implements ConsumerBuilderCont
     }
 
     /**
-     * Returns a instance of BatchConfig if batching is enabled.
-     * Otherwise, a instance of NullConfig will be returned.
+     * Returns an instance of BatchConfig if batching is enabled.
+     * Otherwise, an instance of NullConfig will be returned.
      */
     protected function getBatchConfig(): HandlesBatchConfiguration
     {

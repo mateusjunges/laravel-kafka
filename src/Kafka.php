@@ -10,11 +10,7 @@ use Junges\Kafka\Producers\ProducerBuilder;
 
 class Kafka implements MessagePublisher, ConsumeMessagesFromKafka
 {
-    /**
-     * Creates a new ProducerBuilder instance, setting brokers and topic.
-     *
-     * @param string|null $broker
-     */
+    /** Creates a new ProducerBuilder instance, setting brokers and topic. */
     public function publishOn(string $topic, string $broker = null): MessageProducer
     {
         return new ProducerBuilder(
@@ -23,12 +19,7 @@ class Kafka implements MessagePublisher, ConsumeMessagesFromKafka
         );
     }
 
-    /**
-     * Return a ConsumerBuilder instance.
-     *
-     * @param string|null $groupId
-     * @param string|null $brokers
-     */
+    /** Return a ConsumerBuilder instance.  */
     public function createConsumer(array $topics = [], string $groupId = null, string $brokers = null): ConsumerBuilder
     {
         return ConsumerBuilder::create(

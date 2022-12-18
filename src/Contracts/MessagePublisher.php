@@ -4,10 +4,6 @@ namespace Junges\Kafka\Contracts;
 
 interface MessagePublisher
 {
-    /**
-     * Creates a new ProducerBuilder instance, setting brokers and topic.
-     *
-     * @param string|null $broker
-     */
+    /** Creates a new ProducerBuilder instance, setting brokers and topic. */
     public function publishOn(string $topic, string $broker = null): MessageProducer;
 }

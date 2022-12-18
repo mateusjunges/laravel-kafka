@@ -13,11 +13,7 @@ use SplDoublyLinkedList;
  */
 class MessageBatch
 {
-    /**
-     * Storage of messages
-     *
-     * @var SplDoublyLinkedList
-     */
+    /** Storage of messages */
     private readonly SplDoublyLinkedList $messages;
 
     #[Pure]
@@ -26,19 +22,13 @@ class MessageBatch
         $this->messages = new SplDoublyLinkedList();
     }
 
-    /**
-     * Pushes messages to batch
-     *
-     * @return void
-     */
+    /** Pushes messages to batch */
     public function push(Message $message)
     {
         $this->messages->push($message);
     }
 
-    /**
-     * Returns all messages from batch before producing them to kafka
-     */
+    /** Returns all messages from batch before producing them to kafka */
     public function getMessages(): SplDoublyLinkedList
     {
         return $this->messages;

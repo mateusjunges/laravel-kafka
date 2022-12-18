@@ -21,9 +21,7 @@ class CallableConsumer extends Consumer
         );
     }
 
-    /**
-     * Handle the received message.
-     */
+    /** Handle the received message. */
     public function handle(ConsumerMessage $message): void
     {
         $middlewares = array_reverse($this->middlewares);
@@ -36,9 +34,7 @@ class CallableConsumer extends Consumer
         $handler($message);
     }
 
-    /**
-     * Wrap the message with a given middleware.
-     */
+    /** Wrap the message with a given middleware. */
     private function wrapMiddleware(callable $middleware): callable
     {
         return fn (callable $handler) => fn ($message) => $middleware($message, $handler);

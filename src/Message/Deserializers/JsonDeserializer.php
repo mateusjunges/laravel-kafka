@@ -8,9 +8,7 @@ use Junges\Kafka\Message\ConsumedMessage;
 
 class JsonDeserializer implements MessageDeserializer
 {
-    /**
-     * @throws \JsonException
-     */
+    /** @throws \JsonException  */
     public function deserialize(ConsumerMessage $message): ConsumerMessage
     {
         $body = json_decode((string) $message->getBody(), true, 512, JSON_THROW_ON_ERROR);

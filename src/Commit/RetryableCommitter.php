@@ -21,17 +21,13 @@ class RetryableCommitter implements Committer
         $this->retryable = new Retryable($sleeper, $maximumRetries, self::RETRYABLE_ERRORS);
     }
 
-    /**
-     * @throws \Carbon\Exceptions\Exception
-     */
+    /** @throws \Carbon\Exceptions\Exception */
     public function commitMessage(Message $message, bool $success): void
     {
         $this->retryable->retry(fn () => $this->committer->commitMessage($message, $success));
     }
 
-    /**
-     * @throws \Carbon\Exceptions\Exception
-     */
+    /** @throws \Carbon\Exceptions\Exception */
     public function commitDlq(Message $message): void
     {
         $this->retryable->retry(fn () => $this->committer->commitDlq($message));

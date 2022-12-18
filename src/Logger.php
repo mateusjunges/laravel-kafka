@@ -29,11 +29,7 @@ class Logger
         });
     }
 
-    /**
-     * Log an error message.
-     *
-     * @param \Throwable|null $e
-     */
+    /** Log an error message. */
     public function error(Message $message, Throwable $e = null, string $prefix = 'ERROR'): void
     {
         $this->logger->error("[{$prefix}] Error to consume message", [

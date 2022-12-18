@@ -6,20 +6,9 @@ use RdKafka\Message;
 
 interface Committer
 {
-    /**
-     * Commits the given message.
-     *
-     * @param  \RdKafka\Message  $message
-     * @param  bool  $success
-     * @return void
-     */
+    /** Commits the given message.  */
     public function commitMessage(Message $message, bool $success): void;
 
-    /**
-     * Commits the given message to the Dead Letter Queue.
-     *
-     * @param  \RdKafka\Message  $message
-     * @return void
-     */
+    /** Commits the given message to the Dead Letter Queue. */
     public function commitDlq(Message $message): void;
 }

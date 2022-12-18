@@ -107,27 +107,21 @@ class Consumer implements CanConsumeMessages
         }
     }
 
-    /**
-     * Requests the consumer to stop after it's finished processing any messages to allow graceful exit
-     */
+    /** Requests the consumer to stop after it's finished processing any messages to allow graceful exit */
     public function stopConsume(?Closure $onStop = null): void
     {
         $this->stopRequested = true;
         $this->onStopConsume = $onStop;
     }
 
-    /**
-     * Will cancel the stopConsume request initiated by calling the stopConsume method
-     */
+    /** Will cancel the stopConsume request initiated by calling the stopConsume method */
     public function cancelStopConsume(): void
     {
         $this->stopRequested = false;
         $this->onStopConsume = null;
     }
 
-    /**
-     * Count the number of messages consumed by this consumer
-     */
+    /** Count the number of messages consumed by this consumer */
     public function consumedMessagesCount(): int
     {
         return $this->messageCounter->messagesCounted();
@@ -145,9 +139,7 @@ class Consumer implements CanConsumeMessages
         $this->handleMessage($message);
     }
 
-    /**
-     * Set the consumer configuration.
-     */
+    /** Set the consumer configuration. */
     private function setConf(array $options): Conf
     {
         $conf = new Conf();
@@ -237,11 +229,7 @@ class Consumer implements CanConsumeMessages
         }
     }
 
-    /**
-     * Handle exceptions while consuming messages.
-     *
-     * @param Message|ConsumedMessage $message
-     */
+    /** Handle exceptions while consuming messages. */
     private function handleException(Throwable $exception, Message|ConsumerMessage $message): bool
     {
         try {
@@ -261,9 +249,7 @@ class Consumer implements CanConsumeMessages
         }
     }
 
-    /**
-     * Send a message to the Dead Letter Queue.
-     */
+    /** Send a message to the Dead Letter Queue. */
     private function sendToDlq(Message $message): void
     {
         $topic = $this->producer->newTopic($this->config->getDlq());
@@ -279,9 +265,7 @@ class Consumer implements CanConsumeMessages
         }
     }
 
-    /**
-     * @throws \Throwable
-     */
+    /** @throws \Throwable */
     private function commit(Message $message, bool $success): void
     {
         try {
@@ -302,9 +286,7 @@ class Consumer implements CanConsumeMessages
         }
     }
 
-    /**
-     * Determine if the max message limit is reached.
-     */
+    /** Determine if the max message limit is reached. */
     private function maxMessagesLimitReached(): bool
     {
         return $this->messageCounter->maxMessagesLimitReached();

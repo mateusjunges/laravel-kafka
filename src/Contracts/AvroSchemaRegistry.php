@@ -16,28 +16,18 @@ interface AvroSchemaRegistry
 
     public function addKeySchemaMappingForTopic(string $topicName, KafkaAvroSchemaRegistry $avroSchema): void;
 
-    /**
-     * @return array<string, AvroSchemaRegistry[]>
-     */
+    /** @return array<string, AvroSchemaRegistry[]>  */
     public function getTopicSchemaMapping(): array;
 
-    /**
-     * @throws SchemaRegistryException
-     */
+    /** @throws SchemaRegistryException  */
     public function getBodySchemaForTopic(string $topicName): KafkaAvroSchemaRegistry;
 
-    /**
-     * @throws SchemaRegistryException
-     */
+    /** @throws SchemaRegistryException */
     public function getKeySchemaForTopic(string $topicName): KafkaAvroSchemaRegistry;
 
-    /**
-     * @throws SchemaRegistryException
-     */
+    /** @throws SchemaRegistryException */
     public function hasBodySchemaForTopic(string $topicName): bool;
 
-    /**
-     * @throws SchemaRegistryException
-     */
+    /** @throws SchemaRegistryException */
     public function hasKeySchemaForTopic(string $topicName): bool;
 }

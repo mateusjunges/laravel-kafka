@@ -10,21 +10,14 @@ use Junges\Kafka\Contracts\ProducerMessage;
 
 class Message extends AbstractMessage implements Arrayable, ProducerMessage
 {
-    /**
-     * Creates a new message instance.
-     *
-     * @param string|null $topicName
-     * @return Message
-     */
+    /** Creates a new message instance.*/
     #[Pure]
     public static function create(string $topicName = null, int $partition = RD_KAFKA_PARTITION_UA): ProducerMessage
     {
         return new self($topicName, $partition);
     }
 
-    /**
-     * Set a key in the message array.
-     */
+    /** Set a key in the message array. */
     public function withBodyKey(string $key, mixed $message): Message
     {
         $this->body[$key] = $message;
@@ -32,9 +25,7 @@ class Message extends AbstractMessage implements Arrayable, ProducerMessage
         return $this;
     }
 
-    /**
-     * Unset a key in the message array.
-     */
+    /** Unset a key in the message array. */
     public function forgetBodyKey(string $key): Message
     {
         unset($this->body[$key]);
@@ -42,9 +33,7 @@ class Message extends AbstractMessage implements Arrayable, ProducerMessage
         return $this;
     }
 
-    /**
-     * Set the message headers.
-     */
+    /** Set the message headers. */
     public function withHeaders(array $headers = []): Message
     {
         $this->headers = $headers;
@@ -52,9 +41,7 @@ class Message extends AbstractMessage implements Arrayable, ProducerMessage
         return $this;
     }
 
-    /**
-     * Set the kafka message key.
-     */
+    /** Set the kafka message key. */
     public function withKey(?string $key): Message
     {
         $this->key = $key;

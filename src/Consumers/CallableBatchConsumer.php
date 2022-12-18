@@ -12,9 +12,6 @@ class CallableBatchConsumer implements BatchMessageConsumer
     {
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function handle(Collection $collection): void
     {
         ($this->batchHandler)($collection);

@@ -30,11 +30,7 @@ class ProducerBuilder implements MessageProducer
         $this->broker = $broker ?? config('kafka.brokers');
     }
 
-    /**
-     * Return a new Junges\Commit\ProducerBuilder instance
-     * @param string|null $broker
-     * @return static
-     */
+    /** Return a new Junges\Commit\ProducerBuilder instance. */
     public static function create(string $topic, string $broker = null): self
     {
         return new ProducerBuilder(
@@ -43,11 +39,7 @@ class ProducerBuilder implements MessageProducer
         );
     }
 
-    /**
-     * Sets a specific config option.
-     *
-     * @return $this
-     */
+    /** Sets a specific config option. */
     public function withConfigOption(string $name, mixed $option): self
     {
         $this->options[$name] = $option;
@@ -55,11 +47,7 @@ class ProducerBuilder implements MessageProducer
         return $this;
     }
 
-    /**
-     * Sets configuration options.
-     *
-     * @return $this
-     */
+    /** Sets configuration options. */
     public function withConfigOptions(array $options): self
     {
         foreach ($options as $name => $value) {
@@ -69,11 +57,7 @@ class ProducerBuilder implements MessageProducer
         return $this;
     }
 
-    /**
-     * Set the message headers.
-     *
-     * @return $this
-     */
+    /** Set the message headers. */
     public function withHeaders(array $headers = []): self
     {
         $this->message->withHeaders($headers);
@@ -81,11 +65,7 @@ class ProducerBuilder implements MessageProducer
         return $this;
     }
 
-    /**
-     * Set the message key.
-     *
-     * @return $this
-     */
+    /** Set the message key. */
     public function withKafkaKey(string $key): self
     {
         $this->message->withKey($key);
@@ -93,11 +73,7 @@ class ProducerBuilder implements MessageProducer
         return $this;
     }
 
-    /**
-     * Set a message array key.
-     *
-     * @return $this
-     */
+    /** Set a message array key. */
     public function withBodyKey(string $key, mixed $message): self
     {
         $this->message->withBodyKey($key, $message);
@@ -105,11 +81,7 @@ class ProducerBuilder implements MessageProducer
         return $this;
     }
 
-    /**
-     * Set the message to be published.
-     *
-     * @return $this
-     */
+    /** Set the message to be published.  */
     public function withMessage(ProducerMessage $message): self
     {
         $this->message = $message;
@@ -117,11 +89,7 @@ class ProducerBuilder implements MessageProducer
         return $this;
     }
 
-    /**
-     * Enables or disable debug.
-     *
-     * @return $this
-     */
+    /** Enables or disable debug. */
     public function withDebugEnabled(bool $enabled = true): self
     {
         if ($enabled) {
@@ -137,11 +105,7 @@ class ProducerBuilder implements MessageProducer
         return $this;
     }
 
-    /**
-     * Set Sasl configuration.
-     *
-     * @return $this
-     */
+    /** Set Sasl configuration. */
     public function withSasl(string $username, string $password, string $mechanisms, string $securityProtocol = 'SASL_PLAINTEXT'): self
     {
         $this->saslConfig = new Sasl(
@@ -154,9 +118,7 @@ class ProducerBuilder implements MessageProducer
         return $this;
     }
 
-    /**
-     * Specifies which serializer should be used.
-     */
+    /** Specifies which serializer should be used. */
     public function usingSerializer(MessageSerializer $serializer): MessageProducer
     {
         $this->serializer = $serializer;
@@ -164,19 +126,13 @@ class ProducerBuilder implements MessageProducer
         return $this;
     }
 
-    /**
-     * Disables debug.
-     *
-     * @return $this
-     */
+    /** Disables debug. */
     public function withDebugDisabled(): self
     {
         return $this->withDebugEnabled(false);
     }
 
-    /**
-     * Returns the topic where the message will be published.
-     */
+    /** Returns the topic where the message will be published. */
     public function getTopic(): string
     {
         return $this->topic;

@@ -10,6 +10,7 @@ use Junges\Kafka\Contracts\MessageDeserializer;
 
 class KafkaConsumerCommand extends Command
 {
+    /* @var string $signature */
     protected $signature = 'kafka:consume 
             {--topics= : The topics to listen for messages (topic1,topic2,...,topicN)} 
             {--consumer= : The consumer which will consume messages in the specified topic} 
@@ -20,6 +21,7 @@ class KafkaConsumerCommand extends Command
             {--maxMessage=? : The max number of messages that should be handled}
             {--securityProtocol=?}';
 
+    /* @var string $description */
     protected $description = 'A Kafka Consumer for Laravel.';
 
     private readonly array $config;

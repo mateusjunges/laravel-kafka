@@ -21,9 +21,7 @@ use Junges\Kafka\Support\Testing\Fakes\KafkaFake;
  */
 class Kafka extends Facade
 {
-    /**
-     * Replace the bound instance with a fake.
-     */
+    /** Replace the bound instance with a fake. */
     public static function fake(): KafkaFake
     {
         static::swap($fake = new KafkaFake());

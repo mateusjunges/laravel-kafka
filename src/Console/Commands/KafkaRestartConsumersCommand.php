@@ -9,9 +9,11 @@ use Illuminate\Support\InteractsWithTime;
 class KafkaRestartConsumersCommand extends Command
 {
     use InteractsWithTime;
-    
+
+    /** @var string $signature */
     protected $signature = 'kafka:restart-consumers';
 
+    /** @var string $description */
     protected $description = 'Restart all Kafka consumers.';
 
     public function handle()

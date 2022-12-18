@@ -25,9 +25,7 @@ class Producer
         ]);
     }
 
-    /**
-     * Set the Kafka Configuration.
-     */
+    /** Set the Kafka Configuration. */
     public function setConf(array $options): Conf
     {
         $conf = new Conf();
@@ -64,9 +62,7 @@ class Producer
         return $this->flush();
     }
 
-    /**
-     * @throws CouldNotPublishMessage
-     */
+    /** @throws CouldNotPublishMessage  */
     public function produceBatch(MessageBatch $messageBatch): int
     {
         $topic = $this->producer->newTopic($this->topic);

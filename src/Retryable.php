@@ -14,9 +14,7 @@ class Retryable
     ) {
     }
 
-    /**
-     * @throws \Exception
-     */
+    /** @throws \Exception  */
     public function retry(
         callable $function,
         int $currentRetries = 0,

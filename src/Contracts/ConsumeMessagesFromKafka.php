@@ -4,12 +4,6 @@ namespace Junges\Kafka\Contracts;
 
 interface ConsumeMessagesFromKafka
 {
-    /**
-     * Return a ConsumerBuilder instance.
-     *
-     * @param string|null $groupId
-     * @param string|null $brokers
-     * @return \Junges\Kafka\Consumers\ConsumerBuilder
-     */
+    /** Return a ConsumerBuilder instance. */
     public function createConsumer(array $topics = [], string $groupId = null, string $brokers = null): ConsumerBuilder;
 }
