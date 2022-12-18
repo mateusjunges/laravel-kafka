@@ -16,7 +16,7 @@ interface HandlesBatchConfiguration
     public function getBatchReleaseInterval(): int;
 
     /** Returns BatchConsumerInterface implementation instance. */
-    public function getConsumer(): CanConsumeBatchMessages;
+    public function getConsumer(): BatchMessageConsumer;
 
     /** Returns a timer that determines whether batch interval has passed or not. */
     public function getTimer(): Timer;

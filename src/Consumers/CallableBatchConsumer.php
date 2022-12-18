@@ -4,9 +4,9 @@ namespace Junges\Kafka\Consumers;
 
 use Closure;
 use Illuminate\Support\Collection;
-use Junges\Kafka\Contracts\CanConsumeBatchMessages;
+use Junges\Kafka\Contracts\BatchMessageConsumer;
 
-class CallableBatchConsumer implements CanConsumeBatchMessages
+class CallableBatchConsumer implements BatchMessageConsumer
 {
     public function __construct(private readonly Closure $batchHandler)
     {
