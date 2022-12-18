@@ -3,9 +3,9 @@
 namespace Junges\Kafka\Message;
 
 use Junges\Kafka\AbstractMessage;
-use Junges\Kafka\Contracts\KafkaConsumerMessage;
+use Junges\Kafka\Contracts\ConsumerMessage;
 
-class ConsumedMessage extends AbstractMessage implements KafkaConsumerMessage
+class ConsumedMessage extends AbstractMessage implements ConsumerMessage
 {
     public function __construct(
         protected ?string $topicName,

@@ -12,7 +12,7 @@ namespace App\Console\Commands\Consumers;
 
 use Illuminate\Console\Command;
 use Junges\Kafka\Facades\Kafka;
-use Junges\Kafka\Contracts\KafkaConsumerMessage;
+use Junges\Kafka\Contracts\ConsumerMessage;
 
 class MyTopicConsumer extends Command
 {
@@ -25,7 +25,7 @@ class MyTopicConsumer extends Command
         $consumer = Kafka::createConsumer(['my-topic'])
             ->withBrokers('localhost:8092')
             ->withAutoCommit()
-            ->withHandler(function(KafkaConsumerMessage $message) {
+            ->withHandler(function(ConsumerMessage $message) {
                 // Handle your message here
             })
             ->build();

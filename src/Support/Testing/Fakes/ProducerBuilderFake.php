@@ -6,18 +6,18 @@ use Closure;
 use Junges\Kafka\Concerns\InteractsWithConfigCallbacks;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\Sasl;
-use Junges\Kafka\Contracts\CanProduceMessages;
-use Junges\Kafka\Contracts\KafkaProducerMessage;
+use Junges\Kafka\Contracts\MessageProducer;
+use Junges\Kafka\Contracts\ProducerMessage;
 use Junges\Kafka\Contracts\MessageSerializer;
 use Junges\Kafka\Message\Message;
 use Junges\Kafka\Producers\MessageBatch;
 
-class ProducerBuilderFake implements CanProduceMessages
+class ProducerBuilderFake implements MessageProducer
 {
     use InteractsWithConfigCallbacks;
 
     private array $options = [];
-    private KafkaProducerMessage $message;
+    private ProducerMessage $message;
     private MessageSerializer $serializer;
     private ?Sasl $saslConfig = null;
     private ?Closure $producerCallback = null;
@@ -112,7 +112,7 @@ class ProducerBuilderFake implements CanProduceMessages
      *
      * @return $this
      */
-    public function withMessage(KafkaProducerMessage $message): self
+    public function withMessage(ProducerMessage $message): self
     {
         $this->message = $message;
 
@@ -152,7 +152,7 @@ class ProducerBuilderFake implements CanProduceMessages
         return $this->message;
     }
 
-    public function withSasl(Sasl $saslConfig): CanProduceMessages
+    public function withSasl(Sasl $saslConfig): MessageProducer
     {
         $this->saslConfig = $saslConfig;
 
@@ -162,7 +162,7 @@ class ProducerBuilderFake implements CanProduceMessages
     /**
      * Specifies which serializer should be used.
      */
-    public function usingSerializer(MessageSerializer $serializer): CanProduceMessages
+    public function usingSerializer(MessageSerializer $serializer): MessageProducer
     {
         $this->serializer = $serializer;
 

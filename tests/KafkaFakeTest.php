@@ -6,7 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Junges\Kafka\Contracts\CanConsumeMessages;
-use Junges\Kafka\Contracts\KafkaConsumerMessage;
+use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\Message\Message;
@@ -234,7 +234,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
             ->withBrokers('localhost:9092')
             ->withConsumerGroupId('group')
             ->withCommitBatchSize(1)
-            ->withHandler(fn (KafkaConsumerMessage $message) => $this->assertEquals($message, $message))
+            ->withHandler(fn (ConsumerMessage $message) => $this->assertEquals($message, $message))
             ->build();
 
         $consumer->consume();
@@ -270,7 +270,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         $consumedMessages = [];
 
         $consumer = Kafka::createConsumer(['test-topic'])
-            ->withHandler(function (KafkaConsumerMessage $message) use (&$consumedMessages) {
+            ->withHandler(function (ConsumerMessage $message) use (&$consumedMessages) {
                 $consumedMessages[] = $message;
             })
             ->build();
@@ -313,7 +313,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         Kafka::shouldReceiveMessages($messages);
 
         $consumer = Kafka::createConsumer(['mark-post-as-published-topic'])
-            ->withHandler(function (KafkaConsumerMessage $message) use (&$posts) {
+            ->withHandler(function (ConsumerMessage $message) use (&$posts) {
                 $post = $posts[$message->getBody()['post_id']];
 
                 $post['published_at'] = now()->format("Y-m-d H:i:s");
@@ -357,7 +357,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
 
         $stopped = false;
         $this->consumer = Kafka::createConsumer(['test-topic'])
-            ->withHandler(function (KafkaConsumerMessage $message) use (&$stopped) {
+            ->withHandler(function (ConsumerMessage $message) use (&$stopped) {
                 //stop consumer after first message
                 $this->consumer->stopConsume(function () use (&$stopped) {
                     $stopped = true;

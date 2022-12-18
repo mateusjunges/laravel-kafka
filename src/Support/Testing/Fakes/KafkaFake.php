@@ -4,16 +4,16 @@ namespace Junges\Kafka\Support\Testing\Fakes;
 
 use Illuminate\Support\Collection;
 use JetBrains\PhpStorm\Pure;
-use Junges\Kafka\Contracts\CanPublishMessagesToKafka;
-use Junges\Kafka\Contracts\KafkaConsumerMessage;
-use Junges\Kafka\Contracts\KafkaProducerMessage;
+use Junges\Kafka\Contracts\MessagePublisher;
+use Junges\Kafka\Contracts\ConsumerMessage;
+use Junges\Kafka\Contracts\ProducerMessage;
 use Junges\Kafka\Message\Message;
 use PHPUnit\Framework\Assert as PHPUnit;
 
-class KafkaFake implements CanPublishMessagesToKafka
+class KafkaFake implements MessagePublisher
 {
     private array $publishedMessages = [];
-    /** @var \Junges\Kafka\Contracts\KafkaConsumerMessage[] */
+    /** @var \Junges\Kafka\Contracts\ConsumerMessage[] */
     private array $messagesToConsume = [];
 
     public function __construct()
@@ -49,9 +49,9 @@ class KafkaFake implements CanPublishMessagesToKafka
     /**
      * Set the messages to consume.
      *
-     * @param \Junges\Kafka\Contracts\KafkaConsumerMessage|Junges\Kafka\Contracts\KafkaConsumerMessage[] $messages
+     * @param \Junges\Kafka\Contracts\ConsumerMessage|Junges\Kafka\Contracts\KafkaConsumerMessage[] $messages
      */
-    public function shouldReceiveMessages(KafkaConsumerMessage|array $messages): void
+    public function shouldReceiveMessages(ConsumerMessage|array $messages): void
     {
         if (! is_array($messages)) {
             $messages = [$messages];
@@ -65,7 +65,7 @@ class KafkaFake implements CanPublishMessagesToKafka
     /**
      * Add a message to array of messages to be consumed.
      */
-    private function addConsumerMessage(KafkaConsumerMessage $message): void
+    private function addConsumerMessage(ConsumerMessage $message): void
     {
         $this->messagesToConsume[] = $message;
     }
@@ -73,7 +73,7 @@ class KafkaFake implements CanPublishMessagesToKafka
     /**
      * Assert if a messages was published based on a truth-test callback.
      */
-    public function assertPublished(?KafkaProducerMessage $expectedMessage = null, ?callable $callback = null)
+    public function assertPublished(?ProducerMessage $expectedMessage = null, ?callable $callback = null)
     {
         PHPUnit::assertTrue(
             condition: $this->published($callback, $expectedMessage)->count() > 0,
@@ -84,7 +84,7 @@ class KafkaFake implements CanPublishMessagesToKafka
     /**
      * Assert if a messages was published based on a truth-test callback.
      */
-    public function assertPublishedTimes(int $times = 1, ?KafkaProducerMessage $expectedMessage = null, ?callable $callback = null)
+    public function assertPublishedTimes(int $times = 1, ?ProducerMessage $expectedMessage = null, ?callable $callback = null)
     {
         $count = $this->published($callback, $expectedMessage)->count();
 
@@ -97,7 +97,7 @@ class KafkaFake implements CanPublishMessagesToKafka
     /**
      * Assert that a message was published on a specific topic.
      */
-    public function assertPublishedOn(string $topic, ?KafkaProducerMessage $expectedMessage = null, ?callable $callback = null)
+    public function assertPublishedOn(string $topic, ?ProducerMessage $expectedMessage = null, ?callable $callback = null)
     {
         PHPUnit::assertTrue(
             condition: $this->published($callback, $expectedMessage, $topic)->count() > 0,
@@ -108,7 +108,7 @@ class KafkaFake implements CanPublishMessagesToKafka
     /**
      * Assert that a message was published on a specific topic.
      */
-    public function assertPublishedOnTimes(string $topic, int $times = 1, ?KafkaProducerMessage $expectedMessage = null, ?callable $callback = null)
+    public function assertPublishedOnTimes(string $topic, int $times = 1, ?ProducerMessage $expectedMessage = null, ?callable $callback = null)
     {
         $count = $this->published($callback, $expectedMessage, $topic)->count();
 
@@ -138,7 +138,7 @@ class KafkaFake implements CanPublishMessagesToKafka
     /**
      * Get all messages matching a truth-test callback.
      */
-    private function published(?callable $callback = null, ?KafkaProducerMessage $expectedMessage = null, ?string $topic = null): Collection
+    private function published(?callable $callback = null, ?ProducerMessage $expectedMessage = null, ?string $topic = null): Collection
     {
         if (! $this->hasPublished()) {
             return collect();

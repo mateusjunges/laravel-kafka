@@ -5,7 +5,7 @@ namespace Junges\Kafka\Contracts;
 /**
  * @internal
  */
-interface KafkaConsumerMessage extends KafkaMessage
+interface ConsumerMessage extends KafkaMessage
 {
     public function getOffset(): ?int;
 

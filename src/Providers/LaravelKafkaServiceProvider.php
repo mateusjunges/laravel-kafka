@@ -5,10 +5,10 @@ namespace Junges\Kafka\Providers;
 use Illuminate\Support\ServiceProvider;
 use Junges\Kafka\Console\Commands\KafkaConsumerCommand;
 use Junges\Kafka\Console\Commands\KafkaRestartConsumersCommand;
-use Junges\Kafka\Contracts\CanConsumeMessagesFromKafka;
-use Junges\Kafka\Contracts\CanPublishMessagesToKafka;
-use Junges\Kafka\Contracts\KafkaConsumerMessage;
-use Junges\Kafka\Contracts\KafkaProducerMessage;
+use Junges\Kafka\Contracts\ConsumeMessagesFromKafka;
+use Junges\Kafka\Contracts\MessagePublisher;
+use Junges\Kafka\Contracts\ConsumerMessage;
+use Junges\Kafka\Contracts\ProducerMessage;
 use Junges\Kafka\Contracts\MessageDeserializer;
 use Junges\Kafka\Contracts\MessageSerializer;
 use Junges\Kafka\Kafka;
@@ -37,13 +37,13 @@ class LaravelKafkaServiceProvider extends ServiceProvider
 
         $this->app->bind(MessageDeserializer::class, fn() => new JsonDeserializer());
 
-        $this->app->bind(KafkaProducerMessage::class, fn() => new Message(''));
+        $this->app->bind(ProducerMessage::class, fn() => new Message(''));
 
-        $this->app->bind(KafkaConsumerMessage::class, ConsumedMessage::class);
+        $this->app->bind(ConsumerMessage::class, ConsumedMessage::class);
 
-        $this->app->bind(CanPublishMessagesToKafka::class, Kafka::class);
+        $this->app->bind(MessagePublisher::class, Kafka::class);
 
-        $this->app->bind(CanConsumeMessagesFromKafka::class, Kafka::class);
+        $this->app->bind(ConsumeMessagesFromKafka::class, Kafka::class);
     }
 
     private function publishesConfiguration()

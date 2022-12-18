@@ -4,7 +4,7 @@ namespace Junges\Kafka\Consumers;
 
 use Closure;
 use Junges\Kafka\Contracts\Consumer;
-use Junges\Kafka\Contracts\KafkaConsumerMessage;
+use Junges\Kafka\Contracts\ConsumerMessage;
 
 class CallableConsumer extends Consumer
 {
@@ -24,7 +24,7 @@ class CallableConsumer extends Consumer
     /**
      * Handle the received message.
      */
-    public function handle(KafkaConsumerMessage $message): void
+    public function handle(ConsumerMessage $message): void
     {
         $middlewares = array_reverse($this->middlewares);
         $handler = array_shift($middlewares)($this->handler);

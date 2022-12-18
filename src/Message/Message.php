@@ -6,9 +6,9 @@ use Illuminate\Contracts\Support\Arrayable;
 use JetBrains\PhpStorm\ArrayShape;
 use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\AbstractMessage;
-use Junges\Kafka\Contracts\KafkaProducerMessage;
+use Junges\Kafka\Contracts\ProducerMessage;
 
-class Message extends AbstractMessage implements Arrayable, KafkaProducerMessage
+class Message extends AbstractMessage implements Arrayable, ProducerMessage
 {
     /**
      * Creates a new message instance.
@@ -17,7 +17,7 @@ class Message extends AbstractMessage implements Arrayable, KafkaProducerMessage
      * @return Message
      */
     #[Pure]
-    public static function create(string $topicName = null, int $partition = RD_KAFKA_PARTITION_UA): KafkaProducerMessage
+    public static function create(string $topicName = null, int $partition = RD_KAFKA_PARTITION_UA): ProducerMessage
     {
         return new self($topicName, $partition);
     }
@@ -72,14 +72,14 @@ class Message extends AbstractMessage implements Arrayable, KafkaProducerMessage
         ];
     }
 
-    public function withBody(mixed $body): KafkaProducerMessage
+    public function withBody(mixed $body): ProducerMessage
     {
         $this->body = $body;
 
         return $this;
     }
 
-    public function withHeader(string $key, mixed $value): KafkaProducerMessage
+    public function withHeader(string $key, mixed $value): ProducerMessage
     {
         $this->headers[$key] = $value;
 

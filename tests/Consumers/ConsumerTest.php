@@ -7,7 +7,7 @@ use Junges\Kafka\Commit\VoidCommitter;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Consumers\CallableConsumer;
 use Junges\Kafka\Consumers\Consumer;
-use Junges\Kafka\Contracts\KafkaConsumerMessage;
+use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Exceptions\KafkaConsumerException;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\ConsumedMessage;
@@ -140,7 +140,7 @@ class ConsumerTest extends LaravelKafkaTestCase
         $this->mockProducer();
 
         $this->stoppableConsumer = Kafka::createConsumer(['test'])
-            ->withHandler(function (KafkaConsumerMessage $message) {
+            ->withHandler(function (ConsumerMessage $message) {
                 if ($message->getKey() === 'key2' && $this->stoppableConsumer) {
                     $this->stoppableConsumer->stopConsume(function () {
                         $this->stoppableConsumerStopped = true;
@@ -225,7 +225,7 @@ class ConsumerTest extends LaravelKafkaTestCase
         
 
         $fakeHandler = new CallableConsumer(
-            function (KafkaConsumerMessage $message) {
+            function (ConsumerMessage $message) {
                 // sleep 100 miliseconds to simulate restart interval check
                 usleep(100 * 1000);
                 $this->artisan('kafka:restart-consumers');

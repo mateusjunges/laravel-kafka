@@ -5,16 +5,16 @@ namespace Junges\Kafka\Producers;
 use Junges\Kafka\Concerns\InteractsWithConfigCallbacks;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\Sasl;
-use Junges\Kafka\Contracts\CanProduceMessages;
-use Junges\Kafka\Contracts\KafkaProducerMessage;
+use Junges\Kafka\Contracts\MessageProducer;
+use Junges\Kafka\Contracts\ProducerMessage;
 use Junges\Kafka\Contracts\MessageSerializer;
 
-class ProducerBuilder implements CanProduceMessages
+class ProducerBuilder implements MessageProducer
 {
     use InteractsWithConfigCallbacks;
 
     private array $options = [];
-    private KafkaProducerMessage $message;
+    private ProducerMessage $message;
     private MessageSerializer $serializer;
     private ?Sasl $saslConfig = null;
     private readonly string $broker;
@@ -23,8 +23,8 @@ class ProducerBuilder implements CanProduceMessages
         private readonly string $topic,
         ?string $broker = null,
     ) {
-        /** @var KafkaProducerMessage $message */
-        $message = app(KafkaProducerMessage::class);
+        /** @var ProducerMessage $message */
+        $message = app(ProducerMessage::class);
         $this->message = $message->create($topic);
         $this->serializer = app(MessageSerializer::class);
         $this->broker = $broker ?? config('kafka.brokers');
@@ -110,7 +110,7 @@ class ProducerBuilder implements CanProduceMessages
      *
      * @return $this
      */
-    public function withMessage(KafkaProducerMessage $message): self
+    public function withMessage(ProducerMessage $message): self
     {
         $this->message = $message;
 
@@ -152,7 +152,7 @@ class ProducerBuilder implements CanProduceMessages
     /**
      * Specifies which serializer should be used.
      */
-    public function usingSerializer(MessageSerializer $serializer): CanProduceMessages
+    public function usingSerializer(MessageSerializer $serializer): MessageProducer
     {
         $this->serializer = $serializer;
 

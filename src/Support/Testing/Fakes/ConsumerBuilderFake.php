@@ -15,7 +15,7 @@ use Junges\Kafka\Support\Timer;
 
 class ConsumerBuilderFake extends ConsumerBuilder implements ConsumerBuilderContract
 {
-    /** @var \Junges\Kafka\Contracts\KafkaConsumerMessage[] */
+    /** @var \Junges\Kafka\Contracts\ConsumerMessage[] */
     private array $messages = [];
 
     /**
@@ -33,7 +33,7 @@ class ConsumerBuilderFake extends ConsumerBuilder implements ConsumerBuilderCont
     /**
      * Set fake messages to the consumer.
      *
-     * @param \Junges\Kafka\Contracts\KafkaConsumerMessage[] $messages
+     * @param \Junges\Kafka\Contracts\ConsumerMessage[] $messages
      * @return $this
      */
     public function setMessages(array $messages): self

@@ -3,7 +3,7 @@
 namespace Junges\Kafka\Producers;
 
 use Junges\Kafka\Config\Config;
-use Junges\Kafka\Contracts\KafkaProducerMessage;
+use Junges\Kafka\Contracts\ProducerMessage;
 use Junges\Kafka\Contracts\MessageSerializer;
 use Junges\Kafka\Exceptions\CouldNotPublishMessage;
 use RdKafka\Conf;
@@ -49,7 +49,7 @@ class Producer
      * @return mixed
      * @throws \Exception
      */
-    public function produce(KafkaProducerMessage $message): bool
+    public function produce(ProducerMessage $message): bool
     {
         $topic = $this->producer->newTopic($this->topic);
 
@@ -91,7 +91,7 @@ class Producer
         return $produced;
     }
 
-    private function produceMessage(ProducerTopic $topic, KafkaProducerMessage $message): void
+    private function produceMessage(ProducerTopic $topic, ProducerMessage $message): void
     {
         if (method_exists($topic, 'producev')) {
             $topic->producev(

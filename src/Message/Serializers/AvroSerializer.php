@@ -7,7 +7,7 @@ use FlixTech\AvroSerializer\Objects\RecordSerializer;
 use Junges\Kafka\Contracts\AvroMessageSerializer;
 use Junges\Kafka\Contracts\AvroSchemaRegistry;
 use Junges\Kafka\Contracts\KafkaAvroSchemaRegistry;
-use Junges\Kafka\Contracts\KafkaProducerMessage;
+use Junges\Kafka\Contracts\ProducerMessage;
 use Junges\Kafka\Exceptions\Serializers\AvroSerializerException;
 
 class AvroSerializer implements AvroMessageSerializer
@@ -23,14 +23,14 @@ class AvroSerializer implements AvroMessageSerializer
         return $this->registry;
     }
 
-    public function serialize(KafkaProducerMessage $message): KafkaProducerMessage
+    public function serialize(ProducerMessage $message): ProducerMessage
     {
         $message = $this->encodeBody($message);
 
         return $this->encodeKey($message);
     }
 
-    private function encodeBody(KafkaProducerMessage $producerMessage): KafkaProducerMessage
+    private function encodeBody(ProducerMessage $producerMessage): ProducerMessage
     {
         $topicName = $producerMessage->getTopicName();
         $body = $producerMessage->getBody();
@@ -54,7 +54,7 @@ class AvroSerializer implements AvroMessageSerializer
         return $producerMessage->withBody($encodedBody);
     }
 
-    private function encodeKey(KafkaProducerMessage $producerMessage): KafkaProducerMessage
+    private function encodeKey(ProducerMessage $producerMessage): ProducerMessage
     {
         $topicName = $producerMessage->getTopicName();
         $key = $producerMessage->getKey();

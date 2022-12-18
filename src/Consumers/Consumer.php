@@ -11,7 +11,7 @@ use Junges\Kafka\Commit\DefaultCommitterFactory;
 use Junges\Kafka\Commit\NativeSleeper;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\CanConsumeMessages;
-use Junges\Kafka\Contracts\KafkaConsumerMessage;
+use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\MessageDeserializer;
 use Junges\Kafka\Exceptions\KafkaConsumerException;
 use Junges\Kafka\Logger;
@@ -242,7 +242,7 @@ class Consumer implements CanConsumeMessages
      *
      * @param Message|ConsumedMessage $message
      */
-    private function handleException(Throwable $exception, Message|KafkaConsumerMessage $message): bool
+    private function handleException(Throwable $exception, Message|ConsumerMessage $message): bool
     {
         try {
             $this->config->getConsumer()->failed(
@@ -351,9 +351,9 @@ class Consumer implements CanConsumeMessages
         }
     }
 
-    private function getConsumerMessage(Message $message): KafkaConsumerMessage
+    private function getConsumerMessage(Message $message): ConsumerMessage
     {
-        return app(KafkaConsumerMessage::class, [
+        return app(ConsumerMessage::class, [
             'topicName' => $message->topic_name,
             'partition' => $message->partition,
             'headers' => $message->headers ?? [],

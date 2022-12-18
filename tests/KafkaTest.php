@@ -4,7 +4,7 @@ namespace Junges\Kafka\Tests;
 
 use Illuminate\Support\Str;
 use Junges\Kafka\Consumers\ConsumerBuilder;
-use Junges\Kafka\Contracts\KafkaProducerMessage;
+use Junges\Kafka\Contracts\ProducerMessage;
 use Junges\Kafka\Exceptions\CouldNotPublishMessage;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\Message;
@@ -197,7 +197,7 @@ class KafkaTest extends LaravelKafkaTestCase
 
         $message = $this->getPropertyWithReflection('message', $producer);
 
-        $this->assertInstanceOf(KafkaProducerMessage::class, $message);
+        $this->assertInstanceOf(ProducerMessage::class, $message);
 
         $this->assertArrayNotHasKey('log_level', $message->getHeaders());
         $this->assertArrayNotHasKey('debug', $message->getHeaders());

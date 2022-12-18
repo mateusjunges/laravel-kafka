@@ -2,7 +2,7 @@
 
 namespace Junges\Kafka\Contracts;
 
-interface CanConsumeMessagesFromKafka
+interface ConsumeMessagesFromKafka
 {
     /**
      * Return a ConsumerBuilder instance.

@@ -5,7 +5,7 @@ namespace Junges\Kafka\Message\Deserializers;
 use FlixTech\AvroSerializer\Objects\RecordSerializer;
 use Junges\Kafka\Contracts\AvroMessageDeserializer;
 use Junges\Kafka\Contracts\AvroSchemaRegistry;
-use Junges\Kafka\Contracts\KafkaConsumerMessage;
+use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Message\ConsumedMessage;
 
 class AvroDeserializer implements AvroMessageDeserializer
@@ -21,7 +21,7 @@ class AvroDeserializer implements AvroMessageDeserializer
         return $this->registry;
     }
 
-    public function deserialize(KafkaConsumerMessage $message): KafkaConsumerMessage
+    public function deserialize(ConsumerMessage $message): ConsumerMessage
     {
         return new ConsumedMessage(
             topicName: $message->getTopicName(),
@@ -34,7 +34,7 @@ class AvroDeserializer implements AvroMessageDeserializer
         );
     }
 
-    private function decodeBody(KafkaConsumerMessage $message)
+    private function decodeBody(ConsumerMessage $message)
     {
         $body = $message->getBody();
         $topicName = $message->getTopicName();
@@ -53,7 +53,7 @@ class AvroDeserializer implements AvroMessageDeserializer
         return $this->recordSerializer->decodeMessage($body, $schemaDefinition);
     }
 
-    private function decodeKey(KafkaConsumerMessage $message)
+    private function decodeKey(ConsumerMessage $message)
     {
         $key = $message->getKey();
         $topicName = $message->getTopicName();

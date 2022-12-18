@@ -7,7 +7,7 @@ use Illuminate\Support\Collection;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\CanConsumeMessages;
 use Junges\Kafka\Contracts\HandlesBatchConfiguration;
-use Junges\Kafka\Contracts\KafkaConsumerMessage;
+use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\MessageCounter;
 use RdKafka\Conf;
 use RdKafka\Message;
@@ -18,7 +18,7 @@ class ConsumerFake implements CanConsumeMessages
     private readonly HandlesBatchConfiguration $batchConfig;
 
     /**
-     * @param \Junges\Kafka\Contracts\KafkaConsumerMessage[] $messages
+     * @param \Junges\Kafka\Contracts\ConsumerMessage[] $messages
      */
     public function __construct(
         private readonly Config $config,
@@ -167,15 +167,15 @@ class ConsumerFake implements CanConsumeMessages
     /**
      * Handle the message.
      *
-     * @var \Junges\Kafka\Contracts\KafkaConsumerMessage
+     * @var \Junges\Kafka\Contracts\ConsumerMessage
      */
-    private function handleMessage(KafkaConsumerMessage $message): void
+    private function handleMessage(ConsumerMessage $message): void
     {
         $this->config->getConsumer()->handle($message);
         $this->messageCounter->add();
     }
 
-    private function getRdKafkaMessage(KafkaConsumerMessage $message): Message
+    private function getRdKafkaMessage(ConsumerMessage $message): Message
     {
         $rdKafkaMessage = new Message();
         $rdKafkaMessage->err = 0;
@@ -190,9 +190,9 @@ class ConsumerFake implements CanConsumeMessages
         return $rdKafkaMessage;
     }
 
-    private function getConsumerMessage(Message $message): KafkaConsumerMessage
+    private function getConsumerMessage(Message $message): ConsumerMessage
     {
-        return app(KafkaConsumerMessage::class, [
+        return app(ConsumerMessage::class, [
             'topicName' => $message->topic_name,
             'partition' => $message->partition,
             'headers' => $message->headers ?? [],

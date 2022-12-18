@@ -9,7 +9,7 @@ use SplDoublyLinkedList;
 /**
  * Class stores multiple messages to produce them to kafka topic as a batch
  *
- * @see CanProduceMessages::sendBatch
+ * @see MessageProducer::sendBatch
  */
 class MessageBatch
 {
