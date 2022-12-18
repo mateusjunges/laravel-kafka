@@ -8,7 +8,7 @@ use Junges\Kafka\Config\NullBatchConfig;
 use Junges\Kafka\Consumers\CallableBatchConsumer;
 use Junges\Kafka\Consumers\CallableConsumer;
 use Junges\Kafka\Consumers\ConsumerBuilder;
-use Junges\Kafka\Contracts\CanConsumeMessages;
+use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Contracts\ConsumerBuilder as ConsumerBuilderContract;
 use Junges\Kafka\Contracts\HandlesBatchConfiguration;
 use Junges\Kafka\Support\Timer;
@@ -39,7 +39,7 @@ class ConsumerBuilderFake extends ConsumerBuilder implements ConsumerBuilderCont
     }
 
     /** Build the Kafka consumer. */
-    public function build(): CanConsumeMessages
+    public function build(): MessageConsumer
     {
         $config = new Config(
             broker: $this->brokers,

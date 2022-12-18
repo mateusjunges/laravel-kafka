@@ -5,14 +5,14 @@ namespace Junges\Kafka\Support\Testing\Fakes;
 use Closure;
 use Illuminate\Support\Collection;
 use Junges\Kafka\Config\Config;
-use Junges\Kafka\Contracts\CanConsumeMessages;
+use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Contracts\HandlesBatchConfiguration;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\MessageCounter;
 use RdKafka\Conf;
 use RdKafka\Message;
 
-class ConsumerFake implements CanConsumeMessages
+class ConsumerFake implements MessageConsumer
 {
     private readonly MessageCounter $messageCounter;
     private readonly HandlesBatchConfiguration $batchConfig;

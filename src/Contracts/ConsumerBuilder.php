@@ -92,5 +92,5 @@ interface ConsumerBuilder extends InteractsWithConfigCallbacks
     public function stopAfterLastMessage(bool $stopAfterLastMessage = true): self;
 
     /** Build the Kafka consumer. */
-    public function build(): CanConsumeMessages;
+    public function build(): MessageConsumer;
 }

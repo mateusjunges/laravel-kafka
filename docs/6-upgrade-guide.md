@@ -13,6 +13,7 @@ weight: 6
 - The `\Junges\Kafka\Contracts\KafkaConsumerMessage` was renamed to `\Junges\Kafka\Contracts\ConsumerMessage`
 - The `\Junges\Kafka\Contracts\CanConsumeMessagesFromKafka` was renamed to `\Junges\Kafka\Contracts\ConsumeMessagesFromKafka`
 - The `\Junges\Kafka\Contracts\CanConsumeBatchMessages` contract was renamed to `\Junges\Kafka\Contracts\BatchMessageConsumer`
+- The `\Junges\Kafka\Contracts\CanConsumeMessages` contract was renamed to `\Junges\Kafka\Contracts\MessageConsumer`
 
 #### The `withSasl` method signature was changed.
 

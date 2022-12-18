@@ -10,7 +10,7 @@ use Junges\Kafka\Config\BatchConfig;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\NullBatchConfig;
 use Junges\Kafka\Config\Sasl;
-use Junges\Kafka\Contracts\CanConsumeMessages;
+use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Contracts\ConsumerBuilder as ConsumerBuilderContract;
 use Junges\Kafka\Contracts\HandlesBatchConfiguration;
 use Junges\Kafka\Contracts\MessageDeserializer;
@@ -231,7 +231,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
         return $this;
     }
 
-    public function build(): CanConsumeMessages
+    public function build(): MessageConsumer
     {
         $config = new Config(
             broker: $this->brokers,

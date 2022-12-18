@@ -5,7 +5,7 @@ namespace Junges\Kafka\Tests;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
-use Junges\Kafka\Contracts\CanConsumeMessages;
+use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\ConsumedMessage;
@@ -18,7 +18,7 @@ use PHPUnit\Framework\ExpectationFailedException;
 class KafkaFakeTest extends LaravelKafkaTestCase
 {
     private KafkaFake $fake;
-    private CanConsumeMessages $consumer;
+    private MessageConsumer $consumer;
 
     public function setUp(): void
     {

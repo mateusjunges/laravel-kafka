@@ -4,7 +4,7 @@ namespace Junges\Kafka\Contracts;
 
 use Closure;
 
-interface CanConsumeMessages
+interface MessageConsumer
 {
     /**
      * Consume messages from a kafka topic in loop.
