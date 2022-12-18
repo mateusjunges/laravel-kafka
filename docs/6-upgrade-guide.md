@@ -13,6 +13,14 @@ weight: 6
 - The `\Junges\Kafka\Contracts\KafkaConsumerMessage` was renamed to `\Junges\Kafka\Contracts\ConsumerMessage`
 - The `\Junges\Kafka\Contracts\CanConsumeMessagesFromKafka` was renamed to `\Junges\Kafka\Contracts\ConsumeMessagesFromKafka`
 
+#### The `withSasl` method signature was changed.
+
+The `withSasl` method now accepts all `SASL` parameters instead of a `Sasl` object.
+
+```php
+public function withSasl(string $username, string $password, string $mechanisms, string $securityProtocol = 'SASL_PLAINTEXT');
+```
+
 ### Updating dependencies
 **PHP 8.1 Required**
 
