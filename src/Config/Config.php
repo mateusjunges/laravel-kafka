@@ -61,9 +61,24 @@ class Config
         'auto.offset.reset',
     ];
 
-    public function __construct(private readonly string             $broker, private readonly array              $topics, private readonly ?string            $securityProtocol = null, private readonly ?int               $commit = null, private readonly ?string            $groupId = null, private readonly ?Consumer          $consumer = null, private readonly ?Sasl              $sasl = null, private readonly ?string            $dlq = null, private readonly int                $maxMessages = -1, private readonly int                $maxCommitRetries = 6, private readonly bool               $autoCommit = true, private readonly array              $customOptions = [], private readonly HandlesBatchConfiguration $batchConfig = new NullBatchConfig(), private readonly bool               $stopAfterLastMessage = false, private readonly int                $restartInterval = 1000, private readonly array              $callbacks = [])
-    {
-    }
+    public function __construct(
+        private readonly string $broker,
+        private readonly array $topics,
+        private readonly ?string $securityProtocol = null,
+        private readonly ?int $commit = null,
+        private readonly ?string $groupId = null,
+        private readonly ?Consumer $consumer = null,
+        private readonly ?Sasl $sasl = null,
+        private readonly ?string $dlq = null,
+        private readonly int $maxMessages = -1,
+        private readonly int $maxCommitRetries = 6,
+        private readonly bool $autoCommit = true,
+        private readonly array $customOptions = [],
+        private readonly HandlesBatchConfiguration $batchConfig = new NullBatchConfig(),
+        private readonly bool $stopAfterLastMessage = false,
+        private readonly int $restartInterval = 1000,
+        private readonly array $callbacks = []
+    ) {}
 
     public function getCommit(): int
     {
