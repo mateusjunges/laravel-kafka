@@ -27,4 +27,4 @@ pcntl_signal(SIGINT, fn() => gracefulShutdown($consumer));
 $consumer->consume();
 ```
 
-> NOTE: You will require the [Process Control Extension](https://www.php.net/manual/en/book.pcntl.php) to be installed to utilise the `pcntl` methods.
+> You will require the [Process Control Extension](https://www.php.net/manual/en/book.pcntl.php) to be installed to utilise the `pcntl` methods.
