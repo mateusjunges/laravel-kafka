@@ -9,7 +9,7 @@ use Monolog\Processor\UidProcessor;
 use RdKafka\Message;
 use Throwable;
 
-class Logger
+class Logger implements Contracts\Logger
 {
     private MonologLogger $logger;
 

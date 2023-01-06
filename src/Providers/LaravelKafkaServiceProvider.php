@@ -9,9 +9,11 @@ use Junges\Kafka\Contracts\CanConsumeMessagesFromKafka;
 use Junges\Kafka\Contracts\CanPublishMessagesToKafka;
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
+use Junges\Kafka\Contracts\Logger as LoggerContract;
 use Junges\Kafka\Contracts\MessageDeserializer;
 use Junges\Kafka\Contracts\MessageSerializer;
 use Junges\Kafka\Kafka;
+use Junges\Kafka\Logger;
 use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
 use Junges\Kafka\Message\Message;
@@ -50,6 +52,8 @@ class LaravelKafkaServiceProvider extends ServiceProvider
         $this->app->bind(CanPublishMessagesToKafka::class, Kafka::class);
 
         $this->app->bind(CanConsumeMessagesFromKafka::class, Kafka::class);
+
+        $this->app->singleton(LoggerContract::class, Logger::class);
     }
 
     private function publishesConfiguration()
