@@ -2,6 +2,9 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2023-01-10 v1.10.1](https://github.com/mateusjunges/laravel-kafka/compare/v1.10.0...v1.10.1)
+- Add Logger contract to allow users to implement their own Logger by @remarkusable in [#165](https://github.com/mateusjunges/laravel-kafka/pull/165)
+
 ## [2022-12-17 v1.10.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.9.3...v1.10.0)
 - Added support for PHP 8.2 by @mateusjunges in [#159](https://github.com/mateusjunges/laravel-kafka/pull/159)
 - Dropped support for `ext-rdkafka` v4.0 by @mateusjunges in [#158](https://github.com/mateusjunges/laravel-kafka/pull/158)
