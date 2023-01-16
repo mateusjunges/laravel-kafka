@@ -272,6 +272,8 @@ class Consumer implements CanConsumeMessages
                 $this->logger->error($message, $throwable, 'HANDLER_EXCEPTION');
             }
 
+            report($throwable);
+
             return false;
         }
     }
