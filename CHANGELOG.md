@@ -2,6 +2,9 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2023-01-24 v1.10.2](https://github.com/mateusjunges/laravel-kafka/compare/v1.10.1...v1.10.2)
+- Report consumer exceptions by @behzadev on [#169](https://github.com/mateusjunges/laravel-kafka/pull/169)
+
 ## [2023-01-10 v1.10.1](https://github.com/mateusjunges/laravel-kafka/compare/v1.10.0...v1.10.1)
 - Add Logger contract to allow users to implement their own Logger by @remarkusable in [#165](https://github.com/mateusjunges/laravel-kafka/pull/165)
 
