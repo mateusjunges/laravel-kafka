@@ -43,7 +43,7 @@ services:
         LIBRDKAFKA_VERSION: v1.6.0
         EXT_RDKAFKA_VERSION: 5.0.2
         PHP_VERSION: 8.2
-        LARAVEL_VERSION: 9
+        LARAVEL_VERSION: 10.x-dev
     entrypoint: /application/laravel-kafka/start.sh
     networks:
       - app-test
