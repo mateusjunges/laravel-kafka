@@ -1,4 +1,4 @@
-FROM mateusjunges/laravel:8.2-v1.8.2-6.0.0-10.x-dev
+FROM mateusjunges/laravel:8.2-v1.8.2-6.0.0-10
 
 RUN apk add libzip-dev
 
@@ -8,7 +8,7 @@ RUN pecl install zip
 
 COPY dev/php.ini /usr/local/etc/php/conf.d
 
-COPY build/composer-files/composer.json-10.x-dev /application/laravel-test/composer.json
+COPY build/composer-files/composer.json-10 /application/laravel-test/composer.json
 
 COPY build/laravel-kernels/kernel.php.stub /application/laravel-test/app/Console/Kernel.php
 
