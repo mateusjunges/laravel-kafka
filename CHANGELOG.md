@@ -2,6 +2,9 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2023-01-30 v1.11.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.10.2...v1.11.0)
+- Add support for Laravel 10 by @mateusjunges and @mihaileu on [#171](https://github.com/mateusjunges/laravel-kafka/pull/171)
+
 ## [2023-01-24 v1.10.2](https://github.com/mateusjunges/laravel-kafka/compare/v1.10.1...v1.10.2)
 - Report consumer exceptions by @behzadev on [#169](https://github.com/mateusjunges/laravel-kafka/pull/169)
 
