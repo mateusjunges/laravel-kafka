@@ -8,7 +8,7 @@ RUN pecl install zip
 
 COPY dev/php.ini /usr/local/etc/php/conf.d
 
-COPY build/composer-files/composer.json-8 /application/laravel-test/composer.json
+COPY build/composer-files/composer.json-10.x-dev /application/laravel-test/composer.json
 
 COPY build/laravel-kernels/kernel.php.stub /application/laravel-test/app/Console/Kernel.php
 
