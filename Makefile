@@ -39,7 +39,7 @@ integration-coverage:
 
 version-test-%:
 	@$(eval TAG = $(@:version-test-%=%))
-	@$(eval LARAVEL_VERSION=$(shell echo ${TAG} | cut -c18))
+	@$(eval LARAVEL_VERSION=$(shell echo ${TAG:38:8}))
 	@$(eval PHP_VERSION=$(shell echo ${TAG:0:3}))
 	@$(eval LIBRDKAFKA_VERSION=$(shell echo ${TAG:4:6}))
 	@$(eval EXT_RDKAFKA_VERSION=$(shell echo ${TAG:11:5}))
