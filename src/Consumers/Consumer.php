@@ -84,6 +84,7 @@ class Consumer implements CanConsumeMessages
     {
         $this->cancelStopConsume();
         $this->configureRestartTimer();
+		$this->listenForSignals();
 
         $this->consumer = app(KafkaConsumer::class, [
             'conf' => $this->setConf($this->config->getConsumerOptions()),
@@ -110,6 +111,13 @@ class Consumer implements CanConsumeMessages
             Closure::fromCallable($this->onStopConsume)();
         }
     }
+
+	private function listenForSignals(): void
+	{
+		pcntl_async_signals(true);
+		pcntl_signal(SIGQUIT, fn () => $this->stopRequested = true);
+		pcntl_signal(SIGTERM, fn () => $this->stopRequested = true);
+	}
 
     /**
      * Requests the consumer to stop after it's finished processing any messages to allow graceful exit
@@ -363,11 +371,11 @@ class Consumer implements CanConsumeMessages
             $this->handleBatch();
         }
 
-        if ($this->config->shouldStopAfterLastMessage() && in_array($message->err, self::CONSUME_STOP_EOF_ERRORS)) {
+        if ($this->config->shouldStopAfterLastMessage() && in_array($message->err, self::CONSUME_STOP_EOF_ERRORS, true)) {
             $this->stopConsume();
         }
 
-        if (! in_array($message->err, self::IGNORABLE_CONSUMER_ERRORS)) {
+        if (! in_array($message->err, self::IGNORABLE_CONSUMER_ERRORS, true)) {
             $this->logger->error($message, null, 'CONSUMER');
 
             throw new KafkaConsumerException($message->errstr(), $message->err);
