@@ -85,9 +85,9 @@ class Consumer implements CanConsumeMessages
         $this->cancelStopConsume();
         $this->configureRestartTimer();
 
-	if ($this->supportAsyncSignals()) {
-		$this->listenForSignals();
-	}
+        if ($this->supportAsyncSignals()) {
+            $this->listenForSignals();
+        }
 
         $this->consumer = app(KafkaConsumer::class, [
             'conf' => $this->setConf($this->config->getConsumerOptions()),
