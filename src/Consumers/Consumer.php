@@ -115,18 +115,18 @@ class Consumer implements CanConsumeMessages
         }
     }
 
-	private function listenForSignals(): void
-	{
-		pcntl_async_signals(true);
+    private function listenForSignals(): void
+    {
+        pcntl_async_signals(true);
 
-		pcntl_signal(SIGQUIT, fn () => $this->stopRequested = true);
-		pcntl_signal(SIGTERM, fn () => $this->stopRequested = true);
-	}
+        pcntl_signal(SIGQUIT, fn () => $this->stopRequested = true);
+        pcntl_signal(SIGTERM, fn () => $this->stopRequested = true);
+    }
 
-	private function supportAsyncSignals(): bool
-	{
-		return extension_loaded('pcntl');
-	}
+    private function supportAsyncSignals(): bool
+    {
+        return extension_loaded('pcntl');
+    }
 
     /**
      * Requests the consumer to stop after it's finished processing any messages to allow graceful exit
