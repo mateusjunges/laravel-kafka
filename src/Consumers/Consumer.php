@@ -84,7 +84,10 @@ class Consumer implements CanConsumeMessages
     {
         $this->cancelStopConsume();
         $this->configureRestartTimer();
-		$this->listenForSignals();
+
+		if ($this->supportAsyncSignals()) {
+			$this->listenForSignals();
+		}
 
         $this->consumer = app(KafkaConsumer::class, [
             'conf' => $this->setConf($this->config->getConsumerOptions()),
@@ -115,8 +118,14 @@ class Consumer implements CanConsumeMessages
 	private function listenForSignals(): void
 	{
 		pcntl_async_signals(true);
+
 		pcntl_signal(SIGQUIT, fn () => $this->stopRequested = true);
 		pcntl_signal(SIGTERM, fn () => $this->stopRequested = true);
+	}
+
+	private function supportAsyncSignals(): bool
+	{
+		return extension_loaded('pcntl');
 	}
 
     /**
