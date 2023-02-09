@@ -105,9 +105,14 @@ class Consumer implements CanConsumeMessages
             $this->checkForRestart();
         } while (! $this->maxMessagesLimitReached() && ! $this->stopRequested);
 
-        if ($this->whenStopConsuming) {
+        if ($this->shouldRunStopConsumingCallback()) {
             Closure::fromCallable($this->whenStopConsuming)();
         }
+    }
+
+    private function shouldRunStopConsumingCallback(): bool
+    {
+        return $this->whenStopConsuming !== null;
     }
 
     private function listenForSignals(): void
