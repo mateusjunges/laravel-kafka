@@ -60,12 +60,7 @@ class Consumer implements CanConsumeMessages
     protected int $lastRestart = 0;
     protected Timer $restartTimer;
 
-    /**
-     * @param \Junges\Kafka\Config\Config $config
-     * @param MessageDeserializer $deserializer
-     * @param \Junges\Kafka\Commit\Contracts\CommitterFactory|null $committerFactory
-     */
-    public function __construct(private Config $config, MessageDeserializer $deserializer, CommitterFactory $committerFactory = null)
+    public function __construct(private readonly Config $config, MessageDeserializer $deserializer, CommitterFactory $committerFactory = null)
     {
         $this->logger = app(Logger::class);
         $this->messageCounter = new MessageCounter($config->getMaxMessages());
@@ -128,15 +123,18 @@ class Consumer implements CanConsumeMessages
         return extension_loaded('pcntl');
     }
 
-    /**
-     * Requests the consumer to stop after it's finished processing any messages to allow graceful exit
-     *
-     * @param Closure|null $onStop
-     */
-    public function stopConsume(?Closure $onStop = null): void
+    /** @inheritdoc  */
+    public function stopConsume(): void
     {
         $this->stopRequested = true;
-        $this->onStopConsume = $onStop;
+    }
+
+    /** @inheritdoc  */
+    public function onStopConsume(?Closure $onStopConsume = null): self
+    {
+        $this->onStopConsume = $onStopConsume;
+
+        return $this;
     }
 
     /**
@@ -145,7 +143,6 @@ class Consumer implements CanConsumeMessages
     public function cancelStopConsume(): void
     {
         $this->stopRequested = false;
-        $this->onStopConsume = null;
     }
 
     /**
@@ -162,7 +159,7 @@ class Consumer implements CanConsumeMessages
      * @throws KafkaConsumerException
      * @throws \RdKafka\Exception|\Throwable
      */
-    private function doConsume()
+    private function doConsume(): void
     {
         $message = $this->consumer->consume(config('kafka.consumer_timeout_ms', 2000));
         $this->handleMessage($message);
@@ -295,11 +292,7 @@ class Consumer implements CanConsumeMessages
         }
     }
 
-    /**
-     * Send a message to the Dead Letter Queue.
-     *
-     * @param \RdKafka\Message $message
-     */
+    /** Send a message to the Dead Letter Queue. */
     private function sendToDlq(Message $message): void
     {
         $topic = $this->producer->newTopic($this->config->getDlq());
@@ -332,7 +325,7 @@ class Consumer implements CanConsumeMessages
 
             $this->committer->commitMessage($message, $success);
         } catch (Throwable $throwable) {
-            if (! in_array($throwable->getCode(), self::IGNORABLE_COMMIT_ERRORS)) {
+            if (! in_array($throwable->getCode(), self::IGNORABLE_COMMIT_ERRORS, true)) {
                 $this->logger->error($message, $throwable, 'MESSAGE_COMMIT');
 
                 throw $throwable;

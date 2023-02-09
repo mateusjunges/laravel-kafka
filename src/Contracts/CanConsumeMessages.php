@@ -13,12 +13,8 @@ interface CanConsumeMessages
      */
     public function consume(): void;
 
-    /**
-     * Requests the consumer to stop after it's finished processing any messages to allow graceful exit
-     *
-     * @param Closure|null $onStop
-     */
-    public function stopConsume(?Closure $onStop = null): void;
+    /** Requests the consumer to stop after it's finished processing any messages to allow graceful exit. */
+    public function stopConsume(): void;
 
     /**
      * Will cancel the stopConsume request initiated by calling the stopConsume method
@@ -29,4 +25,7 @@ interface CanConsumeMessages
      * Count the number of messages consumed by this consumer
      */
     public function consumedMessagesCount(): int;
+
+    /** Defines a callable that will run when the consumer stops consuming messages. */
+    public function onStopConsume(?Closure $onStopConsume = null): self;
 }
