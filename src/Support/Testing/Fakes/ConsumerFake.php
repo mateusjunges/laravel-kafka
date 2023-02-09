@@ -17,7 +17,6 @@ class ConsumerFake implements CanConsumeMessages
     private MessageCounter $messageCounter;
     private HandlesBatchConfiguration $batchConfig;
 
-
     public function __construct(
         private readonly Config $config,
         private readonly array $messages = [],
