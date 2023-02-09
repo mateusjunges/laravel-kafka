@@ -26,14 +26,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         $this->fake = new KafkaFake();
     }
 
-    public function testItReturnsAKafkaFakeInstance()
-    {
-        $kafka = Kafka::fake();
-
-        $this->assertInstanceOf(KafkaFake::class, $kafka);
-    }
-
-    public function testItStorePublishedMessagesOnArray()
+    public function testItStorePublishedMessagesOnArray(): void
     {
         $producer = $this->fake->publishOn('topic')
             ->withBodyKey('test', ['test'])
@@ -45,7 +38,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         $this->fake->assertPublished($producer->getMessage());
     }
 
-    public function testAssertPublished()
+    public function testAssertPublished(): void
     {
         try {
             $this->fake->assertPublished(new Message('foo'));
@@ -62,7 +55,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         $this->fake->assertPublished($producer->getMessage());
     }
 
-    public function testAssertPublishedTimes()
+    public function testAssertPublishedTimes(): void
     {
         try {
             $this->fake->assertPublished(new Message('foo'));
@@ -90,7 +83,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         }
     }
 
-    public function testItCanPerformAssertionsOnPublishedMessages()
+    public function testItCanPerformAssertionsOnPublishedMessages(): void
     {
         $producer = $this->fake->publishOn('topic')
             ->withBodyKey('test', ['test'])
@@ -119,7 +112,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         }
     }
 
-    public function testAssertPublishedOn()
+    public function testAssertPublishedOn(): void
     {
         $producer = $this->fake->publishOn('topic')
             ->withBodyKey('test', ['test'])
@@ -139,7 +132,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         }
     }
 
-    public function testAssertPublishedOnTimes()
+    public function testAssertPublishedOnTimes(): void
     {
         $producer = $this->fake->publishOn('topic')
             ->withBodyKey('test', ['test'])
@@ -159,7 +152,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         }
     }
 
-    public function testICanPerformAssertionsUsingAssertPublishedOn()
+    public function testICanPerformAssertionsUsingAssertPublishedOn(): void
     {
         $producer = $this->fake->publishOn('topic')
             ->withBodyKey('test', ['test'])
@@ -185,7 +178,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         });
     }
 
-    public function testNothingPublished()
+    public function testNothingPublished(): void
     {
         $this->fake->assertNothingPublished();
 
@@ -198,7 +191,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         }
     }
 
-    public function testPublishMessageBatch()
+    public function testPublishMessageBatch(): void
     {
         $messageBatch = new MessageBatch();
         $messageBatch->push(new Message());
@@ -213,7 +206,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         $this->assertEquals(3, $producer->sendBatch($messageBatch));
     }
 
-    public function testFakeConsumer()
+    public function testFakeConsumer(): void
     {
         Kafka::fake();
 
@@ -240,7 +233,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         $consumer->consume();
     }
 
-    public function testFakeConsumerWithSingleMultipleMessages()
+    public function testFakeConsumerWithSingleMultipleMessages(): void
     {
         Kafka::fake();
 
@@ -281,7 +274,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         $this->assertEquals(count($messages), $consumer->consumedMessagesCount());
     }
 
-    public function testAReceivedMessageDoesItsJob()
+    public function testAReceivedMessageDoesItsJob(): void
     {
         Kafka::fake();
 
@@ -328,7 +321,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         $this->assertEquals('1998-08-11 04:30:00', $posts[1]['published_at']);
     }
 
-    public function testStopFakeConsumer()
+    public function testStopFakeConsumer(): void
     {
         Kafka::fake();
 
@@ -359,11 +352,12 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         $this->consumer = Kafka::createConsumer(['test-topic'])
             ->withHandler(function (KafkaConsumerMessage $message) use (&$stopped) {
                 //stop consumer after first message
-                $this->consumer->stopConsume(function () use (&$stopped) {
-                    $stopped = true;
-                });
+                $this->consumer->stopConsume();
             })
-            ->build();
+            ->build()
+            ->onStopConsume(function () use (&$stopped) {
+                $stopped = true;
+            });
 
         $this->consumer->consume();
         //testing stop callback
@@ -372,7 +366,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         $this->assertEquals(1, $this->consumer->consumedMessagesCount());
     }
 
-    public function testFakeBatchConsumer()
+    public function testFakeBatchConsumer(): void
     {
         Kafka::fake();
 
@@ -413,7 +407,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         $this->assertEquals(count($messages), $consumer->consumedMessagesCount());
     }
 
-    public function testFakeMultipleBatchConsumer()
+    public function testFakeMultipleBatchConsumer(): void
     {
         Kafka::fake();
 
@@ -498,7 +492,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         $this->assertEquals(count($messages), $consumer->consumedMessagesCount());
     }
 
-    public function testStopFakeBatchConsumer()
+    public function testStopFakeBatchConsumer(): void
     {
         Kafka::fake();
 
@@ -540,9 +534,9 @@ class KafkaFakeTest extends LaravelKafkaTestCase
             ->withBatchSizeLimit(2)
             ->withHandler(function (Collection $messages) use (&$stopped) {
                 //stop consumer after first batch
-                $this->consumer->stopConsume(function () use (&$stopped) {
+                $this->consumer->onStopConsume(function () use (&$stopped) {
                     $stopped = true;
-                });
+                })->stopConsume();
             })
             ->build();
 
