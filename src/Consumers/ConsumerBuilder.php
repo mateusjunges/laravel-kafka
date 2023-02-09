@@ -139,7 +139,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
      */
     public function withHandler(callable $handler): self
     {
-        $this->handler = Closure::fromCallable($handler);
+        $this->handler = $handler(...);
 
         return $this;
     }
