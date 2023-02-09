@@ -24,8 +24,8 @@ class ConsumerFake implements CanConsumeMessages
      * @param \Closure|null $onStopConsume
      */
     public function __construct(
-        private Config $config,
-        private array $messages = [],
+        private readonly Config $config,
+        private readonly array $messages = [],
         private bool $stopRequested = false,
         private ?Closure $onStopConsume = null
     ) {
@@ -51,15 +51,10 @@ class ConsumerFake implements CanConsumeMessages
         }
     }
 
-    /**
-     * Requests the consumer to stop after it's finished processing any messages to allow graceful exit
-     *
-     * @param Closure|null $onStop
-     */
-    public function stopConsume(?Closure $onStop = null): void
+    /** @inheritdoc */
+    public function stopConsume(): void
     {
         $this->stopRequested = true;
-        $this->onStopConsume = $onStop;
     }
 
     /**
@@ -107,6 +102,14 @@ class ConsumerFake implements CanConsumeMessages
     private function shouldStopConsuming(): bool
     {
         return $this->maxMessagesLimitReached() || $this->stopRequested;
+    }
+
+    /** @inheritdoc  */
+    public function onStopConsume(?Closure $onStopConsume = null): CanConsumeMessages
+    {
+        $this->onStopConsume = $onStopConsume;
+
+        return $this;
     }
 
     /**
