@@ -17,17 +17,12 @@ class ConsumerFake implements CanConsumeMessages
     private MessageCounter $messageCounter;
     private HandlesBatchConfiguration $batchConfig;
 
-    /**
-     * @param \Junges\Kafka\Config\Config $config
-     * @param \Junges\Kafka\Contracts\KafkaConsumerMessage[] $messages
-     * @param bool $stopRequested
-     * @param \Closure|null $onStopConsume
-     */
+
     public function __construct(
-        private Config $config,
-        private array $messages = [],
+        private readonly Config $config,
+        private readonly array $messages = [],
         private bool $stopRequested = false,
-        private ?Closure $onStopConsume = null
+        private ?Closure $whenStopConsuming = null
     ) {
         $this->messageCounter = new MessageCounter($config->getMaxMessages());
         $this->batchConfig = $this->config->getBatchConfig();
@@ -46,20 +41,21 @@ class ConsumerFake implements CanConsumeMessages
             $this->defaultConsume();
         }
 
-        if ($this->onStopConsume) {
-            Closure::fromCallable($this->onStopConsume)();
+        if ($this->shouldRunStopConsumingCallback()) {
+            $callback = $this->whenStopConsuming;
+            $callback(...)();
         }
     }
 
-    /**
-     * Requests the consumer to stop after it's finished processing any messages to allow graceful exit
-     *
-     * @param Closure|null $onStop
-     */
-    public function stopConsume(?Closure $onStop = null): void
+    private function shouldRunStopConsumingCallback(): bool
+    {
+        return $this->whenStopConsuming !== null;
+    }
+
+    /** @inheritdoc */
+    public function stopConsuming(): void
     {
         $this->stopRequested = true;
-        $this->onStopConsume = $onStop;
     }
 
     /**
@@ -68,7 +64,7 @@ class ConsumerFake implements CanConsumeMessages
     public function cancelStopConsume(): void
     {
         $this->stopRequested = false;
-        $this->onStopConsume = null;
+        $this->whenStopConsuming = null;
     }
 
     /**
@@ -107,6 +103,14 @@ class ConsumerFake implements CanConsumeMessages
     private function shouldStopConsuming(): bool
     {
         return $this->maxMessagesLimitReached() || $this->stopRequested;
+    }
+
+    /** @inheritdoc  */
+    public function onStopConsuming(?Closure $onStopConsuming = null): CanConsumeMessages
+    {
+        $this->whenStopConsuming = $onStopConsuming;
+
+        return $this;
     }
 
     /**

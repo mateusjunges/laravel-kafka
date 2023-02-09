@@ -56,16 +56,11 @@ class Consumer implements CanConsumeMessages
     private CommitterFactory $committerFactory;
     private MessageDeserializer $deserializer;
     private bool $stopRequested = false;
-    private ?Closure $onStopConsume = null;
+    private ?Closure $whenStopConsuming = null;
     protected int $lastRestart = 0;
     protected Timer $restartTimer;
 
-    /**
-     * @param \Junges\Kafka\Config\Config $config
-     * @param MessageDeserializer $deserializer
-     * @param \Junges\Kafka\Commit\Contracts\CommitterFactory|null $committerFactory
-     */
-    public function __construct(private Config $config, MessageDeserializer $deserializer, CommitterFactory $committerFactory = null)
+    public function __construct(private readonly Config $config, MessageDeserializer $deserializer, CommitterFactory $committerFactory = null)
     {
         $this->logger = app(Logger::class);
         $this->messageCounter = new MessageCounter($config->getMaxMessages());
@@ -84,6 +79,10 @@ class Consumer implements CanConsumeMessages
     {
         $this->cancelStopConsume();
         $this->configureRestartTimer();
+
+        if ($this->supportAsyncSignals()) {
+            $this->listenForSignals();
+        }
 
         $this->consumer = app(KafkaConsumer::class, [
             'conf' => $this->setConf($this->config->getConsumerOptions()),
@@ -106,20 +105,42 @@ class Consumer implements CanConsumeMessages
             $this->checkForRestart();
         } while (! $this->maxMessagesLimitReached() && ! $this->stopRequested);
 
-        if ($this->onStopConsume) {
-            Closure::fromCallable($this->onStopConsume)();
+        if ($this->shouldRunStopConsumingCallback()) {
+            $callback = $this->whenStopConsuming;
+            $callback(...)();
         }
     }
 
-    /**
-     * Requests the consumer to stop after it's finished processing any messages to allow graceful exit
-     *
-     * @param Closure|null $onStop
-     */
-    public function stopConsume(?Closure $onStop = null): void
+    private function shouldRunStopConsumingCallback(): bool
+    {
+        return $this->whenStopConsuming !== null;
+    }
+
+    private function listenForSignals(): void
+    {
+        pcntl_async_signals(true);
+
+        pcntl_signal(SIGQUIT, fn () => $this->stopRequested = true);
+        pcntl_signal(SIGTERM, fn () => $this->stopRequested = true);
+    }
+
+    private function supportAsyncSignals(): bool
+    {
+        return extension_loaded('pcntl');
+    }
+
+    /** @inheritdoc  */
+    public function stopConsuming(): void
     {
         $this->stopRequested = true;
-        $this->onStopConsume = $onStop;
+    }
+
+    /** @inheritdoc  */
+    public function onStopConsuming(?Closure $onStopConsuming = null): self
+    {
+        $this->whenStopConsuming = $onStopConsuming;
+
+        return $this;
     }
 
     /**
@@ -128,7 +149,6 @@ class Consumer implements CanConsumeMessages
     public function cancelStopConsume(): void
     {
         $this->stopRequested = false;
-        $this->onStopConsume = null;
     }
 
     /**
@@ -145,7 +165,7 @@ class Consumer implements CanConsumeMessages
      * @throws KafkaConsumerException
      * @throws \RdKafka\Exception|\Throwable
      */
-    private function doConsume()
+    private function doConsume(): void
     {
         $message = $this->consumer->consume(config('kafka.consumer_timeout_ms', 2000));
         $this->handleMessage($message);
@@ -278,11 +298,7 @@ class Consumer implements CanConsumeMessages
         }
     }
 
-    /**
-     * Send a message to the Dead Letter Queue.
-     *
-     * @param \RdKafka\Message $message
-     */
+    /** Send a message to the Dead Letter Queue. */
     private function sendToDlq(Message $message): void
     {
         $topic = $this->producer->newTopic($this->config->getDlq());
@@ -315,7 +331,7 @@ class Consumer implements CanConsumeMessages
 
             $this->committer->commitMessage($message, $success);
         } catch (Throwable $throwable) {
-            if (! in_array($throwable->getCode(), self::IGNORABLE_COMMIT_ERRORS)) {
+            if (! in_array($throwable->getCode(), self::IGNORABLE_COMMIT_ERRORS, true)) {
                 $this->logger->error($message, $throwable, 'MESSAGE_COMMIT');
 
                 throw $throwable;
@@ -363,11 +379,11 @@ class Consumer implements CanConsumeMessages
             $this->handleBatch();
         }
 
-        if ($this->config->shouldStopAfterLastMessage() && in_array($message->err, self::CONSUME_STOP_EOF_ERRORS)) {
-            $this->stopConsume();
+        if ($this->config->shouldStopAfterLastMessage() && in_array($message->err, self::CONSUME_STOP_EOF_ERRORS, true)) {
+            $this->stopConsuming();
         }
 
-        if (! in_array($message->err, self::IGNORABLE_CONSUMER_ERRORS)) {
+        if (! in_array($message->err, self::IGNORABLE_CONSUMER_ERRORS, true)) {
             $this->logger->error($message, null, 'CONSUMER');
 
             throw new KafkaConsumerException($message->errstr(), $message->err);
