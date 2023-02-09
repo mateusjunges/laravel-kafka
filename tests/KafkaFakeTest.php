@@ -352,10 +352,10 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         $this->consumer = Kafka::createConsumer(['test-topic'])
             ->withHandler(function (KafkaConsumerMessage $message) use (&$stopped) {
                 //stop consumer after first message
-                $this->consumer->stopConsume();
+                $this->consumer->stopConsuming();
             })
             ->build()
-            ->onStopConsume(function () use (&$stopped) {
+            ->onStopConsuming(function () use (&$stopped) {
                 $stopped = true;
             });
 
@@ -534,9 +534,9 @@ class KafkaFakeTest extends LaravelKafkaTestCase
             ->withBatchSizeLimit(2)
             ->withHandler(function (Collection $messages) use (&$stopped) {
                 //stop consumer after first batch
-                $this->consumer->onStopConsume(function () use (&$stopped) {
+                $this->consumer->onStopConsuming(function () use (&$stopped) {
                     $stopped = true;
-                })->stopConsume();
+                })->stopConsuming();
             })
             ->build();
 

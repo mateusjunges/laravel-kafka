@@ -52,7 +52,7 @@ class ConsumerFake implements CanConsumeMessages
     }
 
     /** @inheritdoc */
-    public function stopConsume(): void
+    public function stopConsuming(): void
     {
         $this->stopRequested = true;
     }
@@ -105,9 +105,9 @@ class ConsumerFake implements CanConsumeMessages
     }
 
     /** @inheritdoc  */
-    public function onStopConsume(?Closure $onStopConsume = null): CanConsumeMessages
+    public function onStopConsuming(?Closure $onStopConsuming = null): CanConsumeMessages
     {
-        $this->onStopConsume = $onStopConsume;
+        $this->onStopConsume = $onStopConsuming;
 
         return $this;
     }

@@ -56,7 +56,7 @@ class Consumer implements CanConsumeMessages
     private CommitterFactory $committerFactory;
     private MessageDeserializer $deserializer;
     private bool $stopRequested = false;
-    private ?Closure $onStopConsume = null;
+    private ?Closure $whenStopConsuming = null;
     protected int $lastRestart = 0;
     protected Timer $restartTimer;
 
@@ -105,8 +105,8 @@ class Consumer implements CanConsumeMessages
             $this->checkForRestart();
         } while (! $this->maxMessagesLimitReached() && ! $this->stopRequested);
 
-        if ($this->onStopConsume) {
-            Closure::fromCallable($this->onStopConsume)();
+        if ($this->whenStopConsuming) {
+            Closure::fromCallable($this->whenStopConsuming)();
         }
     }
 
@@ -124,15 +124,15 @@ class Consumer implements CanConsumeMessages
     }
 
     /** @inheritdoc  */
-    public function stopConsume(): void
+    public function stopConsuming(): void
     {
         $this->stopRequested = true;
     }
 
     /** @inheritdoc  */
-    public function onStopConsume(?Closure $onStopConsume = null): self
+    public function onStopConsuming(?Closure $onStopConsuming = null): self
     {
-        $this->onStopConsume = $onStopConsume;
+        $this->whenStopConsuming = $onStopConsuming;
 
         return $this;
     }
@@ -374,7 +374,7 @@ class Consumer implements CanConsumeMessages
         }
 
         if ($this->config->shouldStopAfterLastMessage() && in_array($message->err, self::CONSUME_STOP_EOF_ERRORS, true)) {
-            $this->stopConsume();
+            $this->stopConsuming();
         }
 
         if (! in_array($message->err, self::IGNORABLE_CONSUMER_ERRORS, true)) {
