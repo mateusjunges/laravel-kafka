@@ -8,7 +8,7 @@ Stopping consumers is very useful if you want to ensure you don't kill a process
 Starting from version `1.12.x` of this package, consumers automatically listen to the `SIGTERM` and `SIQUIT` signals, which means you can easily stop your consumers using those signals.
 
 ### Running callbacks when the consumer stops
-If your app requires that you run sum sort of processing when the consumers stop processing messages, you can use the `onStopConsume` method, available on the `\Junges\Kafka\Contracts\CanConsumeMessages` interface. This method accepts a `Closure` that will run once your consumer stops consuming. 
+If your app requires that you run sum sort of processing when the consumers stop processing messages, you can use the `onStopConsume` method, available on the `\Junges\Kafka\Contracts\CanConsumeMessages` interface. This method accepts a `Closure` that will run once your consumer stops consuming.
 
 ```php
 use Junges\Kafka\Facades\Kafka;
@@ -17,7 +17,7 @@ $consumer = Kafka::createConsumer(['topic'])
     ->withConsumerGroupId('group')
     ->withHandler(new Handler)
     ->build()
-    ->onStopConsume(static function () {
+    ->onStopConsuming(static function () {
         // Do something when the consumer stop consuming messages
     })
 
