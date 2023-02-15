@@ -38,7 +38,7 @@ integration-coverage:
 	@docker-compose exec laravel phpdbg -qrr ./vendor/bin/phpunit tests --whitelist /application/laravel-kafka/src --coverage-html /application/laravel-kafka/coverage --filter Integration
 
 version-test-9-%:
-	@$(eval TAG = $(@:version-test-%=%))
+	@$(eval TAG = $(@:version-test-9-%=%))
 	@$(eval LARAVEL_VERSION = 9)
 	@$(eval PHP_VERSION = $(shell echo ${TAG:0:3}))
 	@$(eval LIBRDKAFKA_VERSION=$(shell echo ${TAG:4:6}))
@@ -48,7 +48,7 @@ version-test-9-%:
 	@docker-compose -f docker-compose-test.yaml exec -T test ./vendor/phpunit/phpunit/phpunit tests
 
 version-test-10-%:
-	@$(eval TAG = $(@:version-test-%=%))
+	@$(eval TAG = $(@:version-test-10-%=%))
 	@$(eval LARAVEL_VERSION = 10)
 	@$(eval PHP_VERSION = $(shell echo ${TAG:0:3}))
 	@$(eval LIBRDKAFKA_VERSION=$(shell echo ${TAG:4:6}))
