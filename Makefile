@@ -37,10 +37,19 @@ unit-coverage:
 integration-coverage:
 	@docker-compose exec laravel phpdbg -qrr ./vendor/bin/phpunit tests --whitelist /application/laravel-kafka/src --coverage-html /application/laravel-kafka/coverage --filter Integration
 
-version-test-%:
+version-test-9-%:
 	@$(eval TAG = $(@:version-test-%=%))
-	@$(eval LARAVEL_VERSION = $(shell echo $TAG | cut -c 18-19))
-	@echo $(value LARAVEL_VERSION)
+	@$(eval LARAVEL_VERSION = 9)
+	@$(eval PHP_VERSION = $(shell echo ${TAG:0:3}))
+	@$(eval LIBRDKAFKA_VERSION=$(shell echo ${TAG:4:6}))
+	@$(eval EXT_RDKAFKA_VERSION=$(shell echo ${TAG:11:5}))
+	@docker-compose -f docker-compose-test.yaml build --build-arg PHP_VERSION=${PHP_VERSION} --build-arg TAG=${TAG} --build-arg LARAVEL_VERSION=${LARAVEL_VERSION} --build-arg LIBRDKAFKA_VERSION=${LIBRDKAFKA_VERSION} --build-arg EXT_RDKAFKA_VERSION=${EXT_RDKAFKA_VERSION}
+	@docker-compose -f docker-compose-test.yaml up -d
+	@docker-compose -f docker-compose-test.yaml exec -T test ./vendor/phpunit/phpunit/phpunit tests
+
+version-test-10-%:
+	@$(eval TAG = $(@:version-test-%=%))
+	@$(eval LARAVEL_VERSION = 10)
 	@$(eval PHP_VERSION = $(shell echo ${TAG:0:3}))
 	@$(eval LIBRDKAFKA_VERSION=$(shell echo ${TAG:4:6}))
 	@$(eval EXT_RDKAFKA_VERSION=$(shell echo ${TAG:11:5}))
