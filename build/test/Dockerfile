@@ -4,6 +4,8 @@ FROM mateusjunges/laravel:${TAG}
 
 ARG LARAVEL_VERSION
 
+RUN echo $LARAVEL_VERSION
+
 COPY dev/php.ini /usr/local/etc/php/conf.d
 
 COPY build/composer-files/composer.json-${LARAVEL_VERSION} /application/laravel-test/composer.json
