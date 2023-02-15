@@ -2,6 +2,12 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2023-02-15 v1.12.1](https://github.com/mateusjunges/laravel-kafka/compare/v1.12.0...v1.12.1)
+- Drop support for older versions of `rdkafka` by @mateusjunges
+- Fix bug when sending message to DLQ (allow to send message key) by @ebrahimradi in [#175](https://github.com/mateusjunges/laravel-kafka/pull/175)
+- Allow to send message headers to DLQ by @mateusjunges
+
+
 ## [2023-02-09 v1.12.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.11.0...v1.12.0)
 - Allow consumers to subscribe to `SIGQUIT` and `SIGTERM` signals by @mateusjunges on [#172](https://github.com/mateusjunges/laravel-kafka/pull/172)
 - Add `onStopConsume` method to the Consumer class
