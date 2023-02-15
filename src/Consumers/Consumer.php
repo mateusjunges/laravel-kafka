@@ -306,7 +306,7 @@ class Consumer implements CanConsumeMessages
             partition: RD_KAFKA_PARTITION_UA,
             msgflags: 0,
             payload: $message->payload,
-            key: $this->config->getConsumer()->producerKey($message->payload)
+            key: $this->config->getConsumer()->producerKey($message)
         );
 
         if (method_exists($this->producer, 'flush')) {
