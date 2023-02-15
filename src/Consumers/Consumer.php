@@ -302,11 +302,12 @@ class Consumer implements CanConsumeMessages
     private function sendToDlq(Message $message): void
     {
         $topic = $this->producer->newTopic($this->config->getDlq());
-        $topic->produce(
+        $topic->producev(
             partition: RD_KAFKA_PARTITION_UA,
             msgflags: 0,
             payload: $message->payload,
-            key: $this->config->getConsumer()->producerKey($message->payload)
+            key: $this->config->getConsumer()->producerKey($message),
+            headers: $message->headers ?? []
         );
 
         if (method_exists($this->producer, 'flush')) {
