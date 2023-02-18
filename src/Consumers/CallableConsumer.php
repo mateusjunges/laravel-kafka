@@ -68,6 +68,7 @@ class CallableConsumer extends Consumer
         if (method_exists($handler, 'onQueue')) {
             $queue = $handler->onQueue();
         }
+
         $this->dispatcher->dispatch(
             (new DispatchQueuedHandler($handler, $message, $middlewares))
                 ->onQueue($queue)
