@@ -12,8 +12,10 @@ use Junges\Kafka\Config\NullBatchConfig;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Contracts\CanConsumeMessages;
 use Junges\Kafka\Contracts\ConsumerBuilder as ConsumerBuilderContract;
+use Junges\Kafka\Contracts\Handler;
 use Junges\Kafka\Contracts\HandlesBatchConfiguration;
 use Junges\Kafka\Contracts\MessageDeserializer;
+use Junges\Kafka\Contracts\Middleware;
 use Junges\Kafka\Exceptions\KafkaConsumerException;
 use Junges\Kafka\Support\Timer;
 
@@ -24,7 +26,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
     protected array $topics;
     protected int $commit;
     protected ?string $groupId;
-    protected Closure $handler;
+    protected Closure | Handler $handler;
     protected int $maxMessages;
     protected int $maxCommitRetries;
     protected string $brokers;
@@ -125,9 +127,11 @@ class ConsumerBuilder implements ConsumerBuilderContract
     }
 
     /** @inheritDoc */
-    public function withHandler(callable $handler): self
+    public function withHandler(callable|Handler $handler): self
     {
-        $this->handler = $handler(...);
+        $this->handler = $handler instanceof Handler
+            ? $handler
+            : $handler(...);
 
         return $this;
     }
@@ -189,7 +193,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
     }
 
     /** @inheritDoc */
-    public function withMiddleware(callable $middleware): self
+    public function withMiddleware(Middleware|callable|string $middleware): self
     {
         $this->middlewares[] = $middleware;
 
