@@ -3,7 +3,7 @@
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
 ## [2023-02-21 v1.12.2](https://github.com/mateusjunges/laravel-kafka/compare/v1.12.1...v1.12.2)
-- Fix contracts marked as internal
+- Fix contracts marked as internal (Fixes [#178](https://github.com/mateusjunges/laravel-kafka/issues/178))
 
 ## [2023-02-15 v1.12.1](https://github.com/mateusjunges/laravel-kafka/compare/v1.12.0...v1.12.1)
 - Drop support for older versions of `rdkafka` by @mateusjunges
