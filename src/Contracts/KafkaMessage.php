@@ -2,9 +2,6 @@
 
 namespace Junges\Kafka\Contracts;
 
-/**
- * @internal
- */
 interface KafkaMessage
 {
     public function getKey(): mixed;
