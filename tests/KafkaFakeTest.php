@@ -173,7 +173,6 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         $this->fake->assertpublished();
         $this->fake->assertPublishedOnTimes('batch-topic', 2);
         $this->fake->assertPublishedOn('batch-topic');
-
     }
 
     public function testICanPerformAssertionsUsingAssertPublishedOn(): void
