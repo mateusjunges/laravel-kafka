@@ -4,7 +4,7 @@ namespace Junges\Kafka\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Junges\Kafka\Console\Commands\ConsumerCommand;
-use Junges\Kafka\Console\Commands\KafkaRestartConsumersCommand;
+use Junges\Kafka\Console\Commands\RestartConsumersCommand;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\ConsumeMessagesFromKafka;
 use Junges\Kafka\Contracts\Logger as LoggerContract;
@@ -28,7 +28,7 @@ class LaravelKafkaServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 ConsumerCommand::class,
-                KafkaRestartConsumersCommand::class,
+                RestartConsumersCommand::class,
             ]);
         }
     }

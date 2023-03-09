@@ -6,7 +6,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\InteractsWithTime;
 
-class KafkaRestartConsumersCommand extends Command
+class RestartConsumersCommand extends Command
 {
     use InteractsWithTime;
 
