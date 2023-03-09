@@ -237,6 +237,7 @@ class KafkaTest extends LaravelKafkaTestCase
         $this->assertEquals([], $this->getPropertyWithReflection('topics', $consumer));
     }
 
+    /** @group long-running-test */
     public function testProducerThrowsExceptionIfMessageCouldNotBePublished()
     {
         $this->expectException(CouldNotPublishMessage::class);
@@ -257,9 +258,7 @@ class KafkaTest extends LaravelKafkaTestCase
             ->times(10)
             ->getMock();
 
-        $this->app->bind(Producer::class, function () use ($mockedProducer) {
-            return $mockedProducer;
-        });
+        $this->app->bind(Producer::class, fn () => $mockedProducer);
 
         Kafka::publishOn('test')->withBodyKey('foo', 'bar')->send();
     }

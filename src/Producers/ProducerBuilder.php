@@ -20,7 +20,7 @@ class ProducerBuilder implements CanProduceMessages
     private string $broker;
 
     public function __construct(
-        private string $topic,
+        private readonly string $topic,
         ?string $broker = null,
     ) {
         /** @var KafkaProducerMessage $message */
