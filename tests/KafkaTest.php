@@ -251,9 +251,7 @@ class KafkaTest extends LaravelKafkaTestCase
             ->times(10)
             ->getMock();
 
-        $this->app->bind(Producer::class, function () use ($mockedProducer) {
-            return $mockedProducer;
-        });
+        $this->app->bind(Producer::class, fn () => $mockedProducer);
 
         Kafka::publishOn('test')->withBodyKey('foo', 'bar')->send();
     }
