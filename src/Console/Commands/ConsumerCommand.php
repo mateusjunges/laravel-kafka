@@ -8,7 +8,7 @@ use Junges\Kafka\Console\Commands\KafkaConsumer\Options;
 use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Contracts\MessageDeserializer;
 
-class KafkaConsumerCommand extends Command
+class ConsumerCommand extends Command
 {
     /* @var string $signature */
     protected $signature = 'kafka:consume 

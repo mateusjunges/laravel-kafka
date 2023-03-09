@@ -2,11 +2,11 @@
 
 namespace Junges\Kafka\Commit;
 
-use Junges\Kafka\Commit\Contracts\Committer;
+use Junges\Kafka\Commit\Contracts\Committer as CommitterContract;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
 
-class KafkaCommitter implements Committer
+class Committer implements CommitterContract
 {
     public function __construct(private readonly KafkaConsumer $consumer)
     {

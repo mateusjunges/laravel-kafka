@@ -2,7 +2,7 @@
 
 namespace Junges\Kafka\Commit;
 
-use Junges\Kafka\Commit\Contracts\Committer;
+use Junges\Kafka\Commit\Contracts\Committer as CommitterContract;
 use Junges\Kafka\Commit\Contracts\CommitterFactory;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\MessageCounter;
@@ -14,7 +14,7 @@ class DefaultCommitterFactory implements CommitterFactory
     {
     }
 
-    public function make(KafkaConsumer $kafkaConsumer, Config $config): Committer
+    public function make(KafkaConsumer $kafkaConsumer, Config $config): CommitterContract
     {
         if ($config->isAutoCommit()) {
             return new VoidCommitter();
@@ -22,7 +22,7 @@ class DefaultCommitterFactory implements CommitterFactory
 
         return new BatchCommitter(
             new RetryableCommitter(
-                new KafkaCommitter(
+                new Committer(
                     $kafkaConsumer
                 ),
                 new NativeSleeper(),
