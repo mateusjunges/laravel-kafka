@@ -24,7 +24,7 @@ class LaravelKafkaTestCase extends Orchestra
         app()->instance(Logger::class, $this->getMockedLogger());
     }
 
-    public function getEnvironmentSetUp($app)
+    public function getEnvironmentSetUp($app): void
     {
         $app['config']->set('kafka.brokers', 'localhost:9092');
         $app['config']->set('kafka.consumer_group_id', 'group');
@@ -43,7 +43,7 @@ class LaravelKafkaTestCase extends Orchestra
         ];
     }
 
-    protected function mockProducer()
+    protected function mockProducer(): void
     {
         $mockedProducer = m::mock(Producer::class)
             ->shouldReceive('withKey')
@@ -62,7 +62,7 @@ class LaravelKafkaTestCase extends Orchestra
         $this->mockKafkaProducer();
     }
 
-    protected function mockKafkaProducer()
+    protected function mockKafkaProducer(): void
     {
         // We have to get a topic object as a valid response for the mock
         // We stub out this code here to achieve that
@@ -85,7 +85,7 @@ class LaravelKafkaTestCase extends Orchestra
         });
     }
 
-    protected function mockConsumerWithMessageFailingCommit(Message $message)
+    protected function mockConsumerWithMessageFailingCommit(Message $message): void
     {
         $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
             ->shouldReceive('subscribe')
@@ -102,7 +102,7 @@ class LaravelKafkaTestCase extends Orchestra
         });
     }
 
-    protected function mockConsumerWithMessage(Message ...$message)
+    protected function mockConsumerWithMessage(Message ...$message): void
     {
         $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
             ->shouldReceive('subscribe')
@@ -121,7 +121,7 @@ class LaravelKafkaTestCase extends Orchestra
         });
     }
 
-    protected function getPropertyWithReflection(string $property, object $object)
+    protected function getPropertyWithReflection(string $property, object $object): mixed
     {
         $reflection = new \ReflectionClass($object);
         $reflectionProperty = $reflection->getProperty($property);

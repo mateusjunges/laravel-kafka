@@ -16,7 +16,7 @@ class RetryableHandlerTest extends TestCase
     public function testItPassesWhenNoExceptionOccurred(): void
     {
         $failingHandler = new FailingHandler(0, new RuntimeException('test'));
-        $handler = new RetryableHandler(Closure::fromCallable($failingHandler), new DefaultRetryStrategy(), new FakeSleeper());
+        $handler = new RetryableHandler($failingHandler(...), new DefaultRetryStrategy(), new FakeSleeper());
 
         $messageMock = $this->createMock(ConsumerMessage::class);
         $handler($messageMock);
@@ -28,7 +28,7 @@ class RetryableHandlerTest extends TestCase
     {
         $failingHandler = new FailingHandler(4, new RuntimeException('test'));
         $sleeper = new FakeSleeper();
-        $handler = new RetryableHandler(Closure::fromCallable($failingHandler), new DefaultRetryStrategy(), $sleeper);
+        $handler = new RetryableHandler($failingHandler(...), new DefaultRetryStrategy(), $sleeper);
 
         $messageMock = $this->createMock(ConsumerMessage::class);
         $handler($messageMock);
@@ -41,7 +41,7 @@ class RetryableHandlerTest extends TestCase
     {
         $failingHandler = new FailingHandler(100, new RuntimeException('test'));
         $sleeper = new FakeSleeper();
-        $handler = new RetryableHandler(Closure::fromCallable($failingHandler), new DefaultRetryStrategy(), $sleeper);
+        $handler = new RetryableHandler($failingHandler(...), new DefaultRetryStrategy(), $sleeper);
 
         $messageMock = $this->createMock(ConsumerMessage::class);
 

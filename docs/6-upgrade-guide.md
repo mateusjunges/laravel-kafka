@@ -3,7 +3,7 @@ title: Upgrade guide
 weight: 6
 ---
 
-## Upgrade to v2.x from v1.9.x
+## Upgrade to v2.x from v1.12.x
 
 ### High impact changes
  - The `\Junges\Kafka\Contracts\CanProduceMessages` contract was renamed to `\Junges\Kafka\Contracts\MessageProducer`

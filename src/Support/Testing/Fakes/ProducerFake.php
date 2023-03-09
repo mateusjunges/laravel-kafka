@@ -47,7 +47,9 @@ class ProducerFake
         if ($this->producerCallback !== null) {
             $callback = $this->producerCallback;
 
+            /** @var Message $message */
             foreach ($messageBatch->getMessages() as $message) {
+                $message->setTopicName($this->topic);
                 $callback($message);
                 $produced++;
             }

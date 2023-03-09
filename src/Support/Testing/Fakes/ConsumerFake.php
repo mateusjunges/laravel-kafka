@@ -22,7 +22,7 @@ class ConsumerFake implements MessageConsumer
         private readonly Config $config,
         private readonly array $messages = [],
         private bool $stopRequested = false,
-        private ?Closure $onStopConsume = null
+        private ?Closure $whenStopConsuming = null
     ) {
         $this->messageCounter = new MessageCounter($config->getMaxMessages());
         $this->batchConfig = $this->config->getBatchConfig();
@@ -37,23 +37,28 @@ class ConsumerFake implements MessageConsumer
             $this->defaultConsume();
         }
 
-        if ($this->onStopConsume) {
-            Closure::fromCallable($this->onStopConsume)();
+        if ($this->shouldRunStopConsumingCallback()) {
+            $callback = $this->whenStopConsuming;
+            $callback(...)();
         }
     }
 
-    /** Requests the consumer to stop after it's finished processing any messages to allow graceful exit */
-    public function stopConsume(?Closure $onStop = null): void
+    private function shouldRunStopConsumingCallback(): bool
+    {
+        return $this->whenStopConsuming !== null;
+    }
+
+    /** @inheritdoc */
+    public function stopConsuming(): void
     {
         $this->stopRequested = true;
-        $this->onStopConsume = $onStop;
     }
 
     /** Will cancel the stopConsume request initiated by calling the stopConsume method */
     public function cancelStopConsume(): void
     {
         $this->stopRequested = false;
-        $this->onStopConsume = null;
+        $this->whenStopConsuming = null;
     }
 
     /** Count the number of messages consumed by this consumer */
@@ -81,6 +86,19 @@ class ConsumerFake implements MessageConsumer
     }
 
     /** Consume messages */
+    /** @inheritdoc  */
+    public function onStopConsuming(?Closure $onStopConsuming = null): CanConsumeMessages
+    {
+        $this->whenStopConsuming = $onStopConsuming;
+
+        return $this;
+    }
+
+    /**
+     * Consume messages
+     *
+     * @return void
+     */
     public function defaultConsume(): void
     {
         foreach ($this->messages as $message) {

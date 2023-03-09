@@ -89,22 +89,13 @@ class Producer
 
     private function produceMessage(ProducerTopic $topic, ProducerMessage $message): void
     {
-        if (method_exists($topic, 'producev')) {
-            $topic->producev(
-                partition: $message->getPartition(),
-                msgflags: RD_KAFKA_MSG_F_BLOCK,
-                payload: $message->getBody(),
-                key: $message->getKey(),
-                headers: $message->getHeaders()
-            );
-        } else {
-            $topic->produce(
-                partition: $message->getPartition(),
-                msgflags: 0,
-                payload: $message->getBody(),
-                key: $message->getKey()
-            );
-        }
+        $topic->producev(
+            partition: $message->getPartition(),
+            msgflags: RD_KAFKA_MSG_F_BLOCK,
+            payload: $message->getBody(),
+            key: $message->getKey(),
+            headers: $message->getHeaders()
+        );
     }
 
     /**

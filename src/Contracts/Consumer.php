@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Contracts;
 
+use RdKafka\Message;
 use Throwable;
 
 abstract class Consumer
@@ -14,8 +15,8 @@ abstract class Consumer
         throw $exception;
     }
 
-    public function producerKey(string $message): ?string
+    public function producerKey(Message $message): ?string
     {
-        return null;
+        return $message->key ?? null;
     }
 }

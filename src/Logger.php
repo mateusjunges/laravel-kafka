@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka;
 
+use Junges\Kafka\Contracts\Logger as LoggerContract;
 use Monolog\Formatter\JsonFormatter;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger as MonologLogger;
@@ -9,7 +10,7 @@ use Monolog\Processor\UidProcessor;
 use RdKafka\Message;
 use Throwable;
 
-class Logger
+class Logger implements LoggerContract
 {
     private readonly MonologLogger $logger;
 

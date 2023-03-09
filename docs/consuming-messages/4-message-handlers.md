@@ -15,7 +15,7 @@ $consumer->withHandler(function(\Junges\Kafka\Contracts\ConsumerMessage $message
 });
 ```
 
-Or, using a invokable class:
+Or, using an invokable class:
 
 ```php
 class Handler

@@ -21,6 +21,7 @@ class ConsumerTest extends LaravelKafkaTestCase
 {
     private ?Consumer $stoppableConsumer = null;
     private bool $stoppableConsumerStopped = false;
+    private string $stoppedConsumerMessage = "";
 
     public function testItConsumesAMessageSuccessfullyAndCommit()
     {
@@ -144,7 +145,7 @@ class ConsumerTest extends LaravelKafkaTestCase
                 if ($message->getKey() === 'key2' && $this->stoppableConsumer) {
                     $this->stoppableConsumer->stopConsume(function () {
                         $this->stoppableConsumerStopped = true;
-                    });
+                    })->stopConsuming();
                 }
             })
             ->withAutoCommit()
@@ -154,6 +155,7 @@ class ConsumerTest extends LaravelKafkaTestCase
 
         $this->assertSame(2, $this->stoppableConsumer->consumedMessagesCount());
         $this->assertTrue($this->stoppableConsumerStopped);
+        $this->assertSame("Consumer stopped.", $this->stoppedConsumerMessage);
     }
 
     public function testItAcceptsCustomCommitter(): void

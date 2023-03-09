@@ -28,7 +28,11 @@ class MessageBatch
         $this->messages->push($message);
     }
 
-    /** Returns all messages from batch before producing them to kafka */
+    /**
+     * Returns all messages from batch before producing them to kafka
+     *
+     * @return SplDoublyLinkedList<\Junges\Kafka\Message\Message>
+     */
     public function getMessages(): SplDoublyLinkedList
     {
         return $this->messages;

@@ -2,6 +2,31 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2023-03-04 v1.12.3](https://github.com/mateusjunges/laravel-kafka/compare/v1.12.1...v1.12.2)
+- Fix `assertPublishedOnTimes` to be used with batch messages - Fixes [#179](https://github.com/mateusjunges/laravel-kafka/issues/179) by @mateusjunges on [#180](https://github.com/mateusjunges/laravel-kafka/pull/180)
+
+## [2023-02-21 v1.12.2](https://github.com/mateusjunges/laravel-kafka/compare/v1.12.1...v1.12.2)
+- Fix contracts marked as internal (Fixes [#178](https://github.com/mateusjunges/laravel-kafka/issues/178))
+
+## [2023-02-15 v1.12.1](https://github.com/mateusjunges/laravel-kafka/compare/v1.12.0...v1.12.1)
+- Drop support for older versions of `rdkafka` by @mateusjunges
+- Fix bug when sending message to DLQ (allow to send message key) by @ebrahimradi in [#175](https://github.com/mateusjunges/laravel-kafka/pull/175)
+- Allow to send message headers to DLQ by @mateusjunges
+
+
+## [2023-02-09 v1.12.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.11.0...v1.12.0)
+- Allow consumers to subscribe to `SIGQUIT` and `SIGTERM` signals by @mateusjunges on [#172](https://github.com/mateusjunges/laravel-kafka/pull/172)
+- Add `onStopConsume` method to the Consumer class
+
+## [2023-01-30 v1.11.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.10.2...v1.11.0)
+- Add support for Laravel 10 by @mateusjunges and @mihaileu on [#171](https://github.com/mateusjunges/laravel-kafka/pull/171)
+
+## [2023-01-24 v1.10.2](https://github.com/mateusjunges/laravel-kafka/compare/v1.10.1...v1.10.2)
+- Report consumer exceptions by @behzadev on [#169](https://github.com/mateusjunges/laravel-kafka/pull/169)
+
+## [2023-01-10 v1.10.1](https://github.com/mateusjunges/laravel-kafka/compare/v1.10.0...v1.10.1)
+- Add Logger contract to allow users to implement their own Logger by @remarkusable in [#165](https://github.com/mateusjunges/laravel-kafka/pull/165)
+
 ## [2022-12-17 v1.10.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.9.3...v1.10.0)
 - Added support for PHP 8.2 by @mateusjunges in [#159](https://github.com/mateusjunges/laravel-kafka/pull/159)
 - Dropped support for `ext-rdkafka` v4.0 by @mateusjunges in [#158](https://github.com/mateusjunges/laravel-kafka/pull/158)
