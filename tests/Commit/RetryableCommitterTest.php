@@ -11,7 +11,7 @@ use RdKafka\Message;
 
 class RetryableCommitterTest extends LaravelKafkaTestCase
 {
-    public function testItShouldRetryToCommit()
+    public function testItShouldRetryToCommit(): void
     {
         $exception = new RdKafkaException("Something went wrong", RD_KAFKA_RESP_ERR_REQUEST_TIMED_OUT);
         $failingCommitter = new FailingCommitter($exception, 3);
@@ -24,7 +24,7 @@ class RetryableCommitterTest extends LaravelKafkaTestCase
         $this->assertEquals(4, $failingCommitter->getTimesTriedToCommitDlq());
     }
 
-    public function testItShouldRetryOnlyUpToTheMaximumNumberOfRetries()
+    public function testItShouldRetryOnlyUpToTheMaximumNumberOfRetries(): void
     {
         $expectedException = new RdKafkaException("Something went wrong", RD_KAFKA_RESP_ERR_REQUEST_TIMED_OUT);
         $failingCommitter = new FailingCommitter($expectedException, 99);
@@ -54,7 +54,7 @@ class RetryableCommitterTest extends LaravelKafkaTestCase
         $this->assertSame($expectedException, $commitDlqException);
     }
 
-    public function testItShouldProgressivelyWaitForTheNextRetry()
+    public function testItShouldProgressivelyWaitForTheNextRetry(): void
     {
         $expectedException = new RdKafkaException("Something went wrong", RD_KAFKA_RESP_ERR_REQUEST_TIMED_OUT);
 

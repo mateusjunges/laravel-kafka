@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Console\Consumers;
+namespace Junges\Kafka\Tests\Console\Consumers;
 
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Consumers\Consumer;
@@ -12,7 +12,7 @@ use RdKafka\Message;
 
 class KafkaConsumerCommandTest extends LaravelKafkaTestCase
 {
-    public function testItCanConsumeMessages()
+    public function testItCanConsumeMessages(): void
     {
         $this->mockProducer();
 

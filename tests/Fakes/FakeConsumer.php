@@ -8,13 +8,13 @@ class FakeConsumer
 {
     private ConsumerMessage $message;
 
-    public function __invoke(ConsumerMessage $message)
+    public function __invoke(ConsumerMessage $message): void
     {
         $this->message = $message;
     }
 
-    public function getMessage(): ConsumerMessage
+    public function getMessage(): ?ConsumerMessage
     {
-        return $this->message;
+        return $this->message ?? null;
     }
 }

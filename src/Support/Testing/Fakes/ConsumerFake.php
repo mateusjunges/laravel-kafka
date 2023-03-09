@@ -87,7 +87,7 @@ class ConsumerFake implements MessageConsumer
 
     /** Consume messages */
     /** @inheritdoc  */
-    public function onStopConsuming(?Closure $onStopConsuming = null): CanConsumeMessages
+    public function onStopConsuming(?Closure $onStopConsuming = null): self
     {
         $this->whenStopConsuming = $onStopConsuming;
 

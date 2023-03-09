@@ -12,7 +12,7 @@ use RdKafka\Message;
 
 class KafkaCommitterTest extends LaravelKafkaTestCase
 {
-    public function testItCanCommit()
+    public function testItCanCommit(): void
     {
         $kafkaConsumer = m::mock(KafkaConsumer::class)
             ->shouldReceive('commit')->once()
@@ -41,7 +41,7 @@ class KafkaCommitterTest extends LaravelKafkaTestCase
         $kafkaCommitter->commitMessage(new Message(), true);
     }
 
-    public function testItCanCommitToDlq()
+    public function testItCanCommitToDlq(): void
     {
         $kafkaConsumer = m::mock(KafkaConsumer::class)
             ->shouldReceive('commit')->once()

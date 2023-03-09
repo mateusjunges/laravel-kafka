@@ -2,7 +2,6 @@
 
 namespace Junges\Kafka\Tests\Handlers;
 
-use Closure;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Handlers\RetryableHandler;
 use Junges\Kafka\Handlers\RetryStrategies\DefaultRetryStrategy;

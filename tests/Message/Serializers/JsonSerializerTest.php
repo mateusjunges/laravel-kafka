@@ -9,7 +9,7 @@ use Junges\Kafka\Tests\LaravelKafkaTestCase as TestCase;
 
 class JsonSerializerTest extends TestCase
 {
-    public function testSerialize()
+    public function testSerialize(): void
     {
         $message = $this->getMockForAbstractClass(ProducerMessage::class);
         $message->expects($this->once())->method('getBody')->willReturn(['name' => 'foo']);

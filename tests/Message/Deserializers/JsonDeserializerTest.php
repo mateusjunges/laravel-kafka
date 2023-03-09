@@ -19,9 +19,6 @@ class JsonDeserializerTest extends TestCase
         $this->assertEquals(['name' => 'foo'], $result->getBody());
     }
 
-    /**
-     * @return void
-     */
     public function testDeserializeNonJson(): void
     {
         $message = $this->getMockForAbstractClass(ConsumerMessage::class);

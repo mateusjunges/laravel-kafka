@@ -7,7 +7,7 @@ use Junges\Kafka\Tests\LaravelKafkaTestCase;
 
 class SaslTest extends LaravelKafkaTestCase
 {
-    public function testGetUsername()
+    public function testGetUsername(): void
     {
         $sasl = new Sasl(
             username: 'username',
@@ -18,7 +18,7 @@ class SaslTest extends LaravelKafkaTestCase
         $this->assertEquals('username', $sasl->getUsername());
     }
 
-    public function testGetPassword()
+    public function testGetPassword(): void
     {
         $sasl = new Sasl(
             username: 'username',
@@ -29,7 +29,7 @@ class SaslTest extends LaravelKafkaTestCase
         $this->assertEquals('password', $sasl->getPassword());
     }
 
-    public function testGetMechanisms()
+    public function testGetMechanisms(): void
     {
         $sasl = new Sasl(
             username: 'username',

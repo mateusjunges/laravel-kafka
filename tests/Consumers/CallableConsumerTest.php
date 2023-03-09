@@ -11,7 +11,7 @@ use stdClass;
 
 class CallableConsumerTest extends LaravelKafkaTestCase
 {
-    public function testItDecodesMessages()
+    public function testItDecodesMessages(): void
     {
         $message = new Message();
         $message->payload =

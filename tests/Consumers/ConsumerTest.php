@@ -8,6 +8,7 @@ use Junges\Kafka\Config\Config;
 use Junges\Kafka\Consumers\CallableConsumer;
 use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Contracts\ConsumerMessage;
+use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Exceptions\KafkaConsumerException;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\ConsumedMessage;
@@ -19,11 +20,11 @@ use RdKafka\Message;
 
 class ConsumerTest extends LaravelKafkaTestCase
 {
-    private ?Consumer $stoppableConsumer = null;
+    private ?MessageConsumer $stoppableConsumer = null;
     private bool $stoppableConsumerStopped = false;
     private string $stoppedConsumerMessage = "";
 
-    public function testItConsumesAMessageSuccessfullyAndCommit()
+    public function testItConsumesAMessageSuccessfullyAndCommit(): void
     {
         $fakeHandler = new FakeHandler();
 
@@ -59,7 +60,7 @@ class ConsumerTest extends LaravelKafkaTestCase
         $this->assertInstanceOf(ConsumedMessage::class, $fakeHandler->lastMessage());
     }
 
-    public function testItCanConsumeMessages()
+    public function testItCanConsumeMessages456(): void
     {
         $message = new Message();
         $message->err = 0;
@@ -81,11 +82,10 @@ class ConsumerTest extends LaravelKafkaTestCase
             ->build();
 
         $consumer->consume();
-
         $this->assertInstanceOf(ConsumedMessage::class, $fakeConsumer->getMessage());
     }
 
-    public function testConsumeMessageWithError()
+    public function testConsumeMessageWithError(): void
     {
         $this->mockProducer();
 
@@ -116,7 +116,7 @@ class ConsumerTest extends LaravelKafkaTestCase
         $consumer->consume();
     }
 
-    public function testCanStopConsume()
+    public function testCanStopConsume(): void
     {
         $message = new Message();
         $message->err = 0;
@@ -143,8 +143,9 @@ class ConsumerTest extends LaravelKafkaTestCase
         $this->stoppableConsumer = Kafka::createConsumer(['test'])
             ->withHandler(function (ConsumerMessage $message) {
                 if ($message->getKey() === 'key2' && $this->stoppableConsumer) {
-                    $this->stoppableConsumer->stopConsume(function () {
+                    $this->stoppableConsumer->onStopConsuming(function () {
                         $this->stoppableConsumerStopped = true;
+                        $this->stoppedConsumerMessage = 'Consumer stopped.';
                     })->stopConsuming();
                 }
             })
@@ -202,7 +203,7 @@ class ConsumerTest extends LaravelKafkaTestCase
         $this->assertInstanceOf(VoidCommitter::class, $committer);
     }
 
-    public function testItCanRestartConsumer()
+    public function testItCanRestartConsumer(): void
     {
         $message = new Message();
         $message->err = 0;

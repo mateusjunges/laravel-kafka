@@ -10,7 +10,7 @@ use Junges\Kafka\Tests\LaravelKafkaTestCase;
 
 class ProducerTest extends LaravelKafkaTestCase
 {
-    public function testItDoesNotDoubleSerializeMessageWhenUsingJsonSerializer()
+    public function testItDoesNotDoubleSerializeMessageWhenUsingJsonSerializer(): void
     {
         $this->mockKafkaProducer();
         $producer = new Producer(new Config('broker', ['test-topic']), 'test-topic', new JsonSerializer());

@@ -116,9 +116,7 @@ class LaravelKafkaTestCase extends Orchestra
             ->andReturn()
             ->getMock();
 
-        $this->app->bind(KafkaConsumer::class, function () use ($mockedKafkaConsumer) {
-            return $mockedKafkaConsumer;
-        });
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
     }
 
     protected function getPropertyWithReflection(string $property, object $object): mixed

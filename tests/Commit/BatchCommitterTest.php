@@ -10,7 +10,7 @@ use RdKafka\Message;
 
 class BatchCommitterTest extends LaravelKafkaTestCase
 {
-    public function testShouldCommitMessageOnlyAfterTheBatchSizeIsReached()
+    public function testShouldCommitMessageOnlyAfterTheBatchSizeIsReached(): void
     {
         $committer = $this->createMock(Committer::class);
         $committer
@@ -30,7 +30,7 @@ class BatchCommitterTest extends LaravelKafkaTestCase
         }
     }
 
-    public function testShouldAlwaysCommitDlq()
+    public function testShouldAlwaysCommitDlq(): void
     {
         $committer = $this->createMock(Committer::class);
         $committer

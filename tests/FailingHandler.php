@@ -9,7 +9,7 @@ class FailingHandler
 {
     private int $timesInvoked = 0;
 
-    public function __construct(private int $timesToFail, private Exception $exception)
+    public function __construct(private readonly int $timesToFail, private readonly Exception $exception)
     {
     }
 

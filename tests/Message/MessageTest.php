@@ -16,7 +16,7 @@ class MessageTest extends LaravelKafkaTestCase
         $this->message = new Message();
     }
 
-    public function testItCanSetAMessageKey()
+    public function testItCanSetAMessageKey(): void
     {
         $this->message->withBodyKey('foo', 'bar');
 
@@ -27,7 +27,7 @@ class MessageTest extends LaravelKafkaTestCase
         $this->assertEquals($expected, $this->message);
     }
 
-    public function testItCanForgetAMessageKey()
+    public function testItCanForgetAMessageKey(): void
     {
         $this->message->withBodyKey('foo', 'bar');
         $this->message->withBodyKey('bar', 'foo');
@@ -41,7 +41,7 @@ class MessageTest extends LaravelKafkaTestCase
         $this->assertEquals($expected, $this->message);
     }
 
-    public function testItCanSetMessageHeaders()
+    public function testItCanSetMessageHeaders(): void
     {
         $this->message->withHeaders([
             'foo' => 'bar',
@@ -54,7 +54,7 @@ class MessageTest extends LaravelKafkaTestCase
         $this->assertEquals($expected, $this->message);
     }
 
-    public function testItCanSetTheMessageKey()
+    public function testItCanSetTheMessageKey(): void
     {
         $this->message->withKey($uuid = Str::uuid()->toString());
 
@@ -65,7 +65,7 @@ class MessageTest extends LaravelKafkaTestCase
         $this->assertEquals($expected, $this->message);
     }
 
-    public function testItCanGetTheMessagePayload()
+    public function testItCanGetTheMessagePayload(): void
     {
         $this->message->withBodyKey('foo', 'bar');
         $this->message->withBodyKey('bar', 'foo');
@@ -81,7 +81,7 @@ class MessageTest extends LaravelKafkaTestCase
         $this->assertEquals($expectedPayload, $this->message->getBody());
     }
 
-    public function testItCanTransformAMessageInArray()
+    public function testItCanTransformAMessageInArray(): void
     {
         $this->message->withBodyKey('foo', 'bar');
         $this->message->withBodyKey('bar', 'foo');

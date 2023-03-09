@@ -10,11 +10,11 @@ use Junges\Kafka\Commit\Contracts\CommitterFactory;
 use Junges\Kafka\Commit\DefaultCommitterFactory;
 use Junges\Kafka\Commit\NativeSleeper;
 use Junges\Kafka\Config\Config;
+use Junges\Kafka\Contracts\Logger;
 use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\MessageDeserializer;
 use Junges\Kafka\Exceptions\KafkaConsumerException;
-use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\MessageCounter;
 use Junges\Kafka\Retryable;
 use Junges\Kafka\Support\Timer;
@@ -58,7 +58,7 @@ class Consumer implements MessageConsumer
     protected int $lastRestart = 0;
     protected Timer $restartTimer;
 
-    public function __construct(private readonly Config $config, MessageDeserializer $deserializer, CommitterFactory $committerFactory = null)
+    public function __construct(private readonly Config $config, private readonly MessageDeserializer $deserializer, CommitterFactory $committerFactory = null)
     {
         $this->logger = app(Logger::class);
         $this->messageCounter = new MessageCounter($config->getMaxMessages());
@@ -93,6 +93,7 @@ class Consumer implements MessageConsumer
         $this->consumer->subscribe($this->config->getTopics());
 
         $batchConfig = $this->config->getBatchConfig();
+
         if ($batchConfig->isBatchingEnabled()) {
             $batchConfig->getTimer()->start($batchConfig->getBatchReleaseInterval());
         }
@@ -189,7 +190,6 @@ class Consumer implements MessageConsumer
     {
         try {
             $consumedMessage = $this->getConsumerMessage($message);
-
             $this->config->getConsumer()->handle($this->deserializer->deserialize($consumedMessage));
 
             $success = true;
