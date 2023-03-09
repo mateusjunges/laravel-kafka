@@ -9,7 +9,7 @@ use Junges\Kafka\Consumers\CallableConsumer;
 use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\MessageConsumer;
-use Junges\Kafka\Exceptions\KafkaConsumerException;
+use Junges\Kafka\Exceptions\ConsumerException;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
@@ -89,7 +89,7 @@ class ConsumerTest extends LaravelKafkaTestCase
     {
         $this->mockProducer();
 
-        $this->expectException(KafkaConsumerException::class);
+        $this->expectException(ConsumerException::class);
 
         $fakeHandler = new FakeHandler();
 

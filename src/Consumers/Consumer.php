@@ -14,7 +14,7 @@ use Junges\Kafka\Contracts\Logger;
 use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\MessageDeserializer;
-use Junges\Kafka\Exceptions\KafkaConsumerException;
+use Junges\Kafka\Exceptions\ConsumerException;
 use Junges\Kafka\MessageCounter;
 use Junges\Kafka\Retryable;
 use Junges\Kafka\Support\Timer;
@@ -156,7 +156,7 @@ class Consumer implements MessageConsumer
     /**
      * Execute the consume method on RdKafka consumer.
      *
-     * @throws KafkaConsumerException
+     * @throws ConsumerException
      * @throws \RdKafka\Exception|\Throwable
      */
     private function doConsume(): void
@@ -323,7 +323,7 @@ class Consumer implements MessageConsumer
     /**
      * Handle the message.
      *
-     * @throws \Junges\Kafka\Exceptions\KafkaConsumerException
+     * @throws \Junges\Kafka\Exceptions\ConsumerException
      * @throws \Throwable
      */
     private function handleMessage(Message $message): void
@@ -357,7 +357,7 @@ class Consumer implements MessageConsumer
         if (! in_array($message->err, self::IGNORABLE_CONSUMER_ERRORS, true)) {
             $this->logger->error($message, null, 'CONSUMER');
 
-            throw new KafkaConsumerException($message->errstr(), $message->err);
+            throw new ConsumerException($message->errstr(), $message->err);
         }
     }
 

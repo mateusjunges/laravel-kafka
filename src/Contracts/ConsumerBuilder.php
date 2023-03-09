@@ -41,7 +41,7 @@ interface ConsumerBuilder extends InteractsWithConfigCallbacks
     /**
      * Set the Dead Letter Queue to be used. If null, the dlq is created from the topic name.
      *
-     * @throws \Junges\Kafka\Exceptions\KafkaConsumerException
+     * @throws \Junges\Kafka\Exceptions\ConsumerException
      */
     public function withDlq(?string $dlqTopic = null): self;
 
