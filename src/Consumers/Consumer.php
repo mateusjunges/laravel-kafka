@@ -294,12 +294,17 @@ class Consumer implements CanConsumeMessages
 
             report($throwable);
 
+            if (! is_null($this->config->getDlq())) {
+                $this->sendToDlq($message, $exception);
+                $this->committer->commitDlq($message);
+            }
+
             return false;
         }
     }
 
     /** Send a message to the Dead Letter Queue. */
-    private function sendToDlq(Message $message): void
+    private function sendToDlq(Message $message, Throwable $throwable): void
     {
         $topic = $this->producer->newTopic($this->config->getDlq());
         $topic->producev(
@@ -307,7 +312,9 @@ class Consumer implements CanConsumeMessages
             msgflags: 0,
             payload: $message->payload,
             key: $this->config->getConsumer()->producerKey($message),
-            headers: $message->headers ?? []
+            headers: $message->headers ?? [],
+            reason: $throwable->getMessage(),
+            trace: $throwable->getTraceAsString()
         );
 
         if (method_exists($this->producer, 'flush')) {
@@ -323,13 +330,6 @@ class Consumer implements CanConsumeMessages
     private function commit(Message $message, bool $success): void
     {
         try {
-            if (! $success && ! is_null($this->config->getDlq())) {
-                $this->sendToDlq($message);
-                $this->committer->commitDlq($message);
-
-                return;
-            }
-
             $this->committer->commitMessage($message, $success);
         } catch (Throwable $throwable) {
             if (! in_array($throwable->getCode(), self::IGNORABLE_COMMIT_ERRORS, true)) {
