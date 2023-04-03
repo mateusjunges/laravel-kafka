@@ -6,7 +6,10 @@ use Junges\Kafka\Commit\Contracts\Sleeper;
 
 class FakeSleeper implements Sleeper
 {
-    private array $sleeps = [];
+    /**
+     * @var mixed[]
+     */
+    private $sleeps = [];
 
     public function sleep(int $timeInMicroseconds): void
     {

@@ -23,9 +23,11 @@ class KafkaCommitterTest extends LaravelKafkaTestCase
         });
 
         $config = new Config(
-            broker: 'broker',
-            topics: ['topic'],
-            groupId: 'groupId'
+            'broker',
+            ['topic'],
+            null,
+            null,
+            'groupId'
         );
 
         $conf = new Conf();
@@ -52,9 +54,11 @@ class KafkaCommitterTest extends LaravelKafkaTestCase
         });
 
         $config = new Config(
-            broker: 'broker',
-            topics: ['topic'],
-            groupId: 'groupId'
+            'broker',
+            ['topic'],
+            null,
+            null,
+            'groupId'
         );
 
         $conf = new Conf();

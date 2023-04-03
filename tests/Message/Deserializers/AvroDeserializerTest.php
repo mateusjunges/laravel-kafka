@@ -56,11 +56,7 @@ class AvroDeserializerTest extends LaravelKafkaTestCase
 
         $recordSerializer = $this->getMockBuilder(RecordSerializer::class)->disableOriginalConstructor()->getMock();
         $recordSerializer->expects($this->exactly(2))
-            ->method('decodeMessage')
-            ->withConsecutive(
-                [$message->getBody(), $schemaDefinition],
-                [$message->getKey(), $schemaDefinition],
-            )
+            ->method('decodeMessage')->withConsecutive([$message->getBody(), $schemaDefinition], [$message->getKey(), $schemaDefinition])
             ->willReturnOnConsecutiveCalls(['test'], 'decoded-key');
 
         $deserializer = new AvroDeserializer($registry, $recordSerializer);

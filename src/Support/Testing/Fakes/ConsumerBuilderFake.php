@@ -16,17 +16,18 @@ use Junges\Kafka\Support\Timer;
 class ConsumerBuilderFake extends ConsumerBuilder implements ConsumerBuilderContract
 {
     /** @var \Junges\Kafka\Contracts\KafkaConsumerMessage[] */
-    private array $messages = [];
+    private $messages = [];
 
     /**
      * @inheritDoc
+     * @return $this
      */
-    public static function create(string $brokers, array $topics = [], string $groupId = null): self
+    public static function create(string $brokers, array $topics = [], string $groupId = null): \Junges\Kafka\Consumers\ConsumerBuilder
     {
         return new ConsumerBuilderFake(
-            brokers: $brokers,
-            topics: $topics,
-            groupId: $groupId
+            $brokers,
+            $topics,
+            $groupId
         );
     }
 
@@ -50,23 +51,7 @@ class ConsumerBuilderFake extends ConsumerBuilder implements ConsumerBuilderCont
      */
     public function build(): CanConsumeMessages
     {
-        $config = new Config(
-            broker: $this->brokers,
-            topics: $this->topics,
-            securityProtocol: $this->getSecurityProtocol(),
-            commit: $this->commit,
-            groupId: $this->groupId,
-            consumer: new CallableConsumer($this->handler, $this->middlewares),
-            sasl: $this->saslConfig,
-            dlq: $this->dlq,
-            maxMessages: $this->maxMessages,
-            maxCommitRetries: $this->maxCommitRetries,
-            autoCommit: $this->autoCommit,
-            customOptions: $this->options,
-            batchConfig: $this->getBatchConfig(),
-            stopAfterLastMessage: $this->stopAfterLastMessage,
-            callbacks: $this->callbacks,
-        );
+        $config = new Config($this->brokers, $this->topics, $this->getSecurityProtocol(), $this->commit, $this->groupId, new CallableConsumer($this->handler, $this->middlewares), $this->saslConfig, $this->dlq, $this->maxMessages, $this->maxCommitRetries, $this->autoCommit, $this->options, $this->getBatchConfig(), $this->stopAfterLastMessage, 1000, $this->callbacks);
 
         return new ConsumerFake(
             $config,
@@ -87,12 +72,12 @@ class ConsumerBuilderFake extends ConsumerBuilder implements ConsumerBuilderCont
         }
 
         return new BatchConfig(
-            batchConsumer: new CallableBatchConsumer($this->handler),
-            timer: new Timer(),
-            batchRepository: app(\Junges\Kafka\BatchRepositories\InMemoryBatchRepository::class),
-            batchingEnabled: $this->batchingEnabled,
-            batchSizeLimit: $this->batchSizeLimit,
-            batchReleaseInterval: $this->batchReleaseInterval
+            new CallableBatchConsumer($this->handler),
+            new Timer(),
+            app(\Junges\Kafka\BatchRepositories\InMemoryBatchRepository::class),
+            $this->batchingEnabled,
+            $this->batchSizeLimit,
+            $this->batchReleaseInterval
         );
     }
 }

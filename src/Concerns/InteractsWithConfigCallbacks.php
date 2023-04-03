@@ -4,7 +4,10 @@ namespace Junges\Kafka\Concerns;
 
 trait InteractsWithConfigCallbacks
 {
-    protected array $callbacks = [];
+    /**
+     * @var mixed[]
+     */
+    protected $callbacks = [];
 
     /**
      * Set the configuration error callback.

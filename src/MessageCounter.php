@@ -4,10 +4,18 @@ namespace Junges\Kafka;
 
 class MessageCounter
 {
-    private int $messageCount = 0;
+    /**
+     * @var int
+     */
+    private $messageCount = 0;
+    /**
+     * @var int
+     */
+    private $maxMessages;
 
-    public function __construct(private int $maxMessages)
+    public function __construct(int $maxMessages)
     {
+        $this->maxMessages = $maxMessages;
     }
 
     public function add(): self

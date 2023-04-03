@@ -10,10 +10,18 @@ use Junges\Kafka\Message\ConsumedMessage;
 
 class AvroDeserializer implements AvroMessageDeserializer
 {
-    public function __construct(
-        private AvroSchemaRegistry $registry,
-        private RecordSerializer   $recordSerializer
-    ) {
+    /**
+     * @var \Junges\Kafka\Contracts\AvroSchemaRegistry
+     */
+    private $registry;
+    /**
+     * @var \FlixTech\AvroSerializer\Objects\RecordSerializer
+     */
+    private $recordSerializer;
+    public function __construct(AvroSchemaRegistry $registry, RecordSerializer   $recordSerializer)
+    {
+        $this->registry = $registry;
+        $this->recordSerializer = $recordSerializer;
     }
 
     public function getRegistry(): AvroSchemaRegistry
@@ -24,13 +32,13 @@ class AvroDeserializer implements AvroMessageDeserializer
     public function deserialize(KafkaConsumerMessage $message): KafkaConsumerMessage
     {
         return new ConsumedMessage(
-            topicName: $message->getTopicName(),
-            partition: $message->getPartition(),
-            headers: $message->getHeaders(),
-            body: $this->decodeBody($message),
-            key: $this->decodeKey($message),
-            offset: $message->getOffset(),
-            timestamp: $message->getTimestamp()
+            $message->getTopicName(),
+            $message->getPartition(),
+            $message->getHeaders(),
+            $this->decodeBody($message),
+            $this->decodeKey($message),
+            $message->getOffset(),
+            $message->getTimestamp()
         );
     }
 

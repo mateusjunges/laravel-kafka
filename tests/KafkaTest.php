@@ -152,9 +152,11 @@ class KafkaTest extends LaravelKafkaTestCase
                 'metadata.broker.list' => 'broker',
             ])
             ->withMessage(new Message(
-                headers: ['foo' => 'bar'],
-                body: ['foo' => 'bar'],
-                key: 'message-key'
+                null,
+                -1,
+                ['foo' => 'bar'],
+                ['foo' => 'bar'],
+                'message-key'
             ))
             ->withDebugEnabled(false)
             ->send();

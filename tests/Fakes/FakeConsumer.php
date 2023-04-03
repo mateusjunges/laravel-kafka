@@ -6,7 +6,10 @@ use Junges\Kafka\Contracts\KafkaConsumerMessage;
 
 class FakeConsumer
 {
-    private KafkaConsumerMessage $message;
+    /**
+     * @var \Junges\Kafka\Contracts\KafkaConsumerMessage
+     */
+    private $message;
 
     public function __invoke(KafkaConsumerMessage $message)
     {

@@ -14,15 +14,20 @@ class RetryableCommitter implements Committer
         RD_KAFKA_RESP_ERR_REQUEST_TIMED_OUT,
     ];
 
-    private Committer $committer;
-    private Retryable $retryable;
+    /**
+     * @var \Junges\Kafka\Commit\Contracts\Committer
+     */
+    private $committer;
+    /**
+     * @var \Junges\Kafka\Retryable
+     */
+    private $retryable;
 
     /**
      * @param Committer $committer
      * @param Sleeper $sleeper
      * @param int $maximumRetries
      */
-    #[Pure]
     public function __construct(Committer $committer, Sleeper $sleeper, int $maximumRetries = 6)
     {
         $this->committer = $committer;
@@ -34,7 +39,9 @@ class RetryableCommitter implements Committer
      */
     public function commitMessage(Message $message, bool $success): void
     {
-        $this->retryable->retry(fn () => $this->committer->commitMessage($message, $success));
+        $this->retryable->retry(function () use ($message, $success) {
+            return $this->committer->commitMessage($message, $success);
+        });
     }
 
     /**
@@ -42,6 +49,8 @@ class RetryableCommitter implements Committer
      */
     public function commitDlq(Message $message): void
     {
-        $this->retryable->retry(fn () => $this->committer->commitDlq($message));
+        $this->retryable->retry(function () use ($message) {
+            return $this->committer->commitDlq($message);
+        });
     }
 }

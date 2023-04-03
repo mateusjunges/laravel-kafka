@@ -14,15 +14,43 @@ use RdKafka\Message;
 
 class ConsumerFake implements CanConsumeMessages
 {
-    private MessageCounter $messageCounter;
-    private HandlesBatchConfiguration $batchConfig;
+    /**
+     * @var \Junges\Kafka\MessageCounter
+     */
+    private $messageCounter;
+    /**
+     * @var \Junges\Kafka\Contracts\HandlesBatchConfiguration
+     */
+    private $batchConfig;
+    /**
+     * @readonly
+     * @var \Junges\Kafka\Config\Config
+     */
+    private $config;
+    /**
+     * @readonly
+     * @var mixed[]
+     */
+    private $messages = [];
+    /**
+     * @var bool
+     */
+    private $stopRequested = false;
+    /**
+     * @var \Closure|null
+     */
+    private $whenStopConsuming;
 
     public function __construct(
-        private readonly Config $config,
-        private readonly array $messages = [],
-        private bool $stopRequested = false,
-        private ?Closure $whenStopConsuming = null
+        Config $config,
+        array $messages = [],
+        bool $stopRequested = false,
+        ?Closure $whenStopConsuming = null
     ) {
+        $this->config = $config;
+        $this->messages = $messages;
+        $this->stopRequested = $stopRequested;
+        $this->whenStopConsuming = $whenStopConsuming;
         $this->messageCounter = new MessageCounter($config->getMaxMessages());
         $this->batchConfig = $this->config->getBatchConfig();
     }
@@ -42,7 +70,7 @@ class ConsumerFake implements CanConsumeMessages
 
         if ($this->shouldRunStopConsumingCallback()) {
             $callback = $this->whenStopConsuming;
-            $callback(...)();
+            \Closure::fromCallable($callback)();
         }
     }
 
@@ -181,7 +209,9 @@ class ConsumerFake implements CanConsumeMessages
     {
         $consumedMessages = $collection
             ->map(
-                fn (Message $message) => $this->getConsumerMessage($message)
+                function (Message $message) {
+                    return $this->getConsumerMessage($message);
+                }
             );
 
         $this->config->getBatchConfig()->getConsumer()->handle($consumedMessages);

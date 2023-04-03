@@ -7,11 +7,23 @@ use Junges\Kafka\Contracts\KafkaAvroSchemaRegistry;
 
 class KafkaAvroSchema implements KafkaAvroSchemaRegistry
 {
-    public function __construct(
-        private string $schemaName,
-        private int $version = KafkaAvroSchemaRegistry::LATEST_VERSION,
-        private ?AvroSchema $definition = null
-    ) {
+    /**
+     * @var string
+     */
+    private $schemaName;
+    /**
+     * @var int
+     */
+    private $version = KafkaAvroSchemaRegistry::LATEST_VERSION;
+    /**
+     * @var \AvroSchema|null
+     */
+    private $definition;
+    public function __construct(string $schemaName, int $version = KafkaAvroSchemaRegistry::LATEST_VERSION, ?AvroSchema $definition = null)
+    {
+        $this->schemaName = $schemaName;
+        $this->version = $version;
+        $this->definition = $definition;
     }
 
     public function getName(): string

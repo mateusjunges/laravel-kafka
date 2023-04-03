@@ -2,6 +2,9 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2023-04-03 v1.13.1-alpha.1] ()
+- Use Rector to downgrade PHP version to v7.2
+
 ## [2023-03-28 v1.13.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.12.3...v1.13.0)
 - Fix consumer auto commit creating wrong committer by @mateusjunges on [#186](https://github.com/mateusjunges/laravel-kafka/pull/186)
 

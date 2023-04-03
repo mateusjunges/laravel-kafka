@@ -8,7 +8,10 @@ use Junges\Kafka\Contracts\BatchRepository as BatchRepositoryContract;
 
 class InMemoryBatchRepository implements BatchRepositoryContract
 {
-    private Collection $batch;
+    /**
+     * @var \Illuminate\Support\Collection
+     */
+    private $batch;
 
     public function __construct()
     {

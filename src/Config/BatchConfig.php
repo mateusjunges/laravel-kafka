@@ -10,16 +10,39 @@ use Junges\Kafka\Support\Timer;
 
 class BatchConfig implements HandlesBatchConfiguration
 {
-    public function __construct(
-        private CallableBatchConsumer $batchConsumer,
-        private Timer $timer,
-        private BatchRepositoryContract $batchRepository,
-        private bool $batchingEnabled = false,
-        private int $batchSizeLimit = 0,
-        private int $batchReleaseInterval = 0,
-    ) {
+    /**
+     * @var \Junges\Kafka\Consumers\CallableBatchConsumer
+     */
+    private $batchConsumer;
+    /**
+     * @var \Junges\Kafka\Support\Timer
+     */
+    private $timer;
+    /**
+     * @var BatchRepositoryContract
+     */
+    private $batchRepository;
+    /**
+     * @var bool
+     */
+    private $batchingEnabled = false;
+    /**
+     * @var int
+     */
+    private $batchSizeLimit = 0;
+    /**
+     * @var int
+     */
+    private $batchReleaseInterval = 0;
+    public function __construct(CallableBatchConsumer $batchConsumer, Timer $timer, BatchRepositoryContract $batchRepository, bool $batchingEnabled = false, int $batchSizeLimit = 0, int $batchReleaseInterval = 0)
+    {
+        $this->batchConsumer = $batchConsumer;
+        $this->timer = $timer;
+        $this->batchRepository = $batchRepository;
+        $this->batchingEnabled = $batchingEnabled;
+        $this->batchSizeLimit = $batchSizeLimit;
+        $this->batchReleaseInterval = $batchReleaseInterval;
     }
-
     /**
      * {@inheritdoc}
      */

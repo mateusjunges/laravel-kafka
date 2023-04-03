@@ -21,25 +21,82 @@ class ConsumerBuilder implements ConsumerBuilderContract
 {
     use InteractsWithConfigCallbacks;
 
-    protected array $topics;
-    protected int $commit;
-    protected ?string $groupId;
-    protected Closure $handler;
-    protected int $maxMessages;
-    protected int $maxCommitRetries;
-    protected string $brokers;
-    protected array $middlewares;
-    protected ?Sasl $saslConfig = null;
-    protected ?string $dlq = null;
-    protected string $securityProtocol;
-    protected bool $autoCommit;
-    protected array $options;
-    protected MessageDeserializer $deserializer;
-    protected ?CommitterFactory $committerFactory = null;
-    protected bool $batchingEnabled = false;
-    protected int $batchSizeLimit = 0;
-    protected int $batchReleaseInterval = 0;
-    protected bool $stopAfterLastMessage = false;
+    /**
+     * @var mixed[]
+     */
+    protected $topics;
+    /**
+     * @var int
+     */
+    protected $commit;
+    /**
+     * @var string|null
+     */
+    protected $groupId;
+    /**
+     * @var \Closure
+     */
+    protected $handler;
+    /**
+     * @var int
+     */
+    protected $maxMessages;
+    /**
+     * @var int
+     */
+    protected $maxCommitRetries;
+    /**
+     * @var string
+     */
+    protected $brokers;
+    /**
+     * @var mixed[]
+     */
+    protected $middlewares;
+    /**
+     * @var \Junges\Kafka\Config\Sasl|null
+     */
+    protected $saslConfig;
+    /**
+     * @var string|null
+     */
+    protected $dlq;
+    /**
+     * @var string
+     */
+    protected $securityProtocol;
+    /**
+     * @var bool
+     */
+    protected $autoCommit;
+    /**
+     * @var mixed[]
+     */
+    protected $options;
+    /**
+     * @var \Junges\Kafka\Contracts\MessageDeserializer
+     */
+    protected $deserializer;
+    /**
+     * @var \Junges\Kafka\Commit\Contracts\CommitterFactory|null
+     */
+    protected $committerFactory;
+    /**
+     * @var bool
+     */
+    protected $batchingEnabled = false;
+    /**
+     * @var int
+     */
+    protected $batchSizeLimit = 0;
+    /**
+     * @var int
+     */
+    protected $batchReleaseInterval = 0;
+    /**
+     * @var bool
+     */
+    protected $stopAfterLastMessage = false;
 
     /**
      * @param string $brokers
@@ -74,20 +131,22 @@ class ConsumerBuilder implements ConsumerBuilderContract
 
     /**
      * @inheritDoc
+     * @return $this
      */
-    public static function create(string $brokers, array $topics = [], string $groupId = null): self
+    public static function create(string $brokers, array $topics = [], string $groupId = null): \Junges\Kafka\Contracts\ConsumerBuilder
     {
         return new ConsumerBuilder(
-            brokers: $brokers,
-            topics: $topics,
-            groupId: $groupId
+            $brokers,
+            $topics,
+            $groupId
         );
     }
 
     /**
      * @inheritDoc
+     * @return $this
      */
-    public function subscribe(...$topics): self
+    public function subscribe(...$topics): \Junges\Kafka\Contracts\ConsumerBuilder
     {
         if (is_array($topics[0])) {
             $topics = $topics[0];
@@ -106,8 +165,9 @@ class ConsumerBuilder implements ConsumerBuilderContract
 
     /**
      * @inheritDoc
+     * @return $this
      */
-    public function withBrokers(?string $brokers): self
+    public function withBrokers(?string $brokers): \Junges\Kafka\Contracts\ConsumerBuilder
     {
         $this->brokers = $brokers ?? config('kafka.brokers');
 
@@ -116,8 +176,9 @@ class ConsumerBuilder implements ConsumerBuilderContract
 
     /**
      * @inheritDoc
+     * @return $this
      */
-    public function withConsumerGroupId(?string $groupId): self
+    public function withConsumerGroupId(?string $groupId): \Junges\Kafka\Contracts\ConsumerBuilder
     {
         $this->groupId = $groupId;
 
@@ -126,8 +187,9 @@ class ConsumerBuilder implements ConsumerBuilderContract
 
     /**
      * @inheritDoc
+     * @return $this
      */
-    public function withCommitBatchSize(int $size): self
+    public function withCommitBatchSize(int $size): \Junges\Kafka\Contracts\ConsumerBuilder
     {
         $this->commit = $size;
 
@@ -136,18 +198,20 @@ class ConsumerBuilder implements ConsumerBuilderContract
 
     /**
      * @inheritDoc
+     * @return $this
      */
-    public function withHandler(callable $handler): self
+    public function withHandler(callable $handler): \Junges\Kafka\Contracts\ConsumerBuilder
     {
-        $this->handler = $handler(...);
+        $this->handler = \Closure::fromCallable($handler);
 
         return $this;
     }
 
     /**
      * @inheritDoc
+     * @return $this
      */
-    public function usingDeserializer(MessageDeserializer $deserializer): self
+    public function usingDeserializer(MessageDeserializer $deserializer): \Junges\Kafka\Contracts\ConsumerBuilder
     {
         $this->deserializer = $deserializer;
 
@@ -156,8 +220,9 @@ class ConsumerBuilder implements ConsumerBuilderContract
 
     /**
      * @inheritDoc
+     * @return $this
      */
-    public function usingCommitterFactory(CommitterFactory $committerFactory): self
+    public function usingCommitterFactory(CommitterFactory $committerFactory): \Junges\Kafka\Contracts\ConsumerBuilder
     {
         $this->committerFactory = $committerFactory;
 
@@ -166,8 +231,9 @@ class ConsumerBuilder implements ConsumerBuilderContract
 
     /**
      * @inheritDoc
+     * @return $this
      */
-    public function withMaxMessages(int $maxMessages): self
+    public function withMaxMessages(int $maxMessages): \Junges\Kafka\Contracts\ConsumerBuilder
     {
         $this->maxMessages = $maxMessages;
 
@@ -176,8 +242,9 @@ class ConsumerBuilder implements ConsumerBuilderContract
 
     /**
      * @inheritDoc
+     * @return $this
      */
-    public function withMaxCommitRetries(int $maxCommitRetries): self
+    public function withMaxCommitRetries(int $maxCommitRetries): \Junges\Kafka\Contracts\ConsumerBuilder
     {
         $this->maxCommitRetries = $maxCommitRetries;
 
@@ -186,8 +253,9 @@ class ConsumerBuilder implements ConsumerBuilderContract
 
     /**
      * @inheritDoc
+     * @return $this
      */
-    public function withDlq(?string $dlqTopic = null): self
+    public function withDlq(?string $dlqTopic = null): \Junges\Kafka\Contracts\ConsumerBuilder
     {
         if (! isset($this->topics[0])) {
             throw KafkaConsumerException::dlqCanNotBeSetWithoutSubscribingToAnyTopics();
@@ -204,8 +272,9 @@ class ConsumerBuilder implements ConsumerBuilderContract
 
     /**
      * @inheritDoc
+     * @return $this
      */
-    public function withSasl(Sasl $saslConfig): self
+    public function withSasl(Sasl $saslConfig): \Junges\Kafka\Contracts\ConsumerBuilder
     {
         $this->saslConfig = $saslConfig;
 
@@ -214,8 +283,9 @@ class ConsumerBuilder implements ConsumerBuilderContract
 
     /**
      * @inheritDoc
+     * @return $this
      */
-    public function withMiddleware(callable $middleware): self
+    public function withMiddleware(callable $middleware): \Junges\Kafka\Contracts\ConsumerBuilder
     {
         $this->middlewares[] = $middleware;
 
@@ -224,8 +294,9 @@ class ConsumerBuilder implements ConsumerBuilderContract
 
     /**
      * @inheritDoc
+     * @return $this
      */
-    public function withSecurityProtocol(string $securityProtocol): self
+    public function withSecurityProtocol(string $securityProtocol): \Junges\Kafka\Contracts\ConsumerBuilder
     {
         $this->securityProtocol = $securityProtocol;
 
@@ -234,8 +305,9 @@ class ConsumerBuilder implements ConsumerBuilderContract
 
     /**
      * @inheritDoc
+     * @return $this
      */
-    public function withAutoCommit(bool $autoCommit = true): self
+    public function withAutoCommit(bool $autoCommit = true): \Junges\Kafka\Contracts\ConsumerBuilder
     {
         $this->autoCommit = $autoCommit;
 
@@ -244,8 +316,9 @@ class ConsumerBuilder implements ConsumerBuilderContract
 
     /**
      * @inheritDoc
+     * @return $this
      */
-    public function withOptions(array $options): self
+    public function withOptions(array $options): \Junges\Kafka\Contracts\ConsumerBuilder
     {
         foreach ($options as $name => $value) {
             $this->withOption($name, $value);
@@ -256,8 +329,10 @@ class ConsumerBuilder implements ConsumerBuilderContract
 
     /**
      * @inheritDoc
+     * @param mixed $value
+     * @return $this
      */
-    public function withOption(string $name, mixed $value): self
+    public function withOption(string $name, $value): \Junges\Kafka\Contracts\ConsumerBuilder
     {
         $this->options[$name] = $value;
 
@@ -266,8 +341,9 @@ class ConsumerBuilder implements ConsumerBuilderContract
 
     /**
      * @inheritDoc
+     * @return $this
      */
-    public function enableBatching(): self
+    public function enableBatching(): \Junges\Kafka\Contracts\ConsumerBuilder
     {
         $this->batchingEnabled = true;
 
@@ -276,8 +352,9 @@ class ConsumerBuilder implements ConsumerBuilderContract
 
     /**
      * @inheritDoc
+     * @return $this
      */
-    public function withBatchSizeLimit(int $batchSizeLimit): self
+    public function withBatchSizeLimit(int $batchSizeLimit): \Junges\Kafka\Contracts\ConsumerBuilder
     {
         $this->batchSizeLimit = $batchSizeLimit;
 
@@ -286,8 +363,9 @@ class ConsumerBuilder implements ConsumerBuilderContract
 
     /**
      * @inheritDoc
+     * @return $this
      */
-    public function withBatchReleaseInterval(int $batchReleaseIntervalInMilliseconds): self
+    public function withBatchReleaseInterval(int $batchReleaseIntervalInMilliseconds): \Junges\Kafka\Contracts\ConsumerBuilder
     {
         $this->batchReleaseInterval = $batchReleaseIntervalInMilliseconds;
 
@@ -296,8 +374,9 @@ class ConsumerBuilder implements ConsumerBuilderContract
 
     /**
      * @inheritDoc
+     * @return $this
      */
-    public function stopAfterLastMessage(bool $stopAfterLastMessage = true): self
+    public function stopAfterLastMessage(bool $stopAfterLastMessage = true): \Junges\Kafka\Contracts\ConsumerBuilder
     {
         $this->stopAfterLastMessage = $stopAfterLastMessage;
 
@@ -309,23 +388,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
      */
     public function build(): CanConsumeMessages
     {
-        $config = new Config(
-            broker: $this->brokers,
-            topics: $this->topics,
-            securityProtocol: $this->getSecurityProtocol(),
-            commit: $this->commit,
-            groupId: $this->groupId,
-            consumer: new CallableConsumer($this->handler, $this->middlewares),
-            sasl: $this->saslConfig,
-            dlq: $this->dlq,
-            maxMessages: $this->maxMessages,
-            maxCommitRetries: $this->maxCommitRetries,
-            autoCommit: $this->autoCommit,
-            customOptions: $this->options,
-            batchConfig: $this->getBatchConfig(),
-            stopAfterLastMessage: $this->stopAfterLastMessage,
-            callbacks: $this->callbacks,
-        );
+        $config = new Config($this->brokers, $this->topics, $this->getSecurityProtocol(), $this->commit, $this->groupId, new CallableConsumer($this->handler, $this->middlewares), $this->saslConfig, $this->dlq, $this->maxMessages, $this->maxCommitRetries, $this->autoCommit, $this->options, $this->getBatchConfig(), $this->stopAfterLastMessage, 1000, $this->callbacks);
 
         return new Consumer($config, $this->deserializer, $this->committerFactory);
     }
@@ -336,7 +399,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
      * @param mixed $topic
      * @return void
      */
-    protected function validateTopic(mixed $topic): void
+    protected function validateTopic($topic): void
     {
         if (! is_string($topic)) {
             $type = ucfirst(gettype($topic));
@@ -370,12 +433,12 @@ class ConsumerBuilder implements ConsumerBuilderContract
         }
 
         return new BatchConfig(
-            batchConsumer: new CallableBatchConsumer($this->handler),
-            timer: new Timer(),
-            batchRepository: app(config('kafka.batch_repository')),
-            batchingEnabled: $this->batchingEnabled,
-            batchSizeLimit: $this->batchSizeLimit,
-            batchReleaseInterval: $this->batchReleaseInterval
+            new CallableBatchConsumer($this->handler),
+            new Timer(),
+            app(config('kafka.batch_repository')),
+            $this->batchingEnabled,
+            $this->batchSizeLimit,
+            $this->batchReleaseInterval
         );
     }
 }

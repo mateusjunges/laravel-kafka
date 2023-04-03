@@ -61,26 +61,87 @@ class Config
         'auto.offset.reset',
     ];
 
-    private HandlesBatchConfiguration $batchConfig;
-
-    public function __construct(
-        private string             $broker,
-        private array              $topics,
-        private ?string            $securityProtocol = null,
-        private ?int               $commit = null,
-        private ?string            $groupId = null,
-        private ?Consumer          $consumer = null,
-        private ?Sasl              $sasl = null,
-        private ?string            $dlq = null,
-        private int                $maxMessages = -1,
-        private int                $maxCommitRetries = 6,
-        private bool               $autoCommit = true,
-        private array              $customOptions = [],
-        ?HandlesBatchConfiguration $batchConfig = null,
-        private bool               $stopAfterLastMessage = false,
-        private int                $restartInterval = 1000,
-        private array              $callbacks = [],
-    ) {
+    /**
+     * @var \Junges\Kafka\Contracts\HandlesBatchConfiguration
+     */
+    private $batchConfig;
+    /**
+     * @var string
+     */
+    private $broker;
+    /**
+     * @var mixed[]
+     */
+    private $topics;
+    /**
+     * @var string|null
+     */
+    private $securityProtocol;
+    /**
+     * @var int|null
+     */
+    private $commit;
+    /**
+     * @var string|null
+     */
+    private $groupId;
+    /**
+     * @var \Junges\Kafka\Contracts\Consumer|null
+     */
+    private $consumer;
+    /**
+     * @var \Junges\Kafka\Config\Sasl|null
+     */
+    private $sasl;
+    /**
+     * @var string|null
+     */
+    private $dlq;
+    /**
+     * @var int
+     */
+    private $maxMessages = -1;
+    /**
+     * @var int
+     */
+    private $maxCommitRetries = 6;
+    /**
+     * @var bool
+     */
+    private $autoCommit = true;
+    /**
+     * @var mixed[]
+     */
+    private $customOptions = [];
+    /**
+     * @var bool
+     */
+    private $stopAfterLastMessage = false;
+    /**
+     * @var int
+     */
+    private $restartInterval = 1000;
+    /**
+     * @var mixed[]
+     */
+    private $callbacks = [];
+    public function __construct(string             $broker, array              $topics, ?string            $securityProtocol = null, ?int               $commit = null, ?string            $groupId = null, ?Consumer          $consumer = null, ?Sasl              $sasl = null, ?string            $dlq = null, int                $maxMessages = -1, int                $maxCommitRetries = 6, bool               $autoCommit = true, array              $customOptions = [], ?HandlesBatchConfiguration $batchConfig = null, bool               $stopAfterLastMessage = false, int                $restartInterval = 1000, array              $callbacks = [])
+    {
+        $this->broker = $broker;
+        $this->topics = $topics;
+        $this->securityProtocol = $securityProtocol;
+        $this->commit = $commit;
+        $this->groupId = $groupId;
+        $this->consumer = $consumer;
+        $this->sasl = $sasl;
+        $this->dlq = $dlq;
+        $this->maxMessages = $maxMessages;
+        $this->maxCommitRetries = $maxCommitRetries;
+        $this->autoCommit = $autoCommit;
+        $this->customOptions = $customOptions;
+        $this->stopAfterLastMessage = $stopAfterLastMessage;
+        $this->restartInterval = $restartInterval;
+        $this->callbacks = $callbacks;
         $this->batchConfig = $batchConfig ?? new NullBatchConfig();
     }
 
@@ -139,7 +200,9 @@ class Config
         }
 
         return collect(array_merge($options, $this->customOptions, $this->getSaslOptions()))
-            ->reject(fn (string|int $option, string $key) => in_array($key, self::PRODUCER_ONLY_CONFIG_OPTIONS))
+            ->reject(function ($option, string $key) {
+                return in_array($key, self::PRODUCER_ONLY_CONFIG_OPTIONS);
+            })
             ->toArray();
     }
 
@@ -152,7 +215,9 @@ class Config
         ];
 
         return collect(array_merge($config, $this->customOptions, $this->getSaslOptions()))
-            ->reject(fn (string|int $option, string $key) => in_array($key, self::CONSUMER_ONLY_CONFIG_OPTIONS))
+            ->reject(function ($option, string $key) {
+                return in_array($key, self::CONSUMER_ONLY_CONFIG_OPTIONS);
+            })
             ->toArray();
     }
 
@@ -171,7 +236,6 @@ class Config
         return $this->callbacks;
     }
 
-    #[Pure]
     private function getSaslOptions(): array
     {
         if ($this->usingSasl() && $this->sasl !== null) {
@@ -182,7 +246,6 @@ class Config
                 'security.protocol' => $this->sasl->getSecurityProtocol(),
             ];
         }
-
         return [];
     }
 

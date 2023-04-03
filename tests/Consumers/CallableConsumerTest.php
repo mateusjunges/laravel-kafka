@@ -16,8 +16,8 @@ class CallableConsumerTest extends LaravelKafkaTestCase
         $message = new Message();
         $message->payload =
             <<<JSON
-            {"foo": "bar"}
-            JSON;
+{"foo": "bar"}
+JSON;
         $message->key = Str::uuid()->toString();
         $message->topic_name = 'test-topic';
         $message->partition = 1;

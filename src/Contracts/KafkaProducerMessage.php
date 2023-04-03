@@ -8,9 +8,15 @@ interface KafkaProducerMessage extends KafkaMessage
 
     public function withKey(?string $key): KafkaProducerMessage;
 
-    public function withBody(mixed $body): KafkaProducerMessage;
+    /**
+     * @param mixed $body
+     */
+    public function withBody($body): KafkaProducerMessage;
 
     public function withHeaders(array $headers = []):  KafkaProducerMessage;
 
-    public function withHeader(string $key, mixed $value): KafkaProducerMessage;
+    /**
+     * @param mixed $value
+     */
+    public function withHeader(string $key, $value): KafkaProducerMessage;
 }

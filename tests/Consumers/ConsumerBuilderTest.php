@@ -320,7 +320,7 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
             ->build();
 
         $committerFactory = $this->getPropertyWithReflection('committerFactory', $consumer);
-        $this->assertInstanceOf($adhocCommitterFactory::class, $committerFactory);
+        $this->assertInstanceOf(get_class($adhocCommitterFactory), $committerFactory);
     }
 
     public function testItCantCreateAConsumerWithDlqWithoutSubscribingToAnyTopics()

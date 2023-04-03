@@ -15,7 +15,7 @@ class RetryableHandlerTest extends TestCase
     public function testItPassesWhenNoExceptionOccurred(): void
     {
         $failingHandler = new FailingHandler(0, new RuntimeException('test'));
-        $handler = new RetryableHandler($failingHandler(...), new DefaultRetryStrategy(), new FakeSleeper());
+        $handler = new RetryableHandler(\Closure::fromCallable($failingHandler), new DefaultRetryStrategy(), new FakeSleeper());
 
         $messageMock = $this->createMock(KafkaConsumerMessage::class);
         $handler($messageMock);
@@ -27,7 +27,7 @@ class RetryableHandlerTest extends TestCase
     {
         $failingHandler = new FailingHandler(4, new RuntimeException('test'));
         $sleeper = new FakeSleeper();
-        $handler = new RetryableHandler($failingHandler(...), new DefaultRetryStrategy(), $sleeper);
+        $handler = new RetryableHandler(\Closure::fromCallable($failingHandler), new DefaultRetryStrategy(), $sleeper);
 
         $messageMock = $this->createMock(KafkaConsumerMessage::class);
         $handler($messageMock);
@@ -40,7 +40,7 @@ class RetryableHandlerTest extends TestCase
     {
         $failingHandler = new FailingHandler(100, new RuntimeException('test'));
         $sleeper = new FakeSleeper();
-        $handler = new RetryableHandler($failingHandler(...), new DefaultRetryStrategy(), $sleeper);
+        $handler = new RetryableHandler(\Closure::fromCallable($failingHandler), new DefaultRetryStrategy(), $sleeper);
 
         $messageMock = $this->createMock(KafkaConsumerMessage::class);
 
@@ -48,7 +48,7 @@ class RetryableHandlerTest extends TestCase
             $handler($messageMock);
 
             $this->fail('Handler passed but a \RuntimeException is expected.');
-        } catch (RuntimeException) {
+        } catch (RuntimeException $exception) {
             $this->assertSame(7, $failingHandler->getTimesInvoked());
             $this->assertEquals([1e6, 2e6, 4e6, 8e6, 16e6, 32e6], $sleeper->getSleeps());
         }

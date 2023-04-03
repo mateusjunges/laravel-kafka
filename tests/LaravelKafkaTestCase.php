@@ -121,7 +121,10 @@ class LaravelKafkaTestCase extends Orchestra
         });
     }
 
-    protected function getPropertyWithReflection(string $property, object $object): mixed
+    /**
+     * @return mixed
+     */
+    protected function getPropertyWithReflection(string $property, object $object)
     {
         $reflection = new \ReflectionClass($object);
         $reflectionProperty = $reflection->getProperty($property);
@@ -130,7 +133,10 @@ class LaravelKafkaTestCase extends Orchestra
         return $reflectionProperty->getValue($object);
     }
 
-    private function getMockedLogger(): m\MockInterface | m\LegacyMockInterface | null
+    /**
+     * @return m\MockInterface|m\LegacyMockInterface|null
+     */
+    private function getMockedLogger()
     {
         return m::mock(Logger::class)
             ->shouldReceive('error')

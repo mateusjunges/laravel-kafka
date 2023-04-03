@@ -10,8 +10,13 @@ use RdKafka\KafkaConsumer;
 
 class DefaultCommitterFactory implements CommitterFactory
 {
-    public function __construct(private MessageCounter $messageCounter)
+    /**
+     * @var \Junges\Kafka\MessageCounter
+     */
+    private $messageCounter;
+    public function __construct(MessageCounter $messageCounter)
     {
+        $this->messageCounter = $messageCounter;
     }
 
     public function make(KafkaConsumer $kafkaConsumer, Config $config): Committer

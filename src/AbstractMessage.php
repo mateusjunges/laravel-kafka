@@ -6,15 +6,38 @@ use Junges\Kafka\Contracts\KafkaMessage;
 
 abstract class AbstractMessage implements KafkaMessage
 {
-    public function __construct(
-        protected ?string  $topicName = null,
-        protected ?int    $partition = RD_KAFKA_PARTITION_UA,
-        protected ?array  $headers = [],
-        protected mixed   $body = [],
-        protected mixed   $key = null,
-    ) {
+    /**
+     * @var string|null
+     */
+    protected $topicName;
+    /**
+     * @var int|null
+     */
+    protected $partition = RD_KAFKA_PARTITION_UA;
+    /**
+     * @var mixed[]|null
+     */
+    protected $headers = [];
+    /**
+     * @var mixed
+     */
+    protected $body = [];
+    /**
+     * @var mixed
+     */
+    protected $key = null;
+    /**
+     * @param mixed $body
+     * @param mixed $key
+     */
+    public function __construct(?string  $topicName = null, ?int    $partition = RD_KAFKA_PARTITION_UA, ?array  $headers = [], $body = [], $key = null)
+    {
+        $this->topicName = $topicName;
+        $this->partition = $partition;
+        $this->headers = $headers;
+        $this->body = $body;
+        $this->key = $key;
     }
-
     public function setTopicName(string $topic): self
     {
         $this->topicName = $topic;
@@ -42,7 +65,10 @@ abstract class AbstractMessage implements KafkaMessage
         return $this->headers;
     }
 
-    public function getKey(): mixed
+    /**
+     * @return mixed
+     */
+    public function getKey()
     {
         return $this->key;
     }

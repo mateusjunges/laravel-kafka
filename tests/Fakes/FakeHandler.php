@@ -7,7 +7,10 @@ use Junges\Kafka\Contracts\KafkaConsumerMessage;
 
 class FakeHandler extends Consumer
 {
-    private ?KafkaConsumerMessage $lastMessage = null;
+    /**
+     * @var \Junges\Kafka\Contracts\KafkaConsumerMessage|null
+     */
+    private $lastMessage;
 
     public function lastMessage(): ?KafkaConsumerMessage
     {

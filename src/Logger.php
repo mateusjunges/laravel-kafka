@@ -12,7 +12,10 @@ use Throwable;
 
 class Logger implements LoggerContract
 {
-    private MonologLogger $logger;
+    /**
+     * @var MonologLogger
+     */
+    private $logger;
 
     public function __construct()
     {

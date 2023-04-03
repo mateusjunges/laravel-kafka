@@ -4,7 +4,10 @@ namespace Junges\Kafka\Contracts;
 
 interface KafkaMessage
 {
-    public function getKey(): mixed;
+    /**
+     * @return mixed
+     */
+    public function getKey();
 
     public function getTopicName(): ?string;
 

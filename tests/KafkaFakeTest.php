@@ -17,8 +17,14 @@ use PHPUnit\Framework\ExpectationFailedException;
 
 class KafkaFakeTest extends LaravelKafkaTestCase
 {
-    private KafkaFake $fake;
-    private CanConsumeMessages $consumer;
+    /**
+     * @var \Junges\Kafka\Support\Testing\Fakes\KafkaFake
+     */
+    private $fake;
+    /**
+     * @var \Junges\Kafka\Contracts\CanConsumeMessages
+     */
+    private $consumer;
 
     public function setUp(): void
     {
@@ -158,9 +164,11 @@ class KafkaFakeTest extends LaravelKafkaTestCase
             ->withConfigOption('key', 'value');
 
         $message = new Message(
-            headers: ['header-key' => 'header-value'],
-            body: ['body-key' => 'body-value'],
-            key: 2
+            null,
+            -1,
+            ['header-key' => 'header-value'],
+            ['body-key' => 'body-value'],
+            2
         );
 
         $messageBatch = new MessageBatch();
@@ -234,13 +242,13 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         Kafka::fake();
 
         $message = new ConsumedMessage(
-            topicName: 'test-topic',
-            partition: 0,
-            headers: [],
-            body: ['test'],
-            key: null,
-            offset: 0,
-            timestamp: 0
+            'test-topic',
+            0,
+            [],
+            ['test'],
+            null,
+            0,
+            0
         );
 
         Kafka::shouldReceiveMessages($message);
@@ -250,7 +258,9 @@ class KafkaFakeTest extends LaravelKafkaTestCase
             ->withBrokers('localhost:9092')
             ->withConsumerGroupId('group')
             ->withCommitBatchSize(1)
-            ->withHandler(fn (KafkaConsumerMessage $message) => $this->assertEquals($message, $message))
+            ->withHandler(function (KafkaConsumerMessage $message) {
+                return $this->assertEquals($message, $message);
+            })
             ->build();
 
         $consumer->consume();
@@ -262,22 +272,22 @@ class KafkaFakeTest extends LaravelKafkaTestCase
 
         $messages = [
             new ConsumedMessage(
-                topicName: 'test-topic',
-                partition: 0,
-                headers: [],
-                body: ['test'],
-                key: null,
-                offset: 0,
-                timestamp: 0
+                'test-topic',
+                0,
+                [],
+                ['test'],
+                null,
+                0,
+                0
             ),
             new ConsumedMessage(
-                topicName: 'test-topic-2',
-                partition: 0,
-                headers: [],
-                body: ['test2'],
-                key: null,
-                offset: 0,
-                timestamp: 0
+                'test-topic-2',
+                0,
+                [],
+                ['test2'],
+                null,
+                0,
+                0
             ),
         ];
 
@@ -316,13 +326,13 @@ class KafkaFakeTest extends LaravelKafkaTestCase
 
         $messages = [
             new ConsumedMessage(
-                topicName: 'mark-post-as-published-topic',
-                partition: 0,
-                headers: [],
-                body: ['post_id' => 1],
-                key: null,
-                offset: 0,
-                timestamp: 0
+                'mark-post-as-published-topic',
+                0,
+                [],
+                ['post_id' => 1],
+                null,
+                0,
+                0
             ),
         ];
 
@@ -350,22 +360,22 @@ class KafkaFakeTest extends LaravelKafkaTestCase
 
         $messages = [
             new ConsumedMessage(
-                topicName: 'test-topic',
-                partition: 0,
-                headers: [],
-                body: ['test'],
-                key: null,
-                offset: 0,
-                timestamp: 0
+                'test-topic',
+                0,
+                [],
+                ['test'],
+                null,
+                0,
+                0
             ),
             new ConsumedMessage(
-                topicName: 'test-topic-2',
-                partition: 0,
-                headers: [],
-                body: ['test2'],
-                key: null,
-                offset: 0,
-                timestamp: 0
+                'test-topic-2',
+                0,
+                [],
+                ['test2'],
+                null,
+                0,
+                0
             ),
         ];
 
@@ -395,22 +405,22 @@ class KafkaFakeTest extends LaravelKafkaTestCase
 
         $messages = [
             new ConsumedMessage(
-                topicName: 'test-topic',
-                partition: 0,
-                headers: [],
-                body: ['test'],
-                key: null,
-                offset: 0,
-                timestamp: 0
+                'test-topic',
+                0,
+                [],
+                ['test'],
+                null,
+                0,
+                0
             ),
             new ConsumedMessage(
-                topicName: 'test-topic-2',
-                partition: 0,
-                headers: [],
-                body: ['test2'],
-                key: null,
-                offset: 0,
-                timestamp: 0
+                'test-topic-2',
+                0,
+                [],
+                ['test2'],
+                null,
+                0,
+                0
             ),
         ];
 
@@ -436,53 +446,53 @@ class KafkaFakeTest extends LaravelKafkaTestCase
 
         $messages = [
             new ConsumedMessage(
-                topicName: 'test-topic',
-                partition: 0,
-                headers: [],
-                body: ['test'],
-                key: null,
-                offset: 0,
-                timestamp: 0
+                'test-topic',
+                0,
+                [],
+                ['test'],
+                null,
+                0,
+                0
             ),
 
             new ConsumedMessage(
-                topicName: 'test-topic-2',
-                partition: 0,
-                headers: [],
-                body: ['test2'],
-                key: null,
-                offset: 0,
-                timestamp: 0
+                'test-topic-2',
+                0,
+                [],
+                ['test2'],
+                null,
+                0,
+                0
             ),
 
             new ConsumedMessage(
-                topicName: 'test-topic-3',
-                partition: 0,
-                headers: [],
-                body: ['test3'],
-                key: null,
-                offset: 0,
-                timestamp: 0
+                'test-topic-3',
+                0,
+                [],
+                ['test3'],
+                null,
+                0,
+                0
             ),
 
             new ConsumedMessage(
-                topicName: 'test-topic-4',
-                partition: 0,
-                headers: [],
-                body: ['test4'],
-                key: null,
-                offset: 0,
-                timestamp: 0
+                'test-topic-4',
+                0,
+                [],
+                ['test4'],
+                null,
+                0,
+                0
             ),
 
             new ConsumedMessage(
-                topicName: 'test-topic-5',
-                partition: 0,
-                headers: [],
-                body: ['test5'],
-                key: null,
-                offset: 0,
-                timestamp: 0
+                'test-topic-5',
+                0,
+                [],
+                ['test5'],
+                null,
+                0,
+                0
             ),
         ];
 
@@ -521,31 +531,31 @@ class KafkaFakeTest extends LaravelKafkaTestCase
 
         $messages = [
             new ConsumedMessage(
-                topicName: 'test-topic',
-                partition: 0,
-                headers: [],
-                body: ['test'],
-                key: null,
-                offset: 0,
-                timestamp: 0
+                'test-topic',
+                0,
+                [],
+                ['test'],
+                null,
+                0,
+                0
             ),
             new ConsumedMessage(
-                topicName: 'test-topic-2',
-                partition: 0,
-                headers: [],
-                body: ['test2'],
-                key: null,
-                offset: 0,
-                timestamp: 0
+                'test-topic-2',
+                0,
+                [],
+                ['test2'],
+                null,
+                0,
+                0
             ),
             new ConsumedMessage(
-                topicName: 'test-topic-3',
-                partition: 0,
-                headers: [],
-                body: ['test3'],
-                key: null,
-                offset: 0,
-                timestamp: 0
+                'test-topic-3',
+                0,
+                [],
+                ['test3'],
+                null,
+                0,
+                0
             ),
         ];
 

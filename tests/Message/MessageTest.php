@@ -8,7 +8,10 @@ use Junges\Kafka\Tests\LaravelKafkaTestCase;
 
 class MessageTest extends LaravelKafkaTestCase
 {
-    private Message $message;
+    /**
+     * @var \Junges\Kafka\Message\Message
+     */
+    private $message;
 
     public function setUp(): void
     {
@@ -21,7 +24,7 @@ class MessageTest extends LaravelKafkaTestCase
         $this->message->withBodyKey('foo', 'bar');
 
         $expected = new Message(
-            body: ['foo' => 'bar']
+            null, -1, [], ['foo' => 'bar']
         );
 
         $this->assertEquals($expected, $this->message);
@@ -33,7 +36,7 @@ class MessageTest extends LaravelKafkaTestCase
         $this->message->withBodyKey('bar', 'foo');
 
         $expected = new Message(
-            body: ['bar' => 'foo']
+            null, -1, [], ['bar' => 'foo']
         );
 
         $this->message->forgetBodyKey('foo');
@@ -48,7 +51,7 @@ class MessageTest extends LaravelKafkaTestCase
         ]);
 
         $expected = new Message(
-            headers: ['foo' => 'bar']
+            null, -1, ['foo' => 'bar']
         );
 
         $this->assertEquals($expected, $this->message);
@@ -59,7 +62,7 @@ class MessageTest extends LaravelKafkaTestCase
         $this->message->withKey($uuid = Str::uuid()->toString());
 
         $expected = new Message(
-            key: $uuid
+            null, -1, [], [], $uuid
         );
 
         $this->assertEquals($expected, $this->message);
@@ -71,7 +74,7 @@ class MessageTest extends LaravelKafkaTestCase
         $this->message->withBodyKey('bar', 'foo');
 
         $expectedMessage = new Message(
-            body: $array = ['foo' => 'bar', 'bar' => 'foo']
+            null, -1, [], $array = ['foo' => 'bar', 'bar' => 'foo']
         );
 
         $this->assertEquals($expectedMessage, $this->message);
@@ -89,9 +92,11 @@ class MessageTest extends LaravelKafkaTestCase
         $this->message->withHeaders($headers = ['foo' => 'bar']);
 
         $expectedMessage = new Message(
-            headers: $headers,
-            body: $array = ['foo' => 'bar', 'bar' => 'foo'],
-            key: $uuid
+            null,
+            -1,
+            $headers,
+            $array = ['foo' => 'bar', 'bar' => 'foo'],
+            $uuid
         );
 
         $expectedArray = [

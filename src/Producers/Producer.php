@@ -13,13 +13,31 @@ use SplDoublyLinkedList;
 
 class Producer
 {
-    private KafkaProducer $producer;
+    /**
+     * @var KafkaProducer
+     */
+    private $producer;
+    /**
+     * @var \Junges\Kafka\Config\Config
+     */
+    private $config;
+    /**
+     * @var string
+     */
+    private $topic;
+    /**
+     * @var \Junges\Kafka\Contracts\MessageSerializer
+     */
+    private $serializer;
 
     public function __construct(
-        private Config $config,
-        private string $topic,
-        private MessageSerializer $serializer
+        Config $config,
+        string $topic,
+        MessageSerializer $serializer
     ) {
+        $this->config = $config;
+        $this->topic = $topic;
+        $this->serializer = $serializer;
         $this->producer = app(KafkaProducer::class, [
             'conf' => $this->setConf($this->config->getProducerOptions()),
         ]);
@@ -98,19 +116,20 @@ class Producer
     private function produceMessage(ProducerTopic $topic, KafkaProducerMessage $message): void
     {
         $topic->producev(
-            partition: $message->getPartition(),
-            msgflags: RD_KAFKA_MSG_F_BLOCK,
-            payload: $message->getBody(),
-            key: $message->getKey(),
-            headers: $message->getHeaders()
+            $message->getPartition(),
+            RD_KAFKA_MSG_F_BLOCK,
+            $message->getBody(),
+            $message->getKey(),
+            $message->getHeaders()
         );
     }
 
     /**
      * @throws CouldNotPublishMessage
      * @throws \Exception
+     * @return mixed
      */
-    private function flush(): mixed
+    private function flush()
     {
         $sleepMilliseconds = config('kafka.flush_retry_sleep_in_ms', 100);
 

@@ -8,7 +8,10 @@ use Junges\Kafka\Tests\LaravelKafkaTestCase;
 
 class OptionsTest extends LaravelKafkaTestCase
 {
-    private array $config;
+    /**
+     * @var mixed[]
+     */
+    private $config;
 
     public function setUp(): void
     {

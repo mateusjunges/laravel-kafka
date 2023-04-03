@@ -9,14 +9,14 @@ class Timer
      *
      * @var float
      */
-    private float $startTime;
+    private $startTime;
 
     /**
      * Shows after what period of time in milliseconds timer is considered as timed out
      *
      * @var int
      */
-    private int $timeoutInMilliseconds;
+    private $timeoutInMilliseconds;
 
     /**
      * Determines if the timer has timed out

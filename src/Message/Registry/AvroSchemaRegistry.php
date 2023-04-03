@@ -17,13 +17,18 @@ class AvroSchemaRegistry implements AvroSchemaRegistryContract
         self::BODY_IDX => [],
         self::KEY_IDX => [],
     ];
+    /**
+     * @var Registry
+     */
+    private $registry;
 
     /**
      * AvroSchemaRegistry constructor.
      * @param Registry $registry
      */
-    public function __construct(private Registry $registry)
+    public function __construct(Registry $registry)
     {
+        $this->registry = $registry;
     }
 
     /**

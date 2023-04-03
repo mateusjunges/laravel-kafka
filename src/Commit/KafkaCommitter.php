@@ -8,8 +8,13 @@ use RdKafka\Message;
 
 class KafkaCommitter implements Committer
 {
-    public function __construct(private KafkaConsumer $consumer)
+    /**
+     * @var \RdKafka\KafkaConsumer
+     */
+    private $consumer;
+    public function __construct(KafkaConsumer $consumer)
     {
+        $this->consumer = $consumer;
     }
 
     /**

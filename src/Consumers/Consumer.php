@@ -47,21 +47,63 @@ class Consumer implements CanConsumeMessages
         RD_KAFKA_RESP_ERR__NO_OFFSET,
     ];
 
-    private Logger $logger;
-    private KafkaConsumer $consumer;
-    private KafkaProducer $producer;
-    private MessageCounter $messageCounter;
-    private Committer $committer;
-    private Retryable $retryable;
-    private CommitterFactory $committerFactory;
-    private MessageDeserializer $deserializer;
-    private bool $stopRequested = false;
-    private ?Closure $whenStopConsuming = null;
-    protected int $lastRestart = 0;
-    protected Timer $restartTimer;
+    /**
+     * @var \Junges\Kafka\Contracts\Logger
+     */
+    private $logger;
+    /**
+     * @var \RdKafka\KafkaConsumer
+     */
+    private $consumer;
+    /**
+     * @var KafkaProducer
+     */
+    private $producer;
+    /**
+     * @var \Junges\Kafka\MessageCounter
+     */
+    private $messageCounter;
+    /**
+     * @var \Junges\Kafka\Commit\Contracts\Committer
+     */
+    private $committer;
+    /**
+     * @var \Junges\Kafka\Retryable
+     */
+    private $retryable;
+    /**
+     * @var \Junges\Kafka\Commit\Contracts\CommitterFactory
+     */
+    private $committerFactory;
+    /**
+     * @var \Junges\Kafka\Contracts\MessageDeserializer
+     */
+    private $deserializer;
+    /**
+     * @var bool
+     */
+    private $stopRequested = false;
+    /**
+     * @var \Closure|null
+     */
+    private $whenStopConsuming;
+    /**
+     * @var int
+     */
+    protected $lastRestart = 0;
+    /**
+     * @var \Junges\Kafka\Support\Timer
+     */
+    protected $restartTimer;
+    /**
+     * @readonly
+     * @var \Junges\Kafka\Config\Config
+     */
+    private $config;
 
-    public function __construct(private readonly Config $config, MessageDeserializer $deserializer, CommitterFactory $committerFactory = null)
+    public function __construct(Config $config, MessageDeserializer $deserializer, CommitterFactory $committerFactory = null)
     {
+        $this->config = $config;
         $this->logger = app(Logger::class);
         $this->messageCounter = new MessageCounter($config->getMaxMessages());
         $this->retryable = new Retryable(new NativeSleeper(), 6, self::TIMEOUT_ERRORS);
@@ -101,13 +143,15 @@ class Consumer implements CanConsumeMessages
         }
 
         do {
-            $this->retryable->retry(fn () => $this->doConsume());
+            $this->retryable->retry(function () {
+                return $this->doConsume();
+            });
             $this->checkForRestart();
         } while (! $this->maxMessagesLimitReached() && ! $this->stopRequested);
 
         if ($this->shouldRunStopConsumingCallback()) {
             $callback = $this->whenStopConsuming;
-            $callback(...)();
+            \Closure::fromCallable($callback)();
         }
     }
 
@@ -120,8 +164,12 @@ class Consumer implements CanConsumeMessages
     {
         pcntl_async_signals(true);
 
-        pcntl_signal(SIGQUIT, fn () => $this->stopRequested = true);
-        pcntl_signal(SIGTERM, fn () => $this->stopRequested = true);
+        pcntl_signal(SIGQUIT, function () {
+            return $this->stopRequested = true;
+        });
+        pcntl_signal(SIGTERM, function () {
+            return $this->stopRequested = true;
+        });
     }
 
     private function supportAsyncSignals(): bool
@@ -135,8 +183,9 @@ class Consumer implements CanConsumeMessages
         $this->stopRequested = true;
     }
 
-    /** @inheritdoc  */
-    public function onStopConsuming(?Closure $onStopConsuming = null): self
+    /** @inheritdoc
+     * @return $this  */
+    public function onStopConsuming(?Closure $onStopConsuming = null): \Junges\Kafka\Contracts\CanConsumeMessages
     {
         $this->whenStopConsuming = $onStopConsuming;
 
@@ -231,11 +280,15 @@ class Consumer implements CanConsumeMessages
             $batchConfig->getBatchRepository()->reset();
         };
 
-        match (true) {
-            $batchConfig->getBatchRepository()->getBatchSize() >= $batchConfig->getBatchSizeLimit(),
-            $batchConfig->getTimer()->isTimedOut() && $batchConfig->getBatchRepository()->getBatchSize() > 0 => $executeBatchCallback(),
-            default => null
-        };
+        switch (true) {
+            case $batchConfig->getBatchRepository()->getBatchSize() >= $batchConfig->getBatchSizeLimit():
+            case $batchConfig->getTimer()->isTimedOut() && $batchConfig->getBatchRepository()->getBatchSize() > 0:
+                $executeBatchCallback();
+                break;
+            default:
+                null;
+                break;
+        }
 
         if ($batchConfig->getTimer()->isTimedOut()) {
             $batchConfig->getTimer()->start($batchConfig->getBatchReleaseInterval());
@@ -254,13 +307,16 @@ class Consumer implements CanConsumeMessages
         try {
             $consumedMessages = $collection
                 ->map(
-                    fn (Message $message) =>
-                        $this->deserializer->deserialize($this->getConsumerMessage($message))
+                    function (Message $message) {
+                        return $this->deserializer->deserialize($this->getConsumerMessage($message));
+                    }
                 );
 
             $this->config->getBatchConfig()->getConsumer()->handle($consumedMessages);
 
-            $collection->each(fn (Message $message) => $this->commit($message, true));
+            $collection->each(function (Message $message) {
+                return $this->commit($message, true);
+            });
         } catch (Throwable $throwable) {
             $collection->each(function (Message $message) use ($throwable) {
                 $this->logger->error($message, $throwable);
@@ -274,10 +330,10 @@ class Consumer implements CanConsumeMessages
      * Handle exceptions while consuming messages.
      *
      * @param \Throwable $exception
-     * @param Message|ConsumedMessage $message
+     * @param \RdKafka\Message|\Junges\Kafka\Contracts\KafkaConsumerMessage $message
      * @return bool
      */
-    private function handleException(Throwable $exception, Message|KafkaConsumerMessage $message): bool
+    private function handleException(Throwable $exception, $message): bool
     {
         try {
             $this->config->getConsumer()->failed(
@@ -303,11 +359,11 @@ class Consumer implements CanConsumeMessages
     {
         $topic = $this->producer->newTopic($this->config->getDlq());
         $topic->producev(
-            partition: RD_KAFKA_PARTITION_UA,
-            msgflags: 0,
-            payload: $message->payload,
-            key: $this->config->getConsumer()->producerKey($message),
-            headers: $message->headers ?? []
+            RD_KAFKA_PARTITION_UA,
+            0,
+            $message->payload,
+            $this->config->getConsumer()->producerKey($message),
+            $message->headers ?? []
         );
 
         if (method_exists($this->producer, 'flush')) {

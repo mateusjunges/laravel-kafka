@@ -24,7 +24,7 @@ interface CanProduceMessages extends InteractsWithConfigCallbacks
      * @param  mixed  $option
      * @return $this
      */
-    public function withConfigOption(string $name, mixed $option): self;
+    public function withConfigOption(string $name, $option): self;
 
     /**
      * Set offset commit callback to use with consumer groups.
@@ -81,7 +81,7 @@ interface CanProduceMessages extends InteractsWithConfigCallbacks
      * @param mixed $message
      * @return $this
      */
-    public function withBodyKey(string $key, mixed $message): self;
+    public function withBodyKey(string $key, $message): self;
 
     /**
      * Set the message to be published.

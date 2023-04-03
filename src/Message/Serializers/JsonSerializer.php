@@ -15,7 +15,7 @@ class JsonSerializer implements MessageSerializer
      */
     public function serialize(KafkaProducerMessage $message): KafkaProducerMessage
     {
-        $body = json_encode($message->getBody(), JSON_THROW_ON_ERROR);
+        $body = json_encode($message->getBody(), 0);
 
         return $message->withBody($body);
     }

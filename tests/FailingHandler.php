@@ -7,10 +7,23 @@ use Junges\Kafka\Contracts\KafkaConsumerMessage;
 
 class FailingHandler
 {
-    private int $timesInvoked = 0;
+    /**
+     * @var int
+     */
+    private $timesInvoked = 0;
+    /**
+     * @var int
+     */
+    private $timesToFail;
+    /**
+     * @var \Exception
+     */
+    private $exception;
 
-    public function __construct(private int $timesToFail, private Exception $exception)
+    public function __construct(int $timesToFail, Exception $exception)
     {
+        $this->timesToFail = $timesToFail;
+        $this->exception = $exception;
     }
 
     public function __invoke(KafkaConsumerMessage $message): void

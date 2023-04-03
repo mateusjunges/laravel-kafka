@@ -20,8 +20,8 @@ class Kafka implements CanPublishMessagesToKafka, CanConsumeMessagesFromKafka
     public function publishOn(string $topic, string $broker = null): CanProduceMessages
     {
         return new ProducerBuilder(
-            topic: $topic,
-            broker: $broker ?? config('kafka.brokers')
+            $topic,
+            $broker ?? config('kafka.brokers')
         );
     }
 
@@ -33,12 +33,12 @@ class Kafka implements CanPublishMessagesToKafka, CanConsumeMessagesFromKafka
      * @param string|null $brokers
      * @return \Junges\Kafka\Consumers\ConsumerBuilder
      */
-    public function createConsumer(array $topics = [], string $groupId = null, string $brokers = null): ConsumerBuilder
+    public function createConsumer(array $topics = [], string $groupId = null, string $brokers = null): \Junges\Kafka\Contracts\ConsumerBuilder
     {
         return ConsumerBuilder::create(
-            brokers: $brokers ?? config('kafka.brokers'),
-            topics: $topics,
-            groupId: $groupId ?? config('kafka.consumer_group_id')
+            $brokers ?? config('kafka.brokers'),
+            $topics,
+            $groupId ?? config('kafka.consumer_group_id')
         );
     }
 }
