@@ -2,10 +2,8 @@
 
 namespace Junges\Kafka\Commit;
 
-use Junges\Kafka\Commit\Contracts\Committer as CommitterContract;
-use Junges\Kafka\Commit\Contracts\CommitterFactory;
 use Junges\Kafka\Config\Config;
-use Junges\Kafka\Contracts\Committer;
+use Junges\Kafka\Contracts\Committer as CommitterContract;
 use Junges\Kafka\Contracts\CommitterFactory;
 use Junges\Kafka\MessageCounter;
 use RdKafka\KafkaConsumer;

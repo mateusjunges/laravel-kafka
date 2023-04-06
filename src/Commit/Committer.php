@@ -2,7 +2,7 @@
 
 namespace Junges\Kafka\Commit;
 
-use Junges\Kafka\Contracts\Committer;
+use Junges\Kafka\Contracts\Committer as CommitterContract;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
 

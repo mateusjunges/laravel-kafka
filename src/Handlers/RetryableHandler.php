@@ -3,8 +3,7 @@
 namespace Junges\Kafka\Handlers;
 
 use Closure;
-use Junges\Kafka\Contracts\KafkaConsumerMessage;
-use Junges\Kafka\Commit\Contracts\Sleeper;
+
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\RetryStrategy;
 use Junges\Kafka\Contracts\Sleeper;
