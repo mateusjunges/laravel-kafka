@@ -10,9 +10,9 @@ use Junges\Kafka\Exceptions\Serializers\AvroSerializerException;
 use Junges\Kafka\Message\Serializers\AvroSerializer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 
-class AvroSerializerTest extends LaravelKafkaTestCase
+final class AvroSerializerTest extends LaravelKafkaTestCase
 {
-    public function testSerializeTombstone()
+    public function testSerializeTombstone(): void
     {
         $producerMessage = $this->getMockForAbstractClass(KafkaProducerMessage::class);
         $producerMessage->expects($this->exactly(2))->method('getBody')->willReturn(null);
@@ -33,7 +33,7 @@ class AvroSerializerTest extends LaravelKafkaTestCase
         $this->assertNull($result->getBody());
     }
 
-    public function testSerializeWithoutSchemaDefinition()
+    public function testSerializeWithoutSchemaDefinition(): void
     {
         $avroSchema = $this->getMockForAbstractClass(KafkaAvroSchemaRegistry::class);
         $avroSchema->expects($this->once())->method('getDefinition')->willReturn(null);
@@ -60,7 +60,7 @@ class AvroSerializerTest extends LaravelKafkaTestCase
         $serializer->serialize($producerMessage);
     }
 
-    public function testSerializeSuccessWithSchema()
+    public function testSerializeSuccessWithSchema(): void
     {
         $schemaDefinition = $this->getMockBuilder(\AvroSchema::class)->disableOriginalConstructor()->getMock();
 
@@ -96,7 +96,7 @@ class AvroSerializerTest extends LaravelKafkaTestCase
         $this->assertSame($producerMessage, $serializer->serialize($producerMessage));
     }
 
-    public function testSerializeKeyMode()
+    public function testSerializeKeyMode(): void
     {
         $schemaDefinition = $this->getMockBuilder(\AvroSchema::class)->disableOriginalConstructor()->getMock();
 
@@ -126,7 +126,7 @@ class AvroSerializerTest extends LaravelKafkaTestCase
         $this->assertSame($producerMessage, $serializer->serialize($producerMessage));
     }
 
-    public function testSerializeBodyMode()
+    public function testSerializeBodyMode(): void
     {
         $schemaDefinition = $this->getMockBuilder(\AvroSchema::class)->disableOriginalConstructor()->getMock();
 
@@ -156,7 +156,7 @@ class AvroSerializerTest extends LaravelKafkaTestCase
         $this->assertSame($producerMessage, $serializer->serialize($producerMessage));
     }
 
-    public function testGetRegistry()
+    public function testGetRegistry(): void
     {
         $registry = $this->getMockForAbstractClass(AvroSchemaRegistry::class);
 

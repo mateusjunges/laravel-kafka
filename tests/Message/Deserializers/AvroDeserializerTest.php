@@ -10,9 +10,9 @@ use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Message\Deserializers\AvroDeserializer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 
-class AvroDeserializerTest extends LaravelKafkaTestCase
+final class AvroDeserializerTest extends LaravelKafkaTestCase
 {
-    public function testDeserializeTombstone()
+    public function testDeserializeTombstone(): void
     {
         $message = $this->getMockForAbstractClass(KafkaConsumerMessage::class);
         $message->expects($this->once())->method('getBody')->willReturn(null);
@@ -32,7 +32,7 @@ class AvroDeserializerTest extends LaravelKafkaTestCase
         $this->assertNull($result->getBody());
     }
 
-    public function testDeserializeWithSchema()
+    public function testDeserializeWithSchema(): void
     {
         $schemaDefinition = $this->getMockBuilder(AvroSchema::class)->disableOriginalConstructor()->getMock();
 
@@ -72,7 +72,7 @@ class AvroDeserializerTest extends LaravelKafkaTestCase
         $this->assertSame('decoded-key', $result->getKey());
     }
 
-    public function testDeserializeKeyMode()
+    public function testDeserializeKeyMode(): void
     {
         $schemaDefinition = $this->getMockBuilder(AvroSchema::class)->disableOriginalConstructor()->getMock();
 
@@ -107,7 +107,7 @@ class AvroDeserializerTest extends LaravelKafkaTestCase
         $this->assertSame('body', $result->getBody());
     }
 
-    public function testDeserializeBodyMode()
+    public function testDeserializeBodyMode(): void
     {
         $schemaDefinition = $this->getMockBuilder(AvroSchema::class)->disableOriginalConstructor()->getMock();
 
@@ -141,7 +141,7 @@ class AvroDeserializerTest extends LaravelKafkaTestCase
         $this->assertSame(['test'], $result->getBody());
     }
 
-    public function testGetRegistry()
+    public function testGetRegistry(): void
     {
         $registry = $this->getMockForAbstractClass(AvroSchemaRegistry::class);
         $recordSerializer = $this->getMockBuilder(RecordSerializer::class)->disableOriginalConstructor()->getMock();

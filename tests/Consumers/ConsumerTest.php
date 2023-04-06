@@ -20,13 +20,13 @@ use Junges\Kafka\Tests\Fakes\FakeHandler;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use RdKafka\Message;
 
-class ConsumerTest extends LaravelKafkaTestCase
+final class ConsumerTest extends LaravelKafkaTestCase
 {
     private ?CanConsumeMessages $stoppableConsumer = null;
     private bool $stoppableConsumerStopped = false;
     private string $stoppedConsumerMessage = "";
 
-    public function testItConsumesAMessageSuccessfullyAndCommit()
+    public function testItConsumesAMessageSuccessfullyAndCommit(): void
     {
         $fakeHandler = new FakeHandler();
 
@@ -62,7 +62,7 @@ class ConsumerTest extends LaravelKafkaTestCase
         $this->assertInstanceOf(ConsumedMessage::class, $fakeHandler->lastMessage());
     }
 
-    public function testItCanConsumeMessages()
+    public function testItCanConsumeMessages(): void
     {
         $message = new Message();
         $message->err = 0;
@@ -115,7 +115,7 @@ class ConsumerTest extends LaravelKafkaTestCase
         Bus::assertDispatched(DispatchQueuedHandler::class);
     }
 
-    public function testConsumeMessageWithError()
+    public function testConsumeMessageWithError(): void
     {
         $this->mockProducer();
 
@@ -146,7 +146,7 @@ class ConsumerTest extends LaravelKafkaTestCase
         $consumer->consume();
     }
 
-    public function testCanStopConsume()
+    public function testCanStopConsume(): void
     {
         $message = new Message();
         $message->err = 0;
@@ -233,7 +233,7 @@ class ConsumerTest extends LaravelKafkaTestCase
         $this->assertInstanceOf(VoidCommitter::class, $committer);
     }
 
-    public function testItCanRestartConsumer()
+    public function testItCanRestartConsumer(): void
     {
         $message = new Message();
         $message->err = 0;

@@ -5,11 +5,11 @@ namespace Junges\Kafka\Tests;
 use Exception;
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
 
-class FailingHandler
+final class FailingHandler
 {
     private int $timesInvoked = 0;
 
-    public function __construct(private int $timesToFail, private Exception $exception)
+    public function __construct(private readonly int $timesToFail, private readonly Exception $exception)
     {
     }
 

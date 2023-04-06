@@ -14,7 +14,7 @@ use Junges\Kafka\MessageCounter;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use RdKafka\KafkaConsumer;
 
-class CommitterFactoryTest extends LaravelKafkaTestCase
+final class CommitterFactoryTest extends LaravelKafkaTestCase
 {
     public function testShouldBuildAVoidCommitterWhenAutoCommitIsDisabled(): void
     {

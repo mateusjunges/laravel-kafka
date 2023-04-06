@@ -9,9 +9,9 @@ use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use RdKafka\Message;
 use stdClass;
 
-class CallableConsumerTest extends LaravelKafkaTestCase
+final class CallableConsumerTest extends LaravelKafkaTestCase
 {
-    public function testItDecodesMessages()
+    public function testItDecodesMessages(): void
     {
         $message = new Message();
         $message->payload =

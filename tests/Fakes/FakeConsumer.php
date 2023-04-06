@@ -4,11 +4,11 @@ namespace Junges\Kafka\Tests\Fakes;
 
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
 
-class FakeConsumer
+final class FakeConsumer
 {
     private KafkaConsumerMessage $message;
 
-    public function __invoke(KafkaConsumerMessage $message)
+    public function __invoke(KafkaConsumerMessage $message): void
     {
         $this->message = $message;
     }
