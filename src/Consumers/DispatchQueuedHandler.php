@@ -8,8 +8,8 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Junges\Kafka\Concerns\HandleConsumedMessage;
 use Junges\Kafka\Concerns\PrepareMiddlewares;
+use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\Handler;
-use Junges\Kafka\Contracts\KafkaConsumerMessage;
 
 final class DispatchQueuedHandler implements ShouldQueue
 {
@@ -21,7 +21,7 @@ final class DispatchQueuedHandler implements ShouldQueue
 
     public function __construct(
         public readonly Handler $handler,
-        public readonly KafkaConsumerMessage $message,
+        public readonly ConsumerMessage $message,
         public readonly array $middlewares = []
     ) {}
 

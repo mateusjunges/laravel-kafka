@@ -9,8 +9,8 @@ use Illuminate\Support\Facades\App;
 use Junges\Kafka\Concerns\HandleConsumedMessage;
 use Junges\Kafka\Concerns\PrepareMiddlewares;
 use Junges\Kafka\Contracts\Consumer;
+use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\Handler;
-use Junges\Kafka\Contracts\KafkaConsumerMessage;
 
 class CallableConsumer extends Consumer
 {
@@ -29,7 +29,7 @@ class CallableConsumer extends Consumer
     }
 
     /** Handle the received message. */
-    public function handle(KafkaConsumerMessage $message): void
+    public function handle(ConsumerMessage $message): void
     {
         // If the message handler should be queued, we will dispatch a job to handle this message.
         // Otherwise, the message will be handled synchronously.
@@ -46,7 +46,7 @@ class CallableConsumer extends Consumer
         return $this->handler instanceof ShouldQueue;
     }
 
-    private function handleMessageSynchronously(KafkaConsumerMessage $message): void
+    private function handleMessageSynchronously(ConsumerMessage $message): void
     {
        $this->handleConsumedMessage($message, $this->handler, $this->middlewares);
     }
@@ -57,7 +57,7 @@ class CallableConsumer extends Consumer
      * methods doesn't exist in the handler class, we will use the default configuration accordingly to
      * your queue.php config file.
      */
-    private function queueHandler(Handler $handler, KafkaConsumerMessage $message, array $middlewares): void
+    private function queueHandler(Handler $handler, ConsumerMessage $message, array $middlewares): void
     {
         $connection = config('queue.default');
         if (method_exists($handler, 'onConnection')) {

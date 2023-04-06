@@ -25,7 +25,6 @@ class ConsumerBuilder implements ConsumerBuilderContract
 
     protected array $topics;
     protected int $commit;
-    protected ?string $groupId;
     protected Closure | Handler $handler;
     protected int $maxMessages;
     protected int $maxCommitRetries;

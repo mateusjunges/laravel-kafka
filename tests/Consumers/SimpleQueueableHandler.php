@@ -3,12 +3,12 @@
 namespace Junges\Kafka\Tests\Consumers;
 
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\Handler;
-use Junges\Kafka\Contracts\KafkaConsumerMessage;
 
 final class SimpleQueueableHandler implements Handler, ShouldQueue
 {
-    public function __invoke(KafkaConsumerMessage $message): void
+    public function __invoke(ConsumerMessage $message): void
     {
         //
     }
