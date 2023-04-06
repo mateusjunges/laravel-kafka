@@ -2,7 +2,6 @@
 
 namespace Junges\Kafka\Contracts;
 
-use Junges\Kafka\Commit\Contracts\CommitterFactory;
 use Junges\Kafka\Config\Sasl;
 
 /** @internal */

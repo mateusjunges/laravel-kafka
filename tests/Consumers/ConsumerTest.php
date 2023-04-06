@@ -3,13 +3,13 @@
 namespace Junges\Kafka\Tests\Consumers;
 
 use Illuminate\Support\Facades\Bus;
-use Junges\Kafka\Commit\Contracts\CommitterFactory;
 use Junges\Kafka\Commit\VoidCommitter;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Consumers\CallableConsumer;
 use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Consumers\DispatchQueuedHandler;
 use Junges\Kafka\Contracts\CanConsumeMessages;
+use Junges\Kafka\Contracts\CommitterFactory;
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Exceptions\KafkaConsumerException;
 use Junges\Kafka\Facades\Kafka;

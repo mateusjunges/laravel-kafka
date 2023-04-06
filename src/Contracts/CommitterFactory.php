@@ -1,6 +1,6 @@
 <?php
 
-namespace Junges\Kafka\Commit\Contracts;
+namespace Junges\Kafka\Contracts;
 
 use Junges\Kafka\Config\Config;
 use RdKafka\KafkaConsumer;
@@ -12,7 +12,7 @@ interface CommitterFactory
      *
      * @param  \RdKafka\KafkaConsumer  $kafkaConsumer
      * @param  \Junges\Kafka\Config\Config  $config
-     * @return \Junges\Kafka\Commit\Contracts\Committer
+     * @return \Junges\Kafka\Contracts\Committer
      */
     public function make(KafkaConsumer $kafkaConsumer, Config $config): Committer;
 }

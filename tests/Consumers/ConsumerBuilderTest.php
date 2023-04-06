@@ -4,13 +4,13 @@ namespace Junges\Kafka\Tests\Consumers;
 
 use Closure;
 use InvalidArgumentException;
-use Junges\Kafka\Commit\Contracts\Committer;
-use Junges\Kafka\Commit\Contracts\CommitterFactory;
 use Junges\Kafka\Commit\VoidCommitter;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Consumers\ConsumerBuilder;
+use Junges\Kafka\Contracts\Committer;
+use Junges\Kafka\Contracts\CommitterFactory;
 use Junges\Kafka\Exceptions\KafkaConsumerException;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
 use Junges\Kafka\Tests\Fakes\FakeConsumer;

@@ -4,13 +4,13 @@ namespace Junges\Kafka\Consumers;
 
 use Closure;
 use InvalidArgumentException;
-use Junges\Kafka\Commit\Contracts\CommitterFactory;
 use Junges\Kafka\Concerns\InteractsWithConfigCallbacks;
 use Junges\Kafka\Config\BatchConfig;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\NullBatchConfig;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Contracts\CanConsumeMessages;
+use Junges\Kafka\Contracts\CommitterFactory;
 use Junges\Kafka\Contracts\ConsumerBuilder as ConsumerBuilderContract;
 use Junges\Kafka\Contracts\Handler;
 use Junges\Kafka\Contracts\HandlesBatchConfiguration;

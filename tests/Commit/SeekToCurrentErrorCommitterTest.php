@@ -2,8 +2,8 @@
 
 namespace Junges\Kafka\Tests\Commit;
 
-use Junges\Kafka\Commit\Contracts\Committer;
 use Junges\Kafka\Commit\SeekToCurrentErrorCommitter;
+use Junges\Kafka\Contracts\Committer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;

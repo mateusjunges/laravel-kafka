@@ -3,8 +3,8 @@
 namespace Junges\Kafka\Commit;
 
 use JetBrains\PhpStorm\Pure;
-use Junges\Kafka\Commit\Contracts\Committer;
-use Junges\Kafka\Commit\Contracts\Sleeper;
+use Junges\Kafka\Contracts\Committer;
+use Junges\Kafka\Contracts\Sleeper;
 use Junges\Kafka\Retryable;
 use RdKafka\Message;
 

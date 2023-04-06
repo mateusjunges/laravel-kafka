@@ -3,7 +3,7 @@
 namespace Junges\Kafka;
 
 use Exception;
-use Junges\Kafka\Commit\Contracts\Sleeper;
+use Junges\Kafka\Contracts\Sleeper;
 
 class Retryable
 {
