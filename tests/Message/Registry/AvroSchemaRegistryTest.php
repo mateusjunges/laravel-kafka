@@ -10,12 +10,10 @@ use Junges\Kafka\Message\Registry\AvroSchemaRegistry;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use ReflectionProperty;
 
-class AvroSchemaRegistryTest extends LaravelKafkaTestCase
+final class AvroSchemaRegistryTest extends LaravelKafkaTestCase
 {
-    /**
-     * @throws \ReflectionException
-     */
-    public function testAddBodySchemaMappingForTopic()
+    /** @throws \ReflectionException */
+    public function testAddBodySchemaMappingForTopic(): void
     {
         $flixRegistry = $this->getMockForAbstractClass(Registry::class);
 
@@ -35,7 +33,7 @@ class AvroSchemaRegistryTest extends LaravelKafkaTestCase
         $this->assertSame($schema, $schemaMapping[AvroSchemaRegistry::BODY_IDX]['test']);
     }
 
-    public function testAddKeySchemaMappingForTopic()
+    public function testAddKeySchemaMappingForTopic(): void
     {
         $flixRegistry = $this->getMockForAbstractClass(Registry::class);
 
@@ -55,7 +53,7 @@ class AvroSchemaRegistryTest extends LaravelKafkaTestCase
         $this->assertSame($schema, $schemaMapping[AvroSchemaRegistry::KEY_IDX]['test2']);
     }
 
-    public function testHasBodySchemaMappingForTopic()
+    public function testHasBodySchemaMappingForTopic(): void
     {
         $flixRegistry = $this->getMockForAbstractClass(Registry::class);
         $schema = $this->getMockForAbstractClass(KafkaAvroSchemaRegistry::class);
@@ -67,7 +65,7 @@ class AvroSchemaRegistryTest extends LaravelKafkaTestCase
         $this->assertFalse($registry->hasBodySchemaForTopic('test2'));
     }
 
-    public function testHasKeySchemaMappingForTopic()
+    public function testHasKeySchemaMappingForTopic(): void
     {
         $flixRegistry = $this->getMockForAbstractClass(Registry::class);
         $schema = $this->getMockForAbstractClass(KafkaAvroSchemaRegistry::class);
@@ -79,7 +77,7 @@ class AvroSchemaRegistryTest extends LaravelKafkaTestCase
         $this->assertFalse($registry->hasKeySchemaForTopic('test2'));
     }
 
-    public function testGetBodySchemaForTopicWithNoMapping()
+    public function testGetBodySchemaForTopicWithNoMapping(): void
     {
         $this->expectException(SchemaRegistryException::class);
         $this->expectExceptionMessage(
@@ -97,7 +95,7 @@ class AvroSchemaRegistryTest extends LaravelKafkaTestCase
         $registry->getBodySchemaForTopic('test');
     }
 
-    public function testGetBodySchemaForTopicWithMappingWithDefinition()
+    public function testGetBodySchemaForTopicWithMappingWithDefinition(): void
     {
         $definition = $this->getMockBuilder(AvroSchema::class)->disableOriginalConstructor()->getMock();
 
@@ -113,7 +111,7 @@ class AvroSchemaRegistryTest extends LaravelKafkaTestCase
         $this->assertSame($schema, $registry->getBodySchemaForTopic('test'));
     }
 
-    public function testGetKeySchemaForTopicWithMappingWithDefinition()
+    public function testGetKeySchemaForTopicWithMappingWithDefinition(): void
     {
         $definition = $this->getMockBuilder(AvroSchema::class)->disableOriginalConstructor()->getMock();
 
@@ -129,7 +127,7 @@ class AvroSchemaRegistryTest extends LaravelKafkaTestCase
         $this->assertSame($schema, $registry->getKeySchemaForTopic('test2'));
     }
 
-    public function testGetBodySchemaForTopicWithMappingWithoutDefinitionLatest()
+    public function testGetBodySchemaForTopicWithMappingWithoutDefinitionLatest(): void
     {
         $definition = $this->getMockBuilder(AvroSchema::class)->disableOriginalConstructor()->getMock();
 
@@ -149,7 +147,7 @@ class AvroSchemaRegistryTest extends LaravelKafkaTestCase
         $registry->getBodySchemaForTopic('test');
     }
 
-    public function testGetBodySchemaForTopicWithMappingWithoutDefinitionVersion()
+    public function testGetBodySchemaForTopicWithMappingWithoutDefinitionVersion(): void
     {
         $definition = $this->getMockBuilder(AvroSchema::class)->disableOriginalConstructor()->getMock();
 
@@ -169,7 +167,7 @@ class AvroSchemaRegistryTest extends LaravelKafkaTestCase
         $registry->getBodySchemaForTopic('test');
     }
 
-    public function testGetTopicSchemaMapping()
+    public function testGetTopicSchemaMapping(): void
     {
         $flixRegistry = $this->getMockForAbstractClass(Registry::class);
 

@@ -15,7 +15,7 @@ use Junges\Kafka\Support\Testing\Fakes\KafkaFake;
 use PHPUnit\Framework\Constraint\ExceptionMessage;
 use PHPUnit\Framework\ExpectationFailedException;
 
-class KafkaFakeTest extends LaravelKafkaTestCase
+final class KafkaFakeTest extends LaravelKafkaTestCase
 {
     private KafkaFake $fake;
     private CanConsumeMessages $consumer;

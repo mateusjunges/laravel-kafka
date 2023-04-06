@@ -6,7 +6,7 @@ use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase as TestCase;
 
-class JsonDeserializerTest extends TestCase
+final class JsonDeserializerTest extends TestCase
 {
     public function testDeserialize(): void
     {
@@ -19,9 +19,6 @@ class JsonDeserializerTest extends TestCase
         $this->assertEquals(['name' => 'foo'], $result->getBody());
     }
 
-    /**
-     * @return void
-     */
     public function testDeserializeNonJson(): void
     {
         $message = $this->getMockForAbstractClass(KafkaConsumerMessage::class);

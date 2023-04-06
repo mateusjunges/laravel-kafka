@@ -6,7 +6,7 @@ use Exception;
 use Junges\Kafka\Commit\Contracts\Committer;
 use RdKafka\Message;
 
-class FailingCommitter implements Committer
+final class FailingCommitter implements Committer
 {
     private int $timesToFail;
     private Exception $failure;

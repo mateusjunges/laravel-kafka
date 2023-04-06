@@ -13,7 +13,7 @@ use RdKafka\KafkaConsumer;
 use RdKafka\Message;
 use RdKafka\Producer as KafkaProducer;
 
-class LaravelKafkaTestCase extends Orchestra
+abstract class LaravelKafkaTestCase extends Orchestra
 {
     public function setUp(): void
     {

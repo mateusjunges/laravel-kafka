@@ -12,9 +12,9 @@ use Junges\Kafka\Contracts\Consumer;
 use Junges\Kafka\Support\Timer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 
-class ConfigTest extends LaravelKafkaTestCase
+final class ConfigTest extends LaravelKafkaTestCase
 {
-    public function testItReturnsDefaultKafkaConfiguration()
+    public function testItReturnsDefaultKafkaConfiguration(): void
     {
         $config = new Config(
             broker: 'broker',
@@ -41,7 +41,7 @@ class ConfigTest extends LaravelKafkaTestCase
         );
     }
 
-    public function testItOverrideDefaultOptionsIfUsingCustom()
+    public function testItOverrideDefaultOptionsIfUsingCustom(): void
     {
         $config = new Config(
             broker: 'broker',
@@ -72,7 +72,7 @@ class ConfigTest extends LaravelKafkaTestCase
         );
     }
 
-    public function testItUsesSaslConfigWhenSet()
+    public function testItUsesSaslConfigWhenSet(): void
     {
         $config = new Config(
             broker: 'broker',
@@ -107,7 +107,7 @@ class ConfigTest extends LaravelKafkaTestCase
         );
     }
 
-    public function testItReturnsProducerOptions()
+    public function testItReturnsProducerOptions(): void
     {
         $sasl = new Sasl(
             username: 'user',
@@ -142,7 +142,7 @@ class ConfigTest extends LaravelKafkaTestCase
         );
     }
 
-    public function testItAcceptsCustomOptionsForProducersConfig()
+    public function testItAcceptsCustomOptionsForProducersConfig(): void
     {
         $customOptions = [
             'bootstrap.servers' => '[REMOTE_ADDRESS]',
@@ -180,7 +180,7 @@ class ConfigTest extends LaravelKafkaTestCase
         );
     }
 
-    public function testSaslCanBeUsedWithLowercaseConfigKeys()
+    public function testSaslCanBeUsedWithLowercaseConfigKeys(): void
     {
         $config = new Config(
             broker: 'broker',
@@ -214,7 +214,7 @@ class ConfigTest extends LaravelKafkaTestCase
         );
     }
 
-    public function testItCreatesNullBatchConfigIfNullIsPassed()
+    public function testItCreatesNullBatchConfigIfNullIsPassed(): void
     {
         $config = new Config(
             broker: 'broker',
@@ -229,7 +229,7 @@ class ConfigTest extends LaravelKafkaTestCase
         $this->assertInstanceOf(NullBatchConfig::class, $config->getBatchConfig());
     }
 
-    public function testItReturnsGivenBatchConfigIfInstancePassed()
+    public function testItReturnsGivenBatchConfigIfInstancePassed(): void
     {
         $batchConfig = new BatchConfig(
             new CallableBatchConsumer(function () {
