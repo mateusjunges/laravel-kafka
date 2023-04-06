@@ -10,7 +10,7 @@ use Junges\Kafka\Exceptions\Serializers\AvroSerializerException;
 use Junges\Kafka\Message\Serializers\AvroSerializer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 
-class AvroSerializerTest extends LaravelKafkaTestCase
+final class AvroSerializerTest extends LaravelKafkaTestCase
 {
     public function testSerializeTombstone(): void
     {

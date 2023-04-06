@@ -8,7 +8,7 @@ use Junges\Kafka\MessageCounter;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use RdKafka\Message;
 
-class BatchCommitterTest extends LaravelKafkaTestCase
+final class BatchCommitterTest extends LaravelKafkaTestCase
 {
     public function testShouldCommitMessageOnlyAfterTheBatchSizeIsReached(): void
     {

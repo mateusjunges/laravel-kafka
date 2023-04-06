@@ -7,7 +7,7 @@ use Junges\Kafka\Contracts\KafkaAvroSchemaRegistry;
 use Junges\Kafka\Message\KafkaAvroSchema;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 
-class KafkaAvroSchemaTest extends LaravelKafkaTestCase
+final class KafkaAvroSchemaTest extends LaravelKafkaTestCase
 {
     public function testGetters(): void
     {

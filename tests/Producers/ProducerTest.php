@@ -8,7 +8,7 @@ use Junges\Kafka\Message\Serializers\JsonSerializer;
 use Junges\Kafka\Producers\Producer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 
-class ProducerTest extends LaravelKafkaTestCase
+final class ProducerTest extends LaravelKafkaTestCase
 {
     public function testItDoesNotDoubleSerializeMessageWhenUsingJsonSerializer(): void
     {

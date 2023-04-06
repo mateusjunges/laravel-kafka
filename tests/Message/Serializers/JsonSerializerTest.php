@@ -7,7 +7,7 @@ use Junges\Kafka\Contracts\ProducerMessage;
 use Junges\Kafka\Message\Serializers\JsonSerializer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase as TestCase;
 
-class JsonSerializerTest extends TestCase
+final class JsonSerializerTest extends TestCase
 {
     public function testSerialize(): void
     {

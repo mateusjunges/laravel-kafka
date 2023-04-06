@@ -15,7 +15,7 @@ use Mockery as m;
 use RdKafka\Producer;
 use RdKafka\ProducerTopic;
 
-class KafkaTest extends LaravelKafkaTestCase
+final class KafkaTest extends LaravelKafkaTestCase
 {
     public function testItCanPublishMessagesToKafka(): void
     {

@@ -14,9 +14,9 @@ use Junges\Kafka\MessageCounter;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use RdKafka\KafkaConsumer;
 
-class CommitterFactoryTest extends LaravelKafkaTestCase
+final class CommitterFactoryTest extends LaravelKafkaTestCase
 {
-    public function testShouldBuildARetryableBatchCommitterWhenAutoCommitIsDisable(): void
+    public function testShouldBuildAVoidCommitterWhenAutoCommitIsDisabled(): void
     {
         $config = new Config(
             broker: 'broker',
@@ -40,22 +40,12 @@ class CommitterFactoryTest extends LaravelKafkaTestCase
 
         $committer = $factory->make($consumer, $config);
 
-        $expectedCommitter = new BatchCommitter(
-            new RetryableCommitter(
-                new Committer(
-                    $consumer
-                ),
-                new NativeSleeper(),
-                $config->getMaxCommitRetries()
-            ),
-            $messageCounter,
-            $config->getCommit()
-        );
+        $expectedCommitter = new VoidCommitter();
 
         $this->assertEquals($expectedCommitter, $committer);
     }
 
-    public function testShouldBuildAVoidCommitterWhenAutoCommitIsEnabled(): void
+    public function testShouldBuildARetryableBatchCommitterWhenAutoCommitIsEnabled(): void
     {
         $config = new Config(
             broker: 'broker',
@@ -79,6 +69,18 @@ class CommitterFactoryTest extends LaravelKafkaTestCase
 
         $committer = $factory->make($consumer, $config);
 
-        $this->assertInstanceOf(VoidCommitter::class, $committer);
+        $expectedCommitter = new BatchCommitter(
+            new RetryableCommitter(
+                new Committer(
+                    $consumer
+                ),
+                new NativeSleeper(),
+                $config->getMaxCommitRetries()
+            ),
+            $messageCounter,
+            $config->getCommit()
+        );
+
+        $this->assertEquals($expectedCommitter, $committer);
     }
 }

@@ -9,7 +9,7 @@ use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use RdKafka\Exception as RdKafkaException;
 use RdKafka\Message;
 
-class RetryableCommitterTest extends LaravelKafkaTestCase
+final class RetryableCommitterTest extends LaravelKafkaTestCase
 {
     public function testItShouldRetryToCommit(): void
     {

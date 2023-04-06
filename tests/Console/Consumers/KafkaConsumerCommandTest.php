@@ -10,7 +10,7 @@ use Junges\Kafka\Tests\Fakes\FakeHandler;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use RdKafka\Message;
 
-class KafkaConsumerCommandTest extends LaravelKafkaTestCase
+final class KafkaConsumerCommandTest extends LaravelKafkaTestCase
 {
     public function testItCanConsumeMessages(): void
     {

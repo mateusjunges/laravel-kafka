@@ -2,11 +2,13 @@
 
 namespace Junges\Kafka\Tests\Consumers;
 
+use Illuminate\Support\Facades\Bus;
 use Junges\Kafka\Commit\Contracts\CommitterFactory;
 use Junges\Kafka\Commit\VoidCommitter;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Consumers\CallableConsumer;
 use Junges\Kafka\Consumers\Consumer;
+use Junges\Kafka\Consumers\DispatchQueuedHandler;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Exceptions\ConsumerException;
@@ -18,7 +20,7 @@ use Junges\Kafka\Tests\Fakes\FakeHandler;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use RdKafka\Message;
 
-class ConsumerTest extends LaravelKafkaTestCase
+final class ConsumerTest extends LaravelKafkaTestCase
 {
     private ?MessageConsumer $stoppableConsumer = null;
     private bool $stoppableConsumerStopped = false;
@@ -60,7 +62,7 @@ class ConsumerTest extends LaravelKafkaTestCase
         $this->assertInstanceOf(ConsumedMessage::class, $fakeHandler->lastMessage());
     }
 
-    public function testItCanConsumeMessages456(): void
+    public function testItCanConsumeMessages(): void
     {
         $message = new Message();
         $message->err = 0;
@@ -83,6 +85,33 @@ class ConsumerTest extends LaravelKafkaTestCase
 
         $consumer->consume();
         $this->assertInstanceOf(ConsumedMessage::class, $fakeConsumer->getMessage());
+    }
+
+    public function testItCanConsumeMessagesWithQueueableHandlers(): void
+    {
+        Bus::fake();
+        $message = new Message();
+        $message->err = 0;
+        $message->key = 'key';
+        $message->topic_name = 'test';
+        $message->payload = '{"body": "message payload"}';
+        $message->headers = [];
+        $message->partition = 1;
+        $message->offset = 0;
+
+        $this->mockConsumerWithMessage($message);
+
+        $this->mockProducer();
+
+        $consumer = Kafka::createConsumer(['test'])
+            ->withHandler($fakeConsumer = new SimpleQueueableHandler())
+            ->withAutoCommit()
+            ->withMaxMessages(1)
+            ->build();
+
+        $consumer->consume();
+
+        Bus::assertDispatched(DispatchQueuedHandler::class);
     }
 
     public function testConsumeMessageWithError(): void

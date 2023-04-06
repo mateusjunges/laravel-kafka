@@ -12,7 +12,7 @@ use Junges\Kafka\Contracts\Consumer;
 use Junges\Kafka\Support\Timer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 
-class ConfigTest extends LaravelKafkaTestCase
+final class ConfigTest extends LaravelKafkaTestCase
 {
     public function testItReturnsDefaultKafkaConfiguration(): void
     {

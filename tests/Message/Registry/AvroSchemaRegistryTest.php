@@ -10,7 +10,7 @@ use Junges\Kafka\Message\Registry\AvroSchemaRegistry;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use ReflectionProperty;
 
-class AvroSchemaRegistryTest extends LaravelKafkaTestCase
+final class AvroSchemaRegistryTest extends LaravelKafkaTestCase
 {
     /** @throws \ReflectionException */
     public function testAddBodySchemaMappingForTopic(): void
@@ -33,7 +33,6 @@ class AvroSchemaRegistryTest extends LaravelKafkaTestCase
         $this->assertSame($schema, $schemaMapping[AvroSchemaRegistry::BODY_IDX]['test']);
     }
 
-    /** @throws \ReflectionException */
     public function testAddKeySchemaMappingForTopic(): void
     {
         $flixRegistry = $this->getMockForAbstractClass(Registry::class);
@@ -54,9 +53,6 @@ class AvroSchemaRegistryTest extends LaravelKafkaTestCase
         $this->assertSame($schema, $schemaMapping[AvroSchemaRegistry::KEY_IDX]['test2']);
     }
 
-    /**
-     * @throws \Junges\Kafka\Exceptions\SchemaRegistryException
-     */
     public function testHasBodySchemaMappingForTopic(): void
     {
         $flixRegistry = $this->getMockForAbstractClass(Registry::class);
@@ -69,9 +65,6 @@ class AvroSchemaRegistryTest extends LaravelKafkaTestCase
         $this->assertFalse($registry->hasBodySchemaForTopic('test2'));
     }
 
-    /**
-     * @throws \Junges\Kafka\Exceptions\SchemaRegistryException
-     */
     public function testHasKeySchemaMappingForTopic(): void
     {
         $flixRegistry = $this->getMockForAbstractClass(Registry::class);

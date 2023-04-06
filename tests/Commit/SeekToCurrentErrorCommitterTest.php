@@ -8,7 +8,7 @@ use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
 
-class SeekToCurrentErrorCommitterTest extends LaravelKafkaTestCase
+final class SeekToCurrentErrorCommitterTest extends LaravelKafkaTestCase
 {
     public function testItShouldCommitOnSuccess(): void
     {

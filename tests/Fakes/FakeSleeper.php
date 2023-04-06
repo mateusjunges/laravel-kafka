@@ -4,7 +4,7 @@ namespace Junges\Kafka\Tests\Fakes;
 
 use Junges\Kafka\Commit\Contracts\Sleeper;
 
-class FakeSleeper implements Sleeper
+final class FakeSleeper implements Sleeper
 {
     private array $sleeps = [];
 

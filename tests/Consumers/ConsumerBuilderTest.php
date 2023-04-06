@@ -18,7 +18,7 @@ use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
 
-class ConsumerBuilderTest extends LaravelKafkaTestCase
+final class ConsumerBuilderTest extends LaravelKafkaTestCase
 {
     public function testItReturnsAConsumerInstance(): void
     {
@@ -331,7 +331,7 @@ class ConsumerBuilderTest extends LaravelKafkaTestCase
     }
 }
 
-class TestMiddleware
+final class TestMiddleware
 {
     public function __invoke(Message $message, callable $next)
     {

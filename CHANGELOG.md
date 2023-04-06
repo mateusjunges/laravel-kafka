@@ -2,6 +2,9 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2023-03-28 v1.13.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.12.3...v1.13.0)
+- Fix consumer auto commit creating wrong committer by @mateusjunges on [#186](https://github.com/mateusjunges/laravel-kafka/pull/186)
+
 ## [2023-03-04 v1.12.3](https://github.com/mateusjunges/laravel-kafka/compare/v1.12.1...v1.12.2)
 - Fix `assertPublishedOnTimes` to be used with batch messages - Fixes [#179](https://github.com/mateusjunges/laravel-kafka/issues/179) by @mateusjunges on [#180](https://github.com/mateusjunges/laravel-kafka/pull/180)
 

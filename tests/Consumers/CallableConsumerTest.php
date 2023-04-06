@@ -9,7 +9,7 @@ use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use RdKafka\Message;
 use stdClass;
 
-class CallableConsumerTest extends LaravelKafkaTestCase
+final class CallableConsumerTest extends LaravelKafkaTestCase
 {
     public function testItDecodesMessages(): void
     {
@@ -24,8 +24,8 @@ class CallableConsumerTest extends LaravelKafkaTestCase
         $message->headers = [];
         $message->offset = 0;
 
-        $consumer = new CallableConsumer([$this, 'handleMessage'], [
-            function (ConsumerMessage $message, callable $next): void {
+        $consumer = new CallableConsumer($this->handleMessage(...), [
+            function (KafkaConsumerMessage $message, callable $next): void {
                 $decoded = json_decode($message->getBody());
                 $next($decoded);
             },

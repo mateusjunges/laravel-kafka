@@ -3,40 +3,76 @@
 namespace Junges\Kafka\Consumers;
 
 use Closure;
+use Illuminate\Contracts\Bus\Dispatcher;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Facades\App;
+use Junges\Kafka\Concerns\HandleConsumedMessage;
+use Junges\Kafka\Concerns\PrepareMiddlewares;
 use Junges\Kafka\Contracts\Consumer;
-use Junges\Kafka\Contracts\ConsumerMessage;
+use Junges\Kafka\Contracts\Handler;
+use Junges\Kafka\Contracts\KafkaConsumerMessage;
 
 class CallableConsumer extends Consumer
 {
-    private readonly Closure $handler;
-    private array $middlewares;
+    use PrepareMiddlewares;
+    use HandleConsumedMessage;
 
-    public function __construct(callable $handler, array $middlewares)
+    private Dispatcher $dispatcher;
+
+    public function __construct(private Closure|Handler $handler, private readonly array $middlewares)
     {
-        $this->handler = $handler(...);
+        $this->handler = $this->handler instanceof Handler
+            ? $handler
+            : $handler(...);
 
-        $this->middlewares = array_map($this->wrapMiddleware(...), $middlewares);
-        $this->middlewares[] = $this->wrapMiddleware(
-            fn ($message, callable $next) => $next($message)
-        );
+        $this->dispatcher = App::make(Dispatcher::class);
     }
 
     /** Handle the received message. */
-    public function handle(ConsumerMessage $message): void
+    public function handle(KafkaConsumerMessage $message): void
     {
-        $middlewares = array_reverse($this->middlewares);
-        $handler = array_shift($middlewares)($this->handler);
-
-        foreach ($middlewares as $middleware) {
-            $handler = $middleware($handler);
+        // If the message handler should be queued, we will dispatch a job to handle this message.
+        // Otherwise, the message will be handled synchronously.
+        if ($this->shouldQueueHandler()) {
+            $this->queueHandler($this->handler, $message, $this->middlewares);
+            return;
         }
 
-        $handler($message);
+        $this->handleMessageSynchronously($message);
     }
 
-    /** Wrap the message with a given middleware. */
-    private function wrapMiddleware(callable $middleware): callable
+    private function shouldQueueHandler(): bool
     {
-        return fn (callable $handler) => fn ($message) => $middleware($message, $handler);
+        return $this->handler instanceof ShouldQueue;
+    }
+
+    private function handleMessageSynchronously(KafkaConsumerMessage $message): void
+    {
+       $this->handleConsumedMessage($message, $this->handler, $this->middlewares);
+    }
+
+    /**
+     * This method dispatches a job to handle the consumed message. You can customize the connection and
+     * queue in which it will be dispatched using the onConnection and onQueue methods. If this
+     * methods doesn't exist in the handler class, we will use the default configuration accordingly to
+     * your queue.php config file.
+     */
+    private function queueHandler(Handler $handler, KafkaConsumerMessage $message, array $middlewares): void
+    {
+        $connection = config('queue.default');
+        if (method_exists($handler, 'onConnection')) {
+            $connection = $handler->onConnection();
+        }
+
+        $queue = config("queue.$connection.queue", 'default');
+        if (method_exists($handler, 'onQueue')) {
+            $queue = $handler->onQueue();
+        }
+
+        $this->dispatcher->dispatch(
+            (new DispatchQueuedHandler($handler, $message, $middlewares))
+                ->onQueue($queue)
+                ->onConnection($connection)
+        );
     }
 }

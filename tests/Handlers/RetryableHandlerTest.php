@@ -10,7 +10,7 @@ use Junges\Kafka\Tests\Fakes\FakeSleeper;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-class RetryableHandlerTest extends TestCase
+final class RetryableHandlerTest extends TestCase
 {
     public function testItPassesWhenNoExceptionOccurred(): void
     {

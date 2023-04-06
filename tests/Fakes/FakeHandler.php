@@ -5,7 +5,7 @@ namespace Junges\Kafka\Tests\Fakes;
 use Junges\Kafka\Contracts\Consumer;
 use Junges\Kafka\Contracts\ConsumerMessage;
 
-class FakeHandler extends Consumer
+final class FakeHandler extends Consumer
 {
     private ?ConsumerMessage $lastMessage = null;
 

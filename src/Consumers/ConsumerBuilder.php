@@ -12,8 +12,10 @@ use Junges\Kafka\Config\NullBatchConfig;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Contracts\ConsumerBuilder as ConsumerBuilderContract;
+use Junges\Kafka\Contracts\Handler;
 use Junges\Kafka\Contracts\HandlesBatchConfiguration;
 use Junges\Kafka\Contracts\MessageDeserializer;
+use Junges\Kafka\Contracts\Middleware;
 use Junges\Kafka\Exceptions\ConsumerException;
 use Junges\Kafka\Support\Timer;
 
@@ -23,7 +25,8 @@ class ConsumerBuilder implements ConsumerBuilderContract
 
     protected array $topics;
     protected int $commit;
-    protected Closure $handler;
+    protected ?string $groupId;
+    protected Closure | Handler $handler;
     protected int $maxMessages;
     protected int $maxCommitRetries;
     protected array $middlewares;
@@ -62,6 +65,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
         $this->deserializer = resolve(MessageDeserializer::class);
     }
 
+    /** @inheritDoc */
     public static function create(string $brokers, array $topics = [], string $groupId = null): self
     {
         return new ConsumerBuilder(
@@ -71,6 +75,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
         );
     }
 
+    /** @inheritDoc */
     public function subscribe(...$topics): self
     {
         if (is_array($topics[0])) {
@@ -88,6 +93,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
         return $this;
     }
 
+    /** @inheritDoc */
     public function withBrokers(?string $brokers): self
     {
         $this->brokers = $brokers ?? config('kafka.brokers');
@@ -95,6 +101,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
         return $this;
     }
 
+    /** @inheritDoc */
     public function withConsumerGroupId(?string $groupId): self
     {
         $this->groupId = $groupId;
@@ -102,6 +109,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
         return $this;
     }
 
+    /** @inheritDoc */
     public function withCommitBatchSize(int $size): self
     {
         $this->commit = $size;
@@ -109,13 +117,17 @@ class ConsumerBuilder implements ConsumerBuilderContract
         return $this;
     }
 
-    public function withHandler(callable $handler): self
+    /** @inheritDoc */
+    public function withHandler(callable|Handler $handler): self
     {
-        $this->handler = $handler(...);
+        $this->handler = $handler instanceof Handler
+            ? $handler
+            : $handler(...);
 
         return $this;
     }
 
+    /** @inheritDoc */
     public function usingDeserializer(MessageDeserializer $deserializer): self
     {
         $this->deserializer = $deserializer;
@@ -123,6 +135,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
         return $this;
     }
 
+    /** @inheritDoc */
     public function usingCommitterFactory(CommitterFactory $committerFactory): self
     {
         $this->committerFactory = $committerFactory;
@@ -130,6 +143,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
         return $this;
     }
 
+    /** @inheritDoc */
     public function withMaxMessages(int $maxMessages): self
     {
         $this->maxMessages = $maxMessages;
@@ -137,6 +151,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
         return $this;
     }
 
+    /** @inheritDoc */
     public function withMaxCommitRetries(int $maxCommitRetries): self
     {
         $this->maxCommitRetries = $maxCommitRetries;
@@ -144,6 +159,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
         return $this;
     }
 
+    /** @inheritDoc */
     public function withDlq(?string $dlqTopic = null): self
     {
         if (! isset($this->topics[0])) {
@@ -159,6 +175,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
         return $this;
     }
 
+    /** @inheritDoc */
     public function withSasl(Sasl $saslConfig): self
     {
         $this->saslConfig = $saslConfig;
@@ -166,13 +183,15 @@ class ConsumerBuilder implements ConsumerBuilderContract
         return $this;
     }
 
-    public function withMiddleware(callable $middleware): self
+    /** @inheritDoc */
+    public function withMiddleware(Middleware|callable|string $middleware): self
     {
         $this->middlewares[] = $middleware;
 
         return $this;
     }
 
+    /** @inheritDoc */
     public function withSecurityProtocol(string $securityProtocol): self
     {
         $this->securityProtocol = $securityProtocol;
@@ -180,6 +199,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
         return $this;
     }
 
+    /** @inheritDoc */
     public function withAutoCommit(bool $autoCommit = true): self
     {
         $this->autoCommit = $autoCommit;
@@ -187,6 +207,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
         return $this;
     }
 
+    /** @inheritDoc */
     public function withOptions(array $options): self
     {
         foreach ($options as $name => $value) {
@@ -196,6 +217,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
         return $this;
     }
 
+    /** @inheritDoc */
     public function withOption(string $name, mixed $value): self
     {
         $this->options[$name] = $value;
@@ -203,6 +225,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
         return $this;
     }
 
+    /** @inheritDoc */
     public function enableBatching(): self
     {
         $this->batchingEnabled = true;
@@ -210,6 +233,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
         return $this;
     }
 
+    /** @inheritDoc */
     public function withBatchSizeLimit(int $batchSizeLimit): self
     {
         $this->batchSizeLimit = $batchSizeLimit;
@@ -217,6 +241,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
         return $this;
     }
 
+    /** @inheritDoc */
     public function withBatchReleaseInterval(int $batchReleaseIntervalInMilliseconds): self
     {
         $this->batchReleaseInterval = $batchReleaseIntervalInMilliseconds;
@@ -224,6 +249,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
         return $this;
     }
 
+    /** @inheritDoc */
     public function stopAfterLastMessage(bool $stopAfterLastMessage = true): self
     {
         $this->stopAfterLastMessage = $stopAfterLastMessage;
@@ -231,6 +257,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
         return $this;
     }
 
+    /** @inheritDoc */
     public function build(): MessageConsumer
     {
         $config = new Config(

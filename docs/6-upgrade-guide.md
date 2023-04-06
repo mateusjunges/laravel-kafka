@@ -18,7 +18,6 @@ weight: 6
 #### The `withSasl` method signature was changed.
 
 The `withSasl` method now accepts all `SASL` parameters instead of a `Sasl` object.
-
 ```php
 public function withSasl(string $username, string $password, string $mechanisms, string $securityProtocol = 'SASL_PLAINTEXT');
 ```

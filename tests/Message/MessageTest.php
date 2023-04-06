@@ -6,7 +6,7 @@ use Illuminate\Support\Str;
 use Junges\Kafka\Message\Message;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 
-class MessageTest extends LaravelKafkaTestCase
+final class MessageTest extends LaravelKafkaTestCase
 {
     private Message $message;
 

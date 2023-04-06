@@ -5,7 +5,7 @@ namespace Junges\Kafka\Tests;
 use Exception;
 use Junges\Kafka\Contracts\ConsumerMessage;
 
-class FailingHandler
+final class FailingHandler
 {
     private int $timesInvoked = 0;
 

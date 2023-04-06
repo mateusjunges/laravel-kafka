@@ -6,7 +6,7 @@ use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase as TestCase;
 
-class JsonDeserializerTest extends TestCase
+final class JsonDeserializerTest extends TestCase
 {
     public function testDeserialize(): void
     {

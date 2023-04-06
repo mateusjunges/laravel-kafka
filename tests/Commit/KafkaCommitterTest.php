@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Commit;
+namespace Junges\Kafka\Tests\Commit;
 
 use Junges\Kafka\Commit\Committer;
 use Junges\Kafka\Config\Config;
@@ -10,7 +10,7 @@ use RdKafka\Conf;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
 
-class KafkaCommitterTest extends LaravelKafkaTestCase
+final class KafkaCommitterTest extends LaravelKafkaTestCase
 {
     public function testItCanCommit(): void
     {

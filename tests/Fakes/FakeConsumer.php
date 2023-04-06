@@ -4,7 +4,7 @@ namespace Junges\Kafka\Tests\Fakes;
 
 use Junges\Kafka\Contracts\ConsumerMessage;
 
-class FakeConsumer
+final class FakeConsumer
 {
     private ConsumerMessage $message;
 

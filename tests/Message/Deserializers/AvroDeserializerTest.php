@@ -10,7 +10,7 @@ use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Message\Deserializers\AvroDeserializer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 
-class AvroDeserializerTest extends LaravelKafkaTestCase
+final class AvroDeserializerTest extends LaravelKafkaTestCase
 {
     public function testDeserializeTombstone(): void
     {
