@@ -332,7 +332,7 @@ class Consumer implements CanConsumeMessages
 
             $this->committer->commitMessage($message, $success);
         } catch (Throwable $throwable) {
-            if (! in_array($throwable->getCode(), self::IGNORABLE_COMMIT_ERRORS, true)) {
+            if ($throwable->getCode() !== self::IGNORABLE_COMMIT_ERRORS) {
                 $this->logger->error($message, $throwable, 'MESSAGE_COMMIT');
 
                 throw $throwable;
