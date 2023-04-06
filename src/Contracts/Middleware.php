@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Contracts;
 
-interface Middleware {
+interface Middleware
+{
     public function __invoke(KafkaConsumerMessage $message, callable $next);
 }
