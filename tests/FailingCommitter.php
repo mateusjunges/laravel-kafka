@@ -3,7 +3,7 @@
 namespace Junges\Kafka\Tests;
 
 use Exception;
-use Junges\Kafka\Commit\Contracts\Committer;
+use Junges\Kafka\Contracts\Committer;
 use RdKafka\Message;
 
 final class FailingCommitter implements Committer

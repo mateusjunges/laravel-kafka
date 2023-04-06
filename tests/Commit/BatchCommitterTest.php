@@ -3,7 +3,7 @@
 namespace Junges\Kafka\Tests\Commit;
 
 use Junges\Kafka\Commit\BatchCommitter;
-use Junges\Kafka\Commit\Contracts\Committer;
+use Junges\Kafka\Contracts\Committer;
 use Junges\Kafka\MessageCounter;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use RdKafka\Message;

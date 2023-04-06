@@ -3,12 +3,15 @@
 namespace Junges\Kafka\Tests\Consumers;
 
 use Illuminate\Support\Facades\Bus;
-use Junges\Kafka\Commit\Contracts\CommitterFactory;
 use Junges\Kafka\Commit\VoidCommitter;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Consumers\CallableConsumer;
 use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Consumers\DispatchQueuedHandler;
+use Junges\Kafka\Contracts\CanConsumeMessages;
+use Junges\Kafka\Contracts\CommitterFactory;
+use Junges\Kafka\Contracts\KafkaConsumerMessage;
+use Junges\Kafka\Exceptions\KafkaConsumerException;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Exceptions\ConsumerException;
@@ -258,7 +261,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
 
         $fakeHandler = new CallableConsumer(
             function (ConsumerMessage $message) {
-                // sleep 100 miliseconds to simulate restart interval check
+                // sleep 100 milliseconds to simulate restart interval check
                 usleep(100 * 1000);
                 $this->artisan('kafka:restart-consumers');
             },

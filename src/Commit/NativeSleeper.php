@@ -2,7 +2,7 @@
 
 namespace Junges\Kafka\Commit;
 
-use Junges\Kafka\Commit\Contracts\Sleeper;
+use Junges\Kafka\Contracts\Sleeper;
 
 class NativeSleeper implements Sleeper
 {

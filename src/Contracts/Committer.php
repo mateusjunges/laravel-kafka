@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Junges\Kafka\Commit\Contracts;
+namespace Junges\Kafka\Contracts;
 
 use RdKafka\Message;
 
