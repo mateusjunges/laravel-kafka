@@ -32,7 +32,7 @@ class MessageBatch
      * @param Message $message
      * @return void
      */
-    public function push(Message $message)
+    public function push(Message $message): void
     {
         $this->messages->push($message);
     }
@@ -40,7 +40,7 @@ class MessageBatch
     /**
      * Returns all messages from batch before producing them to kafka
      *
-     * @return SplDoublyLinkedList
+     * @return SplDoublyLinkedList<\Junges\Kafka\Message\Message>
      */
     public function getMessages(): SplDoublyLinkedList
     {

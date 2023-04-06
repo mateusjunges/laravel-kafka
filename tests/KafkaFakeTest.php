@@ -152,6 +152,29 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         }
     }
 
+    public function testAssertPublishedOnTimesForBatchMessages(): void
+    {
+        $producer = $this->fake->publishOn('batch-topic')
+            ->withConfigOption('key', 'value');
+
+        $message = new Message(
+            headers: ['header-key' => 'header-value'],
+            body: ['body-key' => 'body-value'],
+            key: 2
+        );
+
+        $messageBatch = new MessageBatch();
+        $messageBatch->push($message);
+        $messageBatch->push($message);
+
+        $producer->sendBatch($messageBatch);
+
+        $this->fake->assertPublishedTimes(2);
+        $this->fake->assertpublished();
+        $this->fake->assertPublishedOnTimes('batch-topic', 2);
+        $this->fake->assertPublishedOn('batch-topic');
+    }
+
     public function testICanPerformAssertionsUsingAssertPublishedOn(): void
     {
         $producer = $this->fake->publishOn('topic')
