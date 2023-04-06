@@ -18,9 +18,7 @@ class ConsumerBuilderFake extends ConsumerBuilder implements ConsumerBuilderCont
     /** @var \Junges\Kafka\Contracts\KafkaConsumerMessage[] */
     private array $messages = [];
 
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     public static function create(string $brokers, array $topics = [], string $groupId = null): self
     {
         return new ConsumerBuilderFake(
