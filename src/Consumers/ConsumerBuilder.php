@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka\Consumers;
 
@@ -11,12 +11,13 @@ use Junges\Kafka\Config\NullBatchConfig;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Contracts\CanConsumeMessages;
 use Junges\Kafka\Contracts\CommitterFactory;
+use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Contracts\ConsumerBuilder as ConsumerBuilderContract;
 use Junges\Kafka\Contracts\Handler;
 use Junges\Kafka\Contracts\HandlesBatchConfiguration;
 use Junges\Kafka\Contracts\MessageDeserializer;
 use Junges\Kafka\Contracts\Middleware;
-use Junges\Kafka\Exceptions\KafkaConsumerException;
+use Junges\Kafka\Exceptions\ConsumerException;
 use Junges\Kafka\Support\Timer;
 
 class ConsumerBuilder implements ConsumerBuilderContract
@@ -25,11 +26,9 @@ class ConsumerBuilder implements ConsumerBuilderContract
 
     protected array $topics;
     protected int $commit;
-    protected ?string $groupId;
     protected Closure | Handler $handler;
     protected int $maxMessages;
     protected int $maxCommitRetries;
-    protected string $brokers;
     protected array $middlewares;
     protected ?Sasl $saslConfig = null;
     protected ?string $dlq = null;
@@ -43,21 +42,13 @@ class ConsumerBuilder implements ConsumerBuilderContract
     protected int $batchReleaseInterval = 0;
     protected bool $stopAfterLastMessage = false;
 
-    /**
-     * @param string $brokers
-     * @param array $topics
-     * @param string|null $groupId
-     */
-    protected function __construct(string $brokers, array $topics = [], string $groupId = null)
+    protected function __construct(protected string $brokers, array $topics = [], protected ?string $groupId = null)
     {
         if (count($topics) > 0) {
             foreach ($topics as $topic) {
                 $this->validateTopic($topic);
             }
         }
-
-        $this->brokers = $brokers;
-        $this->groupId = $groupId;
         $this->topics = array_unique($topics);
 
         $this->commit = 1;
@@ -172,7 +163,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
     public function withDlq(?string $dlqTopic = null): self
     {
         if (! isset($this->topics[0])) {
-            throw KafkaConsumerException::dlqCanNotBeSetWithoutSubscribingToAnyTopics();
+            throw ConsumerException::dlqCanNotBeSetWithoutSubscribingToAnyTopics();
         }
 
         if (null === $dlqTopic) {
@@ -267,7 +258,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
     }
 
     /** @inheritDoc */
-    public function build(): CanConsumeMessages
+    public function build(): MessageConsumer
     {
         $config = new Config(
             broker: $this->brokers,
@@ -290,12 +281,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
         return new Consumer($config, $this->deserializer, $this->committerFactory);
     }
 
-    /**
-     * Validates each topic before subscribing.
-     *
-     * @param mixed $topic
-     * @return void
-     */
+    /** Validates each topic before subscribing. */
     protected function validateTopic(mixed $topic): void
     {
         if (! is_string($topic)) {
@@ -305,11 +291,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
         }
     }
 
-    /**
-     * Get security protocol depending on whether sasl is set or not.
-     *
-     * @return string
-     */
+    /** Get security protocol depending on whether sasl is set or not. */
     protected function getSecurityProtocol(): string
     {
         return $this->saslConfig !== null
@@ -320,8 +302,6 @@ class ConsumerBuilder implements ConsumerBuilderContract
     /**
      * Returns batch config if batching is enabled
      * if batching is disabled then null config returned
-     *
-     * @return HandlesBatchConfiguration
      */
     protected function getBatchConfig(): HandlesBatchConfiguration
     {

@@ -1,10 +1,10 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka\Tests;
 
 use Illuminate\Support\Str;
 use Junges\Kafka\Consumers\ConsumerBuilder;
-use Junges\Kafka\Contracts\KafkaProducerMessage;
+use Junges\Kafka\Contracts\ProducerMessage;
 use Junges\Kafka\Exceptions\CouldNotPublishMessage;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\Message;
@@ -32,9 +32,7 @@ final class KafkaTest extends LaravelKafkaTestCase
             ->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
             ->getMock();
 
-        $this->app->bind(Producer::class, function () use ($mockedProducer) {
-            return $mockedProducer;
-        });
+        $this->app->bind(Producer::class, fn () => $mockedProducer);
 
         $test = Kafka::publishOn('test-topic')
             ->withConfigOptions([
@@ -64,9 +62,7 @@ final class KafkaTest extends LaravelKafkaTestCase
             ->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
             ->getMock();
 
-        $this->app->bind(Producer::class, function () use ($mockedProducer) {
-            return $mockedProducer;
-        });
+        $this->app->bind(Producer::class, fn () => $mockedProducer);
 
         $producer = Kafka::publishOn('test-topic')
             ->withConfigOptions([
@@ -97,9 +93,7 @@ final class KafkaTest extends LaravelKafkaTestCase
             ->shouldReceive('flush')->never()
             ->getMock();
 
-        $this->app->bind(Producer::class, function () use ($mockedProducer) {
-            return $mockedProducer;
-        });
+        $this->app->bind(Producer::class, fn () => $mockedProducer);
 
         Kafka::fake();
 
@@ -197,7 +191,7 @@ final class KafkaTest extends LaravelKafkaTestCase
 
         $message = $this->getPropertyWithReflection('message', $producer);
 
-        $this->assertInstanceOf(KafkaProducerMessage::class, $message);
+        $this->assertInstanceOf(ProducerMessage::class, $message);
 
         $this->assertArrayNotHasKey('log_level', $message->getHeaders());
         $this->assertArrayNotHasKey('debug', $message->getHeaders());
@@ -237,7 +231,6 @@ final class KafkaTest extends LaravelKafkaTestCase
         $this->assertEquals([], $this->getPropertyWithReflection('topics', $consumer));
     }
 
-    /** @group long-running-test */
     public function testProducerThrowsExceptionIfMessageCouldNotBePublished(): void
     {
         $this->expectException(CouldNotPublishMessage::class);

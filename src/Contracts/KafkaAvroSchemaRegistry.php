@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka\Contracts;
 
@@ -8,24 +8,11 @@ interface KafkaAvroSchemaRegistry
 {
     public const LATEST_VERSION = -1;
 
-    /**
-     * @return string
-     */
     public function getName(): string;
 
-    /**
-     * @return int
-     */
     public function getVersion(): int;
 
-    /**
-     * @param AvroSchema $definition
-     * @return void
-     */
     public function setDefinition(AvroSchema $definition): void;
 
-    /**
-     * @return AvroSchema|null
-     */
     public function getDefinition(): ?AvroSchema;
 }

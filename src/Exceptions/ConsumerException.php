@@ -1,8 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka\Exceptions;
 
-class KafkaConsumerException extends LaravelKafkaException
+class ConsumerException extends LaravelKafkaException
 {
     public static function dlqCanNotBeSetWithoutSubscribingToAnyTopics(): self
     {

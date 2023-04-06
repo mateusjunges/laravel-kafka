@@ -4,5 +4,5 @@ namespace Junges\Kafka\Contracts;
 
 interface Handler
 {
-    public function __invoke(KafkaConsumerMessage $message): void;
+    public function __invoke(ConsumerMessage $message): void;
 }

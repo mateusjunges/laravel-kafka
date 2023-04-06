@@ -1,8 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka\Tests;
 
-use Junges\Kafka\Contracts\KafkaConsumerMessage;
+use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Logger;
 use Junges\Kafka\Producers\Producer;
 use Junges\Kafka\Providers\LaravelKafkaServiceProvider;
@@ -67,7 +67,7 @@ abstract class LaravelKafkaTestCase extends Orchestra
         // We have to get a topic object as a valid response for the mock
         // We stub out this code here to achieve that
         $conf = new Conf();
-        $conf->set('log_level', 0);
+        $conf->set('log_level', '0');
         $kafka = new KafkaProducer($conf);
         $topic = $kafka->newTopic('test-topic');
 
@@ -116,9 +116,7 @@ abstract class LaravelKafkaTestCase extends Orchestra
             ->andReturn()
             ->getMock();
 
-        $this->app->bind(KafkaConsumer::class, function () use ($mockedKafkaConsumer) {
-            return $mockedKafkaConsumer;
-        });
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
     }
 
     protected function getPropertyWithReflection(string $property, object $object): mixed
@@ -139,9 +137,9 @@ abstract class LaravelKafkaTestCase extends Orchestra
             ->getMock();
     }
 
-    protected function getConsumerMessage(Message $message): KafkaConsumerMessage
+    protected function getConsumerMessage(Message $message): ConsumerMessage
     {
-        return app(KafkaConsumerMessage::class, [
+        return app(ConsumerMessage::class, [
             'topicName' => $message->topic_name,
             'partition' => $message->partition,
             'headers' => $message->headers,

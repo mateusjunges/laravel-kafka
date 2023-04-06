@@ -1,10 +1,10 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka\Tests\Commit;
 
 use Junges\Kafka\Commit\BatchCommitter;
+use Junges\Kafka\Commit\Committer;
 use Junges\Kafka\Commit\DefaultCommitterFactory;
-use Junges\Kafka\Commit\KafkaCommitter;
 use Junges\Kafka\Commit\NativeSleeper;
 use Junges\Kafka\Commit\RetryableCommitter;
 use Junges\Kafka\Commit\VoidCommitter;
@@ -71,7 +71,7 @@ final class CommitterFactoryTest extends LaravelKafkaTestCase
 
         $expectedCommitter = new BatchCommitter(
             new RetryableCommitter(
-                new KafkaCommitter(
+                new Committer(
                     $consumer
                 ),
                 new NativeSleeper(),

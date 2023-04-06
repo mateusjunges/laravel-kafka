@@ -1,8 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka\Contracts;
 
-interface KafkaConsumerMessage extends KafkaMessage
+interface ConsumerMessage extends KafkaMessage
 {
     public function getOffset(): ?int;
 

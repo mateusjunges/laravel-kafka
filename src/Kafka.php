@@ -1,23 +1,17 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka;
 
 use Junges\Kafka\Consumers\ConsumerBuilder;
-use Junges\Kafka\Contracts\CanConsumeMessagesFromKafka;
-use Junges\Kafka\Contracts\CanProduceMessages;
-use Junges\Kafka\Contracts\CanPublishMessagesToKafka;
+use Junges\Kafka\Contracts\ConsumeMessagesFromKafka;
+use Junges\Kafka\Contracts\MessageProducer;
+use Junges\Kafka\Contracts\MessagePublisher;
 use Junges\Kafka\Producers\ProducerBuilder;
 
-class Kafka implements CanPublishMessagesToKafka, CanConsumeMessagesFromKafka
+class Kafka implements MessagePublisher, ConsumeMessagesFromKafka
 {
-    /**
-     * Creates a new ProducerBuilder instance, setting brokers and topic.
-     *
-     * @param string|null $broker
-     * @param string $topic
-     * @return CanProduceMessages
-     */
-    public function publishOn(string $topic, string $broker = null): CanProduceMessages
+    /** Creates a new ProducerBuilder instance, setting brokers and topic. */
+    public function publishOn(string $topic, string $broker = null): MessageProducer
     {
         return new ProducerBuilder(
             topic: $topic,
@@ -25,14 +19,7 @@ class Kafka implements CanPublishMessagesToKafka, CanConsumeMessagesFromKafka
         );
     }
 
-    /**
-     * Return a ConsumerBuilder instance.
-     *
-     * @param array $topics
-     * @param string|null $groupId
-     * @param string|null $brokers
-     * @return \Junges\Kafka\Consumers\ConsumerBuilder
-     */
+    /** Return a ConsumerBuilder instance.  */
     public function createConsumer(array $topics = [], string $groupId = null, string $brokers = null): ConsumerBuilder
     {
         return ConsumerBuilder::create(

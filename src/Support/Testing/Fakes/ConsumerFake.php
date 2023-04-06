@@ -1,22 +1,23 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka\Support\Testing\Fakes;
 
 use Closure;
 use Illuminate\Support\Collection;
 use Junges\Kafka\Config\Config;
-use Junges\Kafka\Contracts\CanConsumeMessages;
+use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Contracts\HandlesBatchConfiguration;
-use Junges\Kafka\Contracts\KafkaConsumerMessage;
+use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\MessageCounter;
 use RdKafka\Conf;
 use RdKafka\Message;
 
-class ConsumerFake implements CanConsumeMessages
+class ConsumerFake implements MessageConsumer
 {
-    private MessageCounter $messageCounter;
-    private HandlesBatchConfiguration $batchConfig;
+    private readonly MessageCounter $messageCounter;
+    private readonly HandlesBatchConfiguration $batchConfig;
 
+    /** @param \Junges\Kafka\Contracts\ConsumerMessage[] $messages  */
     public function __construct(
         private readonly Config $config,
         private readonly array $messages = [],
@@ -27,11 +28,7 @@ class ConsumerFake implements CanConsumeMessages
         $this->batchConfig = $this->config->getBatchConfig();
     }
 
-    /**
-     * Consume messages from a kafka topic in loop.
-     *
-     * @return void
-     */
+    /** Consume messages from a kafka topic in loop. */
     public function consume(): void
     {
         if ($this->batchConfig->isBatchingEnabled()) {
@@ -57,55 +54,40 @@ class ConsumerFake implements CanConsumeMessages
         $this->stopRequested = true;
     }
 
-    /**
-     * Will cancel the stopConsume request initiated by calling the stopConsume method
-     */
+    /** Will cancel the stopConsume request initiated by calling the stopConsume method */
     public function cancelStopConsume(): void
     {
         $this->stopRequested = false;
         $this->whenStopConsuming = null;
     }
 
-    /**
-     * Count the number of messages consumed by this consumer
-     */
+    /** Count the number of messages consumed by this consumer */
     public function consumedMessagesCount(): int
     {
         return $this->messageCounter->messagesCounted();
     }
 
-    /**
-     * Set the consumer configuration.
-     *
-     * @param array $options
-     * @return \RdKafka\Conf
-     */
+    /** Set the consumer configuration. */
     public function setConf(array $options = []): Conf
     {
         return new Conf();
     }
 
-    /**
-     * Determine if the max message limit is reached.
-     *
-     * @return bool
-     */
+    /** Determine if the max message limit is reached. */
     private function maxMessagesLimitReached(): bool
     {
         return $this->messageCounter->maxMessagesLimitReached();
     }
 
-    /**
-     * Return if the consumer should stop consuming messages.
-     * @return bool
-     */
+    /** Return if the consumer should stop consuming messages. */
     private function shouldStopConsuming(): bool
     {
         return $this->maxMessagesLimitReached() || $this->stopRequested;
     }
 
+    /** Consume messages */
     /** @inheritdoc  */
-    public function onStopConsuming(?Closure $onStopConsuming = null): CanConsumeMessages
+    public function onStopConsuming(?Closure $onStopConsuming = null): self
     {
         $this->whenStopConsuming = $onStopConsuming;
 
@@ -128,11 +110,7 @@ class ConsumerFake implements CanConsumeMessages
         }
     }
 
-    /**
-     * Consume messages in batches
-     *
-     * @return void
-     */
+    /** Consume messages in batches */
     public function batchConsume(): void
     {
         foreach ($this->messages as $message) {
@@ -150,11 +128,7 @@ class ConsumerFake implements CanConsumeMessages
         $this->handleIncompleteBatch();
     }
 
-    /**
-     * Handles batch
-     *
-     * @return void
-     */
+    /** Handles batch */
     private function handleBatch(): void
     {
         if ($this->batchConfig->getBatchRepository()->getBatchSize() >= $this->batchConfig->getBatchSizeLimit()) {
@@ -171,12 +145,7 @@ class ConsumerFake implements CanConsumeMessages
         }
     }
 
-    /**
-     * Tries to handle received batch of messages
-     *
-     * @param Collection $consumedMessages
-     * @return void
-     */
+    /** Tries to handle received batch of messages. */
     private function executeBatch(Collection $collection): void
     {
         $consumedMessages = $collection
@@ -187,19 +156,14 @@ class ConsumerFake implements CanConsumeMessages
         $this->config->getBatchConfig()->getConsumer()->handle($consumedMessages);
     }
 
-    /**
-     * Handle the message.
-     *
-     * @var \Junges\Kafka\Contracts\KafkaConsumerMessage
-     * @return void
-     */
-    private function handleMessage(KafkaConsumerMessage $message): void
+    /** Handle the message. */
+    private function handleMessage(ConsumerMessage $message): void
     {
         $this->config->getConsumer()->handle($message);
         $this->messageCounter->add();
     }
 
-    private function getRdKafkaMessage(KafkaConsumerMessage $message): Message
+    private function getRdKafkaMessage(ConsumerMessage $message): Message
     {
         $rdKafkaMessage = new Message();
         $rdKafkaMessage->err = 0;
@@ -214,9 +178,9 @@ class ConsumerFake implements CanConsumeMessages
         return $rdKafkaMessage;
     }
 
-    private function getConsumerMessage(Message $message): KafkaConsumerMessage
+    private function getConsumerMessage(Message $message): ConsumerMessage
     {
-        return app(KafkaConsumerMessage::class, [
+        return app(ConsumerMessage::class, [
             'topicName' => $message->topic_name,
             'partition' => $message->partition,
             'headers' => $message->headers ?? [],

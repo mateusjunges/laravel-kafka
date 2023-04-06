@@ -1,9 +1,9 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka\Tests;
 
 use Exception;
-use Junges\Kafka\Contracts\KafkaConsumerMessage;
+use Junges\Kafka\Contracts\ConsumerMessage;
 
 final class FailingHandler
 {
@@ -13,7 +13,7 @@ final class FailingHandler
     {
     }
 
-    public function __invoke(KafkaConsumerMessage $message): void
+    public function __invoke(ConsumerMessage $message): void
     {
         if ($this->timesInvoked++ < $this->timesToFail) {
             throw $this->exception;

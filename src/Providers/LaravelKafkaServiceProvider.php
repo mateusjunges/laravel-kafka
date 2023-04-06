@@ -1,17 +1,17 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Junges\Kafka\Console\Commands\KafkaConsumerCommand;
-use Junges\Kafka\Console\Commands\KafkaRestartConsumersCommand;
-use Junges\Kafka\Contracts\CanConsumeMessagesFromKafka;
-use Junges\Kafka\Contracts\CanPublishMessagesToKafka;
-use Junges\Kafka\Contracts\KafkaConsumerMessage;
-use Junges\Kafka\Contracts\KafkaProducerMessage;
+use Junges\Kafka\Console\Commands\ConsumerCommand;
+use Junges\Kafka\Console\Commands\RestartConsumersCommand;
+use Junges\Kafka\Contracts\ConsumerMessage;
+use Junges\Kafka\Contracts\ConsumeMessagesFromKafka;
 use Junges\Kafka\Contracts\Logger as LoggerContract;
 use Junges\Kafka\Contracts\MessageDeserializer;
+use Junges\Kafka\Contracts\MessagePublisher;
 use Junges\Kafka\Contracts\MessageSerializer;
+use Junges\Kafka\Contracts\ProducerMessage;
 use Junges\Kafka\Kafka;
 use Junges\Kafka\Logger;
 use Junges\Kafka\Message\ConsumedMessage;
@@ -27,31 +27,25 @@ class LaravelKafkaServiceProvider extends ServiceProvider
 
         if ($this->app->runningInConsole()) {
             $this->commands([
-                KafkaConsumerCommand::class,
-                KafkaRestartConsumersCommand::class,
+                ConsumerCommand::class,
+                RestartConsumersCommand::class,
             ]);
         }
     }
 
     public function register()
     {
-        $this->app->bind(MessageSerializer::class, function () {
-            return new JsonSerializer();
-        });
+        $this->app->bind(MessageSerializer::class, fn() => new JsonSerializer());
 
-        $this->app->bind(MessageDeserializer::class, function () {
-            return new JsonDeserializer();
-        });
+        $this->app->bind(MessageDeserializer::class, fn() => new JsonDeserializer());
 
-        $this->app->bind(KafkaProducerMessage::class, function () {
-            return new Message('');
-        });
+        $this->app->bind(ProducerMessage::class, fn() => new Message(''));
 
-        $this->app->bind(KafkaConsumerMessage::class, ConsumedMessage::class);
+        $this->app->bind(ConsumerMessage::class, ConsumedMessage::class);
 
-        $this->app->bind(CanPublishMessagesToKafka::class, Kafka::class);
+        $this->app->bind(MessagePublisher::class, Kafka::class);
 
-        $this->app->bind(CanConsumeMessagesFromKafka::class, Kafka::class);
+        $this->app->bind(ConsumeMessagesFromKafka::class, Kafka::class);
 
         $this->app->singleton(LoggerContract::class, Logger::class);
     }

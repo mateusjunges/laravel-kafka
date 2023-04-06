@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka\Support\Testing\Fakes;
 
@@ -8,14 +8,14 @@ use Junges\Kafka\Config\NullBatchConfig;
 use Junges\Kafka\Consumers\CallableBatchConsumer;
 use Junges\Kafka\Consumers\CallableConsumer;
 use Junges\Kafka\Consumers\ConsumerBuilder;
-use Junges\Kafka\Contracts\CanConsumeMessages;
+use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Contracts\ConsumerBuilder as ConsumerBuilderContract;
 use Junges\Kafka\Contracts\HandlesBatchConfiguration;
 use Junges\Kafka\Support\Timer;
 
 class ConsumerBuilderFake extends ConsumerBuilder implements ConsumerBuilderContract
 {
-    /** @var \Junges\Kafka\Contracts\KafkaConsumerMessage[] */
+    /** @var \Junges\Kafka\Contracts\ConsumerMessage[] */
     private array $messages = [];
 
     /** @inheritDoc */
@@ -28,12 +28,7 @@ class ConsumerBuilderFake extends ConsumerBuilder implements ConsumerBuilderCont
         );
     }
 
-    /**
-     * Set fake messages to the consumer.
-     *
-     * @param \Junges\Kafka\Contracts\KafkaConsumerMessage[] $messages
-     * @return $this
-     */
+    /** Set fake messages to the consumer.  */
     public function setMessages(array $messages): self
     {
         $this->messages = $messages;
@@ -41,12 +36,8 @@ class ConsumerBuilderFake extends ConsumerBuilder implements ConsumerBuilderCont
         return $this;
     }
 
-    /**
-     * Build the Kafka consumer.
-     *
-     * @return \Junges\Kafka\Contracts\CanConsumeMessages
-     */
-    public function build(): CanConsumeMessages
+    /** Build the Kafka consumer. */
+    public function build(): MessageConsumer
     {
         $config = new Config(
             broker: $this->brokers,
@@ -73,10 +64,8 @@ class ConsumerBuilderFake extends ConsumerBuilder implements ConsumerBuilderCont
     }
 
     /**
-     * Returns a instance of BatchConfig if batching is enabled.
-     * Otherwise, a instance of NullConfig will be returned.
-     *
-     * @return HandlesBatchConfiguration
+     * Returns an instance of BatchConfig if batching is enabled.
+     * Otherwise, an instance of NullConfig will be returned.
      */
     protected function getBatchConfig(): HandlesBatchConfiguration
     {

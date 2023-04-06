@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka\Producers;
 
@@ -9,16 +9,12 @@ use SplDoublyLinkedList;
 /**
  * Class stores multiple messages to produce them to kafka topic as a batch
  *
- * @see CanProduceMessages::sendBatch
+ * @see MessageProducer::sendBatch
  */
 class MessageBatch
 {
-    /**
-     * Storage of messages
-     *
-     * @var SplDoublyLinkedList
-     */
-    private SplDoublyLinkedList $messages;
+    /** Storage of messages */
+    private readonly SplDoublyLinkedList $messages;
 
     #[Pure]
     public function __construct()
@@ -26,13 +22,8 @@ class MessageBatch
         $this->messages = new SplDoublyLinkedList();
     }
 
-    /**
-     * Pushes messages to batch
-     *
-     * @param Message $message
-     * @return void
-     */
-    public function push(Message $message): void
+    /** Pushes messages to batch */
+    public function push(Message $message)
     {
         $this->messages->push($message);
     }

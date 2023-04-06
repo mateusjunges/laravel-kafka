@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka\Tests\Consumers;
 
@@ -12,6 +12,9 @@ use Junges\Kafka\Contracts\CanConsumeMessages;
 use Junges\Kafka\Contracts\CommitterFactory;
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Exceptions\KafkaConsumerException;
+use Junges\Kafka\Contracts\ConsumerMessage;
+use Junges\Kafka\Contracts\MessageConsumer;
+use Junges\Kafka\Exceptions\ConsumerException;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
@@ -22,7 +25,7 @@ use RdKafka\Message;
 
 final class ConsumerTest extends LaravelKafkaTestCase
 {
-    private ?CanConsumeMessages $stoppableConsumer = null;
+    private ?MessageConsumer $stoppableConsumer = null;
     private bool $stoppableConsumerStopped = false;
     private string $stoppedConsumerMessage = "";
 
@@ -84,7 +87,6 @@ final class ConsumerTest extends LaravelKafkaTestCase
             ->build();
 
         $consumer->consume();
-
         $this->assertInstanceOf(ConsumedMessage::class, $fakeConsumer->getMessage());
     }
 
@@ -119,7 +121,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
     {
         $this->mockProducer();
 
-        $this->expectException(KafkaConsumerException::class);
+        $this->expectException(ConsumerException::class);
 
         $fakeHandler = new FakeHandler();
 
@@ -171,11 +173,11 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $this->mockProducer();
 
         $this->stoppableConsumer = Kafka::createConsumer(['test'])
-            ->withHandler(function (KafkaConsumerMessage $message) {
-                if ($this->stoppableConsumer && $message->getKey() === 'key2') {
+            ->withHandler(function (ConsumerMessage $message) {
+                if ($message->getKey() === 'key2' && $this->stoppableConsumer) {
                     $this->stoppableConsumer->onStopConsuming(function () {
-                        $this->stoppedConsumerMessage = "Consumer stopped.";
                         $this->stoppableConsumerStopped = true;
+                        $this->stoppedConsumerMessage = 'Consumer stopped.';
                     })->stopConsuming();
                 }
             })
@@ -258,8 +260,8 @@ final class ConsumerTest extends LaravelKafkaTestCase
         
 
         $fakeHandler = new CallableConsumer(
-            function (KafkaConsumerMessage $message) {
-                // sleep 100 miliseconds to simulate restart interval check
+            function (ConsumerMessage $message) {
+                // sleep 100 milliseconds to simulate restart interval check
                 usleep(100 * 1000);
                 $this->artisan('kafka:restart-consumers');
             },

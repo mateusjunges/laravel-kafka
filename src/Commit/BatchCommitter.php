@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka\Commit;
 
@@ -11,9 +11,9 @@ class BatchCommitter implements Committer
     private int $commits = 0;
 
     public function __construct(
-        private Committer $committer,
-        private MessageCounter $messageCounter,
-        private int $batchSize
+        private readonly Committer $committer,
+        private readonly MessageCounter $messageCounter,
+        private readonly int $batchSize
     ) {
     }
 

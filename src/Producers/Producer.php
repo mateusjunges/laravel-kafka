@@ -1,9 +1,9 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka\Producers;
 
 use Junges\Kafka\Config\Config;
-use Junges\Kafka\Contracts\KafkaProducerMessage;
+use Junges\Kafka\Contracts\ProducerMessage;
 use Junges\Kafka\Contracts\MessageSerializer;
 use Junges\Kafka\Exceptions\CouldNotPublishMessage;
 use RdKafka\Conf;
@@ -13,30 +13,25 @@ use SplDoublyLinkedList;
 
 class Producer
 {
-    private KafkaProducer $producer;
+    private readonly KafkaProducer $producer;
 
     public function __construct(
-        private Config $config,
-        private string $topic,
-        private MessageSerializer $serializer
+        private readonly Config $config,
+        private readonly string $topic,
+        private readonly MessageSerializer $serializer
     ) {
         $this->producer = app(KafkaProducer::class, [
             'conf' => $this->setConf($this->config->getProducerOptions()),
         ]);
     }
 
-    /**
-     * Set the Kafka Configuration.
-     *
-     * @param array $options
-     * @return \RdKafka\Conf
-     */
+    /** Set the Kafka Configuration. */
     public function setConf(array $options): Conf
     {
         $conf = new Conf();
 
         foreach ($options as $key => $value) {
-            $conf->set($key, $value);
+            $conf->set($key, (string) $value);
         }
 
         foreach ($this->config->getConfigCallbacks() as $method => $callback) {
@@ -49,11 +44,10 @@ class Producer
     /**
      * Produce the specified message in the kafka topic.
      *
-     * @param KafkaProducerMessage $message
      * @return mixed
      * @throws \Exception
      */
-    public function produce(KafkaProducerMessage $message): bool
+    public function produce(ProducerMessage $message): bool
     {
         $topic = $this->producer->newTopic($this->topic);
 
@@ -68,9 +62,7 @@ class Producer
         return $this->flush();
     }
 
-    /**
-     * @throws CouldNotPublishMessage
-     */
+    /** @throws CouldNotPublishMessage  */
     public function produceBatch(MessageBatch $messageBatch): int
     {
         $topic = $this->producer->newTopic($this->topic);
@@ -95,7 +87,7 @@ class Producer
         return $produced;
     }
 
-    private function produceMessage(ProducerTopic $topic, KafkaProducerMessage $message): void
+    private function produceMessage(ProducerTopic $topic, ProducerMessage $message): void
     {
         $topic->producev(
             partition: $message->getPartition(),

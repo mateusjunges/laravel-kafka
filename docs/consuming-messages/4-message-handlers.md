@@ -10,7 +10,7 @@ You can use an invokable class or a simple callback. Use the `withHandler` metho
 $consumer = \Junges\Kafka\Facades\Kafka::createConsumer();
 
 // Using callback:
-$consumer->withHandler(function(\Junges\Kafka\Contracts\KafkaConsumerMessage $message) {
+$consumer->withHandler(function(\Junges\Kafka\Contracts\ConsumerMessage $message) {
     // Handle your message here
 });
 ```
@@ -20,7 +20,7 @@ Or, using an invokable class:
 ```php
 class Handler
 {
-    public function __invoke(\Junges\Kafka\Contracts\KafkaConsumerMessage $message){
+    public function __invoke(\Junges\Kafka\Contracts\ConsumerMessage $message){
         // Handle your message here
     }
 }

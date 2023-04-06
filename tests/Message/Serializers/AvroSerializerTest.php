@@ -1,11 +1,11 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka\Tests\Message\Serializers;
 
 use FlixTech\AvroSerializer\Objects\RecordSerializer;
 use Junges\Kafka\Contracts\AvroSchemaRegistry;
 use Junges\Kafka\Contracts\KafkaAvroSchemaRegistry;
-use Junges\Kafka\Contracts\KafkaProducerMessage;
+use Junges\Kafka\Contracts\ProducerMessage;
 use Junges\Kafka\Exceptions\Serializers\AvroSerializerException;
 use Junges\Kafka\Message\Serializers\AvroSerializer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
@@ -14,7 +14,7 @@ final class AvroSerializerTest extends LaravelKafkaTestCase
 {
     public function testSerializeTombstone(): void
     {
-        $producerMessage = $this->getMockForAbstractClass(KafkaProducerMessage::class);
+        $producerMessage = $this->getMockForAbstractClass(ProducerMessage::class);
         $producerMessage->expects($this->exactly(2))->method('getBody')->willReturn(null);
 
         $registry = $this->getMockForAbstractClass(AvroSchemaRegistry::class);
@@ -28,7 +28,7 @@ final class AvroSerializerTest extends LaravelKafkaTestCase
 
         $result = $serializer->serialize($producerMessage);
 
-        $this->assertInstanceOf(KafkaProducerMessage::class, $result);
+        $this->assertInstanceOf(ProducerMessage::class, $result);
         $this->assertSame($producerMessage, $result);
         $this->assertNull($result->getBody());
     }
@@ -38,7 +38,7 @@ final class AvroSerializerTest extends LaravelKafkaTestCase
         $avroSchema = $this->getMockForAbstractClass(KafkaAvroSchemaRegistry::class);
         $avroSchema->expects($this->once())->method('getDefinition')->willReturn(null);
 
-        $producerMessage = $this->getMockForAbstractClass(KafkaProducerMessage::class);
+        $producerMessage = $this->getMockForAbstractClass(ProducerMessage::class);
         $producerMessage->expects($this->once())->method('getTopicName')->willReturn('test');
         $producerMessage->expects($this->once())->method('getBody')->willReturn('test');
 
@@ -75,7 +75,7 @@ final class AvroSerializerTest extends LaravelKafkaTestCase
         $registry->expects($this->once())->method('hasBodySchemaForTopic')->willReturn(true);
         $registry->expects($this->once())->method('hasKeySchemaForTopic')->willReturn(true);
 
-        $producerMessage = $this->getMockForAbstractClass(KafkaProducerMessage::class);
+        $producerMessage = $this->getMockForAbstractClass(ProducerMessage::class);
         $producerMessage->expects($this->exactly(2))->method('getTopicName')->willReturn('test');
         $producerMessage->expects($this->once())->method('getBody')->willReturn([]);
         $producerMessage->expects($this->once())->method('getKey')->willReturn('test-key');
@@ -111,7 +111,7 @@ final class AvroSerializerTest extends LaravelKafkaTestCase
         $registry->expects($this->once())->method('hasBodySchemaForTopic')->willReturn(false);
         $registry->expects($this->once())->method('hasKeySchemaForTopic')->willReturn(true);
 
-        $producerMessage = $this->getMockForAbstractClass(KafkaProducerMessage::class);
+        $producerMessage = $this->getMockForAbstractClass(ProducerMessage::class);
         $producerMessage->expects($this->exactly(2))->method('getTopicName')->willReturn('test');
         $producerMessage->expects($this->once())->method('getBody')->willReturn([]);
         $producerMessage->expects($this->once())->method('getKey')->willReturn('test-key');
@@ -141,7 +141,7 @@ final class AvroSerializerTest extends LaravelKafkaTestCase
         $registry->expects($this->once())->method('hasBodySchemaForTopic')->willReturn(true);
         $registry->expects($this->once())->method('hasKeySchemaForTopic')->willReturn(false);
 
-        $producerMessage = $this->getMockForAbstractClass(KafkaProducerMessage::class);
+        $producerMessage = $this->getMockForAbstractClass(ProducerMessage::class);
         $producerMessage->expects($this->exactly(2))->method('getTopicName')->willReturn('test');
         $producerMessage->expects($this->once())->method('getBody')->willReturn([]);
         $producerMessage->expects($this->once())->method('getKey')->willReturn('test-key');

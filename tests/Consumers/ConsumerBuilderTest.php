@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka\Tests\Consumers;
 
@@ -12,6 +12,7 @@ use Junges\Kafka\Consumers\ConsumerBuilder;
 use Junges\Kafka\Contracts\Committer;
 use Junges\Kafka\Contracts\CommitterFactory;
 use Junges\Kafka\Exceptions\KafkaConsumerException;
+use Junges\Kafka\Exceptions\ConsumerException;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
 use Junges\Kafka\Tests\Fakes\FakeConsumer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
@@ -325,7 +326,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
 
     public function testItCantCreateAConsumerWithDlqWithoutSubscribingToAnyTopics(): void
     {
-        $this->expectException(KafkaConsumerException::class);
+        $this->expectException(ConsumerException::class);
 
         ConsumerBuilder::create('broker')->withDlq();
     }

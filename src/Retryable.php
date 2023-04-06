@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka;
 
@@ -8,19 +8,13 @@ use Junges\Kafka\Contracts\Sleeper;
 class Retryable
 {
     public function __construct(
-        private Sleeper $sleeper,
-        private int $maximumRetries,
-        private ?array $retryableErrors
+        private readonly Sleeper $sleeper,
+        private readonly int $maximumRetries,
+        private readonly ?array $retryableErrors
     ) {
     }
 
-    /**
-     * @param callable $function
-     * @param int $currentRetries
-     * @param int $delayInSeconds
-     * @param bool $exponentially
-     * @throws \Exception
-     */
+    /** @throws \Exception  */
     public function retry(
         callable $function,
         int $currentRetries = 0,

@@ -1,8 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka\Tests\Commit;
 
-use Junges\Kafka\Commit\KafkaCommitter;
+use Junges\Kafka\Commit\Committer;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use Mockery as m;
@@ -34,7 +34,7 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
             $conf->set($key, $value);
         }
 
-        $kafkaCommitter = new KafkaCommitter(app(KafkaConsumer::class, [
+        $kafkaCommitter = new Committer(app(KafkaConsumer::class, [
             'conf' => $conf,
         ]));
 
@@ -63,7 +63,7 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
             $conf->set($key, $value);
         }
 
-        $kafkaCommitter = new KafkaCommitter(app(KafkaConsumer::class, [
+        $kafkaCommitter = new Committer(app(KafkaConsumer::class, [
             'conf' => $conf,
         ]));
 
