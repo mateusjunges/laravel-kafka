@@ -79,7 +79,8 @@ class Config
         private readonly bool $stopAfterLastMessage = false,
         private readonly int $restartInterval = 1000,
         private readonly array $callbacks = [],
-        private array              $beforeConsumings = [],
+        private readonly array $beforeConsumingCallbacks = [],
+        private readonly array $afterConsumingCallbacks = [],
     ) {}
 
     public function getCommit(): int
@@ -191,8 +192,13 @@ class Config
                 || strtoupper($this->securityProtocol) === static::SASL_SSL);
     }
 
-    public function getBeforeConsumings(): array
+    public function getBeforeConsumingCallbacks(): array
     {
-        return $this->beforeConsumings;
+        return $this->beforeConsumingCallbacks;
+    }
+
+    public function getAfterConsumingCallbacks(): array
+    {
+        return $this->afterConsumingCallbacks;
     }
 }

@@ -101,19 +101,29 @@ class Consumer implements MessageConsumer
         }
 
         do {
-            foreach ($this->config->getBeforeConsumings() as $beforeConsuming) {
-                $result = $beforeConsuming(...)();
-                if ($result === false) {
-                    break;
-                }
-            }
+            $this->runBeforeCallbacks();
             $this->retryable->retry(fn () => $this->doConsume());
+            $this->runAfterConsumingCallbacks();
             $this->checkForRestart();
         } while (! $this->maxMessagesLimitReached() && ! $this->stopRequested);
 
         if ($this->shouldRunStopConsumingCallback()) {
             $callback = $this->whenStopConsuming;
             $callback(...)();
+        }
+    }
+
+    private function runBeforeCallbacks(): void
+    {
+        foreach ($this->config->getBeforeConsumingCallbacks() as $beforeConsumingCallback) {
+            $beforeConsumingCallback();
+        }
+    }
+
+    private function runAfterConsumingCallbacks(): void
+    {
+        foreach ($this->config->getAfterConsumingCallbacks() as $afterConsumingCallback) {
+            $afterConsumingCallback();
         }
     }
 

@@ -8,10 +8,7 @@ use Junges\Kafka\Config\Config;
 use Junges\Kafka\Consumers\CallableConsumer;
 use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Consumers\DispatchQueuedHandler;
-use Junges\Kafka\Contracts\CanConsumeMessages;
 use Junges\Kafka\Contracts\CommitterFactory;
-use Junges\Kafka\Contracts\KafkaConsumerMessage;
-use Junges\Kafka\Exceptions\KafkaConsumerException;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Exceptions\ConsumerException;
@@ -28,6 +25,8 @@ final class ConsumerTest extends LaravelKafkaTestCase
     private ?MessageConsumer $stoppableConsumer = null;
     private bool $stoppableConsumerStopped = false;
     private string $stoppedConsumerMessage = "";
+    private int $countBeforeConsuming = 0;
+    private int $countAfterConsuming = 0;
 
     public function testItConsumesAMessageSuccessfullyAndCommit(): void
     {
@@ -285,11 +284,11 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $consumer = new Consumer($config, new JsonDeserializer());
         $consumer->consume();
 
-        //finaly only one message should be consumed
+        //finally only one message should be consumed
         $this->assertEquals(1, $consumer->consumedMessagesCount());
     }
 
-    public function testItRunCallbacksBeforeConsume()
+    public function testItRunCallbacksBeforeConsume(): void
     {
         $fakeHandler = new FakeHandler();
 
@@ -317,12 +316,22 @@ final class ConsumerTest extends LaravelKafkaTestCase
             dlq: null,
             maxMessages: 1,
             maxCommitRetries: 1,
-            beforeConsumings: [function(){var_dump('HERE');},function(){return false;},function(){var_dump('THERE');}]
+            beforeConsumingCallbacks: [
+                fn () => $this->countBeforeConsuming = 1,
+                fn () => $this->countBeforeConsuming++,
+            ],
+            afterConsumingCallbacks:[
+                fn () => $this->countAfterConsuming = 1,
+                fn () => $this->countAfterConsuming++,
+            ]
         );
 
         $consumer = new Consumer($config, new JsonDeserializer());
+
         $consumer->consume();
 
         $this->assertInstanceOf(ConsumedMessage::class, $fakeHandler->lastMessage());
+        $this->assertSame(2, $this->countBeforeConsuming);
+        $this->assertSame(2, $this->countAfterConsuming);
     }
 }

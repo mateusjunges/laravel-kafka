@@ -9,7 +9,7 @@ The callbacks get executed in the order they are defined:
 
 ```php
 $consumer = \Junges\Kafka\Facades\Kafka::createConsumer()
-    ->withBeforeConsuming(function($consumer) {
+    ->beforeConsuming(function($consumer) {
         while (app()->isDownForMaintenance()) {
             $sleepTimeInSeconds = random_int(1, 5);
             sleep($sleepTimeInSeconds);

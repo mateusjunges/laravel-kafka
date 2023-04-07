@@ -9,7 +9,6 @@ use Junges\Kafka\Config\BatchConfig;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\NullBatchConfig;
 use Junges\Kafka\Config\Sasl;
-use Junges\Kafka\Contracts\CanConsumeMessages;
 use Junges\Kafka\Contracts\CommitterFactory;
 use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Contracts\ConsumerBuilder as ConsumerBuilderContract;
@@ -41,7 +40,8 @@ class ConsumerBuilder implements ConsumerBuilderContract
     protected int $batchSizeLimit = 0;
     protected int $batchReleaseInterval = 0;
     protected bool $stopAfterLastMessage = false;
-    protected array $beforeConsumings = [];
+    protected array $beforeConsumingCallbacks = [];
+    protected array $afterConsumingCallbacks = [];
 
     protected function __construct(protected string $brokers, array $topics = [], protected ?string $groupId = null)
     {
@@ -258,9 +258,16 @@ class ConsumerBuilder implements ConsumerBuilderContract
         return $this;
     }
 
-    public function withBeforeConsuming(callable $callable): self
+    public function beforeConsuming(callable $callable): self
     {
-        $this->beforeConsumings[] = $callable;
+        $this->beforeConsumingCallbacks[] = $callable(...);
+
+        return $this;
+    }
+
+    public function afterConsuming(callable $callable): self
+    {
+        $this->afterConsumingCallbacks[] = $callable(...);
 
         return $this;
     }
@@ -284,7 +291,8 @@ class ConsumerBuilder implements ConsumerBuilderContract
             batchConfig: $this->getBatchConfig(),
             stopAfterLastMessage: $this->stopAfterLastMessage,
             callbacks: $this->callbacks,
-            beforeConsumings: $this->beforeConsumings,
+            beforeConsumingCallbacks: $this->beforeConsumingCallbacks,
+            afterConsumingCallbacks: $this->afterConsumingCallbacks,
         );
 
         return new Consumer($config, $this->deserializer, $this->committerFactory);
