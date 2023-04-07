@@ -58,6 +58,12 @@ interface ConsumerBuilder extends InteractsWithConfigCallbacks
      */
     public function withMiddleware(callable $middleware): self;
 
+    /** Defines a callback that runs before consuming the message. */
+    public function beforeConsuming(callable $callable): self;
+
+    /** Defies a callback that runs after consuming the message. */
+    public function afterConsuming(callable $callable): self;
+
     /** Specify the security protocol that should be used. */
     public function withSecurityProtocol(string $securityProtocol): self;
 
