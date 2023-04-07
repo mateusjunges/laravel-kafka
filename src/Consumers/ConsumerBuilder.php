@@ -23,11 +23,14 @@ class ConsumerBuilder implements ConsumerBuilderContract
 {
     use InteractsWithConfigCallbacks;
 
+    /** @var list<string>  */
     protected array $topics;
     protected int $commit;
     protected Closure | Handler $handler;
     protected int $maxMessages;
     protected int $maxCommitRetries;
+
+    /** @var list<callable> $middlewares  */
     protected array $middlewares;
     protected ?Sasl $saslConfig = null;
     protected ?string $dlq = null;
@@ -40,7 +43,11 @@ class ConsumerBuilder implements ConsumerBuilderContract
     protected int $batchSizeLimit = 0;
     protected int $batchReleaseInterval = 0;
     protected bool $stopAfterLastMessage = false;
+
+    /** @var list<callable> $beforeConsumingCallbacks  */
     protected array $beforeConsumingCallbacks = [];
+
+    /** @var list<callable> $afterConsumingCallbacks */
     protected array $afterConsumingCallbacks = [];
 
     protected function __construct(protected string $brokers, array $topics = [], protected ?string $groupId = null)

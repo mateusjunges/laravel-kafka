@@ -256,8 +256,7 @@ class Consumer implements MessageConsumer
         try {
             $consumedMessages = $collection
                 ->map(
-                    fn (Message $message) =>
-                        $this->deserializer->deserialize($this->getConsumerMessage($message))
+                    fn (Message $message) => $this->deserializer->deserialize($this->getConsumerMessage($message))
                 );
 
             $this->config->getBatchConfig()->getConsumer()->handle($consumedMessages);
