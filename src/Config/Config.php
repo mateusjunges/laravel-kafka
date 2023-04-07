@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Config;
 
+use Closure;
 use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Contracts\Consumer;
 use Junges\Kafka\Contracts\HandlesBatchConfiguration;
@@ -80,6 +81,7 @@ class Config
         private bool               $stopAfterLastMessage = false,
         private int                $restartInterval = 1000,
         private array              $callbacks = [],
+        private array              $beforeConsumings = [],
     ) {
         $this->batchConfig = $batchConfig ?? new NullBatchConfig();
     }
@@ -191,5 +193,10 @@ class Config
         return ! is_null($this->securityProtocol)
             && (strtoupper($this->securityProtocol) === static::SASL_PLAINTEXT
                 || strtoupper($this->securityProtocol) === static::SASL_SSL);
+    }
+
+    public function getBeforeConsumings(): array
+    {
+        return $this->beforeConsumings;
     }
 }

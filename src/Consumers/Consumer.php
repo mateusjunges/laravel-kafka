@@ -101,9 +101,11 @@ class Consumer implements CanConsumeMessages
         }
 
         do {
-            while (app()->isDownForMaintenance()) {
-                $sleepTime = rand(1, 5);
-                sleep($sleepTime);
+            foreach ($this->config->getBeforeConsumings() as $beforeConsuming) {
+                $result = $beforeConsuming(...)();
+                if ($result === false) {
+                    break;
+                }
             }
             $this->retryable->retry(fn () => $this->doConsume());
             $this->checkForRestart();

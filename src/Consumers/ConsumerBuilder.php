@@ -40,6 +40,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
     protected int $batchSizeLimit = 0;
     protected int $batchReleaseInterval = 0;
     protected bool $stopAfterLastMessage = false;
+    protected array $beforeConsumings = [];
 
     /**
      * @param string $brokers
@@ -304,6 +305,13 @@ class ConsumerBuilder implements ConsumerBuilderContract
         return $this;
     }
 
+    public function withBeforeConsuming(callable $callable): self
+    {
+        $this->beforeConsumings[] = $callable;
+
+        return $this;
+    }
+
     /**
      * @inheritDoc
      */
@@ -325,6 +333,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
             batchConfig: $this->getBatchConfig(),
             stopAfterLastMessage: $this->stopAfterLastMessage,
             callbacks: $this->callbacks,
+            beforeConsumings: $this->beforeConsumings,
         );
 
         return new Consumer($config, $this->deserializer, $this->committerFactory);
