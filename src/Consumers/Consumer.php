@@ -116,14 +116,14 @@ class Consumer implements MessageConsumer
     private function runBeforeCallbacks(): void
     {
         foreach ($this->config->getBeforeConsumingCallbacks() as $beforeConsumingCallback) {
-            $beforeConsumingCallback();
+            $beforeConsumingCallback($this);
         }
     }
 
     private function runAfterConsumingCallbacks(): void
     {
         foreach ($this->config->getAfterConsumingCallbacks() as $afterConsumingCallback) {
-            $afterConsumingCallback();
+            $afterConsumingCallback($this);
         }
     }
 
