@@ -41,6 +41,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
     protected int $batchSizeLimit = 0;
     protected int $batchReleaseInterval = 0;
     protected bool $stopAfterLastMessage = false;
+    protected array $beforeConsumings = [];
 
     protected function __construct(protected string $brokers, array $topics = [], protected ?string $groupId = null)
     {
@@ -257,6 +258,13 @@ class ConsumerBuilder implements ConsumerBuilderContract
         return $this;
     }
 
+    public function withBeforeConsuming(callable $callable): self
+    {
+        $this->beforeConsumings[] = $callable;
+
+        return $this;
+    }
+
     /** @inheritDoc */
     public function build(): MessageConsumer
     {
@@ -276,6 +284,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
             batchConfig: $this->getBatchConfig(),
             stopAfterLastMessage: $this->stopAfterLastMessage,
             callbacks: $this->callbacks,
+            beforeConsumings: $this->beforeConsumings,
         );
 
         return new Consumer($config, $this->deserializer, $this->committerFactory);

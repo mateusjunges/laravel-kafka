@@ -288,4 +288,41 @@ final class ConsumerTest extends LaravelKafkaTestCase
         //finaly only one message should be consumed
         $this->assertEquals(1, $consumer->consumedMessagesCount());
     }
+
+    public function testItRunCallbacksBeforeConsume()
+    {
+        $fakeHandler = new FakeHandler();
+
+        $message = new Message();
+        $message->err = 0;
+        $message->key = 'key';
+        $message->topic_name = 'test-topic';
+        $message->payload = '{"body": "message payload"}';
+        $message->offset = 0;
+        $message->partition = 1;
+        $message->headers = [];
+
+        $this->mockConsumerWithMessage($message);
+
+        $this->mockProducer();
+
+        $config = new Config(
+            broker: 'broker',
+            topics: ['test-topic'],
+            securityProtocol: 'security',
+            commit: 1,
+            groupId: 'group',
+            consumer: $fakeHandler,
+            sasl: null,
+            dlq: null,
+            maxMessages: 1,
+            maxCommitRetries: 1,
+            beforeConsumings: [function(){var_dump('HERE');},function(){return false;},function(){var_dump('THERE');}]
+        );
+
+        $consumer = new Consumer($config, new JsonDeserializer());
+        $consumer->consume();
+
+        $this->assertInstanceOf(ConsumedMessage::class, $fakeHandler->lastMessage());
+    }
 }

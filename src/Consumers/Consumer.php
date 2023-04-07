@@ -101,6 +101,12 @@ class Consumer implements MessageConsumer
         }
 
         do {
+            foreach ($this->config->getBeforeConsumings() as $beforeConsuming) {
+                $result = $beforeConsuming(...)();
+                if ($result === false) {
+                    break;
+                }
+            }
             $this->retryable->retry(fn () => $this->doConsume());
             $this->checkForRestart();
         } while (! $this->maxMessagesLimitReached() && ! $this->stopRequested);

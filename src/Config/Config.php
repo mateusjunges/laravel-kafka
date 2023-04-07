@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Config;
 
+use Closure;
 use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Contracts\Consumer;
 use Junges\Kafka\Contracts\HandlesBatchConfiguration;
@@ -77,7 +78,8 @@ class Config
         private readonly HandlesBatchConfiguration $batchConfig = new NullBatchConfig(),
         private readonly bool $stopAfterLastMessage = false,
         private readonly int $restartInterval = 1000,
-        private readonly array $callbacks = []
+        private readonly array $callbacks = [],
+        private array              $beforeConsumings = [],
     ) {}
 
     public function getCommit(): int
@@ -187,5 +189,10 @@ class Config
         return ! is_null($this->securityProtocol)
             && (strtoupper($this->securityProtocol) === static::SASL_PLAINTEXT
                 || strtoupper($this->securityProtocol) === static::SASL_SSL);
+    }
+
+    public function getBeforeConsumings(): array
+    {
+        return $this->beforeConsumings;
     }
 }
