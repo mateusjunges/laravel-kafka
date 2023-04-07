@@ -1,23 +1,23 @@
 ---
-title: Before callbacks
+title: Before and after callbacks
 weight: 8
 ---
 
-Before consuming any message, you can call any callbacks. For example to wait for
-maintenance mode. Callbacks will receive consumer instance as an argument.
-The callbacks get executed in the order they are defined:
+You can call pre-defined callbacks **Before** and **After** consuming messages. As an example, you can use this to make your consumer to wait while in maintenance mode.
+The callbacks get executed in the order they are defined, and they receive a `\Junges\Kafka\Contracts\MessageConsumer` as argument:
 
 ```php
 $consumer = \Junges\Kafka\Facades\Kafka::createConsumer()
-    ->beforeConsuming(function($consumer) {
+    ->beforeConsuming(function(\Junges\Kafka\Contracts\MessageConsumer $consumer) {
         while (app()->isDownForMaintenance()) {
-            $sleepTimeInSeconds = random_int(1, 5);
-            sleep($sleepTimeInSeconds);
+            sleep(1);
         }       
-    });
+    })
+    ->afterConsuming(function (\Junges\Kafka\Contracts\MessageConsumer $consumer) {
+        // Runs after consuming the message
+    })
 ```
 
+These callbacks are not middlewares, so you can not interact with the consumed message.
 You can add as many callback as you need, so you can divide different tasks into 
 different callbacks.
-
-If callbacks return `false` then consumer will go to stop phase.
