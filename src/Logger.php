@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka;
 
@@ -12,7 +12,7 @@ use Throwable;
 
 class Logger implements LoggerContract
 {
-    private MonologLogger $logger;
+    private readonly MonologLogger $logger;
 
     public function __construct()
     {
@@ -30,13 +30,7 @@ class Logger implements LoggerContract
         });
     }
 
-    /**
-     * Log an error message.
-     *
-     * @param Message $message
-     * @param \Throwable|null $e
-     * @param string $prefix
-     */
+    /** Log an error message. */
     public function error(Message $message, Throwable $e = null, string $prefix = 'ERROR'): void
     {
         $this->logger->error("[{$prefix}] Error to consume message", [

@@ -1,20 +1,20 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka\Tests\Fakes;
 
-use Junges\Kafka\Contracts\KafkaConsumerMessage;
+use Junges\Kafka\Contracts\ConsumerMessage;
 
-class FakeConsumer
+final class FakeConsumer
 {
-    private KafkaConsumerMessage $message;
+    private ConsumerMessage $message;
 
-    public function __invoke(KafkaConsumerMessage $message)
+    public function __invoke(ConsumerMessage $message): void
     {
         $this->message = $message;
     }
 
-    public function getMessage(): KafkaConsumerMessage
+    public function getMessage(): ?ConsumerMessage
     {
-        return $this->message;
+        return $this->message ?? null;
     }
 }

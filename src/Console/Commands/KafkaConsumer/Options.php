@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka\Console\Commands\KafkaConsumer;
 
@@ -11,25 +11,22 @@ class Options
     private ?string $consumer = null;
     private ?string $deserializer = null;
     private ?string $groupId = null;
-    private ?int $commit = 1;
+    private int|string|null $commit = 1;
     private ?string $dlq = null;
     private int $maxMessages = -1;
     private ?string $securityProtocol = 'plaintext';
-    private ?string $saslUsername;
-    private ?string $saslPassword;
-    private ?string $saslMechanisms;
-    private array $config;
+    private readonly ?string $saslUsername;
+    private readonly ?string $saslPassword;
+    private readonly ?string $saslMechanisms;
 
     #[Pure]
-    public function __construct(array $options, array $config)
+    public function __construct(array $options, private readonly array $config)
     {
-        $options['topics'] = explode(",", $options['topics']);
+        $options['topics'] = explode(",", (string) $options['topics']);
 
         foreach ($options as $option => $value) {
             $this->{$option} = $value;
         }
-
-        $this->config = $config;
         $this->saslPassword = $config['sasl']['password'];
         $this->saslUsername = $config['sasl']['username'];
         $this->saslMechanisms = $config['sasl']['mechanisms'];
@@ -52,17 +49,17 @@ class Options
 
     public function getGroupId(): ?string
     {
-        return strlen($this->groupId) > 1 ? $this->groupId : $this->config['groupId'];
+        return strlen((string) $this->groupId) > 1 ? $this->groupId : $this->config['groupId'];
     }
 
     public function getCommit(): ?string
     {
-        return $this->commit;
+        return (string) $this->commit;
     }
 
     public function getDlq(): ?string
     {
-        return strlen($this->dlq) > 1 ? $this->dlq : null;
+        return strlen((string) $this->dlq) > 1 ? $this->dlq : null;
     }
 
     public function getMaxMessages(): int

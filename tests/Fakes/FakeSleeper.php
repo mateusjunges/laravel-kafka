@@ -1,10 +1,10 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka\Tests\Fakes;
 
-use Junges\Kafka\Commit\Contracts\Sleeper;
+use Junges\Kafka\Contracts\Sleeper;
 
-class FakeSleeper implements Sleeper
+final class FakeSleeper implements Sleeper
 {
     private array $sleeps = [];
 

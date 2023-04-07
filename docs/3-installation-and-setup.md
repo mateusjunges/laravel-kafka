@@ -18,7 +18,7 @@ php artisan vendor:publish --tag=laravel-kafka-config
 This is the default content of the configuration file:
 
 ```php
-<?php
+<?php declare(strict_types=1);
 
 return [
     /*
@@ -33,6 +33,8 @@ return [
      | This config defines the consumer group id you want to use for your project.
      */
     'consumer_group_id' => env('KAFKA_CONSUMER_GROUP_ID', 'group'),
+
+    'consumer_timeout_ms' => env("KAFKA_CONSUMER_DEFAULT_TIMEOUT", 2000),
 
     /*
      | After the consumer receives its assignment from the coordinator,
@@ -62,8 +64,8 @@ return [
      | Choose if debug is enabled or not.
      */
     'debug' => env('KAFKA_DEBUG', false),
-    
-     /*
+
+    /*
      | Repository for batching messages together
      | Implement BatchRepositoryInterface to save batches in different storage
      */
@@ -74,4 +76,5 @@ return [
      */
     'flush_retry_sleep_in_ms' => 100,
 ];
+
 ```

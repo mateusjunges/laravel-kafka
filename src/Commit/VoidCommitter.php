@@ -1,8 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka\Commit;
 
-use Junges\Kafka\Commit\Contracts\Committer;
+use Junges\Kafka\Contracts\Committer;
 use RdKafka\Message;
 
 class VoidCommitter implements Committer

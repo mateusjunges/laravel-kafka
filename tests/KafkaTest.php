@@ -1,10 +1,10 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka\Tests;
 
 use Illuminate\Support\Str;
 use Junges\Kafka\Consumers\ConsumerBuilder;
-use Junges\Kafka\Contracts\KafkaProducerMessage;
+use Junges\Kafka\Contracts\ProducerMessage;
 use Junges\Kafka\Exceptions\CouldNotPublishMessage;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\Message;
@@ -15,9 +15,9 @@ use Mockery as m;
 use RdKafka\Producer;
 use RdKafka\ProducerTopic;
 
-class KafkaTest extends LaravelKafkaTestCase
+final class KafkaTest extends LaravelKafkaTestCase
 {
-    public function testItCanPublishMessagesToKafka()
+    public function testItCanPublishMessagesToKafka(): void
     {
         $mockedProducerTopic = m::mock(ProducerTopic::class)
             ->shouldReceive('producev')->once()
@@ -32,9 +32,7 @@ class KafkaTest extends LaravelKafkaTestCase
             ->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
             ->getMock();
 
-        $this->app->bind(Producer::class, function () use ($mockedProducer) {
-            return $mockedProducer;
-        });
+        $this->app->bind(Producer::class, fn () => $mockedProducer);
 
         $test = Kafka::publishOn('test-topic')
             ->withConfigOptions([
@@ -49,7 +47,7 @@ class KafkaTest extends LaravelKafkaTestCase
         $this->assertTrue($test);
     }
 
-    public function testICanSwitchSerializersOnTheFly()
+    public function testICanSwitchSerializersOnTheFly(): void
     {
         $mockedProducerTopic = m::mock(ProducerTopic::class)
             ->shouldReceive('producev')->once()
@@ -64,9 +62,7 @@ class KafkaTest extends LaravelKafkaTestCase
             ->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
             ->getMock();
 
-        $this->app->bind(Producer::class, function () use ($mockedProducer) {
-            return $mockedProducer;
-        });
+        $this->app->bind(Producer::class, fn () => $mockedProducer);
 
         $producer = Kafka::publishOn('test-topic')
             ->withConfigOptions([
@@ -88,7 +84,7 @@ class KafkaTest extends LaravelKafkaTestCase
         $this->assertInstanceOf(JsonSerializer::class, $serializer);
     }
 
-    public function testItDoesNotSendMessagesToKafkaIfUsingFake()
+    public function testItDoesNotSendMessagesToKafkaIfUsingFake(): void
     {
         $mockedProducer = m::mock(Producer::class)
             ->shouldReceive('newTopic')->never()
@@ -97,9 +93,7 @@ class KafkaTest extends LaravelKafkaTestCase
             ->shouldReceive('flush')->never()
             ->getMock();
 
-        $this->app->bind(Producer::class, function () use ($mockedProducer) {
-            return $mockedProducer;
-        });
+        $this->app->bind(Producer::class, fn () => $mockedProducer);
 
         Kafka::fake();
 
@@ -116,7 +110,7 @@ class KafkaTest extends LaravelKafkaTestCase
         $this->assertTrue($test);
     }
 
-    public function testICanSetTheEntireMessageWithMessageObject()
+    public function testICanSetTheEntireMessageWithMessageObject(): void
     {
         $mockedProducerTopic = m::mock(ProducerTopic::class)
             ->shouldReceive('producev')->times(2)
@@ -162,7 +156,7 @@ class KafkaTest extends LaravelKafkaTestCase
         $this->assertTrue($test);
     }
 
-    public function testICanDisableDebugUsingWithDebugDisabledMethod()
+    public function testICanDisableDebugUsingWithDebugDisabledMethod(): void
     {
         $mockedProducerTopic = m::mock(ProducerTopic::class)
             ->shouldReceive('producev')->once()
@@ -197,13 +191,13 @@ class KafkaTest extends LaravelKafkaTestCase
 
         $message = $this->getPropertyWithReflection('message', $producer);
 
-        $this->assertInstanceOf(KafkaProducerMessage::class, $message);
+        $this->assertInstanceOf(ProducerMessage::class, $message);
 
         $this->assertArrayNotHasKey('log_level', $message->getHeaders());
         $this->assertArrayNotHasKey('debug', $message->getHeaders());
     }
 
-    public function testICanUseCustomOptionsForProducerConfig()
+    public function testICanUseCustomOptionsForProducerConfig(): void
     {
         $producer = Kafka::publishOn('test-topic')
             ->withConfigOptions($expectedOptions = [
@@ -220,14 +214,14 @@ class KafkaTest extends LaravelKafkaTestCase
         $this->assertEquals($expectedOptions, $options);
     }
 
-    public function testCreateConsumerReturnsAConsumerBuilderInstance()
+    public function testCreateConsumerReturnsAConsumerBuilderInstance(): void
     {
         $consumer = Kafka::createConsumer();
 
         $this->assertInstanceOf(ConsumerBuilder::class, $consumer);
     }
 
-    public function testCreateConsumerDefaultConfigs()
+    public function testCreateConsumerDefaultConfigs(): void
     {
         $consumer = Kafka::createConsumer();
 
@@ -237,7 +231,7 @@ class KafkaTest extends LaravelKafkaTestCase
         $this->assertEquals([], $this->getPropertyWithReflection('topics', $consumer));
     }
 
-    public function testProducerThrowsExceptionIfMessageCouldNotBePublished()
+    public function testProducerThrowsExceptionIfMessageCouldNotBePublished(): void
     {
         $this->expectException(CouldNotPublishMessage::class);
 
@@ -257,14 +251,12 @@ class KafkaTest extends LaravelKafkaTestCase
             ->times(10)
             ->getMock();
 
-        $this->app->bind(Producer::class, function () use ($mockedProducer) {
-            return $mockedProducer;
-        });
+        $this->app->bind(Producer::class, fn () => $mockedProducer);
 
         Kafka::publishOn('test')->withBodyKey('foo', 'bar')->send();
     }
 
-    public function testSendMessageBatch()
+    public function testSendMessageBatch(): void
     {
         $messageBatch = new MessageBatch();
         $messageBatch->push(new Message());

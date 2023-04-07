@@ -1,8 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka\Tests\Handlers;
 
-use Junges\Kafka\Contracts\KafkaConsumerMessage;
+use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Handlers\RetryableHandler;
 use Junges\Kafka\Handlers\RetryStrategies\DefaultRetryStrategy;
 use Junges\Kafka\Tests\FailingHandler;
@@ -10,14 +10,14 @@ use Junges\Kafka\Tests\Fakes\FakeSleeper;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-class RetryableHandlerTest extends TestCase
+final class RetryableHandlerTest extends TestCase
 {
     public function testItPassesWhenNoExceptionOccurred(): void
     {
         $failingHandler = new FailingHandler(0, new RuntimeException('test'));
         $handler = new RetryableHandler($failingHandler(...), new DefaultRetryStrategy(), new FakeSleeper());
 
-        $messageMock = $this->createMock(KafkaConsumerMessage::class);
+        $messageMock = $this->createMock(ConsumerMessage::class);
         $handler($messageMock);
 
         $this->assertSame(1, $failingHandler->getTimesInvoked());
@@ -29,7 +29,7 @@ class RetryableHandlerTest extends TestCase
         $sleeper = new FakeSleeper();
         $handler = new RetryableHandler($failingHandler(...), new DefaultRetryStrategy(), $sleeper);
 
-        $messageMock = $this->createMock(KafkaConsumerMessage::class);
+        $messageMock = $this->createMock(ConsumerMessage::class);
         $handler($messageMock);
 
         $this->assertSame(5, $failingHandler->getTimesInvoked());
@@ -42,7 +42,7 @@ class RetryableHandlerTest extends TestCase
         $sleeper = new FakeSleeper();
         $handler = new RetryableHandler($failingHandler(...), new DefaultRetryStrategy(), $sleeper);
 
-        $messageMock = $this->createMock(KafkaConsumerMessage::class);
+        $messageMock = $this->createMock(ConsumerMessage::class);
 
         try {
             $handler($messageMock);

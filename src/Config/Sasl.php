@@ -1,14 +1,14 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka\Config;
 
 class Sasl
 {
     public function __construct(
-        private string $username,
-        private string $password,
-        private string $mechanisms,
-        private string $securityProtocol = 'SASL_PLAINTEXT'
+        private readonly string $username,
+        private readonly string $password,
+        private readonly string $mechanisms,
+        private readonly string $securityProtocol = 'SASL_PLAINTEXT'
     ) {
     }
 

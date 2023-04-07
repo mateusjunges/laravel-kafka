@@ -1,37 +1,30 @@
 ---
-title: Upgrade Guide
+title: Upgrade guide
 weight: 6
 ---
 
-### Upgrading from `v1.11.x` to `v1.12.x`
+## Upgrade to v2.x from v1.12.x
 
 ### High impact changes
-- Renamed method `stopConsume` to `stopConsuming`.
-- A new `onStopConsuming` method was added to the `\Junges\Kafka\Contracts\CanConsumeMessages` contract.
-- The former `stopConsume` method (now `stopConsuming`) doesn't accept a callback anymore. Instead, you must use the newly added `onStopConsuming` method to specify the callback that should run when the consumer stops consuming messages.
+ - The `\Junges\Kafka\Contracts\CanProduceMessages` contract was renamed to `\Junges\Kafka\Contracts\MessageProducer`
+ - The `\Junges\Kafka\Contracts\CanPublishMessagesToKafka` contract was renamed to `\Junges\Kafka\Contracts\MessagePublisher`
+- The `\Junges\Kafka\Contracts\KafkaProducerMessage` contract was renamed to `\Junges\Kafka\Contracts\ProducerMessage`
+- The `\Junges\Kafka\Contracts\CanConsumeMessages` was renamed to `\Junges\Kafka\Contracts\MessageConsumer`
+- The `\Junges\Kafka\Contracts\KafkaConsumerMessage` was renamed to `\Junges\Kafka\Contracts\ConsumerMessage`
+- The `\Junges\Kafka\Contracts\CanConsumeMessagesFromKafka` was renamed to `\Junges\Kafka\Contracts\ConsumeMessagesFromKafka`
+- The `\Junges\Kafka\Contracts\CanConsumeBatchMessages` contract was renamed to `\Junges\Kafka\Contracts\BatchMessageConsumer`
+- The `\Junges\Kafka\Contracts\CanConsumeMessages` contract was renamed to `\Junges\Kafka\Contracts\MessageConsumer`
 
+#### The `withSasl` method signature was changed.
+
+The `withSasl` method now accepts all `SASL` parameters instead of a `Sasl` object.
 ```php
-// Laravel Kafka v1.11.x:
-$stoppableConsumer = Kafka::createConsumer(['topic'])
-    ->withConsumerGroupId('group')
-    ->withHandler(function ($message) use ($stoppableConsumer) {
-        // Handle the message
-        if ($shouldStopConsuming) {
-            $stoppableConsumer->stopConsume(function () {
-                // Run this callback when stop consuming
-            })
-        }
-    })
-    ->build();
-
-// In Laravel Kafka v1.12.x:
-$stoppableConsumer = Kafka::createConsumer(['topic'])
-    ->withConsumerGroupId('group')
-    ->withHandler(function ($message) use ($stoppableConsumer) {
-        // Handle the message
-    })
-    ->build()
-    ->onStopConsuming(function () {
-        // This will run when the consumer stops consuming messages.
-    })
+public function withSasl(string $username, string $password, string $mechanisms, string $securityProtocol = 'SASL_PLAINTEXT');
 ```
+
+### Updating dependencies
+**PHP 8.1 Required**
+
+This package now requires PHP 8.1 or higher.
+
+You can use tools such as [rector](https://github.com/rectorphp/rector) to upgrade your app to PHP 8.1.

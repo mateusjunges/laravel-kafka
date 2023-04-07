@@ -9,23 +9,23 @@ passing a `Junges\Kafka\Config\Sasl` instance as the argument:
 
 ```php
 $consumer = \Junges\Kafka\Facades\Kafka::createConsumer()
-    ->withSasl(new \Junges\Kafka\Config\Sasl(
+    ->withSasl(
         password: 'password',
         username: 'username',
-        mechanisms: 'authentication mechanism',
-    ));
+        mechanisms: 'authentication mechanism'
+    );
 ```
 
 You can also set the security protocol used with sasl. It's optional and by default `SASL_PLAINTEXT` is used, but you can set it to `SASL_SSL`:
 
 ```php
 $consumer = \Junges\Kafka\Facades\Kafka::createConsumer()
-    ->withSasl(new \Junges\Kafka\Config\Sasl(
+    ->withSasl(
         password: 'password',
         username: 'username',
         mechanisms: 'authentication mechanism',
         securityProtocol: 'SASL_SSL',
-    ));
+    );
 ```
 
 Note: When using the `withSasl` method, the securityProtocol set in this method takes priority over `withSecurityProtocol` method.

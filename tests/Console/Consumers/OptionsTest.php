@@ -1,6 +1,6 @@
-<?php
+<?php declare(strict_types=1);
 
-namespace Console\Consumers;
+namespace Junges\Kafka\Tests\Console\Consumers;
 
 use Junges\Kafka\Console\Commands\KafkaConsumer\Options;
 use Junges\Kafka\Tests\Fakes\FakeHandler;
@@ -26,7 +26,7 @@ class OptionsTest extends LaravelKafkaTestCase
         ];
     }
 
-    public function testItInstantiateTheClassWithCorrectOptions()
+    public function testItInstantiateTheClassWithCorrectOptions(): void
     {
         $commandLineOptions = [
             'topics' => 'test-topic,test-topic-1',
@@ -51,7 +51,7 @@ class OptionsTest extends LaravelKafkaTestCase
         $this->assertNull($options->getSasl());
     }
 
-    public function testItInstantiatesUsingOnlyRequiredOptions()
+    public function testItInstantiatesUsingOnlyRequiredOptions(): void
     {
         $options = [
             'topics' => 'test-topic,test-topic-1',

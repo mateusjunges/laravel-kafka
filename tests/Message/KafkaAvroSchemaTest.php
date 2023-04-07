@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka\Tests\Message;
 
@@ -7,9 +7,9 @@ use Junges\Kafka\Contracts\KafkaAvroSchemaRegistry;
 use Junges\Kafka\Message\KafkaAvroSchema;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 
-class KafkaAvroSchemaTest extends LaravelKafkaTestCase
+final class KafkaAvroSchemaTest extends LaravelKafkaTestCase
 {
-    public function testGetters()
+    public function testGetters(): void
     {
         $definition = $this->getMockBuilder(AvroSchema::class)->disableOriginalConstructor()->getMock();
 
@@ -23,7 +23,7 @@ class KafkaAvroSchemaTest extends LaravelKafkaTestCase
         $this->assertEquals($definition, $avroSchema->getDefinition());
     }
 
-    public function testSetters()
+    public function testSetters(): void
     {
         $definition = $this->getMockBuilder(AvroSchema::class)->disableOriginalConstructor()->getMock();
 
@@ -36,7 +36,7 @@ class KafkaAvroSchemaTest extends LaravelKafkaTestCase
         $this->assertEquals($definition, $avroSchema->getDefinition());
     }
 
-    public function testAvroSchemaWithJustName()
+    public function testAvroSchemaWithJustName(): void
     {
         $schemaName = 'testSchema';
 

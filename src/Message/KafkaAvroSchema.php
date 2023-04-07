@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka\Message;
 
@@ -8,8 +8,8 @@ use Junges\Kafka\Contracts\KafkaAvroSchemaRegistry;
 class KafkaAvroSchema implements KafkaAvroSchemaRegistry
 {
     public function __construct(
-        private string $schemaName,
-        private int $version = KafkaAvroSchemaRegistry::LATEST_VERSION,
+        private readonly string $schemaName,
+        private readonly int $version = KafkaAvroSchemaRegistry::LATEST_VERSION,
         private ?AvroSchema $definition = null
     ) {
     }

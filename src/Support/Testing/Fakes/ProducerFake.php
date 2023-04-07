@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka\Support\Testing\Fakes;
 
@@ -14,8 +14,8 @@ class ProducerFake
     private ?Closure $producerCallback = null;
 
     public function __construct(
-        private Config $config,
-        private string $topic
+        private readonly Config $config,
+        private readonly string $topic
     ) {
     }
 

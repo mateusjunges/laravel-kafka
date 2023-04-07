@@ -1,10 +1,10 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka\Tests\Commit;
 
 use Junges\Kafka\Commit\BatchCommitter;
+use Junges\Kafka\Commit\Committer;
 use Junges\Kafka\Commit\DefaultCommitterFactory;
-use Junges\Kafka\Commit\KafkaCommitter;
 use Junges\Kafka\Commit\NativeSleeper;
 use Junges\Kafka\Commit\RetryableCommitter;
 use Junges\Kafka\Commit\VoidCommitter;
@@ -14,7 +14,7 @@ use Junges\Kafka\MessageCounter;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use RdKafka\KafkaConsumer;
 
-class CommitterFactoryTest extends LaravelKafkaTestCase
+final class CommitterFactoryTest extends LaravelKafkaTestCase
 {
     public function testShouldBuildAVoidCommitterWhenAutoCommitIsDisabled(): void
     {
@@ -71,7 +71,7 @@ class CommitterFactoryTest extends LaravelKafkaTestCase
 
         $expectedCommitter = new BatchCommitter(
             new RetryableCommitter(
-                new KafkaCommitter(
+                new Committer(
                     $consumer
                 ),
                 new NativeSleeper(),

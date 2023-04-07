@@ -1,14 +1,14 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka\Commit;
 
-use Junges\Kafka\Commit\Contracts\Committer;
+use Junges\Kafka\Contracts\Committer;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
 
 class SeekToCurrentErrorCommitter implements Committer
 {
-    public function __construct(private KafkaConsumer $consumer, private Committer $committer)
+    public function __construct(private readonly KafkaConsumer $consumer, private readonly Committer $committer)
     {
     }
 

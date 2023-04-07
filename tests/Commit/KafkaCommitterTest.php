@@ -1,8 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
-namespace Commit;
+namespace Junges\Kafka\Tests\Commit;
 
-use Junges\Kafka\Commit\KafkaCommitter;
+use Junges\Kafka\Commit\Committer;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use Mockery as m;
@@ -10,9 +10,9 @@ use RdKafka\Conf;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
 
-class KafkaCommitterTest extends LaravelKafkaTestCase
+final class KafkaCommitterTest extends LaravelKafkaTestCase
 {
-    public function testItCanCommit()
+    public function testItCanCommit(): void
     {
         $kafkaConsumer = m::mock(KafkaConsumer::class)
             ->shouldReceive('commit')->once()
@@ -34,14 +34,14 @@ class KafkaCommitterTest extends LaravelKafkaTestCase
             $conf->set($key, $value);
         }
 
-        $kafkaCommitter = new KafkaCommitter(app(KafkaConsumer::class, [
+        $kafkaCommitter = new Committer(app(KafkaConsumer::class, [
             'conf' => $conf,
         ]));
 
         $kafkaCommitter->commitMessage(new Message(), true);
     }
 
-    public function testItCanCommitToDlq()
+    public function testItCanCommitToDlq(): void
     {
         $kafkaConsumer = m::mock(KafkaConsumer::class)
             ->shouldReceive('commit')->once()
@@ -63,7 +63,7 @@ class KafkaCommitterTest extends LaravelKafkaTestCase
             $conf->set($key, $value);
         }
 
-        $kafkaCommitter = new KafkaCommitter(app(KafkaConsumer::class, [
+        $kafkaCommitter = new Committer(app(KafkaConsumer::class, [
             'conf' => $conf,
         ]));
 

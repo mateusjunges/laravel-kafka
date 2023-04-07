@@ -1,16 +1,16 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Junges\Kafka\Tests\Commit;
 
-use Junges\Kafka\Commit\Contracts\Committer;
 use Junges\Kafka\Commit\SeekToCurrentErrorCommitter;
+use Junges\Kafka\Contracts\Committer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
 
-class SeekToCurrentErrorCommitterTest extends LaravelKafkaTestCase
+final class SeekToCurrentErrorCommitterTest extends LaravelKafkaTestCase
 {
-    public function testItShouldCommitOnSuccess()
+    public function testItShouldCommitOnSuccess(): void
     {
         $mockedKafkaConsumer = $this->createMock(KafkaConsumer::class);
 
@@ -24,7 +24,7 @@ class SeekToCurrentErrorCommitterTest extends LaravelKafkaTestCase
         $seekToCurrentErrorCommitter->commitMessage(new Message(), true);
     }
 
-    public function testItShouldNotCommitAndResubscribeOnError()
+    public function testItShouldNotCommitAndResubscribeOnError(): void
     {
         $mockedKafkaConsumer = $this->createMock(KafkaConsumer::class);
         $mockedKafkaConsumer->expects($this->once())
