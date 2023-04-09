@@ -2,9 +2,15 @@
 
 namespace Junges\Kafka\Tests;
 
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Junges\Kafka\Consumers\ConsumerBuilder;
 use Junges\Kafka\Contracts\ProducerMessage;
+use Junges\Kafka\Events\BatchMessagePublished;
+use Junges\Kafka\Events\CouldNotPublishMessage as CouldNotPublishMessageEvent;
+use Junges\Kafka\Events\MessageBatchPublished;
+use Junges\Kafka\Events\MessagePublished;
+use Junges\Kafka\Events\PublishingMessageBatch;
 use Junges\Kafka\Exceptions\CouldNotPublishMessage;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\Message;
@@ -19,6 +25,7 @@ final class KafkaTest extends LaravelKafkaTestCase
 {
     public function testItCanPublishMessagesToKafka(): void
     {
+        Event::fake();
         $mockedProducerTopic = m::mock(ProducerTopic::class)
             ->shouldReceive('producev')->once()
             ->andReturn(m::self())
@@ -43,6 +50,8 @@ final class KafkaTest extends LaravelKafkaTestCase
             ->withHeaders(['custom' => 'header'])
             ->withDebugEnabled()
             ->send();
+
+        Event::assertDispatched(MessagePublished::class);
 
         $this->assertTrue($test);
     }
@@ -233,9 +242,11 @@ final class KafkaTest extends LaravelKafkaTestCase
 
     public function testProducerThrowsExceptionIfMessageCouldNotBePublished(): void
     {
+        Event::fake();
+
         $this->expectException(CouldNotPublishMessage::class);
 
-        $this->expectExceptionMessage("Your message could not be published. Flush returned with error code -196: 'Local: Communication failure with broker'");
+        $this->expectExceptionMessage($expectedMessage = "Your message could not be published. Flush returned with error code -196: 'Local: Communication failure with broker'");
 
         $mockedProducerTopic = m::mock(ProducerTopic::class)
             ->shouldReceive('producev')->once()
@@ -254,6 +265,12 @@ final class KafkaTest extends LaravelKafkaTestCase
         $this->app->bind(Producer::class, fn () => $mockedProducer);
 
         Kafka::publishOn('test')->withBodyKey('foo', 'bar')->send();
+
+        Event::assertDispatched(CouldNotPublishMessageEvent::class, function (CouldNotPublishMessageEvent $event) use ($expectedMessage) {
+            return $event->throwable instanceof CouldNotPublishMessage
+                && $event->errorCode === RD_KAFKA_RESP_ERR__FAIL
+                && $event->message === $expectedMessage;
+        });
     }
 
     public function testSendMessageBatch(): void
@@ -262,6 +279,8 @@ final class KafkaTest extends LaravelKafkaTestCase
         $messageBatch->push(new Message());
         $messageBatch->push(new Message());
         $messageBatch->push(new Message());
+
+        $expectedUuid = $messageBatch->getBatchUuid();
 
         $mockedProducerTopic = m::mock(ProducerTopic::class)
             ->shouldReceive('producev')
@@ -283,6 +302,20 @@ final class KafkaTest extends LaravelKafkaTestCase
             return $mockedProducer;
         });
 
+        Event::fake();
+
         Kafka::publishOn('test')->withBodyKey('foo', 'bar')->sendBatch($messageBatch);
+
+        Event::assertDispatched(PublishingMessageBatch::class, function (PublishingMessageBatch $event) use ($messageBatch) {
+            return $event->batch === $messageBatch;
+        });
+        Event::assertDispatchedTimes(BatchMessagePublished::class, 3);
+        Event::assertDispatched(BatchMessagePublished::class, function (BatchMessagePublished $event) use ($expectedUuid) {
+            return $event->batchUuid === $expectedUuid;
+        });
+        Event::assertDispatched(MessageBatchPublished::class, function (MessageBatchPublished $event) use ($messageBatch) {
+            return $event->batch === $messageBatch
+                && $event->publishedCount === 3;
+        });
     }
 }
