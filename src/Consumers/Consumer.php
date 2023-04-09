@@ -3,19 +3,21 @@
 namespace Junges\Kafka\Consumers;
 
 use Closure;
+use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
 use Junges\Kafka\Commit\DefaultCommitterFactory;
 use Junges\Kafka\Commit\NativeSleeper;
 use Junges\Kafka\Config\Config;
-use Junges\Kafka\Contracts\CanConsumeMessages;
 use Junges\Kafka\Contracts\Committer;
 use Junges\Kafka\Contracts\CommitterFactory;
-use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Contracts\Logger;
 use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\MessageDeserializer;
+use Junges\Kafka\Events\MessageConsumed;
+use Junges\Kafka\Events\MessageSentToDLQ;
 use Junges\Kafka\Exceptions\ConsumerException;
 use Junges\Kafka\MessageCounter;
 use Junges\Kafka\Retryable;
@@ -59,6 +61,7 @@ class Consumer implements MessageConsumer
     private ?Closure $whenStopConsuming = null;
     protected int $lastRestart = 0;
     protected Timer $restartTimer;
+    private Dispatcher $dispatcher;
 
     public function __construct(private readonly Config $config, private readonly MessageDeserializer $deserializer, CommitterFactory $committerFactory = null)
     {
@@ -67,6 +70,7 @@ class Consumer implements MessageConsumer
         $this->retryable = new Retryable(new NativeSleeper(), 6, self::TIMEOUT_ERRORS);
 
         $this->committerFactory = $committerFactory ?? new DefaultCommitterFactory($this->messageCounter);
+        $this->dispatcher = App::make(Dispatcher::class);
     }
 
     /**
@@ -208,9 +212,10 @@ class Consumer implements MessageConsumer
     {
         try {
             $consumedMessage = $this->getConsumerMessage($message);
-            $this->config->getConsumer()->handle($this->deserializer->deserialize($consumedMessage));
-
+            $this->config->getConsumer()->handle($consumedMessage = $this->deserializer->deserialize($consumedMessage));
             $success = true;
+
+            $this->dispatcher->dispatch(new MessageConsumed($consumedMessage));
         } catch (Throwable $throwable) {
             $this->logger->error($message, $throwable);
             $success = $this->handleException($throwable, $message);
@@ -255,9 +260,7 @@ class Consumer implements MessageConsumer
     {
         try {
             $consumedMessages = $collection
-                ->map(
-                    fn (Message $message) => $this->deserializer->deserialize($this->getConsumerMessage($message))
-                );
+                ->map(fn (Message $message) => $this->deserializer->deserialize($this->getConsumerMessage($message)));
 
             $this->config->getBatchConfig()->getConsumer()->handle($consumedMessages);
 
@@ -280,8 +283,6 @@ class Consumer implements MessageConsumer
                 $this->config->getTopics()[0],
                 $exception
             );
-
-            return true;
         } catch (Throwable $throwable) {
             if ($exception !== $throwable) {
                 $this->logger->error($message, $throwable, 'HANDLER_EXCEPTION');
@@ -305,6 +306,12 @@ class Consumer implements MessageConsumer
             headers: $message->headers ?? []
         );
 
+        $this->dispatcher->dispatch(new MessageSentToDLQ(
+            $message->payload,
+            $this->config->getConsumer()->producerKey($message),
+            $message->headers ?? [],
+        ));
+
         if (method_exists($this->producer, 'flush')) {
             $this->producer->flush(12000);
         }
@@ -323,7 +330,7 @@ class Consumer implements MessageConsumer
 
             $this->committer->commitMessage($message, $success);
         } catch (Throwable $throwable) {
-            if ($throwable->getCode() !== self::IGNORABLE_COMMIT_ERRORS) {
+            if ($throwable->getCode() !== RD_KAFKA_RESP_ERR__NO_OFFSET) {
                 $this->logger->error($message, $throwable, 'MESSAGE_COMMIT');
 
                 throw $throwable;

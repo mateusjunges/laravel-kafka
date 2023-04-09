@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Producers;
 
+use Illuminate\Support\Str;
 use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Message\Message;
 use SplDoublyLinkedList;
@@ -16,14 +17,17 @@ class MessageBatch
     /** Storage of messages */
     private readonly SplDoublyLinkedList $messages;
 
+    private string $uuid;
+
     #[Pure]
     public function __construct()
     {
         $this->messages = new SplDoublyLinkedList();
+        $this->uuid = Str::uuid()->toString();
     }
 
     /** Pushes messages to batch */
-    public function push(Message $message)
+    public function push(Message $message): void
     {
         $this->messages->push($message);
     }
@@ -36,5 +40,10 @@ class MessageBatch
     public function getMessages(): SplDoublyLinkedList
     {
         return $this->messages;
+    }
+
+    public function getBatchUuid(): string
+    {
+        return $this->uuid;
     }
 }

@@ -3,6 +3,7 @@
 namespace Junges\Kafka\Tests\Consumers;
 
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Event;
 use Junges\Kafka\Commit\VoidCommitter;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Consumers\CallableConsumer;
@@ -11,6 +12,7 @@ use Junges\Kafka\Consumers\DispatchQueuedHandler;
 use Junges\Kafka\Contracts\CommitterFactory;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\MessageConsumer;
+use Junges\Kafka\Events\MessageConsumed;
 use Junges\Kafka\Exceptions\ConsumerException;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\ConsumedMessage;
@@ -66,6 +68,8 @@ final class ConsumerTest extends LaravelKafkaTestCase
 
     public function testItCanConsumeMessages(): void
     {
+        Event::fake();
+
         $message = new Message();
         $message->err = 0;
         $message->key = 'key';
@@ -87,6 +91,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
 
         $consumer->consume();
         $this->assertInstanceOf(ConsumedMessage::class, $fakeConsumer->getMessage());
+        Event::assertDispatched(MessageConsumed::class, fn (MessageConsumed $e) => $e->message === $fakeConsumer->getMessage());
     }
 
     public function testItCanConsumeMessagesWithQueueableHandlers(): void
