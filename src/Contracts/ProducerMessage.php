@@ -12,5 +12,5 @@ interface ProducerMessage extends KafkaMessage
 
     public function withHeaders(array $headers = []):  ProducerMessage;
 
-    public function withHeader(string $key, mixed $value): ProducerMessage;
+    public function withHeader(string $key, string|int|float $value): ProducerMessage;
 }
