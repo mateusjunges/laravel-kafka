@@ -66,7 +66,7 @@ class Message extends AbstractMessage implements Arrayable, ProducerMessage
         return $this;
     }
 
-    public function withHeader(string $key, mixed $value): ProducerMessage
+    public function withHeader(string $key, string|int|float $value): ProducerMessage
     {
         $this->headers[$key] = $value;
 
