@@ -27,7 +27,6 @@ use RdKafka\KafkaConsumer;
 use RdKafka\Message;
 use RdKafka\Producer as KafkaProducer;
 use Throwable;
-use function PHPUnit\Framework\isFalse;
 
 class Consumer implements MessageConsumer
 {
