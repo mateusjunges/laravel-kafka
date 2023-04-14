@@ -201,4 +201,9 @@ class Config
     {
         return $this->afterConsumingCallbacks;
     }
+
+    public function shouldSendToDlq(): bool
+    {
+        return $this->dlq !== null;
+    }
 }

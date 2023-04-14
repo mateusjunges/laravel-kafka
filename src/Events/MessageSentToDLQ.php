@@ -8,5 +8,6 @@ final class MessageSentToDLQ
         public readonly string $payload,
         public readonly ?string $key,
         public readonly array $headers,
+        public readonly ?\Throwable $throwable
     ) {}
 }

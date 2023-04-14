@@ -290,26 +290,35 @@ class Consumer implements MessageConsumer
 
             report($throwable);
 
+            if ($this->config->shouldSendToDlq()) {
+                $this->sendToDlq($message, $throwable);
+                $this->committer->commitDlq($message);
+
+                return true;
+            }
+
             return false;
         }
     }
 
     /** Send a message to the Dead Letter Queue. */
-    private function sendToDlq(Message $message): void
+    private function sendToDlq(Message $message, Throwable $throwable = null): void
     {
         $topic = $this->producer->newTopic($this->config->getDlq());
+
         $topic->producev(
             partition: RD_KAFKA_PARTITION_UA,
             msgflags: 0,
             payload: $message->payload,
             key: $this->config->getConsumer()->producerKey($message),
-            headers: $message->headers ?? []
+            headers: $this->buildHeadersForDlq($message, $throwable)
         );
 
         $this->dispatcher->dispatch(new MessageSentToDLQ(
             $message->payload,
             $this->config->getConsumer()->producerKey($message),
             $message->headers ?? [],
+            $throwable
         ));
 
         if (method_exists($this->producer, 'flush')) {
@@ -317,17 +326,23 @@ class Consumer implements MessageConsumer
         }
     }
 
+    private function buildHeadersForDlq(Message $message, Throwable $throwable = null): array
+    {
+        if (! $throwable instanceof Throwable) {
+            return [];
+        }
+
+        $throwableHeaders['kafka_throwable_message'] = $throwable->getMessage();
+        $throwableHeaders['kafka_throwable_code'] = $throwable->getCode();
+        $throwableHeaders['kafka_throwable_class_name'] = get_class($throwable);
+
+        return array_merge($message->headers ?? [], $throwableHeaders);
+    }
+
     /** @throws \Throwable */
     private function commit(Message $message, bool $success): void
     {
         try {
-            if (! $success && ! is_null($this->config->getDlq())) {
-                $this->sendToDlq($message);
-                $this->committer->commitDlq($message);
-
-                return;
-            }
-
             $this->committer->commitMessage($message, $success);
         } catch (Throwable $throwable) {
             if ($throwable->getCode() !== RD_KAFKA_RESP_ERR__NO_OFFSET) {

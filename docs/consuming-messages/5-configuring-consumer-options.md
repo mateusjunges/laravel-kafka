@@ -19,8 +19,14 @@ $consumer = \Junges\Kafka\Facades\Kafka::createConsumer()->subscribe('topic')->w
 $consumer = \Junges\Kafka\Facades\Kafka::createConsumer()->subscribe('topic')->withDlq('your-dlq-topic-name')
 ```
 
+When your message is sent to the dead letter queue, we will add three header keys to containing information about what happened to that message:
+
+- `kafka_throwable_message`: The exception message
+- `kafka_throwable_code`: The exception code
+- `kafka_throwable_class_name`: The exception class name.
+
 ### Using auto commit
-The auto-commit check is called in every poll and it checks that the time elapsed is greater than the configured time. To enable auto commit,
+The auto-commit check is called in every poll, and it checks that the time elapsed is greater than the configured time. To enable auto commit,
 use the `withAutoCommit` method:
 
 ```php
