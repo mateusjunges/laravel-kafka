@@ -9,5 +9,6 @@ return [
         'username' => '',
         'password' => '',
         'mechanisms' => '',
-    ]
+    ],
+    'cache_driver' => 'file',
 ];

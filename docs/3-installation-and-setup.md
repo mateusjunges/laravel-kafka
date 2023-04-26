@@ -73,5 +73,10 @@ return [
      | The sleep time in milliseconds that will be used when retrying flush
      */
     'flush_retry_sleep_in_ms' => 100,
+
+    /*
+     | The cache driver that will be used
+     */
+    'cache_driver' => env('KAFKA_CACHE_DRIVER', env('CACHE_DRIVER', 'file')),
 ];
 ```

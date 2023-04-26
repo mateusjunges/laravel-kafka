@@ -425,6 +425,6 @@ class Consumer implements CanConsumeMessages
 
     protected function getLastRestart(): int
     {
-        return Cache::get('laravel-kafka:consumer:restart', 0);
+        return Cache::driver(config('kafka.cache_driver'))->get('laravel-kafka:consumer:restart', 0);
     }
 }
