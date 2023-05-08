@@ -16,7 +16,7 @@ class KafkaRestartConsumersCommand extends Command
 
     public function handle()
     {
-        Cache::forever('laravel-kafka:consumer:restart', $this->currentTime());
+        Cache::driver(config('kafka.cache_driver'))->forever('laravel-kafka:consumer:restart', $this->currentTime());
         $this->info('Kafka consumers restart signal sent.');
     }
 }
