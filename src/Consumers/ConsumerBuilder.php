@@ -66,7 +66,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
         $this->maxCommitRetries = 6;
         $this->middlewares = [];
         $this->securityProtocol = 'PLAINTEXT';
-        $this->autoCommit = false;
+        $this->autoCommit = config('kafka.auto_commit');
         $this->options = [];
 
         $this->deserializer = resolve(MessageDeserializer::class);
