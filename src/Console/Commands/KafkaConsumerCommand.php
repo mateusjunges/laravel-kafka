@@ -18,7 +18,8 @@ class KafkaConsumerCommand extends Command
             {--commit=1} 
             {--dlq=? : The Dead Letter Queue} 
             {--maxMessage=? : The max number of messages that should be handled}
-            {--securityProtocol=?}';
+            {--securityProtocol=?}
+            {--brokerConnection=?}';
 
     protected $description = 'A Kafka Consumer for Laravel.';
 

@@ -7,6 +7,16 @@ return [
     'brokers' => env('KAFKA_BROKERS', 'localhost:9092'),
 
     /*
+     * You can also define the brokers as an associative array and specify the parameter "brokerConnection" to the
+     * consumer in order to select the connection.
+     *
+     * 'brokers' => [
+     *      'conn1' => env('KAFKA_BROKERS', 'localhost:9092'),
+     *      'conn2' => env('KAFKA_BROKERS_2', 'localhost:9092')
+     * ]
+     */
+
+    /*
      | Kafka consumers belonging to the same consumer group share a group id.
      | The consumers in a group then divides the topic partitions as fairly amongst themselves as possible by
      | establishing that each partition is only consumed by a single consumer from the group.

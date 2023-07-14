@@ -19,6 +19,7 @@ class Options
     private ?string $saslPassword;
     private ?string $saslMechanisms;
     private array $config;
+    private ?string $brokerConnection = null;
 
     #[Pure]
     public function __construct(array $options, array $config)
@@ -90,8 +91,12 @@ class Options
         return $this->securityProtocol;
     }
 
-    public function getBroker()
+    public function getBroker(): string
     {
+        if ($this->brokerConnection && is_array($this->config['brokers'])) {
+            return $this->config['brokers'][$this->brokerConnection];
+        }
+
         return $this->config['brokers'];
     }
 }
