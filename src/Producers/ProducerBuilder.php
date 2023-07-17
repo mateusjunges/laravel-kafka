@@ -27,7 +27,16 @@ class ProducerBuilder implements CanProduceMessages
         $message = app(KafkaProducerMessage::class);
         $this->message = $message->create($topic);
         $this->serializer = app(MessageSerializer::class);
-        $this->broker = $broker ?? config('kafka.brokers');
+        $this->broker = $broker ?? $this->pickBroker();
+    }
+
+    private function pickBroker(): string
+    {
+        if (is_array(config('kafka.brokers'))) {
+            return array_values(config('kafka.brokers'))[0];
+        }
+
+        return config('kafka.brokers');
     }
 
     /**
