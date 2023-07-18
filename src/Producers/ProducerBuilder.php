@@ -21,22 +21,14 @@ class ProducerBuilder implements CanProduceMessages
 
     public function __construct(
         private string $topic,
-        string|array|null $broker = null,
+        ?string $broker = null,
     ) {
         /** @var KafkaProducerMessage $message */
         $message = app(KafkaProducerMessage::class);
         $this->message = $message->create($topic);
         $this->serializer = app(MessageSerializer::class);
-        $this->broker = $broker ?? $this->pickBroker();
-    }
-
-    private function pickBroker(): string
-    {
-        if (is_array(config('kafka.brokers'))) {
-            return array_values(config('kafka.brokers'))[0];
-        }
-
-        return config('kafka.brokers');
+        $defaultConnection = config('kafka.default');
+        $this->broker = $broker ?? config('kafka.broker_connections.' . $defaultConnection);
     }
 
     /**

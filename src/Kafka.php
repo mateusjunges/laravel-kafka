@@ -21,7 +21,7 @@ class Kafka implements CanPublishMessagesToKafka, CanConsumeMessagesFromKafka
     {
         return new ProducerBuilder(
             topic: $topic,
-            broker: $broker ?? config('kafka.brokers')
+            broker: $broker ?? config('kafka.broker_connections.' . config('kafka.default'))
         );
     }
 
@@ -36,7 +36,7 @@ class Kafka implements CanPublishMessagesToKafka, CanConsumeMessagesFromKafka
     public function createConsumer(array $topics = [], string $groupId = null, string $brokers = null): ConsumerBuilder
     {
         return ConsumerBuilder::create(
-            brokers: $brokers ?? config('kafka.brokers'),
+            brokers: $brokers ?? config('kafka.broker_connections.' . config('kafka.default')),
             topics: $topics,
             groupId: $groupId ?? config('kafka.consumer_group_id')
         );
