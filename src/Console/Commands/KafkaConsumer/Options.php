@@ -95,6 +95,8 @@ class Options
     {
         if ($this->brokerConnection && is_array($this->config['brokers'])) {
             return $this->config['brokers'][$this->brokerConnection];
+        } elseif (is_array($this->config['brokers'])) {
+            return array_values($this->config['brokers'])[0];
         }
 
         return $this->config['brokers'];

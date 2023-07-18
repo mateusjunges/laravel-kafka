@@ -21,7 +21,7 @@ class ProducerBuilder implements CanProduceMessages
 
     public function __construct(
         private string $topic,
-        ?string $broker = null,
+        string|array|null $broker = null,
     ) {
         /** @var KafkaProducerMessage $message */
         $message = app(KafkaProducerMessage::class);
