@@ -97,6 +97,10 @@ class Options
             return $this->config['broker_connections'][$this->brokerConnection];
         }
 
+        if (!isset($this->config['default'])) {
+            return $this->consumer['brokers'];
+        }
+
         return $this->config['broker_connections'][$this->config['default']];
     }
 }
