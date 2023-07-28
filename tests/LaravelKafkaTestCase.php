@@ -27,6 +27,11 @@ class LaravelKafkaTestCase extends Orchestra
     public function getEnvironmentSetUp($app): void
     {
         $app['config']->set('kafka.brokers', 'localhost:9092');
+        $app['config']->set('kafka.default', 'main');
+        $app['config']->set('kafka.broker_connections', [
+            'main' => 'localhost:9092',
+            'test' => 'localhost:9093'
+        ]);
         $app['config']->set('kafka.consumer_group_id', 'group');
         $app['config']->set('kafka.offset_reset', 'latest');
         $app['config']->set('kafka.auto_commit', true);

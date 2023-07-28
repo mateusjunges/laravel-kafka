@@ -293,4 +293,33 @@ class KafkaTest extends LaravelKafkaTestCase
 
         Kafka::publishOn('test')->withBodyKey('foo', 'bar')->sendBatch($messageBatch);
     }
+
+    public function testICanPublishMessagesOnTestConnection()
+    {
+        $mockedProducerTopic = m::mock(ProducerTopic::class)
+            ->shouldReceive('producev')->once()
+            ->andReturn(m::self())
+            ->getMock();
+
+        $mockedProducer = m::mock(Producer::class)
+            ->shouldReceive('newTopic')
+            ->andReturn($mockedProducerTopic)
+            ->shouldReceive('poll')
+            ->shouldReceive('flush')
+            ->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
+            ->getMock();
+
+        $this->app->bind(Producer::class, function () use ($mockedProducer) {
+            return $mockedProducer;
+        });
+
+        $test = Kafka::publishOn('test-topic', config('kafka.broker_connections.test'))
+            ->withKafkaKey(Str::uuid()->toString())
+            ->withBodyKey('test', ['test'])
+            ->withHeaders(['custom' => 'header'])
+            ->withDebugEnabled()
+            ->send();
+
+        $this->assertTrue($test);
+    }
 }

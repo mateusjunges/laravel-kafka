@@ -18,6 +18,7 @@ class OptionsTest extends LaravelKafkaTestCase
             'brokers' => config('kafka.brokers'),
             'groupId' => config('kafka.group_id'),
             'securityProtocol' => config('kafka.securityProtocol'),
+            'broker_connections' => config('kafka.broker_connections'),
             'sasl' => [
                 'mechanisms' => config('kafka.sasl.mechanisms'),
                 'username' => config('kafka.sasl.username'),
@@ -69,5 +70,18 @@ class OptionsTest extends LaravelKafkaTestCase
         $this->assertEquals(-1, $options->getMaxMessages());
         $this->assertEquals('plaintext', $options->getSecurityProtocol());
         $this->assertNull($options->getSasl());
+    }
+
+    public function testItCanUseAnotherConnection()
+    {
+        $options = [
+            'topics' => 'test-topic,test-topic-1',
+            'consumer' => FakeHandler::class,
+            'brokerConnection' => 'test'
+        ];
+
+        $options = new Options($options, $this->config);
+
+        $this->assertEquals('localhost:9093', $options->getBroker());
     }
 }
