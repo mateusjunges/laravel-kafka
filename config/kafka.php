@@ -6,8 +6,16 @@ return [
      */
     'default' => env('KAFKA_CONNECTION', 'main'),
     'brokers' => env('KAFKA_BROKERS', 'localhost:9092'),
-    'broker_connections' => [
-        'main' => env('KAFKA_BROKERS', 'localhost:9092'),
+    'connections' => [
+        'main' => [
+            'brokers' => env('KAFKA_BROKERS', 'localhost:9092'),
+            'securityProtocol' => env('KAFKA_SECURITY_PROTOCOL', ''),
+            'sasl' => [
+                'username' => env('KAFKA_SASL_USERNAME', ''),
+                'password' => env('KAFKA_SASL_PASSWORD', ''),
+                'mechanisms' => env('KAFKA_SASL_MECHANISMS', ''),
+            ]
+        ],
     ],
 
     /*

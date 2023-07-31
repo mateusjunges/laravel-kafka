@@ -94,13 +94,13 @@ class Options
     public function getBroker(): string
     {
         if ($this->brokerConnection) {
-            return $this->config['broker_connections'][$this->brokerConnection];
+            return $this->config['connections'][$this->brokerConnection]['brokers'];
         }
 
         if (!isset($this->config['default'])) {
             return $this->config['brokers'];
         }
 
-        return $this->config['broker_connections'][$this->config['default']];
+        return $this->config['connections'][$this->config['default']]['brokers'];
     }
 }

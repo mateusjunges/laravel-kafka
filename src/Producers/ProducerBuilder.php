@@ -29,7 +29,7 @@ class ProducerBuilder implements CanProduceMessages
         $this->serializer = app(MessageSerializer::class);
 
         $defaultConnection = config('kafka.default');
-        $defaultBrokers = config('kafka.broker_connections.' . $defaultConnection) ?? config('kafka.brokers');
+        $defaultBrokers = config('kafka.connections.' . $defaultConnection . '.brokers') ?? config('kafka.brokers');
         $this->broker = $broker ?? $defaultBrokers;
     }
 

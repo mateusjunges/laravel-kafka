@@ -19,7 +19,8 @@ class Kafka implements CanPublishMessagesToKafka, CanConsumeMessagesFromKafka
      */
     public function publishOn(string $topic, string $broker = null): CanProduceMessages
     {
-        $defaultBrokers = config('kafka.broker_connections.' . config('kafka.default')) ?? config('kafka.brokers');
+        $defaultBrokers = config('kafka.connections.' . config('kafka.default') . '.brokers') ??
+            config('kafka.brokers');
 
         return new ProducerBuilder(
             topic: $topic,
@@ -37,7 +38,8 @@ class Kafka implements CanPublishMessagesToKafka, CanConsumeMessagesFromKafka
      */
     public function createConsumer(array $topics = [], string $groupId = null, string $brokers = null): ConsumerBuilder
     {
-        $defaultBrokers = config('kafka.broker_connections.' . config('kafka.default')) ?? config('kafka.brokers');
+        $defaultBrokers = config('kafka.connections.' . config('kafka.default') . '.brokers') ??
+            config('kafka.brokers');
 
         return ConsumerBuilder::create(
             brokers: $brokers ?? $defaultBrokers,

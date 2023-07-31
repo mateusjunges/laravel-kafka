@@ -18,7 +18,7 @@ class OptionsTest extends LaravelKafkaTestCase
             'brokers' => config('kafka.brokers'),
             'groupId' => config('kafka.group_id'),
             'securityProtocol' => config('kafka.securityProtocol'),
-            'broker_connections' => config('kafka.broker_connections'),
+            'connections' => config('kafka.connections'),
             'sasl' => [
                 'mechanisms' => config('kafka.sasl.mechanisms'),
                 'username' => config('kafka.sasl.username'),

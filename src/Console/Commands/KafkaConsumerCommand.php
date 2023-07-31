@@ -29,16 +29,23 @@ class KafkaConsumerCommand extends Command
     {
         parent::__construct();
 
+        $securityProtocol = config('kafka.default') ? config(
+            'kafka.connections.' . config('kafka.default') . '.securityProtocol'
+        ) : config('kafka.securityProtocol');
+        $sasl = (config('kafka.default') ? config(
+            'kafka.connections.' . config('kafka.default') . '.sasl'
+        ) : config('kafka.sasl')) ?? [];
+
         $this->config = [
             'brokers' => config('kafka.brokers'),
-            'broker_connections' => config('kafka.broker_connections'),
+            'connections' => config('kafka.connections'),
             'default' => config('kafka.default'),
             'groupId' => config('kafka.consumer_group_id'),
-            'securityProtocol' => config('kafka.securityProtocol'),
+            'securityProtocol' => $securityProtocol,
             'sasl' => [
-                'mechanisms' => config('kafka.sasl.mechanisms'),
-                'username' => config('kafka.sasl.username'),
-                'password' => config('kafka.sasl.password'),
+                'mechanisms' => $sasl['mechanism'] ?? null,
+                'username' => $sasl['username'] ?? null,
+                'password' => $sasl['password'] ?? null,
             ],
         ];
     }
