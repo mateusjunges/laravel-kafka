@@ -63,6 +63,16 @@ class KafkaConsumerCommand extends Command
 
             return;
         }
+
+        if ($this->option('brokerConnection')) {
+            $this->config['sasl'] = config(
+                'kafka.connections.' . $this->option('brokerConnection') . '.sasl'
+            );
+            $this->config['securityProtocol'] = config(
+                'kafka.connections.' . $this->option('brokerConnection') . '.securityProtocol'
+            );
+        }
+
         $options = new Options($this->options(), $this->config);
 
         $consumer = $options->getConsumer();
