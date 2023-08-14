@@ -7,6 +7,20 @@ return [
     'brokers' => env('KAFKA_BROKERS', 'localhost:9092'),
 
     /*
+     | Default security protocol
+     */
+    'securityProtocol' =>  env('KAFKA_SECURITY_PROTOCOL', 'PLAINTEXT'),
+
+    /*
+     | Default sasl configuration 
+     */
+    'sasl' => [
+        'mechanisms' => env('KAFKA_MECHANISMS', 'PLAINTEXT'),
+        'username' => env('KAFKA_USERNAME', null),
+        'password' => env('KAFKA_PASSWORD', null)
+    ],
+
+    /*
      | Kafka consumers belonging to the same consumer group share a group id.
      | The consumers in a group then divides the topic partitions as fairly amongst themselves as possible by
      | establishing that each partition is only consumed by a single consumer from the group.
