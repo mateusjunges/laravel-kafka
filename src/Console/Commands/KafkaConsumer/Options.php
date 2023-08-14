@@ -87,7 +87,9 @@ class Options
 
     public function getSecurityProtocol(): ?string
     {
-        return strlen($this->securityProtocol) > 1 ? $this->securityProtocol : $this->config['securityProtocol'];
+        return (
+            strlen($this->securityProtocol) > 1 ? $this->securityProtocol : $this->config['securityProtocol']
+        ) || 'plaintext';
     }
 
     public function getBroker()
