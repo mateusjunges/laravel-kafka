@@ -29,17 +29,16 @@ class KafkaConsumerCommand extends Command
     {
         parent::__construct();
 
-        $securityProtocol = config('kafka.default') ? config(
-            'kafka.connections.' . config('kafka.default') . '.securityProtocol'
-        ) : config('kafka.securityProtocol');
-        $sasl = (config('kafka.default') ? config(
-            'kafka.connections.' . config('kafka.default') . '.sasl'
-        ) : config('kafka.sasl')) ?? [];
+        $defaultConnection = config('kafka.default');
+
+        $securityProtocol = config("kafka.connections.{$defaultConnection}.securityProtocol", config('kafka.securityProtocol'));
+
+        $sasl = config("kafka.connections.{$defaultConnection}.sasl", config('kafka.sasl', []));
 
         $this->config = [
             'brokers' => config('kafka.brokers'),
             'connections' => config('kafka.connections'),
-            'default' => config('kafka.default'),
+            'default' => $defaultConnection,
             'groupId' => config('kafka.consumer_group_id'),
             'securityProtocol' => $securityProtocol,
             'sasl' => [
@@ -65,12 +64,9 @@ class KafkaConsumerCommand extends Command
         }
 
         if ($this->option('brokerConnection')) {
-            $this->config['sasl'] = config(
-                'kafka.connections.' . $this->option('brokerConnection') . '.sasl'
-            );
-            $this->config['securityProtocol'] = config(
-                'kafka.connections.' . $this->option('brokerConnection') . '.securityProtocol'
-            );
+
+            $this->config['sasl'] = config("kafka.connections.{$this->option('brokerConnection')}.sasl");
+            $this->config['securityProtocol'] = config("kafka.connections.{$this->option('brokerConnection')}.securityProtocol");
         }
 
         $options = new Options($this->options(), $this->config);
