@@ -3,7 +3,7 @@ title: Introduction
 weight: 1
 ---
 
-Do you use Kafka in your laravel projects? All packages I've seen until today, including some built by myself, does not provide a nice syntax usage syntax or, if it does, the test process with these packages are very painful.
+Do you use Kafka in your laravel projects? All packages I've seen until today, including some built by myself, does not provide a nice usage syntax or, if it does, the test process with these packages are very painful.
 
 This package provides a nice way of producing and consuming kafka messages in your Laravel projects.
 
