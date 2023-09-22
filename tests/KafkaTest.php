@@ -3,6 +3,7 @@
 namespace Junges\Kafka\Tests;
 
 use Illuminate\Support\Str;
+use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Consumers\ConsumerBuilder;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
 use Junges\Kafka\Exceptions\CouldNotPublishMessage;
@@ -292,5 +293,19 @@ class KafkaTest extends LaravelKafkaTestCase
         });
 
         Kafka::publishOn('test')->withBodyKey('foo', 'bar')->sendBatch($messageBatch);
+    }
+
+    public function testMacro()
+    {
+        $sasl = new Sasl(username: 'username', password: 'password', mechanisms: 'mechanisms');
+
+        Kafka::macro('defaultProducer', function (string $topic) use ($sasl) {
+            return $this->publishOn($topic)->withSasl($sasl);
+        });
+
+        $producer = Kafka::defaultProducer('test-topic');
+
+        $this->assertInstanceOf(ProducerBuilder::class, $producer);
+        $this->assertEquals($sasl, $this->getPropertyWithReflection('saslConfig', $producer));
     }
 }

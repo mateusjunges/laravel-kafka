@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka;
 
+use Illuminate\Support\Traits\Macroable;
 use Junges\Kafka\Consumers\ConsumerBuilder;
 use Junges\Kafka\Contracts\CanConsumeMessagesFromKafka;
 use Junges\Kafka\Contracts\CanProduceMessages;
@@ -10,6 +11,8 @@ use Junges\Kafka\Producers\ProducerBuilder;
 
 class Kafka implements CanPublishMessagesToKafka, CanConsumeMessagesFromKafka
 {
+    use Macroable;
+
     /**
      * Creates a new ProducerBuilder instance, setting brokers and topic.
      *
