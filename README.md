@@ -1,5 +1,6 @@
 # Laravel Kafka
 ![art/laravel-kafka.png](art/laravel-kafka.png)
+`composer require mateusjunges/laravel-kafka`
 
 [![Latest Version On Packagist](http://poser.pugx.org/mateusjunges/laravel-kafka/v)](https://packagist.org/packages/mateusjunges/laravel-kafka)
 [![Total Downloads](http://poser.pugx.org/mateusjunges/laravel-kafka/downloads)](https://packagist.org/packages/mateusjunges/laravel-kafka)
