@@ -5,8 +5,8 @@
     "require": {
         "php": "^8.1|^8.2",
         "ext-rdkafka": "^5.0|^6.0",
-        "monolog/monolog": "^2.3|^3.2",
-        "flix-tech/avro-serde-php": "^1.7",
+        "monolog/monolog": "^3.4",
+        "flix-tech/avro-serde-php": "^2.0",
         "illuminate/support": "^9.0|^10.0",
         "illuminate/contracts": "^9.0|^10.0"
     },

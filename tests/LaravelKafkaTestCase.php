@@ -34,6 +34,7 @@ abstract class LaravelKafkaTestCase extends Orchestra
         $app['config']->set('kafka.partition', 0);
         $app['config']->set('kafka.compression', 'snappy');
         $app['config']->set('kafka.debug', false);
+        $app['config']->set('kafka.cache_driver', 'file');
     }
 
     protected function getPackageProviders($app): array

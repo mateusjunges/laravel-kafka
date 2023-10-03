@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka;
 
+use Illuminate\Support\Traits\Macroable;
 use Junges\Kafka\Consumers\ConsumerBuilder;
 use Junges\Kafka\Contracts\ConsumeMessagesFromKafka;
 use Junges\Kafka\Contracts\MessageProducer;
@@ -10,6 +11,8 @@ use Junges\Kafka\Producers\ProducerBuilder;
 
 class Kafka implements MessagePublisher, ConsumeMessagesFromKafka
 {
+    use Macroable;
+
     /** Creates a new ProducerBuilder instance, setting brokers and topic. */
     public function publishOn(string $topic, string $broker = null): MessageProducer
     {
