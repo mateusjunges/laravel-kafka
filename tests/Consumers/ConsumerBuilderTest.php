@@ -11,7 +11,6 @@ use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Consumers\ConsumerBuilder;
 use Junges\Kafka\Contracts\Committer;
 use Junges\Kafka\Contracts\CommitterFactory;
-use Junges\Kafka\Exceptions\KafkaConsumerException;
 use Junges\Kafka\Exceptions\ConsumerException;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
 use Junges\Kafka\Tests\Fakes\FakeConsumer;

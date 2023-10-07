@@ -8,5 +8,6 @@ final class PublishingMessageBatch
 {
     public function __construct(
         public readonly MessageBatch $batch,
-    ) {}
+    ) {
+    }
 }

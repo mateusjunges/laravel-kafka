@@ -10,7 +10,7 @@ use Junges\Kafka\Exceptions\SchemaRegistryException;
 
 class AvroSchemaRegistry implements AvroSchemaRegistryContract
 {
-    /** @var array<string, AvroSchemaRegistry[]> $schemaMapping */
+    /** @var array<string, AvroSchemaRegistry[]> */
     private array $schemaMapping = [
         self::BODY_IDX => [],
         self::KEY_IDX => [],

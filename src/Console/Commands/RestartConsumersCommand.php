@@ -10,10 +10,10 @@ class RestartConsumersCommand extends Command
 {
     use InteractsWithTime;
 
-    /** @var string $signature */
+    /** @var string */
     protected $signature = 'kafka:restart-consumers';
 
-    /** @var string $description */
+    /** @var string */
     protected $description = 'Restart all Kafka consumers.';
 
     public function handle()

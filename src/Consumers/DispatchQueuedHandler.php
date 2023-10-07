@@ -23,7 +23,8 @@ final class DispatchQueuedHandler implements ShouldQueue
         public readonly Handler $handler,
         public readonly ConsumerMessage $message,
         public readonly array $middlewares = []
-    ) {}
+    ) {
+    }
 
     public function handle(): void
     {

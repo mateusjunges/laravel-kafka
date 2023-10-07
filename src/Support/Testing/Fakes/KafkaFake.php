@@ -4,8 +4,8 @@ namespace Junges\Kafka\Support\Testing\Fakes;
 
 use Illuminate\Support\Collection;
 use JetBrains\PhpStorm\Pure;
-use Junges\Kafka\Contracts\MessagePublisher;
 use Junges\Kafka\Contracts\ConsumerMessage;
+use Junges\Kafka\Contracts\MessagePublisher;
 use Junges\Kafka\Contracts\ProducerMessage;
 use Junges\Kafka\Message\Message;
 use PHPUnit\Framework\Assert as PHPUnit;

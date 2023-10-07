@@ -35,6 +35,7 @@ class CallableConsumer extends Consumer
         // Otherwise, the message will be handled synchronously.
         if ($this->shouldQueueHandler()) {
             $this->queueHandler($this->handler, $message, $this->middlewares);
+
             return;
         }
 
@@ -48,7 +49,7 @@ class CallableConsumer extends Consumer
 
     private function handleMessageSynchronously(ConsumerMessage $message): void
     {
-       $this->handleConsumedMessage($message, $this->handler, $this->middlewares);
+        $this->handleConsumedMessage($message, $this->handler, $this->middlewares);
     }
 
     /**
