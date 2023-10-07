@@ -7,8 +7,8 @@ use Junges\Kafka\Concerns\InteractsWithConfigCallbacks;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Contracts\MessageProducer;
-use Junges\Kafka\Contracts\ProducerMessage;
 use Junges\Kafka\Contracts\MessageSerializer;
+use Junges\Kafka\Contracts\ProducerMessage;
 use Junges\Kafka\Message\Message;
 use Junges\Kafka\Producers\MessageBatch;
 

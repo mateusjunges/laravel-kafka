@@ -10,10 +10,10 @@ use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\NullBatchConfig;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Contracts\CommitterFactory;
-use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Contracts\ConsumerBuilder as ConsumerBuilderContract;
 use Junges\Kafka\Contracts\Handler;
 use Junges\Kafka\Contracts\HandlesBatchConfiguration;
+use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Contracts\MessageDeserializer;
 use Junges\Kafka\Contracts\Middleware;
 use Junges\Kafka\Exceptions\ConsumerException;
@@ -23,14 +23,14 @@ class ConsumerBuilder implements ConsumerBuilderContract
 {
     use InteractsWithConfigCallbacks;
 
-    /** @var list<string>  */
+    /** @var list<string> */
     protected array $topics;
     protected int $commit;
     protected Closure | Handler $handler;
     protected int $maxMessages;
     protected int $maxCommitRetries;
 
-    /** @var list<callable> $middlewares  */
+    /** @var list<callable> */
     protected array $middlewares;
     protected ?Sasl $saslConfig = null;
     protected ?string $dlq = null;
@@ -44,10 +44,10 @@ class ConsumerBuilder implements ConsumerBuilderContract
     protected int $batchReleaseInterval = 0;
     protected bool $stopAfterLastMessage = false;
 
-    /** @var list<callable> $beforeConsumingCallbacks  */
+    /** @var list<callable> */
     protected array $beforeConsumingCallbacks = [];
 
-    /** @var list<callable> $afterConsumingCallbacks */
+    /** @var list<callable> */
     protected array $afterConsumingCallbacks = [];
 
     protected function __construct(protected string $brokers, array $topics = [], protected ?string $groupId = null)

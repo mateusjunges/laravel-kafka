@@ -8,5 +8,6 @@ final class PublishingMessage
 {
     public function __construct(
         public readonly ProducerMessage $message,
-    ) {}
+    ) {
+    }
 }

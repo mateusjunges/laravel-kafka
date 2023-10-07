@@ -7,6 +7,7 @@ use JetBrains\PhpStorm\Pure;
 class CouldNotPublishMessage extends LaravelKafkaException
 {
     private int $kafkaErrorCode;
+
     #[Pure]
     public static function flushError(string $message = "Sent messages may not be completed yet."): self
     {
@@ -24,6 +25,7 @@ class CouldNotPublishMessage extends LaravelKafkaException
     public function setErrorCode(int $code): self
     {
         $this->kafkaErrorCode = $code;
+
         return $this;
     }
 

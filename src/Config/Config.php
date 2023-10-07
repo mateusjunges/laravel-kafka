@@ -2,7 +2,6 @@
 
 namespace Junges\Kafka\Config;
 
-use Closure;
 use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Contracts\Consumer;
 use Junges\Kafka\Contracts\HandlesBatchConfiguration;
@@ -81,7 +80,8 @@ class Config
         private readonly array $callbacks = [],
         private readonly array $beforeConsumingCallbacks = [],
         private readonly array $afterConsumingCallbacks = [],
-    ) {}
+    ) {
+    }
 
     public function getCommit(): int
     {

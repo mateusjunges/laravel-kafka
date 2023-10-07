@@ -8,5 +8,6 @@ final class CouldNotPublishMessage
         public readonly int $errorCode,
         public readonly string $message,
         public readonly \Throwable $throwable,
-    ) {}
+    ) {
+    }
 }

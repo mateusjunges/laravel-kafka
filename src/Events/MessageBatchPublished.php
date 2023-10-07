@@ -9,5 +9,6 @@ final class MessageBatchPublished
     public function __construct(
         public readonly MessageBatch $batch,
         public readonly int $publishedCount,
-    ) {}
+    ) {
+    }
 }

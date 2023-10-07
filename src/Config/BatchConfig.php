@@ -3,8 +3,8 @@
 namespace Junges\Kafka\Config;
 
 use Junges\Kafka\Consumers\CallableBatchConsumer;
-use Junges\Kafka\Contracts\BatchRepository as BatchRepositoryContract;
 use Junges\Kafka\Contracts\BatchMessageConsumer;
+use Junges\Kafka\Contracts\BatchRepository as BatchRepositoryContract;
 use Junges\Kafka\Contracts\HandlesBatchConfiguration;
 use Junges\Kafka\Support\Timer;
 
@@ -30,7 +30,6 @@ class BatchConfig implements HandlesBatchConfiguration
         return $this->batchSizeLimit;
     }
 
-
     public function getBatchReleaseInterval(): int
     {
         return $this->batchReleaseInterval;
@@ -45,7 +44,6 @@ class BatchConfig implements HandlesBatchConfiguration
     {
         return $this->timer;
     }
-
 
     public function getBatchRepository(): BatchRepositoryContract
     {

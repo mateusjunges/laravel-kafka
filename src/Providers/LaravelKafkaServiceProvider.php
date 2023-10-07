@@ -5,8 +5,8 @@ namespace Junges\Kafka\Providers;
 use Illuminate\Support\ServiceProvider;
 use Junges\Kafka\Console\Commands\ConsumerCommand;
 use Junges\Kafka\Console\Commands\RestartConsumersCommand;
-use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\ConsumeMessagesFromKafka;
+use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\Logger as LoggerContract;
 use Junges\Kafka\Contracts\MessageDeserializer;
 use Junges\Kafka\Contracts\MessagePublisher;
@@ -35,11 +35,11 @@ class LaravelKafkaServiceProvider extends ServiceProvider
 
     public function register()
     {
-        $this->app->bind(MessageSerializer::class, fn() => new JsonSerializer());
+        $this->app->bind(MessageSerializer::class, fn () => new JsonSerializer());
 
-        $this->app->bind(MessageDeserializer::class, fn() => new JsonDeserializer());
+        $this->app->bind(MessageDeserializer::class, fn () => new JsonDeserializer());
 
-        $this->app->bind(ProducerMessage::class, fn() => new Message(''));
+        $this->app->bind(ProducerMessage::class, fn () => new Message(''));
 
         $this->app->bind(ConsumerMessage::class, ConsumedMessage::class);
 

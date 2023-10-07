@@ -9,6 +9,7 @@ use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\Producer as ProducerContract;
 use Junges\Kafka\Contracts\ProducerMessage;
 use Junges\Kafka\Contracts\MessageSerializer;
+use Junges\Kafka\Contracts\ProducerMessage;
 use Junges\Kafka\Events\BatchMessagePublished;
 use Junges\Kafka\Events\MessageBatchPublished;
 use Junges\Kafka\Events\MessagePublished;
