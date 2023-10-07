@@ -14,10 +14,9 @@ class Kafka implements MessagePublisher, ConsumeMessagesFromKafka
     use Macroable;
 
     /** Creates a new ProducerBuilder instance, setting brokers and topic. */
-    public function publishOn(string $topic, string $broker = null): MessageProducer
+    public function publish(string $broker = null): MessageProducer
     {
         return new ProducerBuilder(
-            topic: $topic,
             broker: $broker ?? config('kafka.brokers')
         );
     }
