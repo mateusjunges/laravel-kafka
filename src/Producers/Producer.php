@@ -4,7 +4,9 @@ namespace Junges\Kafka\Producers;
 
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Facades\App;
+use Junges\Kafka\Concerns\ManagesTransactions;
 use Junges\Kafka\Config\Config;
+use Junges\Kafka\Contracts\Producer as ProducerContract;
 use Junges\Kafka\Contracts\ProducerMessage;
 use Junges\Kafka\Contracts\MessageSerializer;
 use Junges\Kafka\Events\BatchMessagePublished;
@@ -13,20 +15,25 @@ use Junges\Kafka\Events\MessagePublished;
 use Junges\Kafka\Events\PublishingMessage;
 use Junges\Kafka\Events\PublishingMessageBatch;
 use Junges\Kafka\Exceptions\CouldNotPublishMessage;
+use Junges\Kafka\Exceptions\CouldNotPublishMessageBatch;
+use Junges\Kafka\Message\Message;
 use RdKafka\Conf;
 use RdKafka\Producer as KafkaProducer;
 use RdKafka\ProducerTopic;
 use SplDoublyLinkedList;
 
-class Producer
+class Producer implements ProducerContract
 {
+    use ManagesTransactions;
+
     private readonly KafkaProducer $producer;
     private readonly Dispatcher $dispatcher;
 
+    public bool $transactionInitialized = false;
+
     public function __construct(
         private readonly Config $config,
-        private readonly string $topic,
-        private readonly MessageSerializer $serializer
+        private readonly MessageSerializer $serializer,
     ) {
         $this->producer = app(KafkaProducer::class, [
             'conf' => $this->setConf($this->config->getProducerOptions()),
@@ -35,7 +42,7 @@ class Producer
     }
 
     /** Set the Kafka Configuration. */
-    public function setConf(array $options): Conf
+    private function setConf(array $options): Conf
     {
         $conf = new Conf();
 
@@ -50,17 +57,12 @@ class Producer
         return $conf;
     }
 
-    /**
-     * Produce the specified message in the kafka topic.
-     *
-     * @return mixed
-     * @throws \Exception
-     */
+    /** @inheritDoc */
     public function produce(ProducerMessage $message): bool
     {
         $this->dispatcher->dispatch(new PublishingMessage($message));
 
-        $topic = $this->producer->newTopic($this->topic);
+        $topic = $this->producer->newTopic($message->getTopicName());
 
         $message = clone $message;
 
@@ -73,10 +75,14 @@ class Producer
         return $this->flush();
     }
 
-    /** @throws CouldNotPublishMessage  */
+    /** @inheritDoc */
     public function produceBatch(MessageBatch $messageBatch): int
     {
-        $topic = $this->producer->newTopic($this->topic);
+        if ($messageBatch->getTopicName() === '') {
+            throw CouldNotPublishMessageBatch::invalidTopicName($messageBatch->getTopicName());
+        }
+
+        $topic = $this->producer->newTopic($messageBatch->getTopicName());
 
         $messagesIterator = $messageBatch->getMessages();
 
@@ -86,6 +92,8 @@ class Producer
 
         $this->dispatcher->dispatch(new PublishingMessageBatch($messageBatch));
         foreach ($messagesIterator as $message) {
+            assert($message instanceof Message);
+            $message->onTopic($messageBatch->getTopicName());
             $message = $this->serializer->serialize($message);
 
             $this->produceMessageBatch($topic, $message, $messageBatch->getBatchUuid());
