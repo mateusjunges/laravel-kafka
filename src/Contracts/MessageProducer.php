@@ -5,6 +5,8 @@ namespace Junges\Kafka\Contracts;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Message\Message;
 use Junges\Kafka\Producers\MessageBatch;
+use Junges\Kafka\Producers\Producer;
+use Junges\Kafka\Support\Testing\Fakes\ProducerFake;
 
 /**
  * @internal
@@ -12,10 +14,14 @@ use Junges\Kafka\Producers\MessageBatch;
 interface MessageProducer extends InteractsWithConfigCallbacks
 {
     /** Return a new Junges\Commit\ProducerBuilder instance. */
-    public static function create(string $topic, string $broker = null): self;
+    public static function create(string $broker = null): self;
 
     /** Sets a specific config option. */
     public function withConfigOption(string $name, mixed $option): self;
+
+    public function withTransactionalId(string $transactionalId): self;
+
+    public function onTopic(string $topic): self;
 
     /** Set offset commit callback to use with consumer groups. */
     public function withOffsetCommitCb(callable $callback): self;
@@ -50,15 +56,14 @@ interface MessageProducer extends InteractsWithConfigCallbacks
     /** Enables or disable debug. */
     public function withDebugEnabled(bool $enabled = true): self;
 
-    /** Returns the topic where the message will be published. */
-    public function getTopic(): string;
-
     /**
      * Send the given message to Kakfa.
      *
      * @throws \Exception
      */
     public function send(): bool;
+
+    public function build(): Producer|ProducerFake;
 
     /**
      * Send a message batch to Kafka.
