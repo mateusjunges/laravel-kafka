@@ -19,7 +19,8 @@ class MessageBatch
 
     private string $uuid;
 
-    #[Pure]
+    private string $topic = '';
+
     public function __construct()
     {
         $this->messages = new SplDoublyLinkedList();
@@ -30,6 +31,13 @@ class MessageBatch
     public function push(Message $message): void
     {
         $this->messages->push($message);
+    }
+
+    public function onTopic(string $topicName): self
+    {
+        $this->topic = $topicName;
+
+        return $this;
     }
 
     /**
@@ -45,5 +53,10 @@ class MessageBatch
     public function getBatchUuid(): string
     {
         return $this->uuid;
+    }
+
+    public function getTopicName(): string
+    {
+        return $this->topic;
     }
 }
