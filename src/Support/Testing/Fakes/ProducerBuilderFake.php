@@ -20,13 +20,13 @@ class ProducerBuilderFake implements MessageProducer
     private ProducerMessage $message;
     private MessageSerializer $serializer;
     private ?Sasl $saslConfig = null;
+    private string $topic = '';
     private ?Closure $producerCallback = null;
 
     public function __construct(
-        private readonly string $topic,
         private readonly ?string $broker = null,
     ) {
-        $this->message = new Message($topic);
+        $this->message = new Message();
 
         $conf = new Config(
             broker: '',
@@ -38,9 +38,16 @@ class ProducerBuilderFake implements MessageProducer
     }
 
     /** Return a new Junges\Commit\ProducerBuilder instance. */
-    public static function create(string $topic, string $broker = null): self
+    public static function create(string $broker = null): self
     {
-        return new ProducerBuilderFake($broker, $topic);
+        return new ProducerBuilderFake($broker);
+    }
+
+    public function onTopic(string $topic): self
+    {
+        $this->message->onTopic($topic);
+
+        return $this;
     }
 
     public function withProducerCallback(callable $callback): self
@@ -55,6 +62,11 @@ class ProducerBuilderFake implements MessageProducer
         $this->options[$name] = $option;
 
         return $this;
+    }
+
+    public function withTransactionalId(string $transactionalId): self
+    {
+        return $this->withConfigOption('transactional.id', $transactionalId);
     }
 
     /** Set config options */
@@ -115,12 +127,6 @@ class ProducerBuilderFake implements MessageProducer
         return $this;
     }
 
-    /** Get the kafka topic to be used. */
-    public function getTopic(): string
-    {
-        return $this->topic;
-    }
-
     public function getMessage(): Message
     {
         return $this->message;
@@ -149,10 +155,6 @@ class ProducerBuilderFake implements MessageProducer
     /** Send the message to the producer to be published on kafka. */
     public function send(): bool
     {
-        if ($this->getMessage()->getTopicName() === null) {
-            $this->message->setTopicName($this->getTopic());
-        }
-
         $producer = $this->build();
 
         return $producer->produce($this->getMessage());
@@ -163,6 +165,10 @@ class ProducerBuilderFake implements MessageProducer
     {
         $producer = $this->build();
 
+        if ($this->topic !== '' && $messageBatch->getTopicName() === '') {
+            $messageBatch->onTopic($this->topic);
+        }
+
         return $producer->produceBatch($messageBatch);
     }
 
@@ -170,7 +176,6 @@ class ProducerBuilderFake implements MessageProducer
     {
         $producerFake = app(ProducerFake::class, [
             'config' => $config,
-            'topic' => $this->getTopic(),
         ]);
 
         if ($this->producerCallback) {
@@ -181,11 +186,11 @@ class ProducerBuilderFake implements MessageProducer
     }
 
     /** Build the producer. */
-    private function build(): ProducerFake
+    public function build(): ProducerFake
     {
         $conf = new Config(
             broker: $this->broker ?? config('kafka.brokers'),
-            topics: [$this->getTopic()],
+            topics: [],
             sasl: $this->saslConfig,
             customOptions: $this->options,
             callbacks: $this->callbacks,

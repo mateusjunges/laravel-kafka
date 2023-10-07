@@ -22,9 +22,9 @@ class KafkaFake implements MessagePublisher
     }
 
     /** Publish a message in the specified broker/topic. */
-    public function publishOn(string $topic, ?string $broker = null): ProducerBuilderFake
+    public function publish(?string $broker = null): ProducerBuilderFake
     {
-        return $this->makeProducerBuilderFake($topic, $broker);
+        return $this->makeProducerBuilderFake($broker);
     }
 
     /** Return a ConsumerBuilder instance. */
@@ -91,9 +91,8 @@ class KafkaFake implements MessagePublisher
     {
         $count = $this->published($callback, $expectedMessage, $topic)->count();
 
-        PHPUnit::assertTrue(
-            condition: $count === $times,
-            message: "Kafka published {$count} messages instead of {$times}."
+        PHPUnit::assertSame(
+            $count, $times, "Kafka published {$count} messages instead of {$times}."
         );
     }
 
@@ -103,13 +102,12 @@ class KafkaFake implements MessagePublisher
         PHPUnit::assertEmpty($this->getPublishedMessages(), 'Messages were published unexpectedly.');
     }
 
-    private function makeProducerBuilderFake(string $topic = '', ?string $broker = null): ProducerBuilderFake
+    private function makeProducerBuilderFake(?string $broker = null): ProducerBuilderFake
     {
-        return (new ProducerBuilderFake(
-            topic: $topic,
-            broker: $broker
-        )
-        )->withProducerCallback(fn (Message $message) => $this->publishedMessages[] = $message);
+        return (new ProducerBuilderFake(broker: $broker))
+            ->withProducerCallback(
+                fn (Message $message) => $this->publishedMessages[] = $message
+            );
     }
 
     /*** Get all messages matching a truth-test callback. */
@@ -119,19 +117,22 @@ class KafkaFake implements MessagePublisher
             return collect();
         }
 
-        return collect($this->getPublishedMessages())->filter(function (Message $publishedMessage) use ($topic, $expectedMessage, $callback) {
-            if ($topic !== null && $publishedMessage->getTopicName() !== $topic) {
-                return false;
-            }
-            if ($callback !== null) {
-                return $callback($publishedMessage);
-            }
-            if ($expectedMessage !== null) {
-                return json_encode($publishedMessage->toArray(), JSON_THROW_ON_ERROR) === json_encode($expectedMessage->toArray(), JSON_THROW_ON_ERROR);
-            }
+        return collect($this->getPublishedMessages())
+            ->filter(function (Message $publishedMessage) use ($topic, $expectedMessage, $callback) {
+                if ($topic !== null && $publishedMessage->getTopicName() !== $topic) {
+                    return false;
+                }
 
-            return true;
-        });
+                if ($callback !== null) {
+                    return $callback($publishedMessage);
+                }
+
+                if ($expectedMessage !== null) {
+                    return json_encode($publishedMessage->toArray(), JSON_THROW_ON_ERROR) === json_encode($expectedMessage->toArray(), JSON_THROW_ON_ERROR);
+                }
+
+                return true;
+            });
     }
 
     /** Check if the producer has published messages. */
