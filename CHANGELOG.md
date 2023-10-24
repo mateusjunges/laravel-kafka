@@ -8,6 +8,16 @@ All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 - Add simple events to kafka producer and consumers by @mateusjunges in [#193](https://github.com/mateusjunges/laravel-kafka/pull/193)
 - Append throwable/exception info when sending a message to DLQ by @mateusjunges in [#194](https://github.com/mateusjunges/laravel-kafka/pull/194)
 
+## [2023-10-24 v1.13.5](https://github.com/mateusjunges/laravel-kafka/compare/v1.13.4...v1.13.5)
+* Fixed default securityProtocol config by @SergkeiM in [#215](https://github.com/mateusjunges/laravel-kafka/pull/215)
+
+## [2023-09-24 v1.13.4](https://github.com/mateusjunges/laravel-kafka/compare/v1.13.3...v1.13.4)
+* Make Kafka macroable by @lentex in [#221](https://github.com/mateusjunges/laravel-kafka/pull/221)
+
+## [2023-09-18 v1.13.3](https://github.com/mateusjunges/laravel-kafka/compare/v1.13.2...v1.13.3)
+* Update package dependencies by @mateusjunges
+* Update README.md to link to the 1.13 documentation page by @tavsec in [#212](https://github.com/mateusjunges/laravel-kafka/pull/212)
+
 ## [2023-04-12 v1.13.2](https://github.com/mateusjunges/laravel-kafka/compare/v1.13.1...v1.13.2)
 * Fix auto commit config by @ebrahimradi in [#203](https://github.com/mateusjunges/laravel-kafka/pull/203)
 
