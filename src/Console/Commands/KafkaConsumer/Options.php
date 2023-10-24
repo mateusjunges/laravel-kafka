@@ -14,7 +14,7 @@ class Options
     private ?int $commit = 1;
     private ?string $dlq = null;
     private int $maxMessages = -1;
-    private ?string $securityProtocol = 'plaintext';
+    private ?string $securityProtocol = null;
     private ?string $saslUsername;
     private ?string $saslPassword;
     private ?string $saslMechanisms;
@@ -81,13 +81,17 @@ class Options
             username: $this->saslUsername,
             password: $this->saslPassword,
             mechanisms: $this->saslMechanisms,
-            securityProtocol: $this->securityProtocol
+            securityProtocol: $this->getSecurityProtocol()
         );
     }
 
     public function getSecurityProtocol(): ?string
     {
-        return $this->securityProtocol;
+        $securityProtocol = strlen($this->securityProtocol) > 1
+            ? $this->securityProtocol
+            : $this->config['securityProtocol'];
+
+        return $securityProtocol ?? 'plaintext';
     }
 
     public function getBroker()
