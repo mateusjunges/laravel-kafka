@@ -18,7 +18,6 @@ final class Options
     private readonly ?string $saslUsername;
     private readonly ?string $saslPassword;
     private readonly ?string $saslMechanisms;
-    private array $config;
 
     #[Pure]
     public function __construct(array $options, private readonly array $config)
@@ -29,7 +28,6 @@ final class Options
             $this->{$option} = $value;
         }
 
-        $this->config = $config;
         $this->saslPassword = $config['sasl']['password'];
         $this->saslUsername = $config['sasl']['username'];
         $this->saslMechanisms = $config['sasl']['mechanisms'];
@@ -87,7 +85,7 @@ final class Options
 
     public function getSecurityProtocol(): ?string
     {
-        $securityProtocol = strlen($this->securityProtocol) > 1
+        $securityProtocol = strlen($this->securityProtocol ?? '') > 1
             ? $this->securityProtocol
             : $this->config['securityProtocol'];
 
