@@ -53,10 +53,10 @@ class KafkaConsumerCommand extends Command
 
             return;
         }
-        
-        $options = new Options(array_map(function ($value) {
-            return $value === '?' ? null : $value;
-        }, $this->options()), $this->config);
+
+        $parsedOptions = array_map(fn ($value) => $value === '?' ? null : $value, $this->options());
+
+        $options = new Options($parsedOptions, $this->config);
 
         $consumer = $options->getConsumer();
         $deserializer = $options->getDeserializer();
