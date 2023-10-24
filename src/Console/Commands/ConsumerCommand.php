@@ -55,7 +55,10 @@ class ConsumerCommand extends Command
 
             return;
         }
-        $options = new Options($this->options(), $this->config);
+
+        $parsedOptions = array_map(fn ($value) => $value === '?' ? null : $value, $this->options());
+
+        $options = new Options($parsedOptions, $this->config);
 
         $consumer = $options->getConsumer();
         $deserializer = $options->getDeserializer();

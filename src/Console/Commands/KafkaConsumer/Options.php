@@ -5,7 +5,7 @@ namespace Junges\Kafka\Console\Commands\KafkaConsumer;
 use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Config\Sasl;
 
-class Options
+final class Options
 {
     private ?array $topics = null;
     private ?string $consumer = null;
@@ -18,6 +18,7 @@ class Options
     private readonly ?string $saslUsername;
     private readonly ?string $saslPassword;
     private readonly ?string $saslMechanisms;
+    private array $config;
 
     #[Pure]
     public function __construct(array $options, private readonly array $config)
@@ -27,6 +28,8 @@ class Options
         foreach ($options as $option => $value) {
             $this->{$option} = $value;
         }
+
+        $this->config = $config;
         $this->saslPassword = $config['sasl']['password'];
         $this->saslUsername = $config['sasl']['username'];
         $this->saslMechanisms = $config['sasl']['mechanisms'];
@@ -78,13 +81,17 @@ class Options
             username: $this->saslUsername,
             password: $this->saslPassword,
             mechanisms: $this->saslMechanisms,
-            securityProtocol: $this->securityProtocol
+            securityProtocol: $this->getSecurityProtocol()
         );
     }
 
     public function getSecurityProtocol(): ?string
     {
-        return $this->securityProtocol;
+        $securityProtocol = strlen($this->securityProtocol) > 1
+            ? $this->securityProtocol
+            : $this->config['securityProtocol'];
+
+        return $securityProtocol ?? 'plaintext';
     }
 
     public function getBroker()
