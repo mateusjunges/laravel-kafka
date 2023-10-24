@@ -41,6 +41,12 @@ class Message extends AbstractMessage implements Arrayable, ProducerMessage
         return $this;
     }
 
+    public function onTopic(string $topic): self
+    {
+        $this->topicName = $topic;
+        return $this;
+    }
+
     /** Set the kafka message key. */
     public function withKey(?string $key): Message
     {

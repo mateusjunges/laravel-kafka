@@ -42,7 +42,8 @@ final class KafkaTest extends LaravelKafkaTestCase
 
         $this->app->bind(Producer::class, fn () => $mockedProducer);
 
-        $test = Kafka::publishOn('test-topic')
+        $test = Kafka::publish()
+            ->onTopic('test')
             ->withConfigOptions([
                 'metadata.broker.list' => 'broker',
             ])
@@ -74,7 +75,7 @@ final class KafkaTest extends LaravelKafkaTestCase
 
         $this->app->bind(Producer::class, fn () => $mockedProducer);
 
-        $producer = Kafka::publishOn('test-topic')
+        $producer = Kafka::publish()->onTopic('test-topic')
             ->withConfigOptions([
                 'metadata.broker.list' => 'broker',
             ])
@@ -107,7 +108,8 @@ final class KafkaTest extends LaravelKafkaTestCase
 
         Kafka::fake();
 
-        $test = Kafka::publishOn('test-topic')
+        $test = Kafka::publish()
+            ->onTopic('test-topic')
             ->withConfigOptions([
                 'metadata.broker.list' => 'broker',
             ])
@@ -139,9 +141,14 @@ final class KafkaTest extends LaravelKafkaTestCase
             return $mockedProducer;
         });
 
-        $message = Message::create()->withHeaders(['foo' => 'bar'])->withKey('message-key')->withBody(['foo' => 'bar']);
+        $message = Message::create()
+            ->withHeaders(['foo' => 'bar'])
+            ->onTopic('test')
+            ->withKey('message-key')
+            ->onTopic('test')
+            ->withBody(['foo' => 'bar']);
 
-        $test = Kafka::publishOn('test-topic')
+        $test = Kafka::publish()
             ->withConfigOptions([
                 'metadata.broker.list' => 'broker',
             ])
@@ -151,14 +158,15 @@ final class KafkaTest extends LaravelKafkaTestCase
 
         $this->assertTrue($test);
 
-        $test = Kafka::publishOn('test-topic')
+        $test = Kafka::publish()
             ->withConfigOptions([
                 'metadata.broker.list' => 'broker',
             ])
             ->withMessage(new Message(
+                topicName: 'test',
                 headers: ['foo' => 'bar'],
                 body: ['foo' => 'bar'],
-                key: 'message-key'
+                key: 'message-key',
             ))
             ->withDebugEnabled(false)
             ->send();
@@ -186,12 +194,13 @@ final class KafkaTest extends LaravelKafkaTestCase
         });
 
         /** @var ProducerBuilder $producer */
-        $producer = Kafka::publishOn('test-topic')
+        $producer = Kafka::publish()
             ->withConfigOptions([
                 'metadata.broker.list' => 'broker',
             ])
             ->withKafkaKey(Str::uuid()->toString())
             ->withBodyKey('test', ['test'])
+            ->onTopic('test')
             ->withHeaders(['custom' => 'header'])
             ->withDebugDisabled();
 
@@ -209,7 +218,7 @@ final class KafkaTest extends LaravelKafkaTestCase
 
     public function testICanUseCustomOptionsForProducerConfig(): void
     {
-        $producer = Kafka::publishOn('test-topic')
+        $producer = Kafka::publish()
             ->withConfigOptions($expectedOptions = [
                 'bootstrap.servers' => '[REMOTE_ADDRESS]',
                 'metadata.broker.list' => '[REMOTE_ADDRESS]',
@@ -265,7 +274,7 @@ final class KafkaTest extends LaravelKafkaTestCase
 
         $this->app->bind(Producer::class, fn () => $mockedProducer);
 
-        Kafka::publishOn('test')->withBodyKey('foo', 'bar')->send();
+        Kafka::publish()->onTopic('test')->withBodyKey('foo', 'bar')->send();
 
         Event::assertDispatched(CouldNotPublishMessageEvent::class, function (CouldNotPublishMessageEvent $event) use ($expectedMessage) {
             return $event->throwable instanceof CouldNotPublishMessage
@@ -276,10 +285,10 @@ final class KafkaTest extends LaravelKafkaTestCase
 
     public function testSendMessageBatch(): void
     {
-        $messageBatch = new MessageBatch();
-        $messageBatch->push(new Message());
-        $messageBatch->push(new Message());
-        $messageBatch->push(new Message());
+        $messageBatch = (new MessageBatch())->onTopic('test');
+        $messageBatch->push(new Message('test'));
+        $messageBatch->push(new Message('test'));
+        $messageBatch->push(new Message('test'));
 
         $expectedUuid = $messageBatch->getBatchUuid();
 
@@ -305,7 +314,7 @@ final class KafkaTest extends LaravelKafkaTestCase
 
         Event::fake();
 
-        Kafka::publishOn('test')->withBodyKey('foo', 'bar')->sendBatch($messageBatch);
+        Kafka::publish()->withBodyKey('foo', 'bar')->onTopic('test')->sendBatch($messageBatch);
 
         Event::assertDispatched(PublishingMessageBatch::class, function (PublishingMessageBatch $event) use ($messageBatch) {
             return $event->batch === $messageBatch;
@@ -320,15 +329,19 @@ final class KafkaTest extends LaravelKafkaTestCase
         });
     }
 
-    public function testMacro()
+    public function testMacro(): void
     {
         $sasl = new Sasl(username: 'username', password: 'password', mechanisms: 'mechanisms');
 
-        Kafka::macro('defaultProducer', function (string $topic) use ($sasl) {
-            return $this->publishOn($topic)->withSasl($sasl);
+        Kafka::macro('defaultProducer', function () {
+            return $this->publish()->withSasl(
+                username: 'username',
+                password: 'password',
+                mechanisms: 'mechanisms',
+            );
         });
 
-        $producer = Kafka::defaultProducer('test-topic');
+        $producer = Kafka::defaultProducer();
 
         $this->assertInstanceOf(ProducerBuilder::class, $producer);
         $this->assertEquals($sasl, $this->getPropertyWithReflection('saslConfig', $producer));

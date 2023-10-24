@@ -13,12 +13,13 @@ final class ProducerTest extends LaravelKafkaTestCase
     public function testItDoesNotDoubleSerializeMessageWhenUsingJsonSerializer(): void
     {
         $this->mockKafkaProducer();
-        $producer = new Producer(new Config('broker', ['test-topic']), 'test-topic', new JsonSerializer());
+        $producer = new Producer(new Config('broker', ['test-topic']), new JsonSerializer());
         $payload = ['key' => 'value'];
 
         $message = new Message(
             body: $payload,
         );
+        $message->onTopic('test-topic');
         $producer->produce($message);
         $producer->produce($message);
 

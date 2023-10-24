@@ -16,27 +16,37 @@ class ProducerBuilder implements MessageProducer
     private array $options = [];
     private ProducerMessage $message;
     private MessageSerializer $serializer;
+    private Producer $producer;
+    private string $topic = '';
     private ?Sasl $saslConfig = null;
     private readonly string $broker;
+    private bool $isTransactionProducer = false;
+    private int $maxTransactionRetryAttempts = 5;
 
     public function __construct(
-        private readonly string $topic,
         ?string $broker = null,
     ) {
         /** @var ProducerMessage $message */
         $message = app(ProducerMessage::class);
-        $this->message = $message->create($topic);
+        $this->message = $message::create();
         $this->serializer = app(MessageSerializer::class);
         $this->broker = $broker ?? config('kafka.brokers');
     }
 
     /** Return a new Junges\Commit\ProducerBuilder instance. */
-    public static function create(string $topic, string $broker = null): self
+    public static function create(string $broker = null): self
     {
         return new ProducerBuilder(
-            topic: $topic,
             broker: $broker ?? config('kafka.brokers')
         );
+    }
+
+    public function onTopic(string $topic): self
+    {
+        $this->topic = $topic;
+        $this->message->onTopic($topic);
+
+        return $this;
     }
 
     /** Sets a specific config option. */
@@ -45,6 +55,11 @@ class ProducerBuilder implements MessageProducer
         $this->options[$name] = $option;
 
         return $this;
+    }
+
+    public function withTransactionalId(string $transactionalId): self
+    {
+        return $this->withConfigOption('transactional.id', $transactionalId);
     }
 
     /** Sets configuration options. */
@@ -77,6 +92,14 @@ class ProducerBuilder implements MessageProducer
     public function withBodyKey(string $key, mixed $message): self
     {
         $this->message->withBodyKey($key, $message);
+
+        return $this;
+    }
+
+    public function transactional(int $maxRetryAttempts = 5): self
+    {
+        $this->isTransactionProducer = true;
+        $this->maxTransactionRetryAttempts = $maxRetryAttempts;
 
         return $this;
     }
@@ -132,12 +155,6 @@ class ProducerBuilder implements MessageProducer
         return $this->withDebugEnabled(false);
     }
 
-    /** Returns the topic where the message will be published. */
-    public function getTopic(): string
-    {
-        return $this->topic;
-    }
-
     /**
      * Send the given message to Kakfa.
      *
@@ -159,14 +176,18 @@ class ProducerBuilder implements MessageProducer
     {
         $producer = $this->build();
 
+        if ($this->topic !== '' && $messageBatch->getTopicName() === '') {
+            $messageBatch->onTopic($this->topic);
+        }
+
         return $producer->produceBatch($messageBatch);
     }
 
-    private function build(): Producer
+    public function build(): Producer
     {
         $conf = new Config(
             broker: $this->broker,
-            topics: [$this->getTopic()],
+            topics: [],
             securityProtocol: $this->saslConfig?->getSecurityProtocol(),
             sasl: $this->saslConfig,
             customOptions: $this->options,
@@ -175,7 +196,6 @@ class ProducerBuilder implements MessageProducer
 
         return app(Producer::class, [
             'config' => $conf,
-            'topic' => $this->topic,
             'serializer' => $this->serializer,
         ]);
     }
