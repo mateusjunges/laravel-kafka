@@ -4,7 +4,6 @@ namespace Junges\Kafka\Contracts;
 
 use Junges\Kafka\Exceptions\CouldNotPublishMessage;
 use Junges\Kafka\Producers\MessageBatch;
-use RdKafka\KafkaErrorException;
 
 interface Producer
 {

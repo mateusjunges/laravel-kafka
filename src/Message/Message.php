@@ -44,6 +44,7 @@ class Message extends AbstractMessage implements Arrayable, ProducerMessage
     public function onTopic(string $topic): self
     {
         $this->topicName = $topic;
+
         return $this;
     }
 

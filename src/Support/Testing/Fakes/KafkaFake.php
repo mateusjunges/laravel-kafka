@@ -92,7 +92,9 @@ class KafkaFake implements MessagePublisher
         $count = $this->published($callback, $expectedMessage, $topic)->count();
 
         PHPUnit::assertSame(
-            $count, $times, "Kafka published {$count} messages instead of {$times}."
+            $count,
+            $times,
+            "Kafka published {$count} messages instead of {$times}."
         );
     }
 

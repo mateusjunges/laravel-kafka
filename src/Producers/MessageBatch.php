@@ -3,7 +3,6 @@
 namespace Junges\Kafka\Producers;
 
 use Illuminate\Support\Str;
-use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Message\Message;
 use SplDoublyLinkedList;
 

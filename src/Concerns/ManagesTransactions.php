@@ -57,7 +57,6 @@ trait ManagesTransactions
         }
     }
 
-
     /**
      * @throws \Junges\Kafka\Exceptions\Transactions\TransactionShouldBeRetriedException
      * @throws \Junges\Kafka\Exceptions\Transactions\TransactionShouldBeAbortedException
