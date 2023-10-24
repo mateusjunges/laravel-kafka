@@ -2,8 +2,19 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2023-10-24 v1.13.5](https://github.com/mateusjunges/laravel-kafka/compare/v1.13.4...v1.13.5)
+* Fixed default securityProtocol config by @SergkeiM in [#215](https://github.com/mateusjunges/laravel-kafka/pull/215)
+
+## [2023-09-24 v1.13.4](https://github.com/mateusjunges/laravel-kafka/compare/v1.13.3...v1.13.4)
+* Make Kafka macroable by @lentex in [#221](https://github.com/mateusjunges/laravel-kafka/pull/221)
+
+## [2023-09-18 v1.13.3](https://github.com/mateusjunges/laravel-kafka/compare/v1.13.2...v1.13.3)
+* Update package dependencies by @mateusjunges
+* Update README.md to link to the 1.13 documentation page by @tavsec in [#212](https://github.com/mateusjunges/laravel-kafka/pull/212)
+
 ## [2023-04-12 v1.13.2](https://github.com/mateusjunges/laravel-kafka/compare/v1.13.1...v1.13.2)
 * Fix auto commit config by @ebrahimradi in [#203](https://github.com/mateusjunges/laravel-kafka/pull/203)
+
 
 ## [2023-04-08 v1.13.1](https://github.com/mateusjunges/laravel-kafka/compare/v1.13.0...v1.13.1)
 * Add the ability to change the cache driver by @BBonnet22 in [#199](https://github.com/mateusjunges/laravel-kafka/pull/199)
