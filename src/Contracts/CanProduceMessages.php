@@ -6,7 +6,6 @@ use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Message\Message;
 use Junges\Kafka\Producers\MessageBatch;
 
-/** @internal */
 interface CanProduceMessages extends InteractsWithConfigCallbacks
 {
     /**
