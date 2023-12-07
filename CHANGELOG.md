@@ -2,6 +2,9 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2023-12-07 v1.13.6](https://github.com/mateusjunges/laravel-kafka/compare/v1.13.5...v1.13.6)
+* Remove internal annotation from interface by @mateusjunges
+
 ## [2023-10-24 v1.13.5](https://github.com/mateusjunges/laravel-kafka/compare/v1.13.4...v1.13.5)
 * Fixed default securityProtocol config by @SergkeiM in [#215](https://github.com/mateusjunges/laravel-kafka/pull/215)
 
