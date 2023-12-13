@@ -69,6 +69,7 @@ class Config
         private array              $topics,
         private ?string            $securityProtocol = null,
         private ?int               $commit = null,
+        private ?string            clientId = null,
         private ?string            $groupId = null,
         private ?Consumer          $consumer = null,
         private ?Sasl              $sasl = null,
@@ -132,7 +133,7 @@ class Config
             'auto.offset.reset' => config('kafka.offset_reset', 'latest'),
             'enable.auto.commit' => config('kafka.auto_commit', true) === true ? 'true' : 'false',
             'group.id' => $this->groupId,
-            'client.id' => config('kafka.client_id'),
+            'client.id' => $this->clientId,
             'bootstrap.servers' => $this->broker,
         ];
 
