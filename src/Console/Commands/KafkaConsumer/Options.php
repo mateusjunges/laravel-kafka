@@ -10,6 +10,7 @@ class Options
     private ?array $topics = null;
     private ?string $consumer = null;
     private ?string $deserializer = null;
+    private ?string $clientId = null;
     private ?string $groupId = null;
     private ?int $commit = 1;
     private ?string $dlq = null;
@@ -58,6 +59,11 @@ class Options
     public function getCommit(): ?string
     {
         return $this->commit;
+    }
+
+    public function getClientId(): ?string
+    {
+        return strlen($this->clientId) > 1 ? $this->clientId : $this->config['clientId'];
     }
 
     public function getDlq(): ?string
