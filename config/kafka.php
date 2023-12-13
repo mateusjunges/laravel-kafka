@@ -21,6 +21,11 @@ return [
     ],
 
     /*
+     | Client identifier
+     */
+    'client_id' => env('KAFKA_CLIENT_ID', 'laravel'),
+
+    /*
      | Kafka consumers belonging to the same consumer group share a group id.
      | The consumers in a group then divides the topic partitions as fairly amongst themselves as possible by
      | establishing that each partition is only consumed by a single consumer from the group.

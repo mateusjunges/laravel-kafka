@@ -59,6 +59,7 @@ class Config
         'check.crcs',
         'allow.auto.create.topics',
         'auto.offset.reset',
+        'client.id',
     ];
 
     private HandlesBatchConfiguration $batchConfig;
@@ -131,6 +132,7 @@ class Config
             'auto.offset.reset' => config('kafka.offset_reset', 'latest'),
             'enable.auto.commit' => config('kafka.auto_commit', true) === true ? 'true' : 'false',
             'group.id' => $this->groupId,
+            'client.id' => config('kafka.client_id'),
             'bootstrap.servers' => $this->broker,
         ];
 
