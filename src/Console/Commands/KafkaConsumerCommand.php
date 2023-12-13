@@ -13,11 +13,12 @@ class KafkaConsumerCommand extends Command
     protected $signature = 'kafka:consume 
             {--topics= : The topics to listen for messages (topic1,topic2,...,topicN)} 
             {--consumer= : The consumer which will consume messages in the specified topic} 
-            {--deserializer= : The deserializer class to use when consuming message}
+            {--deserializer= : The deserializer class to use when consuming message} 
+            {--clientId=anonymous : The client id} 
             {--groupId=anonymous : The consumer group id} 
             {--commit=1} 
             {--dlq=? : The Dead Letter Queue} 
-            {--maxMessage=? : The max number of messages that should be handled}
+            {--maxMessage=? : The max number of messages that should be handled} 
             {--securityProtocol=?}';
 
     protected $description = 'A Kafka Consumer for Laravel.';
@@ -30,6 +31,7 @@ class KafkaConsumerCommand extends Command
 
         $this->config = [
             'brokers' => config('kafka.brokers'),
+            'clientId' => config('kafka.client_id'),
             'groupId' => config('kafka.consumer_group_id'),
             'securityProtocol' => config('kafka.securityProtocol'),
             'sasl' => [
@@ -66,6 +68,7 @@ class KafkaConsumerCommand extends Command
             topics: $options->getTopics(),
             securityProtocol: $options->getSecurityProtocol(),
             commit: $options->getCommit(),
+            clientId: $options->getClientId(),
             groupId: $options->getGroupId(),
             consumer: app($consumer),
             sasl: $options->getSasl(),
