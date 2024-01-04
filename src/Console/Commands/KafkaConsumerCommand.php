@@ -18,6 +18,7 @@ class KafkaConsumerCommand extends Command
             {--commit=1} 
             {--dlq=? : The Dead Letter Queue} 
             {--maxMessage=? : The max number of messages that should be handled}
+            {--maxTime=0 : The max number of seconds that a consumer should run }
             {--securityProtocol=?}';
 
     protected $description = 'A Kafka Consumer for Laravel.';
@@ -70,7 +71,8 @@ class KafkaConsumerCommand extends Command
             consumer: app($consumer),
             sasl: $options->getSasl(),
             dlq: $options->getDlq(),
-            maxMessages: $options->getMaxMessages()
+            maxMessages: $options->getMaxMessages(),
+            maxTime: $options->getMaxTime(),
         );
 
         /** @var Consumer $consumer */

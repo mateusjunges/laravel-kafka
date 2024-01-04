@@ -18,6 +18,7 @@ use Junges\Kafka\Exceptions\KafkaConsumerException;
 use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\MessageCounter;
 use Junges\Kafka\Retryable;
+use Junges\Kafka\Support\InfiniteTimer;
 use Junges\Kafka\Support\Timer;
 use RdKafka\Conf;
 use RdKafka\KafkaConsumer;
@@ -79,6 +80,7 @@ class Consumer implements CanConsumeMessages
     {
         $this->cancelStopConsume();
         $this->configureRestartTimer();
+        $stopTimer = $this->configureStopTimer();
 
         if ($this->supportAsyncSignals()) {
             $this->listenForSignals();
@@ -103,7 +105,7 @@ class Consumer implements CanConsumeMessages
         do {
             $this->retryable->retry(fn () => $this->doConsume());
             $this->checkForRestart();
-        } while (! $this->maxMessagesLimitReached() && ! $this->stopRequested);
+        } while (! $this->maxMessagesLimitReached() && ! $stopTimer->isTimedOut() && ! $this->stopRequested);
 
         if ($this->shouldRunStopConsumingCallback()) {
             $callback = $this->whenStopConsuming;
@@ -348,6 +350,17 @@ class Consumer implements CanConsumeMessages
     private function maxMessagesLimitReached(): bool
     {
         return $this->messageCounter->maxMessagesLimitReached();
+    }
+
+    public function configureStopTimer(): Timer
+    {
+        $stopTimer = new Timer();
+        if ($this->config->getMaxTime() == 0) {
+            $stopTimer = new InfiniteTimer();
+        }
+        $stopTimer->start($this->config->getMaxTime() * 1000);
+
+        return $stopTimer;
     }
 
     /**
