@@ -19,7 +19,7 @@ $consumer = Kafka::createConsumer(['topic'])
     ->build()
     ->onStopConsuming(static function () {
         // Do something when the consumer stop consuming messages
-    })
+    });
 
 $consumer->consume();
 ```
