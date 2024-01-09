@@ -41,6 +41,14 @@ kafka consumer:
 $consumer = \Junges\Kafka\Facades\Kafka::createConsumer()->withMaxMessages(2);
 ```
 
+### Configuring the max time when a consumer can process messages
+If you want to consume a limited amount of time, you can use the `withMaxTime` method to set the max number of seconds for
+kafka consumer to process messages:
+
+```php
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer()->withMaxTime(3600);
+```
+
 ### Setting Kafka configuration options
 To set configuration options, you can use two methods: `withOptions`, passing an array of option and option value or, using the `withOption method and
 passing two arguments, the option name and the option value.

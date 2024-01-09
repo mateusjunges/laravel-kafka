@@ -28,6 +28,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
     protected int $commit;
     protected Closure | Handler $handler;
     protected int $maxMessages;
+    protected int $maxTime = 0;
     protected int $maxCommitRetries;
 
     /** @var list<callable> */
@@ -155,6 +156,16 @@ class ConsumerBuilder implements ConsumerBuilderContract
     public function withMaxMessages(int $maxMessages): self
     {
         $this->maxMessages = $maxMessages;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function withMaxTime(int $maxTime): self
+    {
+        $this->maxTime = $maxTime;
 
         return $this;
     }
@@ -300,6 +311,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
             callbacks: $this->callbacks,
             beforeConsumingCallbacks: $this->beforeConsumingCallbacks,
             afterConsumingCallbacks: $this->afterConsumingCallbacks,
+            maxTime: $this->maxTime,
         );
 
         return new Consumer($config, $this->deserializer, $this->committerFactory);

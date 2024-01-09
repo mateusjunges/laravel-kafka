@@ -293,6 +293,56 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $this->assertEquals(1, $consumer->consumedMessagesCount());
     }
 
+    public function testCanStopConsumeIfMaxTimeReached()
+    {
+        $message = new Message();
+        $message->err = 0;
+        $message->key = 'key';
+        $message->topic_name = 'test';
+        $message->payload = '{"body": "message payload"}';
+        $message->offset = 0;
+        $message->partition = 1;
+        $message->headers = [];
+
+        $message2 = new Message();
+        $message2->err = 0;
+        $message2->key = 'key2';
+        $message2->topic_name = 'test2';
+        $message2->payload = '{"body": "message payload2"}';
+        $message2->offset = 0;
+        $message2->partition = 1;
+        $message2->headers = [];
+
+        $this->mockConsumerWithMessage($message, $message2);
+        $this->mockProducer();
+
+        $fakeHandler = new CallableConsumer(
+            function (KafkaConsumerMessage $message) {
+                sleep(2);
+            },
+            []
+        );
+
+        $config = new Config(
+            broker: 'broker',
+            topics: ['test-topic'],
+            securityProtocol: 'security',
+            commit: 1,
+            groupId: 'group',
+            consumer: $fakeHandler,
+            sasl: null,
+            dlq: null,
+            maxMessages: 2,
+            maxTime: 1,
+        );
+
+        $consumer = new Consumer($config, new JsonDeserializer());
+        $consumer->consume();
+
+        //finally only one message should be consumed
+        $this->assertEquals(1, $consumer->consumedMessagesCount());
+    }
+
     public function testItRunCallbacksBeforeConsume(): void
     {
         $fakeHandler = new FakeHandler();

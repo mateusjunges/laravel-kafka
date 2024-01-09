@@ -35,6 +35,20 @@ interface ConsumerBuilder extends InteractsWithConfigCallbacks
     public function withMaxMessages(int $maxMessages): self;
 
     /** Specify the max retries attempts. */
+    /**
+     * Define the max number seconds that a consumer should run
+     *
+     * @param int $maxTime
+     * @return \Junges\Kafka\Consumers\ConsumerBuilder
+     */
+    public function withMaxTime(int $maxTime): self;
+
+    /**
+     * Specify the max retries attempts.
+     *
+     * @param int $maxCommitRetries
+     * @return \Junges\Kafka\Consumers\ConsumerBuilder
+     */
     public function withMaxCommitRetries(int $maxCommitRetries): self;
 
     /**

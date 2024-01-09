@@ -2,11 +2,17 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
-## [2023-10-xx v2.0.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.13.x...v2.0.0)
+## [2024-01-xx v2.0.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.13.x...v2.0.0)
 - Add the ability to queue message handlers by @mateusjunges in [#177](https://github.com/mateusjunges/laravel-kafka/pull/177)
 - Add after and before consuming callbacks by @mateusjunges and @ebrahimradi in [#192](https://github.com/mateusjunges/laravel-kafka/pull/192)
 - Add simple events to kafka producer and consumers by @mateusjunges in [#193](https://github.com/mateusjunges/laravel-kafka/pull/193)
 - Append throwable/exception info when sending a message to DLQ by @mateusjunges in [#194](https://github.com/mateusjunges/laravel-kafka/pull/194)
+
+## [2024-01-09 v1.13.6](https://github.com/mateusjunges/laravel-kafka/compare/v1.13.6...v1.13.7)
+* Add timeout feature for consumers by @mihaileu in [#233](https://github.com/mateusjunges/laravel-kafka/pull/233)
+
+## [2023-12-07 v1.13.6](https://github.com/mateusjunges/laravel-kafka/compare/v1.13.5...v1.13.6)
+* Remove internal annotation from interface by @mateusjunges
 
 ## [2023-10-24 v1.13.5](https://github.com/mateusjunges/laravel-kafka/compare/v1.13.4...v1.13.5)
 * Fixed default securityProtocol config by @SergkeiM in [#215](https://github.com/mateusjunges/laravel-kafka/pull/215)

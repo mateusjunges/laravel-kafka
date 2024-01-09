@@ -80,6 +80,7 @@ class Config
         private readonly array $callbacks = [],
         private readonly array $beforeConsumingCallbacks = [],
         private readonly array $afterConsumingCallbacks = [],
+        private readonly int $maxTime = 0,
     ) {
     }
 
@@ -111,6 +112,10 @@ class Config
     public function getMaxMessages(): int
     {
         return $this->maxMessages;
+    }
+    public function getMaxTime(): int
+    {
+        return $this->maxTime;
     }
 
     public function isAutoCommit(): bool

@@ -19,6 +19,7 @@ class ConsumerCommand extends Command
             {--commit=1} 
             {--dlq=? : The Dead Letter Queue} 
             {--maxMessage=? : The max number of messages that should be handled}
+            {--maxTime=0 : The max number of seconds that a consumer should run }
             {--securityProtocol=?}';
 
     /* @var string $description */
@@ -72,7 +73,8 @@ class ConsumerCommand extends Command
             consumer: app($consumer),
             sasl: $options->getSasl(),
             dlq: $options->getDlq(),
-            maxMessages: $options->getMaxMessages()
+            maxMessages: $options->getMaxMessages(),
+            maxTime: $options->getMaxTime(),
         );
 
         /** @var Consumer $consumer */
