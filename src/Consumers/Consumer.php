@@ -358,6 +358,7 @@ class Consumer implements CanConsumeMessages
         if ($this->config->getMaxTime() === 0) {
             $stopTimer = new InfiniteTimer();
         }
+
         $stopTimer->start($this->config->getMaxTime() * 1000);
 
         return $stopTimer;
