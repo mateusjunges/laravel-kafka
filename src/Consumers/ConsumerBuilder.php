@@ -3,6 +3,7 @@
 namespace Junges\Kafka\Consumers;
 
 use Closure;
+use Illuminate\Support\Traits\Conditionable;
 use InvalidArgumentException;
 use Junges\Kafka\Concerns\InteractsWithConfigCallbacks;
 use Junges\Kafka\Config\BatchConfig;
@@ -23,6 +24,7 @@ use RdKafka\TopicPartition;
 class ConsumerBuilder implements ConsumerBuilderContract
 {
     use InteractsWithConfigCallbacks;
+    use Conditionable;
 
     /** @var list<string> */
     protected array $topics;
