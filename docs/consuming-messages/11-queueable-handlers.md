@@ -1,6 +1,6 @@
 ---
 title: Queueable handlers
-weight: 10
+weight: 11
 ---
 
 Queueable handlers allow you to handle your kafka messages in a queue. This will put a job into the Laravel queue system for each message received by your Kafka consumer.

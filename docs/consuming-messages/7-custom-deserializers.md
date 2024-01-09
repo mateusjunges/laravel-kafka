@@ -1,6 +1,6 @@
 ---
 title: Custom deserializers
-weight: 6
+weight: 7
 ---
 
 To create a custom deserializer, you need to create a class that implements the `\Junges\Kafka\Contracts\MessageDeserializer` contract.

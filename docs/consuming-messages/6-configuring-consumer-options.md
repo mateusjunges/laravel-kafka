@@ -1,6 +1,6 @@
 ---
 title: Configuring consumer options
-weight: 5
+weight: 6
 ---
 
 The `ConsumerBuilder` offers you some few configuration options:

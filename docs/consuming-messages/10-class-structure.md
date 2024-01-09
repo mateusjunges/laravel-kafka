@@ -1,6 +1,6 @@
 ---
 title: Class structure
-weight: 9
+weight: 10
 ---
 
 Consumer classes are very simple, and it is basically a Laravel Command class. To get started, let's take a look at an example consumer.

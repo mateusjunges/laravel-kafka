@@ -1,6 +1,6 @@
 ---
 title: Message handlers
-weight: 4
+weight: 5
 ---
 
 Now that you have created your kafka consumer, you must create a handler for the messages this consumer receives. By default, a consumer is any `callable`.
