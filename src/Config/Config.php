@@ -118,6 +118,7 @@ class Config
     {
         return $this->maxTime;
     }
+
     public function isAutoCommit(): bool
     {
         return $this->autoCommit;
