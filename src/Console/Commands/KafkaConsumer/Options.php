@@ -14,6 +14,7 @@ final class Options
     private int|string|null $commit = 1;
     private ?string $dlq = null;
     private int $maxMessages = -1;
+    private int $maxTime = 0;
     private ?string $securityProtocol = 'plaintext';
     private readonly ?string $saslUsername;
     private readonly ?string $saslPassword;
@@ -66,6 +67,11 @@ final class Options
     public function getMaxMessages(): int
     {
         return $this->maxMessages >= 1 ? $this->maxMessages : -1;
+    }
+
+    public function getMaxTime(): int
+    {
+        return $this->maxTime;
     }
 
     #[Pure]

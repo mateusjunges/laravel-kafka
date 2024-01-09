@@ -19,6 +19,7 @@ class ConsumerCommand extends Command
             {--commit=1} 
             {--dlq=? : The Dead Letter Queue} 
             {--maxMessage=? : The max number of messages that should be handled}
+            {--maxTime=0 : The max number of seconds that a consumer should run }
             {--securityProtocol=?}';
 
     /* @var string $description */
@@ -56,7 +57,7 @@ class ConsumerCommand extends Command
             return;
         }
 
-        $parsedOptions = array_map(fn ($value) => $value === '?' ? null : $value, $this->options());
+        $parsedOptions = array_map($this->parseOptions(...), $this->options());
 
         $options = new Options($parsedOptions, $this->config);
 
@@ -72,7 +73,8 @@ class ConsumerCommand extends Command
             consumer: app($consumer),
             sasl: $options->getSasl(),
             dlq: $options->getDlq(),
-            maxMessages: $options->getMaxMessages()
+            maxMessages: $options->getMaxMessages(),
+            maxTime: $options->getMaxTime(),
         );
 
         /** @var Consumer $consumer */
@@ -82,5 +84,18 @@ class ConsumerCommand extends Command
         ]);
 
         $consumer->consume();
+    }
+
+    private function parseOptions(int|string|null $option): int|string|null
+    {
+        if ($option === '?') {
+            return null;
+        }
+
+        if (is_numeric($option)) {
+            return (int) $option;
+        }
+
+        return $option;
     }
 }
