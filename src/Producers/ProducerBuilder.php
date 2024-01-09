@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Producers;
 
+use Illuminate\Support\Traits\Conditionable;
 use Junges\Kafka\Concerns\InteractsWithConfigCallbacks;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\Sasl;
@@ -12,6 +13,7 @@ use Junges\Kafka\Contracts\ProducerMessage;
 class ProducerBuilder implements MessageProducer
 {
     use InteractsWithConfigCallbacks;
+    use Conditionable;
 
     private array $options = [];
     private ProducerMessage $message;
