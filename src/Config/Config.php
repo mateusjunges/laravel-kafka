@@ -114,6 +114,7 @@ class Config
     {
         return $this->maxMessages;
     }
+
     public function getMaxTime(): int
     {
         return $this->maxTime;
