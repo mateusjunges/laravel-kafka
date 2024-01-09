@@ -317,7 +317,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $this->mockProducer();
 
         $fakeHandler = new CallableConsumer(
-            function (KafkaConsumerMessage $message) {
+            function (ConsumerMessage $message) {
                 sleep(2);
             },
             []
