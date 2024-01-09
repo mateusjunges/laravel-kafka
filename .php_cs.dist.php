@@ -21,8 +21,13 @@ return (new PhpCsFixer\Config())
         'phpdoc_scalar' => true,
         'unary_operator_spaces' => true,
         'binary_operator_spaces' => [
-            'align_double_arrow' => false,
-            'align_equals' => false,
+            'operators' => [
+                '=>' => 'single_space',
+                '===' => 'single_space',
+                '=' => 'single_space',
+                'xor' => 'single_space',
+                '|' => 'no_space',
+            ]
         ],
         'blank_line_before_statement' => [
             'statements' => ['break', 'continue', 'declare', 'return', 'throw', 'try'],
