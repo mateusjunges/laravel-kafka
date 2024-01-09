@@ -94,6 +94,10 @@ class Consumer implements MessageConsumer
             'conf' => $this->setConf($this->config->getProducerOptions()),
         ]);
 
+        if ($this->config->shouldAssignTopicPartitions()) {
+            $this->consumer->assign($this->config->getPartitionAssigment());
+        }
+
         $this->committer = $this->committerFactory->make($this->consumer, $this->config);
 
         $this->consumer->subscribe($this->config->getTopics());

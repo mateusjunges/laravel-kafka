@@ -18,6 +18,7 @@ use Junges\Kafka\Contracts\MessageDeserializer;
 use Junges\Kafka\Contracts\Middleware;
 use Junges\Kafka\Exceptions\ConsumerException;
 use Junges\Kafka\Support\Timer;
+use RdKafka\TopicPartition;
 
 class ConsumerBuilder implements ConsumerBuilderContract
 {
@@ -49,6 +50,9 @@ class ConsumerBuilder implements ConsumerBuilderContract
 
     /** @var list<callable> */
     protected array $afterConsumingCallbacks = [];
+
+    /** @var array<int, TopicPartition> */
+    protected array $partitionAssignments = [];
 
     protected function __construct(protected string $brokers, array $topics = [], protected ?string $groupId = null)
     {
@@ -279,6 +283,19 @@ class ConsumerBuilder implements ConsumerBuilderContract
         return $this;
     }
 
+    public function assignPartitions(array $partitionAssignment): self
+    {
+        foreach ($partitionAssignment as $assigment) {
+            if (! $assigment instanceof TopicPartition) {
+                throw new InvalidArgumentException('The partition assignment must be an instance of [\RdKafka\TopicPartition]');
+            }
+        }
+
+        $this->partitionAssignments = $partitionAssignment;
+
+        return $this;
+    }
+
     /** @inheritDoc */
     public function build(): MessageConsumer
     {
@@ -300,6 +317,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
             callbacks: $this->callbacks,
             beforeConsumingCallbacks: $this->beforeConsumingCallbacks,
             afterConsumingCallbacks: $this->afterConsumingCallbacks,
+            partitionAssignments: $this->partitionAssignments,
         );
 
         return new Consumer($config, $this->deserializer, $this->committerFactory);
