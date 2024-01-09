@@ -7,6 +7,7 @@ All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 - Add after and before consuming callbacks by @mateusjunges and @ebrahimradi in [#192](https://github.com/mateusjunges/laravel-kafka/pull/192)
 - Add simple events to kafka producer and consumers by @mateusjunges in [#193](https://github.com/mateusjunges/laravel-kafka/pull/193)
 - Append throwable/exception info when sending a message to DLQ by @mateusjunges in [#194](https://github.com/mateusjunges/laravel-kafka/pull/194)
+- Add the ability to assign partitions to a consumer by @mateusjunges in [#234](https://github.com/mateusjunges/laravel-kafka/pull/234)
 
 ## [2023-10-24 v1.13.5](https://github.com/mateusjunges/laravel-kafka/compare/v1.13.4...v1.13.5)
 * Fixed default securityProtocol config by @SergkeiM in [#215](https://github.com/mateusjunges/laravel-kafka/pull/215)
