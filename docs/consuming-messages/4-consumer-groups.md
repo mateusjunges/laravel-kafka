@@ -1,6 +1,6 @@
 ---
 title: Consumer groups
-weight: 3
+weight: 4
 ---
 
 Kafka consumers belonging to the same consumer group share a group id. The consumers in a group divides the topic partitions as fairly amongst themselves as possible by establishing that each partition is only consumed by a single consumer from the group.

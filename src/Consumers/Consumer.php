@@ -98,7 +98,15 @@ class Consumer implements MessageConsumer
 
         $this->committer = $this->committerFactory->make($this->consumer, $this->config);
 
-        $this->consumer->subscribe($this->config->getTopics());
+        // Calling `subscribe` overrides the assigned topic partitions, so we
+        // should check if there are any assignment defined before calling
+        // the subscribe method on the consumer. Partition assignment
+        // have precedence over topic subscriptions.
+        if ($this->config->shouldAssignTopicPartitions()) {
+            $this->consumer->assign($this->config->getPartitionAssigment());
+        } else {
+            $this->consumer->subscribe($this->config->getTopics());
+        }
 
         $batchConfig = $this->config->getBatchConfig();
 

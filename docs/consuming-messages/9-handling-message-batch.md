@@ -1,6 +1,6 @@
 ---
 title: Handling message batch
-weight: 8
+weight: 9
 ---
 
 If you want to handle multiple messages at once, you can build your consumer enabling batch settings. 

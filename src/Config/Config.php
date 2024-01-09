@@ -5,6 +5,7 @@ namespace Junges\Kafka\Config;
 use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Contracts\Consumer;
 use Junges\Kafka\Contracts\HandlesBatchConfiguration;
+use RdKafka\TopicPartition;
 
 class Config
 {
@@ -81,6 +82,7 @@ class Config
         private readonly array $beforeConsumingCallbacks = [],
         private readonly array $afterConsumingCallbacks = [],
         private readonly int $maxTime = 0,
+        private readonly array $partitionAssignment = [],
     ) {
     }
 
@@ -211,5 +213,16 @@ class Config
     public function shouldSendToDlq(): bool
     {
         return $this->dlq !== null;
+    }
+
+    public function shouldAssignTopicPartitions(): bool
+    {
+        return $this->getPartitionAssigment() !== [];
+    }
+
+    /** @return array<int, TopicPartition> */
+    public function getPartitionAssigment(): array
+    {
+        return $this->partitionAssignment;
     }
 }

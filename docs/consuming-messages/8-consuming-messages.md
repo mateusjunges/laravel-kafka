@@ -1,6 +1,6 @@
 ---
 title: Consuming messages
-weight: 7
+weight: 8
 ---
 
 After building the consumer, you must call the `consume` method to consume the messages:
