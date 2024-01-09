@@ -2,6 +2,9 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2023-12-07 v1.13.6](https://github.com/mateusjunges/laravel-kafka/compare/v1.13.6...v1.13.7)
+* Add timeout feature for consumers by @mihaileu in [#233](https://github.com/mateusjunges/laravel-kafka/pull/233)
+
 ## [2023-12-07 v1.13.6](https://github.com/mateusjunges/laravel-kafka/compare/v1.13.5...v1.13.6)
 * Remove internal annotation from interface by @mateusjunges
 
