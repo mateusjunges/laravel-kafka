@@ -80,6 +80,7 @@ class Config
         private bool               $stopAfterLastMessage = false,
         private int                $restartInterval = 1000,
         private array              $callbacks = [],
+        private int                $maxTime = 0,
     ) {
         $this->batchConfig = $batchConfig ?? new NullBatchConfig();
     }
@@ -112,6 +113,10 @@ class Config
     public function getMaxMessages(): int
     {
         return $this->maxMessages;
+    }
+    public function getMaxTime(): int
+    {
+        return $this->maxTime;
     }
 
     public function isAutoCommit(): bool

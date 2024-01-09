@@ -26,6 +26,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
     protected ?string $groupId;
     protected Closure $handler;
     protected int $maxMessages;
+    protected int $maxTime = 0;
     protected int $maxCommitRetries;
     protected string $brokers;
     protected array $middlewares;
@@ -170,6 +171,16 @@ class ConsumerBuilder implements ConsumerBuilderContract
     public function withMaxMessages(int $maxMessages): self
     {
         $this->maxMessages = $maxMessages;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function withMaxTime(int $maxTime): self
+    {
+        $this->maxTime = $maxTime;
 
         return $this;
     }
@@ -325,6 +336,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
             batchConfig: $this->getBatchConfig(),
             stopAfterLastMessage: $this->stopAfterLastMessage,
             callbacks: $this->callbacks,
+            maxTime: $this->maxTime,
         );
 
         return new Consumer($config, $this->deserializer, $this->committerFactory);
