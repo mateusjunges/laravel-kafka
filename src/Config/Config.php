@@ -81,7 +81,7 @@ class Config
         private readonly array $callbacks = [],
         private readonly array $beforeConsumingCallbacks = [],
         private readonly array $afterConsumingCallbacks = [],
-        private readonly array $partitionAssignments = [],
+        private readonly array $partitionAssignment = [],
     ) {
     }
 
@@ -217,6 +217,6 @@ class Config
     /** @return array<int, TopicPartition> */
     public function getPartitionAssigment(): array
     {
-        return $this->partitionAssignments;
+        return $this->partitionAssignment;
     }
 }

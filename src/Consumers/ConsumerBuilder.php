@@ -317,7 +317,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
             callbacks: $this->callbacks,
             beforeConsumingCallbacks: $this->beforeConsumingCallbacks,
             afterConsumingCallbacks: $this->afterConsumingCallbacks,
-            partitionAssignments: $this->partitionAssignment,
+            partitionAssignment: $this->partitionAssignment,
         );
 
         return new Consumer($config, $this->deserializer, $this->committerFactory);
