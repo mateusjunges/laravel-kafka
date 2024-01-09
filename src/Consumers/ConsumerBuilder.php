@@ -52,7 +52,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
     protected array $afterConsumingCallbacks = [];
 
     /** @var array<int, TopicPartition> */
-    protected array $partitionAssignments = [];
+    protected array $partitionAssignment = [];
 
     protected function __construct(protected string $brokers, array $topics = [], protected ?string $groupId = null)
     {
@@ -291,7 +291,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
             }
         }
 
-        $this->partitionAssignments = $partitionAssignment;
+        $this->partitionAssignment = $partitionAssignment;
 
         return $this;
     }
@@ -317,7 +317,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
             callbacks: $this->callbacks,
             beforeConsumingCallbacks: $this->beforeConsumingCallbacks,
             afterConsumingCallbacks: $this->afterConsumingCallbacks,
-            partitionAssignments: $this->partitionAssignments,
+            partitionAssignments: $this->partitionAssignment,
         );
 
         return new Consumer($config, $this->deserializer, $this->committerFactory);
