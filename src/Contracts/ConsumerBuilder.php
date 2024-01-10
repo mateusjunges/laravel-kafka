@@ -59,7 +59,7 @@ interface ConsumerBuilder extends InteractsWithConfigCallbacks
     public function withDlq(?string $dlqTopic = null): self;
 
     /** Set the Sasl configuration. */
-    public function withSasl(Sasl $saslConfig): self;
+    public function withSasl(string $username, string $password, string $mechanisms, string $securityProtocol = 'SASL_PLAINTEXT'): self;
 
     /**
      * Specify middlewares to be executed before handling the message.
