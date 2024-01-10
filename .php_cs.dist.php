@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 $finder = Symfony\Component\Finder\Finder::create()
     ->in([
@@ -20,9 +20,17 @@ return (new PhpCsFixer\Config())
         'trailing_comma_in_multiline' => true,
         'phpdoc_scalar' => true,
         'unary_operator_spaces' => true,
-        'binary_operator_spaces' => true,
+        'binary_operator_spaces' => [
+            'operators' => [
+                '=>' => 'single_space',
+                '===' => 'single_space',
+                '=' => 'single_space',
+                'xor' => 'single_space',
+                '|' => 'no_space',
+            ]
+        ],
         'blank_line_before_statement' => [
-            'statements' => ['break', 'continue', 'declare', 'return', 'throw', 'try'],
+            'statements' => ['break', 'continue', 'declare', 'return', 'throw', 'try', 'if'],
         ],
         'phpdoc_single_line_var_spacing' => true,
         'phpdoc_var_without_name' => true,
