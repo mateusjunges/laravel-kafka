@@ -61,8 +61,11 @@ class Consumer implements CanConsumeMessages
     protected int $lastRestart = 0;
     protected Timer $restartTimer;
 
-    public function __construct(private readonly Config $config, MessageDeserializer $deserializer, CommitterFactory $committerFactory = null)
-    {
+    public function __construct(
+        private readonly Config $config,
+        MessageDeserializer $deserializer,
+        CommitterFactory $committerFactory = null
+    ) {
         $this->logger = app(Logger::class);
         $this->messageCounter = new MessageCounter($config->getMaxMessages());
         $this->retryable = new Retryable(new NativeSleeper(), 6, self::TIMEOUT_ERRORS);

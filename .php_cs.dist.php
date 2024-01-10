@@ -30,7 +30,7 @@ return (new PhpCsFixer\Config())
             ]
         ],
         'blank_line_before_statement' => [
-            'statements' => ['break', 'continue', 'declare', 'return', 'throw', 'try'],
+            'statements' => ['break', 'continue', 'declare', 'return', 'throw', 'try', 'if'],
         ],
         'phpdoc_single_line_var_spacing' => true,
         'phpdoc_var_without_name' => true,
