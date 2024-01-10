@@ -44,6 +44,7 @@ class ProducerFake
     public function produceBatch(MessageBatch $messageBatch): int
     {
         $produced = 0;
+
         if ($this->producerCallback !== null) {
             $callback = $this->producerCallback;
 

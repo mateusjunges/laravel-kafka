@@ -101,6 +101,7 @@ class Consumer implements CanConsumeMessages
         $this->consumer->subscribe($this->config->getTopics());
 
         $batchConfig = $this->config->getBatchConfig();
+
         if ($batchConfig->isBatchingEnabled()) {
             $batchConfig->getTimer()->start($batchConfig->getBatchReleaseInterval());
         }
@@ -358,6 +359,7 @@ class Consumer implements CanConsumeMessages
     public function configureStopTimer(): Timer
     {
         $stopTimer = new Timer();
+
         if ($this->config->getMaxTime() === 0) {
             $stopTimer = new InfiniteTimer();
         }
@@ -435,6 +437,7 @@ class Consumer implements CanConsumeMessages
         }
 
         $this->restartTimer->start($this->config->getRestartInterval());
+
         if ($this->lastRestart !== $this->getLastRestart()) {
             $this->stopRequested = true;
         }
