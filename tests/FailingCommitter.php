@@ -44,6 +44,7 @@ final class FailingCommitter implements Committer
     private function commit(): void
     {
         $this->commitCount++;
+
         if ($this->commitCount > $this->timesToFail) {
             $this->commitCount = 0;
 

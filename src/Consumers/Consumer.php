@@ -372,6 +372,7 @@ class Consumer implements MessageConsumer
     public function configureStopTimer(): Timer
     {
         $stopTimer = new Timer();
+
         if ($this->config->getMaxTime() === 0) {
             $stopTimer = new InfiniteTimer();
         }
@@ -449,6 +450,7 @@ class Consumer implements MessageConsumer
         }
 
         $this->restartTimer->start($this->config->getRestartInterval());
+
         if ($this->lastRestart !== $this->getLastRestart()) {
             $this->stopRequested = true;
         }

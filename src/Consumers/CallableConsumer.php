@@ -61,11 +61,13 @@ class CallableConsumer extends Consumer
     private function queueHandler(Handler $handler, ConsumerMessage $message, array $middlewares): void
     {
         $connection = config('queue.default');
+
         if (method_exists($handler, 'onConnection')) {
             $connection = $handler->onConnection();
         }
 
         $queue = config("queue.$connection.queue", 'default');
+
         if (method_exists($handler, 'onQueue')) {
             $queue = $handler->onQueue();
         }

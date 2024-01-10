@@ -54,6 +54,7 @@ class ProducerFake implements Producer
         }
 
         $produced = 0;
+
         if ($this->producerCallback !== null) {
             $callback = $this->producerCallback;
 
