@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Support\Testing\Fakes;
 
+use Junges\Kafka\BatchRepositories\InMemoryBatchRepository;
 use Junges\Kafka\Config\BatchConfig;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\NullBatchConfig;
@@ -76,7 +77,7 @@ class ConsumerBuilderFake extends ConsumerBuilder implements ConsumerBuilderCont
         return new BatchConfig(
             batchConsumer: new CallableBatchConsumer($this->handler),
             timer: new Timer(),
-            batchRepository: app(\Junges\Kafka\BatchRepositories\InMemoryBatchRepository::class),
+            batchRepository: app(InMemoryBatchRepository::class),
             batchingEnabled: $this->batchingEnabled,
             batchSizeLimit: $this->batchSizeLimit,
             batchReleaseInterval: $this->batchReleaseInterval

@@ -14,7 +14,7 @@ class NullBatchRepository implements BatchRepositoryContract
 
     public function getBatch(): Collection
     {
-        return collect([]);
+        return collect();
     }
 
     public function getBatchSize(): int
