@@ -128,6 +128,7 @@ class Consumer implements CanConsumeMessages
 
         pcntl_signal(SIGQUIT, fn () => $this->stopRequested = true);
         pcntl_signal(SIGTERM, fn () => $this->stopRequested = true);
+        pcntl_signal(SIGINT, fn () => $this->stopRequested = true);
     }
 
     private function supportAsyncSignals(): bool
