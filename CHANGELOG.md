@@ -8,6 +8,7 @@ All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 - Add simple events to kafka producer and consumers by @mateusjunges in [#193](https://github.com/mateusjunges/laravel-kafka/pull/193)
 - Append throwable/exception info when sending a message to DLQ by @mateusjunges in [#194](https://github.com/mateusjunges/laravel-kafka/pull/194)
 - Add the ability to assign partitions to a consumer by @mateusjunges in [#234](https://github.com/mateusjunges/laravel-kafka/pull/234)
+- Add signal handler for `SIGINT` by @mateusjunges 
 
 ## [2024-01-09 v1.13.6](https://github.com/mateusjunges/laravel-kafka/compare/v1.13.6...v1.13.7)
 * Add timeout feature for consumers by @mihaileu in [#233](https://github.com/mateusjunges/laravel-kafka/pull/233)
