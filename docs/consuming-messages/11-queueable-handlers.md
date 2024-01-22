@@ -11,7 +11,7 @@ This is how a queueable handler looks like:
 
 ```php
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Junges\Kafka\Contracts\Handler;
+use Junges\Kafka\Contracts\Handler as HandlerContract;
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
 
 class Handler implements HandlerContract, ShouldQueue
