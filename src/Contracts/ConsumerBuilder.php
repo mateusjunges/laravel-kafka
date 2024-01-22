@@ -13,6 +13,9 @@ interface ConsumerBuilder extends InteractsWithConfigCallbacks
     /** Subscribe to a Kafka topic. */
     public function subscribe(...$topics): self;
 
+    /** Assigns a set of partitions this consumer should consume from. */
+    public function assignPartitions(array $partitionAssignment): self;
+
     /** Set the brokers the kafka consumer should use. */
     public function withBrokers(?string $brokers): self;
 
