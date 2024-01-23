@@ -2,8 +2,11 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2024-01-23 v1.13.9](https://github.com/mateusjunges/laravel-kafka/compare/v1.13.8...v1.13.9)
+* Install a signal handler for SIGINT (cmd/ctrl + c) by @mateusjunges
+
 ## [2024-01-09 v1.13.8](https://github.com/mateusjunges/laravel-kafka/compare/v1.13.7...v1.13.8)
-* Fix install issues when using laravel v10.x by @mateusjunges
+* Fix install issues when using laravel v1.13.x by @mateusjunges
 
 ## [2024-01-09 v1.13.7](https://github.com/mateusjunges/laravel-kafka/compare/v1.13.6...v1.13.7)
 * Add timeout feature for consumers by @mihaileu in [#233](https://github.com/mateusjunges/laravel-kafka/pull/233)
