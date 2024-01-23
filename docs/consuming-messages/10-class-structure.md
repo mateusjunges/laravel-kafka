@@ -46,6 +46,12 @@ To install supervisor on Ubuntu, you may use the following command:
 sudo apt-get install supervisor
 ```
 
+On mac, you can use homebrew:
+
+```bash
+brew install supervisor
+```
+
 ### Configuring supervisor
 Supervisor configuration files are typically stored in the `/etc/supervisor/conf.d` directory. Within this directory, you may create any number of configuration files that instruct supervisor how your processes should be monitored. For example, let's create a `my-topic-consumer.conf` file that starts and monitors our Consumer:
 
