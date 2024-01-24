@@ -119,7 +119,6 @@ class Consumer implements MessageConsumer
             $this->retryable->retry(fn () => $this->doConsume());
             $this->runAfterConsumingCallbacks();
             $this->checkForRestart();
-            $this->consumer->getMetadata(true, null, config('kafka.consumer_timeout_ms', 2000));
         } while (! $this->maxMessagesLimitReached() && ! $stopTimer->isTimedOut() && ! $this->stopRequested);
 
         if ($this->shouldRunStopConsumingCallback()) {
