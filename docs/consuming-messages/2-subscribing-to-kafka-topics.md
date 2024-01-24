@@ -1,4 +1,4 @@
-~~---
+---
 title: Subscribing to kafka topics
 weight: 2
 ---
@@ -25,6 +25,3 @@ $consumer = Kafka::createConsumer()->subscribe([
     'topic-n'
 ]);
 ```
-
-## Subscribing to topics using regex~~
-
