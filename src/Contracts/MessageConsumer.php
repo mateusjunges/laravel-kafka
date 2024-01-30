@@ -9,7 +9,7 @@ interface MessageConsumer
     /**
      * Consume messages from a kafka topic in loop.
      *
-     * @throws \RdKafka\Exception|\Carbon\Exceptions\Exception|\Junges\Kafka\Exceptions\KafkaConsumerException
+     * @throws \RdKafka\Exception|\Carbon\Exceptions\Exception|\Junges\Kafka\Exceptions\ConsumerException
      */
     public function consume(): void;
 
