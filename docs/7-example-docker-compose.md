@@ -8,7 +8,7 @@ The quickest way to achieve that is by using [docker](https://docs.docker.com/).
 for development:
 
 
-```yml
+```text
 version: '2'
 services:
   zookeeper:
