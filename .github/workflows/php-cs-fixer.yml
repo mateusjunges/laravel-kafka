@@ -2,7 +2,7 @@ name: Check & fix styling
 
 on:
   push:
-    branches: [ v2.x ]
+    branches: [ master ]
 
 jobs:
   php-cs-fixer:
