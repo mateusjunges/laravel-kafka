@@ -2,7 +2,9 @@
 
 namespace Junges\Kafka;
 
+use Illuminate\Support\Str;
 use Junges\Kafka\Contracts\KafkaMessage;
+use Junges\Kafka\Exceptions\MessageIdNotSet;
 
 abstract class AbstractMessage implements KafkaMessage
 {
@@ -45,5 +47,15 @@ abstract class AbstractMessage implements KafkaMessage
     public function getKey(): mixed
     {
         return $this->key;
+    }
+
+    /** @throws MessageIdNotSet */
+    public function getMessageIdentifier(): string
+    {
+        if (! is_string($this->getHeaders()['laravel-kafka::message-id'])) {
+            throw new MessageIdNotSet();
+        }
+
+        return $this->getHeaders()['laravel-kafka::message-id'];
     }
 }
