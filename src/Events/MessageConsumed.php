@@ -10,4 +10,9 @@ final class MessageConsumed
         public readonly ConsumerMessage $message
     ) {
     }
+
+    public function getMessageIdentifier(): string
+    {
+        return $this->message->getMessageIdentifier();
+    }
 }

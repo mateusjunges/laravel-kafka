@@ -8,7 +8,13 @@ final class MessageSentToDLQ
         public readonly string $payload,
         public readonly ?string $key,
         public readonly array $headers,
-        public readonly ?\Throwable $throwable
+        public readonly ?\Throwable $throwable,
+        public readonly ?string $messageIdentifier,
     ) {
+    }
+
+    public function getMessageIdentifier(): ?string
+    {
+        return $this->messageIdentifier;
     }
 }
