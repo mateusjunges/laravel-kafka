@@ -83,12 +83,9 @@ class Message extends AbstractMessage implements Arrayable, ProducerMessage
 
     public function getHeaders(): ?array
     {
-        // Here we insert an uuid to be used to uniquely identify this message.
-        // This is important in case that we want to track status of for this
-        // using events provided by the package. It is safe to set the id
-        // here because this class is meant to be used only when
-        // producing messages. If the id is already set, then
-        // array_merge will override it.
+        // Here we insert an uuid to be used to uniquely identify this message. If the
+        // id is already set, then array_merge will override it. It's safe to do it
+        // here because this class is used only when we produce a new message.
         return array_merge(parent::getHeaders(), [
             'laravel-kafka::message-id' => Str::uuid()->toString(),
         ]);
