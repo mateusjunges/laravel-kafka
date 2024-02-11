@@ -444,6 +444,13 @@ class Consumer implements MessageConsumer
 
     private function getConsumerMessage(Message $message): ConsumerMessage
     {
+        // First, we set a new unique id that allows us to identify this message.
+        // Then, we create a new consumer message instance that will be
+        // passed as an argument to the consumer class/closure.
+        if (! array_key_exists('laravel-kafka::message-id', $message->headers)) {
+            $message->headers['laravel-kafka::message-id'] = Str::uuid()->toString();
+        }
+
         return app(ConsumerMessage::class, [
             'topicName' => $message->topic_name,
             'partition' => $message->partition,
