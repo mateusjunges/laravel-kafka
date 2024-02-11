@@ -299,9 +299,9 @@ class Consumer implements MessageConsumer
     private function handleException(Throwable $exception, Message|ConsumerMessage $message): bool
     {
         try {
-            // If the message consumption failed, we first try to reprocess it using the fallback
-            // provided by the consumer. This happens before sending the message to the dead
-            // letter queue.
+            // If the message consumption fails, we first try to reprocess the message
+            // using the fallback provided by the consumer. Message will be sent to
+            // a dead letter queue only if the failed method throws an exception.
             $this->config->getConsumer()->failed(
                 $message->payload,
                 $this->config->getTopics()[0],
@@ -444,9 +444,9 @@ class Consumer implements MessageConsumer
 
     private function getConsumerMessage(Message $message): ConsumerMessage
     {
-        // First, we set a new unique id that allows us to identify this message.
-        // Then, we create a new consumer message instance that will be
-        // passed as an argument to the consumer class/closure.
+        // First, we set a new unique id that allows us to identify this message. Then
+        // we create a new consumer message instance that will be passed as an arg
+        // to the consumer class/closure responsible for consuming this message.
         if (! array_key_exists('laravel-kafka::message-id', $message->headers)) {
             $message->headers['laravel-kafka::message-id'] = Str::uuid()->toString();
         }
