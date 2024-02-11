@@ -3,6 +3,7 @@
 namespace Junges\Kafka\Message;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Str;
 use JetBrains\PhpStorm\ArrayShape;
 use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\AbstractMessage;
@@ -78,5 +79,18 @@ class Message extends AbstractMessage implements Arrayable, ProducerMessage
         $this->headers[$key] = $value;
 
         return $this;
+    }
+
+    public function getHeaders(): ?array
+    {
+        // Here we insert an uuid to be used to uniquely identify this message.
+        // This is important in case that we want to track status of for this
+        // using events provided by the package. It is safe to set the id
+        // here because this class is meant to be used only when
+        // producing messages. If the id is already set, then
+        // array_merge will override it.
+        return array_merge(parent::getHeaders(), [
+            'laravel-kafka::message-id' => Str::uuid()->toString(),
+        ]);
     }
 }
