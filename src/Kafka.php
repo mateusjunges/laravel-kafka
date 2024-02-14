@@ -5,11 +5,12 @@ namespace Junges\Kafka;
 use Illuminate\Support\Traits\Macroable;
 use Junges\Kafka\Consumers\ConsumerBuilder;
 use Junges\Kafka\Contracts\ConsumeMessagesFromKafka;
+use Junges\Kafka\Contracts\KafkaManager;
 use Junges\Kafka\Contracts\MessageProducer;
 use Junges\Kafka\Contracts\MessagePublisher;
 use Junges\Kafka\Producers\ProducerBuilder;
 
-class Kafka implements MessagePublisher, ConsumeMessagesFromKafka
+class Kafka implements KafkaManager
 {
     use Macroable;
 
