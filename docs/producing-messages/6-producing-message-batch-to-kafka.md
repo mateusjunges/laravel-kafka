@@ -26,7 +26,7 @@ $messageBatch->push($message);
 $messageBatch->push($message);
 $messageBatch->push($message);
 
-/** @var \Junges\Kafka\Producers\ProducerBuilder $producer */
+/** @var \Junges\Kafka\Producers\Builder $producer */
 $producer = Kafka::publishOn('topic')
     ->withConfigOptions(['key' => 'value']);
 

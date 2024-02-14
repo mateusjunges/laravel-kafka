@@ -17,7 +17,7 @@ use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\Message;
 use Junges\Kafka\Message\Serializers\JsonSerializer;
 use Junges\Kafka\Producers\MessageBatch;
-use Junges\Kafka\Producers\ProducerBuilder;
+use Junges\Kafka\Producers\Builder;
 use Mockery as m;
 use RdKafka\Producer;
 use RdKafka\ProducerTopic;
@@ -193,7 +193,7 @@ final class KafkaTest extends LaravelKafkaTestCase
             return $mockedProducer;
         });
 
-        /** @var ProducerBuilder $producer */
+        /** @var Builder $producer */
         $producer = Kafka::publish()
             ->withConfigOptions([
                 'metadata.broker.list' => 'broker',
@@ -343,7 +343,7 @@ final class KafkaTest extends LaravelKafkaTestCase
 
         $producer = Kafka::defaultProducer();
 
-        $this->assertInstanceOf(ProducerBuilder::class, $producer);
+        $this->assertInstanceOf(Builder::class, $producer);
         $this->assertEquals($sasl, $this->getPropertyWithReflection('saslConfig', $producer));
     }
 }

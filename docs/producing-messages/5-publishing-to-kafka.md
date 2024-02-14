@@ -8,7 +8,7 @@ After configuring all your message options, you must use the send method, to sen
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-/** @var \Junges\Kafka\Producers\ProducerBuilder $producer */
+/** @var \Junges\Kafka\Producers\Builder $producer */
 $producer = Kafka::publishOn('topic')
     ->withConfigOptions(['key' => 'value'])
     ->withKafkaKey('kafka-key')
