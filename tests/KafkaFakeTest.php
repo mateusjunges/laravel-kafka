@@ -588,8 +588,6 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
             return 'this is a test';
         });
 
-        Kafka::fake();
-
         $this->assertSame('this is a test', $this->fake->onTopicExample());
     }
 }
