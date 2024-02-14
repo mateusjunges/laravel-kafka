@@ -5,12 +5,10 @@ namespace Junges\Kafka\Support\Testing\Fakes;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Traits\ForwardsCalls;
 use JetBrains\PhpStorm\Pure;
-use Junges\Kafka\Contracts\ConsumeMessagesFromKafka;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\KafkaManager;
 use Junges\Kafka\Contracts\MessagePublisher;
 use Junges\Kafka\Contracts\ProducerMessage;
-use Junges\Kafka\Kafka;
 use Junges\Kafka\Message\Message;
 use PHPUnit\Framework\Assert as PHPUnit;
 
@@ -159,7 +157,6 @@ class KafkaFake implements MessagePublisher
     {
         return $this->publishedMessages;
     }
-
 
     /**
      * Handle dynamic method calls to the dispatcher.

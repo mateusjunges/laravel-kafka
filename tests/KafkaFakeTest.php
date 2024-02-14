@@ -580,7 +580,6 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         $this->assertEquals(2, $this->consumer->consumedMessagesCount());
     }
 
-
     /** @test */
     public function it_can_handle_macros(): void
     {
