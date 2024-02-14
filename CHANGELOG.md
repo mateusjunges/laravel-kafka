@@ -2,6 +2,9 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2024-01-23 v1.13.9](https://github.com/mateusjunges/laravel-kafka/compare/v1.13.9...v1.13.10)
+* Passthru missing methods on `KafkaFake` for macro accessibility by @mateusjunges in [#247](https://github.com/mateusjunges/laravel-kafka/pull/247)
+
 ## [2024-01-23 v1.13.9](https://github.com/mateusjunges/laravel-kafka/compare/v1.13.8...v1.13.9)
 * Install a signal handler for SIGINT (cmd/ctrl + c) by @mateusjunges
 
