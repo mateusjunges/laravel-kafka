@@ -7,6 +7,7 @@ use Junges\Kafka\Console\Commands\ConsumerCommand;
 use Junges\Kafka\Console\Commands\RestartConsumersCommand;
 use Junges\Kafka\Contracts\ConsumeMessagesFromKafka;
 use Junges\Kafka\Contracts\ConsumerMessage;
+use Junges\Kafka\Contracts\KafkaManager;
 use Junges\Kafka\Contracts\Logger as LoggerContract;
 use Junges\Kafka\Contracts\MessageDeserializer;
 use Junges\Kafka\Contracts\MessagePublisher;
@@ -46,6 +47,8 @@ class LaravelKafkaServiceProvider extends ServiceProvider
         $this->app->bind(MessagePublisher::class, Kafka::class);
 
         $this->app->bind(ConsumeMessagesFromKafka::class, Kafka::class);
+
+        $this->app->bind(KafkaManager::class, Kafka::class);
 
         $this->app->singleton(LoggerContract::class, Logger::class);
     }
