@@ -8,7 +8,7 @@ use Junges\Kafka\Contracts\KafkaManager;
 use Junges\Kafka\Contracts\MessageProducer;
 use Junges\Kafka\Producers\ProducerBuilder;
 
-class Kafka implements KafkaManager
+class Factory implements KafkaManager
 {
     use Macroable;
 

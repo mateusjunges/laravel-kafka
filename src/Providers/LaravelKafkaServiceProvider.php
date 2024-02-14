@@ -13,7 +13,7 @@ use Junges\Kafka\Contracts\MessageDeserializer;
 use Junges\Kafka\Contracts\MessagePublisher;
 use Junges\Kafka\Contracts\MessageSerializer;
 use Junges\Kafka\Contracts\ProducerMessage;
-use Junges\Kafka\Kafka;
+use Junges\Kafka\Factory;
 use Junges\Kafka\Logger;
 use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
@@ -44,11 +44,11 @@ class LaravelKafkaServiceProvider extends ServiceProvider
 
         $this->app->bind(ConsumerMessage::class, ConsumedMessage::class);
 
-        $this->app->bind(MessagePublisher::class, Kafka::class);
+        $this->app->bind(MessagePublisher::class, Factory::class);
 
-        $this->app->bind(ConsumeMessagesFromKafka::class, Kafka::class);
+        $this->app->bind(ConsumeMessagesFromKafka::class, Factory::class);
 
-        $this->app->bind(KafkaManager::class, Kafka::class);
+        $this->app->bind(KafkaManager::class, Factory::class);
 
         $this->app->singleton(LoggerContract::class, Logger::class);
     }
