@@ -7,12 +7,11 @@ use Illuminate\Support\Traits\ForwardsCalls;
 use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\KafkaManager;
-use Junges\Kafka\Contracts\MessagePublisher;
 use Junges\Kafka\Contracts\ProducerMessage;
 use Junges\Kafka\Message\Message;
 use PHPUnit\Framework\Assert as PHPUnit;
 
-class KafkaFake implements MessagePublisher
+class KafkaFake
 {
     use ForwardsCalls;
 
@@ -159,7 +158,7 @@ class KafkaFake implements MessagePublisher
     }
 
     /**
-     * Handle dynamic method calls to the dispatcher.
+     * Handle dynamic method calls to the kafka manager.
      *
      * @return mixed
      */

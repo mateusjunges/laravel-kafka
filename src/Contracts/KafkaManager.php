@@ -2,7 +2,11 @@
 
 namespace Junges\Kafka\Contracts;
 
-interface KafkaManager extends ConsumeMessagesFromKafka, MessagePublisher
+interface KafkaManager
 {
+    /** Creates a new ProducerBuilder instance, setting brokers and topic. */
+    public function publish(?string $broker = null): MessageProducer;
 
+    /** Return a ConsumerBuilder instance. */
+    public function createConsumer(array $topics = [], string $groupId = null, string $brokers = null): ConsumerBuilder;
 }
