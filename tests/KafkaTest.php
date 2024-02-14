@@ -5,7 +5,7 @@ namespace Junges\Kafka\Tests;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Junges\Kafka\Config\Sasl;
-use Junges\Kafka\Consumers\ConsumerBuilder;
+use Junges\Kafka\Consumers\Builder as ConsumerBuilder;
 use Junges\Kafka\Contracts\ProducerMessage;
 use Junges\Kafka\Events\BatchMessagePublished;
 use Junges\Kafka\Events\CouldNotPublishMessage as CouldNotPublishMessageEvent;
@@ -17,7 +17,7 @@ use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\Message;
 use Junges\Kafka\Message\Serializers\JsonSerializer;
 use Junges\Kafka\Producers\MessageBatch;
-use Junges\Kafka\Producers\Builder;
+use Junges\Kafka\Producers\Builder as ProducerBuilder;
 use Mockery as m;
 use RdKafka\Producer;
 use RdKafka\ProducerTopic;
@@ -193,7 +193,7 @@ final class KafkaTest extends LaravelKafkaTestCase
             return $mockedProducer;
         });
 
-        /** @var Builder $producer */
+        /** @var ProducerBuilder $producer */
         $producer = Kafka::publish()
             ->withConfigOptions([
                 'metadata.broker.list' => 'broker',
@@ -343,7 +343,7 @@ final class KafkaTest extends LaravelKafkaTestCase
 
         $producer = Kafka::defaultProducer();
 
-        $this->assertInstanceOf(Builder::class, $producer);
+        $this->assertInstanceOf(ProducerBuilder::class, $producer);
         $this->assertEquals($sasl, $this->getPropertyWithReflection('saslConfig', $producer));
     }
 }

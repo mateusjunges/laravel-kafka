@@ -3,10 +3,10 @@
 namespace Junges\Kafka;
 
 use Illuminate\Support\Traits\Macroable;
-use Junges\Kafka\Consumers\ConsumerBuilder;
+use Junges\Kafka\Consumers\Builder as ConsumerBuilder;
 use Junges\Kafka\Contracts\KafkaManager;
 use Junges\Kafka\Contracts\MessageProducer;
-use Junges\Kafka\Producers\Builder;
+use Junges\Kafka\Producers\Builder as ProducerBuilder;
 
 class Factory implements KafkaManager
 {
@@ -15,7 +15,7 @@ class Factory implements KafkaManager
     /** Creates a new ProducerBuilder instance, setting brokers and topic. */
     public function publish(string $broker = null): MessageProducer
     {
-        return new Builder(
+        return new ProducerBuilder(
             broker: $broker ?? config('kafka.brokers')
         );
     }

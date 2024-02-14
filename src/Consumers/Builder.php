@@ -21,7 +21,7 @@ use Junges\Kafka\Exceptions\ConsumerException;
 use Junges\Kafka\Support\Timer;
 use RdKafka\TopicPartition;
 
-class ConsumerBuilder implements ConsumerBuilderContract
+class Builder implements ConsumerBuilderContract
 {
     use InteractsWithConfigCallbacks;
     use Conditionable;
@@ -83,7 +83,7 @@ class ConsumerBuilder implements ConsumerBuilderContract
     /** @inheritDoc */
     public static function create(string $brokers, array $topics = [], string $groupId = null): self
     {
-        return new ConsumerBuilder(
+        return new Builder(
             brokers: $brokers,
             topics: $topics,
             groupId: $groupId
