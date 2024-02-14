@@ -584,9 +584,7 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
     /** @test */
     public function it_can_handle_macros(): void
     {
-        Kafka::macro('onTopicExample', function () {
-            return 'this is a test';
-        });
+        Kafka::macro('onTopicExample', fn () => 'this is a test');
 
         $this->assertSame('this is a test', $this->fake->onTopicExample());
     }
