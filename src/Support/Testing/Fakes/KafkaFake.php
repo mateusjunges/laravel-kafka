@@ -3,7 +3,9 @@
 namespace Junges\Kafka\Support\Testing\Fakes;
 
 use Illuminate\Support\Collection;
+use Illuminate\Support\Traits\ForwardsCalls;
 use JetBrains\PhpStorm\Pure;
+use Junges\Kafka\Contracts\CanConsumeMessagesFromKafka;
 use Junges\Kafka\Contracts\CanPublishMessagesToKafka;
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
@@ -12,12 +14,17 @@ use PHPUnit\Framework\Assert as PHPUnit;
 
 class KafkaFake implements CanPublishMessagesToKafka
 {
+    use ForwardsCalls;
+
+    private CanPublishMessagesToKafka&CanConsumeMessagesFromKafka $manager;
+
     private array $publishedMessages = [];
     /** @var \Junges\Kafka\Contracts\KafkaConsumerMessage[] */
     private array $messagesToConsume = [];
 
-    public function __construct()
+    public function __construct(CanPublishMessagesToKafka&CanConsumeMessagesFromKafka $manager)
     {
+        $this->manager = $manager;
         $this->makeProducerBuilderFake();
     }
 
@@ -212,5 +219,10 @@ class KafkaFake implements CanPublishMessagesToKafka
     private function getPublishedMessages(): array
     {
         return $this->publishedMessages;
+    }
+
+    public function __call(string $method, array $arguments)
+    {
+        return  $this->forwardCallTo($this->manager, $method, $arguments);
     }
 }

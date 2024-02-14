@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 use Junges\Kafka\Contracts\CanConsumeMessages;
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Facades\Kafka;
+use Junges\Kafka\Kafka as KafkaManager;
 use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\Message\Message;
 use Junges\Kafka\Producers\MessageBatch;
@@ -23,7 +24,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
     public function setUp(): void
     {
         parent::setUp();
-        $this->fake = new KafkaFake();
+        $this->fake = new KafkaFake(new KafkaManager());
     }
 
     public function testItStorePublishedMessagesOnArray(): void
@@ -569,5 +570,13 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         $this->assertTrue((bool)$stopped);
         //should have consumed only two messages
         $this->assertEquals(2, $this->consumer->consumedMessagesCount());
+    }
+
+    /** @test */
+    public function it_can_handle_macros(): void
+    {
+        Kafka::macro('onTopicExample', fn () => 'this is a test');
+
+        $this->assertSame('this is a test', $this->fake->onTopicExample());
     }
 }
