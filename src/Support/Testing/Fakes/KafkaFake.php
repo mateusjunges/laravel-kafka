@@ -16,7 +16,7 @@ class KafkaFake implements MessagePublisher
 {
     use ForwardsCalls;
 
-    private KafkaManager $kafka;
+    private KafkaManager $kafkaManager;
 
     private array $publishedMessages = [];
     /** @var \Junges\Kafka\Contracts\ConsumerMessage[] */
@@ -24,7 +24,7 @@ class KafkaFake implements MessagePublisher
 
     public function __construct(KafkaManager $kafka)
     {
-        $this->kafka = $kafka;
+        $this->kafkaManager = $kafka;
         $this->makeProducerBuilderFake();
     }
 
@@ -165,6 +165,6 @@ class KafkaFake implements MessagePublisher
      */
     public function __call(string $method, array $parameters)
     {
-        return $this->forwardCallTo($this->kafka, $method, $parameters);
+        return $this->forwardCallTo($this->kafkaManager, $method, $parameters);
     }
 }
