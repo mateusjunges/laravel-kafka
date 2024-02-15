@@ -5,7 +5,6 @@ namespace Junges\Kafka\Support\Testing\Fakes;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Traits\ForwardsCalls;
 use JetBrains\PhpStorm\Pure;
-use Junges\Kafka\Contracts\CanConsumeMessagesFromKafka;
 use Junges\Kafka\Contracts\CanPublishMessagesToKafka;
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Contracts\KafkaProducerMessage;

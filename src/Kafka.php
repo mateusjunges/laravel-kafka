@@ -8,7 +8,6 @@ use Junges\Kafka\Contracts\CanConsumeMessagesFromKafka;
 use Junges\Kafka\Contracts\CanProduceMessages;
 use Junges\Kafka\Contracts\CanPublishMessagesToKafka;
 use Junges\Kafka\Producers\ProducerBuilder;
-use Junges\Kafka\Support\Testing\Fakes\KafkaFake;
 
 class Kafka implements CanPublishMessagesToKafka, CanConsumeMessagesFromKafka
 {
@@ -47,7 +46,9 @@ class Kafka implements CanPublishMessagesToKafka, CanConsumeMessagesFromKafka
     {
         if ($this->shouldFake) {
             return Facades\Kafka::fake()->createConsumer(
-                $topics, $groupId, $brokers
+                $topics,
+                $groupId,
+                $brokers
             );
         }
 
