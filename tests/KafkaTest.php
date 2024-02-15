@@ -308,4 +308,23 @@ class KafkaTest extends LaravelKafkaTestCase
         $this->assertInstanceOf(ProducerBuilder::class, $producer);
         $this->assertEquals($sasl, $this->getPropertyWithReflection('saslConfig', $producer));
     }
+
+    /** @test */
+    public function it_stores_published_messages_when_using_macros(): void
+    {
+        $expectedMessage = (new Message)
+            ->withBodyKey('test', ['test'])
+            ->withHeaders(['custom' => 'header'])
+            ->withKey($uuid = Str::uuid()->toString());
+
+        Kafka::macro('testProducer', function () use ($expectedMessage) {
+            return $this->publishOn('topic')
+                ->withMessage($expectedMessage);
+        });
+
+        Kafka::fake();
+        Kafka::testProducer()->send();
+
+        Kafka::assertPublished($expectedMessage);
+    }
 }

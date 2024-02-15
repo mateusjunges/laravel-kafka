@@ -9,6 +9,7 @@ use Junges\Kafka\Contracts\CanConsumeMessagesFromKafka;
 use Junges\Kafka\Contracts\CanPublishMessagesToKafka;
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
+use Junges\Kafka\Kafka;
 use Junges\Kafka\Message\Message;
 use PHPUnit\Framework\Assert as PHPUnit;
 
@@ -16,16 +17,15 @@ class KafkaFake implements CanPublishMessagesToKafka
 {
     use ForwardsCalls;
 
-    private CanPublishMessagesToKafka&CanConsumeMessagesFromKafka $manager;
+    private ?Kafka $manager;
 
     private array $publishedMessages = [];
     /** @var \Junges\Kafka\Contracts\KafkaConsumerMessage[] */
     private array $messagesToConsume = [];
 
-    public function __construct(CanPublishMessagesToKafka&CanConsumeMessagesFromKafka $manager)
+    public function __construct(?Kafka $manager = null)
     {
-        $this->manager = $manager;
-        $this->makeProducerBuilderFake();
+        $this->manager = $manager?->shouldFake();
     }
 
     /**
@@ -164,8 +164,7 @@ class KafkaFake implements CanPublishMessagesToKafka
         return (new ProducerBuilderFake(
             topic: $topic,
             broker: $broker
-        )
-        )->withProducerCallback(fn (Message $message) => $this->publishedMessages[] = $message);
+        ))->withProducerCallback(fn (Message $message) => $this->publishedMessages[] = $message);
     }
 
     /**
