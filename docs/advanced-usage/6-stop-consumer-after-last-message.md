@@ -11,7 +11,7 @@ You can do it by adding a call to `stopAfterLastMessage` method when creating yo
 This is particularly useful when using signal handlers.
 
 ```php
-$consumer = \Junges\Kafka\Facades\Kafka::createConsumer(['topic'])
+$consumer = \Junges\Kafka\Facades\Kafka::consumer(['topic'])
     ->withConsumerGroupId('group')
     ->stopAfterLastMessage()
     ->withHandler(new Handler)

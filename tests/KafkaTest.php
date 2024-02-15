@@ -5,7 +5,7 @@ namespace Junges\Kafka\Tests;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Junges\Kafka\Config\Sasl;
-use Junges\Kafka\Consumers\ConsumerBuilder;
+use Junges\Kafka\Consumers\Builder as ConsumerBuilder;
 use Junges\Kafka\Contracts\ProducerMessage;
 use Junges\Kafka\Events\BatchMessagePublished;
 use Junges\Kafka\Events\CouldNotPublishMessage as CouldNotPublishMessageEvent;
@@ -16,8 +16,8 @@ use Junges\Kafka\Exceptions\CouldNotPublishMessage;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\Message;
 use Junges\Kafka\Message\Serializers\JsonSerializer;
+use Junges\Kafka\Producers\Builder as ProducerBuilder;
 use Junges\Kafka\Producers\MessageBatch;
-use Junges\Kafka\Producers\ProducerBuilder;
 use Mockery as m;
 use RdKafka\Producer;
 use RdKafka\ProducerTopic;
@@ -235,14 +235,14 @@ final class KafkaTest extends LaravelKafkaTestCase
 
     public function testCreateConsumerReturnsAConsumerBuilderInstance(): void
     {
-        $consumer = Kafka::createConsumer();
+        $consumer = Kafka::consumer();
 
         $this->assertInstanceOf(ConsumerBuilder::class, $consumer);
     }
 
     public function testCreateConsumerDefaultConfigs(): void
     {
-        $consumer = Kafka::createConsumer();
+        $consumer = Kafka::consumer();
 
         $this->assertInstanceOf(ConsumerBuilder::class, $consumer);
         $this->assertEquals('group', $this->getPropertyWithReflection('groupId', $consumer));
@@ -345,5 +345,24 @@ final class KafkaTest extends LaravelKafkaTestCase
 
         $this->assertInstanceOf(ProducerBuilder::class, $producer);
         $this->assertEquals($sasl, $this->getPropertyWithReflection('saslConfig', $producer));
+    }
+
+    /** @test */
+    public function it_stores_published_messages_when_using_macros(): void
+    {
+        $expectedMessage = (new Message)
+            ->withBodyKey('test', ['test'])
+            ->withHeaders(['custom' => 'header'])
+            ->onTopic('topic')
+            ->withKey($uuid = Str::uuid()->toString());
+
+        Kafka::macro('testProducer', function () use ($expectedMessage) {
+            return $this->publish()->withMessage($expectedMessage);
+        });
+
+        Kafka::fake();
+        Kafka::testProducer()->send();
+
+        Kafka::assertPublished($expectedMessage);
     }
 }

@@ -6,15 +6,15 @@ use Junges\Kafka\BatchRepositories\InMemoryBatchRepository;
 use Junges\Kafka\Config\BatchConfig;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\NullBatchConfig;
+use Junges\Kafka\Consumers\Builder;
 use Junges\Kafka\Consumers\CallableBatchConsumer;
 use Junges\Kafka\Consumers\CallableConsumer;
-use Junges\Kafka\Consumers\ConsumerBuilder;
 use Junges\Kafka\Contracts\ConsumerBuilder as ConsumerBuilderContract;
 use Junges\Kafka\Contracts\HandlesBatchConfiguration;
 use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Support\Timer;
 
-class ConsumerBuilderFake extends ConsumerBuilder implements ConsumerBuilderContract
+class BuilderFake extends Builder implements ConsumerBuilderContract
 {
     /** @var \Junges\Kafka\Contracts\ConsumerMessage[] */
     private array $messages = [];
@@ -22,7 +22,7 @@ class ConsumerBuilderFake extends ConsumerBuilder implements ConsumerBuilderCont
     /** @inheritDoc */
     public static function create(string $brokers, array $topics = [], string $groupId = null): self
     {
-        return new ConsumerBuilderFake(
+        return new BuilderFake(
             brokers: $brokers,
             topics: $topics,
             groupId: $groupId

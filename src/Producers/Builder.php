@@ -10,7 +10,7 @@ use Junges\Kafka\Contracts\MessageProducer;
 use Junges\Kafka\Contracts\MessageSerializer;
 use Junges\Kafka\Contracts\ProducerMessage;
 
-class ProducerBuilder implements MessageProducer
+class Builder implements MessageProducer
 {
     use InteractsWithConfigCallbacks;
     use Conditionable;
@@ -38,7 +38,7 @@ class ProducerBuilder implements MessageProducer
     /** Return a new Junges\Commit\ProducerBuilder instance. */
     public static function create(string $broker = null): self
     {
-        return new ProducerBuilder(
+        return new Builder(
             broker: $broker ?? config('kafka.brokers')
         );
     }

@@ -7,7 +7,7 @@ You can call pre-defined callbacks **Before** and **After** consuming messages. 
 The callbacks get executed in the order they are defined, and they receive a `\Junges\Kafka\Contracts\MessageConsumer` as argument:
 
 ```php
-$consumer = \Junges\Kafka\Facades\Kafka::createConsumer()
+$consumer = \Junges\Kafka\Facades\Kafka::consumer()
     ->beforeConsuming(function(\Junges\Kafka\Contracts\MessageConsumer $consumer) {
         while (app()->isDownForMaintenance()) {
             sleep(1);

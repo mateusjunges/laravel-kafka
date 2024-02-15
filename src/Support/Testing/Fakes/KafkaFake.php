@@ -3,21 +3,28 @@
 namespace Junges\Kafka\Support\Testing\Fakes;
 
 use Illuminate\Support\Collection;
+use Illuminate\Support\Traits\ForwardsCalls;
 use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Contracts\ConsumerMessage;
-use Junges\Kafka\Contracts\MessagePublisher;
+use Junges\Kafka\Contracts\KafkaManager;
 use Junges\Kafka\Contracts\ProducerMessage;
 use Junges\Kafka\Message\Message;
 use PHPUnit\Framework\Assert as PHPUnit;
 
-class KafkaFake implements MessagePublisher
+class KafkaFake
 {
+    use ForwardsCalls;
+
+    private KafkaManager $kafkaManager;
+
     private array $publishedMessages = [];
+
     /** @var \Junges\Kafka\Contracts\ConsumerMessage[] */
     private array $messagesToConsume = [];
 
-    public function __construct()
+    public function __construct(?KafkaManager $manager)
     {
+        $this->kafkaManager = $manager?->shouldFake();
         $this->makeProducerBuilderFake();
     }
 
@@ -28,9 +35,9 @@ class KafkaFake implements MessagePublisher
     }
 
     /** Return a ConsumerBuilder instance. */
-    public function createConsumer(array $topics = [], string $groupId = null, string $brokers = null): ConsumerBuilderFake
+    public function consumer(array $topics = [], string $groupId = null, string $brokers = null): BuilderFake
     {
-        return ConsumerBuilderFake::create(
+        return BuilderFake::create(
             brokers: $brokers ?? config('kafka.brokers'),
             topics: $topics,
             groupId: $groupId ?? config('kafka.consumer_group_id')
@@ -58,7 +65,7 @@ class KafkaFake implements MessagePublisher
     }
 
     /** Assert if a messages was published based on a truth-test callback. */
-    public function assertPublished(?ProducerMessage $expectedMessage = null, ?callable $callback = null)
+    public function assertPublished(?ProducerMessage $expectedMessage = null, ?callable $callback = null): void
     {
         PHPUnit::assertTrue(
             condition: $this->published($callback, $expectedMessage)->count() > 0,
@@ -67,7 +74,7 @@ class KafkaFake implements MessagePublisher
     }
 
     /** Assert if a messages was published based on a truth-test callback. */
-    public function assertPublishedTimes(int $times = 1, ?ProducerMessage $expectedMessage = null, ?callable $callback = null)
+    public function assertPublishedTimes(int $times = 1, ?ProducerMessage $expectedMessage = null, ?callable $callback = null): void
     {
         $count = $this->published($callback, $expectedMessage)->count();
 
@@ -78,7 +85,7 @@ class KafkaFake implements MessagePublisher
     }
 
     /** Assert that a message was published on a specific topic. */
-    public function assertPublishedOn(string $topic, ?ProducerMessage $expectedMessage = null, ?callable $callback = null)
+    public function assertPublishedOn(string $topic, ?ProducerMessage $expectedMessage = null, ?callable $callback = null): void
     {
         PHPUnit::assertTrue(
             condition: $this->published($callback, $expectedMessage, $topic)->count() > 0,
@@ -87,7 +94,7 @@ class KafkaFake implements MessagePublisher
     }
 
     /** Assert that a message was published on a specific topic. */
-    public function assertPublishedOnTimes(string $topic, int $times = 1, ?ProducerMessage $expectedMessage = null, ?callable $callback = null)
+    public function assertPublishedOnTimes(string $topic, int $times = 1, ?ProducerMessage $expectedMessage = null, ?callable $callback = null): void
     {
         $count = $this->published($callback, $expectedMessage, $topic)->count();
 
@@ -99,7 +106,7 @@ class KafkaFake implements MessagePublisher
     }
 
     /** Assert that no messages were published. */
-    public function assertNothingPublished()
+    public function assertNothingPublished(): void
     {
         PHPUnit::assertEmpty($this->getPublishedMessages(), 'Messages were published unexpectedly.');
     }
@@ -149,5 +156,15 @@ class KafkaFake implements MessagePublisher
     private function getPublishedMessages(): array
     {
         return $this->publishedMessages;
+    }
+
+    /**
+     * Handle dynamic method calls to the kafka manager.
+     *
+     * @return mixed
+     */
+    public function __call(string $method, array $parameters)
+    {
+        return $this->forwardCallTo($this->kafkaManager, $method, $parameters);
     }
 }

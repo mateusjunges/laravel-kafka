@@ -16,7 +16,6 @@ class ProducerFake implements Producer
 {
     use ManagesTransactions;
 
-    private array $messages = [];
     private ?Closure $producerCallback = null;
 
     public function __construct(
