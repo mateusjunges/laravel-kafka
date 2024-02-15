@@ -8,10 +8,13 @@ use Junges\Kafka\Contracts\CanConsumeMessagesFromKafka;
 use Junges\Kafka\Contracts\CanProduceMessages;
 use Junges\Kafka\Contracts\CanPublishMessagesToKafka;
 use Junges\Kafka\Producers\ProducerBuilder;
+use Junges\Kafka\Support\Testing\Fakes\KafkaFake;
 
 class Kafka implements CanPublishMessagesToKafka, CanConsumeMessagesFromKafka
 {
     use Macroable;
+
+    private bool $shouldFake = false;
 
     /**
      * Creates a new ProducerBuilder instance, setting brokers and topic.
@@ -22,6 +25,10 @@ class Kafka implements CanPublishMessagesToKafka, CanConsumeMessagesFromKafka
      */
     public function publishOn(string $topic, string $broker = null): CanProduceMessages
     {
+        if ($this->shouldFake) {
+            return Facades\Kafka::fake()->publishOn($topic, $broker);
+        }
+
         return new ProducerBuilder(
             topic: $topic,
             broker: $broker ?? config('kafka.brokers')
@@ -38,10 +45,23 @@ class Kafka implements CanPublishMessagesToKafka, CanConsumeMessagesFromKafka
      */
     public function createConsumer(array $topics = [], string $groupId = null, string $brokers = null): ConsumerBuilder
     {
+        if ($this->shouldFake) {
+            return Facades\Kafka::fake()->createConsumer(
+                $topics, $groupId, $brokers
+            );
+        }
+
         return ConsumerBuilder::create(
             brokers: $brokers ?? config('kafka.brokers'),
             topics: $topics,
             groupId: $groupId ?? config('kafka.consumer_group_id')
         );
+    }
+    
+    public function shouldFake(): self
+    {
+        $this->shouldFake = true;
+
+        return $this;
     }
 }
