@@ -28,10 +28,10 @@ class Factory implements KafkaManager
     }
 
     /** Return a ConsumerBuilder instance.  */
-    public function createConsumer(array $topics = [], string $groupId = null, string $brokers = null): ConsumerBuilder
+    public function consumer(array $topics = [], string $groupId = null, string $brokers = null): ConsumerBuilder
     {
         if ($this->shouldFake) {
-            return Kafka::fake()->createConsumer(
+            return Kafka::fake()->consumer(
                 $topics, $groupId, $brokers
             );
         }

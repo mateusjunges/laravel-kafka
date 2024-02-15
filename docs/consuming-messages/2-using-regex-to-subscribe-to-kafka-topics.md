@@ -10,7 +10,7 @@ The consumer will see the new topics on its next periodic metadata refresh which
 To subscribe to topics using regex, you can simply pass the regex you want to use to the `subscribe` method:
 
 ```php
-\Junges\Kafka\Facades\Kafka::createConsumer()
+\Junges\Kafka\Facades\Kafka::consumer()
     ->subscribe('^myPfx_.*')
     ->withHandler(...)
 ```

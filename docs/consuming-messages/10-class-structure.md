@@ -22,7 +22,7 @@ class MyTopicConsumer extends Command
 
     public function handle()
     {
-        $consumer = Kafka::createConsumer(['my-topic'])
+        $consumer = Kafka::consumer(['my-topic'])
             ->withBrokers('localhost:8092')
             ->withAutoCommit()
             ->withHandler(function(ConsumerMessage $message) {
