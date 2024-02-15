@@ -32,7 +32,9 @@ class Factory implements KafkaManager
     {
         if ($this->shouldFake) {
             return Kafka::fake()->consumer(
-                $topics, $groupId, $brokers
+                $topics,
+                $groupId,
+                $brokers
             );
         }
 
