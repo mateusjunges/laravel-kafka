@@ -10,7 +10,6 @@ use RdKafka\Conf;
 
 class ProducerFake
 {
-    private array $messages = [];
     private ?Closure $producerCallback = null;
 
     public function __construct(
