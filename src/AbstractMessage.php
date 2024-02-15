@@ -2,7 +2,6 @@
 
 namespace Junges\Kafka;
 
-use Illuminate\Support\Str;
 use Junges\Kafka\Contracts\KafkaMessage;
 use Junges\Kafka\Exceptions\MessageIdNotSet;
 
