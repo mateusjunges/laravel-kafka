@@ -10,4 +10,9 @@ final class PublishingMessage
         public readonly ProducerMessage $message,
     ) {
     }
+
+    public function getMessageIdentifier(): string
+    {
+        return $this->message->getMessageIdentifier();
+    }
 }

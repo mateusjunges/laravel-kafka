@@ -2,12 +2,12 @@
 
 namespace Junges\Kafka\Events;
 
-use Junges\Kafka\Contracts\ProducerMessage;
+use Junges\Kafka\Contracts\ConsumerMessage;
 
-final class MessagePublished
+final readonly class StartedConsumingMessage
 {
     public function __construct(
-        public readonly ProducerMessage $message,
+        public readonly ConsumerMessage $message,
     ) {
     }
 

@@ -7,6 +7,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 use Junges\Kafka\Commit\DefaultCommitterFactory;
 use Junges\Kafka\Commit\NativeSleeper;
 use Junges\Kafka\Config\Config;
@@ -18,6 +19,7 @@ use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Contracts\MessageDeserializer;
 use Junges\Kafka\Events\MessageConsumed;
 use Junges\Kafka\Events\MessageSentToDLQ;
+use Junges\Kafka\Events\StartedConsumingMessage;
 use Junges\Kafka\Exceptions\ConsumerException;
 use Junges\Kafka\MessageCounter;
 use Junges\Kafka\Retryable;
@@ -148,6 +150,8 @@ class Consumer implements MessageConsumer
 
     private function listenForSignals(): void
     {
+        assert(extension_loaded('pcntl'));
+
         pcntl_async_signals(true);
 
         pcntl_signal(SIGQUIT, fn () => $this->stopRequested = true);
@@ -223,9 +227,15 @@ class Consumer implements MessageConsumer
     {
         try {
             $consumedMessage = $this->getConsumerMessage($message);
+
+            // Here we will dispatch an event to inform possible interested listeners that a message
+            // was received and will be consumed as soon as a consumer is available to process it.
+            $this->dispatcher->dispatch(new StartedConsumingMessage($consumedMessage));
+
             $this->config->getConsumer()->handle($consumedMessage = $this->deserializer->deserialize($consumedMessage));
             $success = true;
 
+            // Dispatch an event informing that a message was consumed.
             $this->dispatcher->dispatch(new MessageConsumed($consumedMessage));
         } catch (Throwable $throwable) {
             $this->logger->error($message, $throwable);
@@ -289,6 +299,9 @@ class Consumer implements MessageConsumer
     private function handleException(Throwable $exception, Message|ConsumerMessage $message): bool
     {
         try {
+            // If the message consumption fails, we first try to reprocess the message
+            // using the fallback provided by the consumer. Message will be sent to
+            // a dead letter queue only if the failed method throws an exception.
             $this->config->getConsumer()->failed(
                 $message->payload,
                 $this->config->getTopics()[0],
@@ -302,7 +315,11 @@ class Consumer implements MessageConsumer
             report($throwable);
 
             if ($this->config->shouldSendToDlq()) {
-                $this->sendToDlq($message, $throwable);
+                $messageIdentifier = $message instanceof ConsumerMessage
+                    ? $message->getMessageIdentifier()
+                    : null;
+
+                $this->sendToDlq($message, $messageIdentifier, $throwable);
                 $this->committer->commitDlq($message);
 
                 return true;
@@ -313,7 +330,7 @@ class Consumer implements MessageConsumer
     }
 
     /** Send a message to the Dead Letter Queue. */
-    private function sendToDlq(Message $message, Throwable $throwable = null): void
+    private function sendToDlq(Message $message, ?string $messageIdentifier = null, Throwable $throwable = null): void
     {
         $topic = $this->producer->newTopic($this->config->getDlq());
 
@@ -329,7 +346,8 @@ class Consumer implements MessageConsumer
             $message->payload,
             $this->config->getConsumer()->producerKey($message),
             $message->headers ?? [],
-            $throwable
+            $throwable,
+            $messageIdentifier
         ));
 
         if (method_exists($this->producer, 'flush')) {
@@ -426,6 +444,13 @@ class Consumer implements MessageConsumer
 
     private function getConsumerMessage(Message $message): ConsumerMessage
     {
+        // First, we set a new unique id that allows us to identify this message. Then
+        // we create a new consumer message instance that will be passed as an arg
+        // to the consumer class/closure responsible for consuming this message.
+        if (! array_key_exists('laravel-kafka::message-id', $message->headers)) {
+            $message->headers['laravel-kafka::message-id'] = Str::uuid()->toString();
+        }
+
         return app(ConsumerMessage::class, [
             'topicName' => $message->topic_name,
             'partition' => $message->partition,

@@ -12,5 +12,7 @@ interface KafkaMessage
 
     public function getHeaders(): ?array;
 
+    public function getMessageIdentifier(): string;
+
     public function getBody();
 }
