@@ -8,7 +8,7 @@ With a consumer created, you can subscribe to a kafka topic using the `subscribe
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-$consumer = Kafka::createConsumer()->subscribe('topic');
+$consumer = Kafka::consumer()->subscribe('topic');
 ```
 
 Of course, you can subscribe to more than one topic at once, either using an array of topics or specifying one by one:
@@ -16,10 +16,10 @@ Of course, you can subscribe to more than one topic at once, either using an arr
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-$consumer = Kafka::createConsumer()->subscribe('topic-1', 'topic-2', 'topic-n');
+$consumer = Kafka::consumer()->subscribe('topic-1', 'topic-2', 'topic-n');
 
 // Or, using array:
-$consumer = Kafka::createConsumer()->subscribe([
+$consumer = Kafka::consumer()->subscribe([
     'topic-1',
     'topic-2',
     'topic-n'

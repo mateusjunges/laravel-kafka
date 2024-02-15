@@ -13,7 +13,7 @@ If your app requires that you run sum sort of processing when the consumers stop
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-$consumer = Kafka::createConsumer(['topic'])
+$consumer = Kafka::consumer(['topic'])
     ->withConsumerGroupId('group')
     ->withHandler(new Handler)
     ->build()

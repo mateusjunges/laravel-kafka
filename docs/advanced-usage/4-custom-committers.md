@@ -28,7 +28,7 @@ class MyCommitterFactory implements CommitterFactory
     }
 }
 
-$consumer = \Junges\Kafka\Facades\Kafka::createConsumer()
+$consumer = \Junges\Kafka\Facades\Kafka::consumer()
     ->usingCommitterFactory(new MyCommitterFactory())
     ->build();
 ```

@@ -8,5 +8,7 @@ interface KafkaManager
     public function publish(?string $broker = null): MessageProducer;
 
     /** Return a ConsumerBuilder instance. */
-    public function createConsumer(array $topics = [], string $groupId = null, string $brokers = null): ConsumerBuilder;
+    public function consumer(array $topics = [], string $groupId = null, string $brokers = null): ConsumerBuilder;
+
+    public function shouldFake(): self;
 }

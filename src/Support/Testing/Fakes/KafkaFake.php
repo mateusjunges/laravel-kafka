@@ -18,12 +18,13 @@ class KafkaFake
     private KafkaManager $kafkaManager;
 
     private array $publishedMessages = [];
+
     /** @var \Junges\Kafka\Contracts\ConsumerMessage[] */
     private array $messagesToConsume = [];
 
-    public function __construct(KafkaManager $kafka)
+    public function __construct(?KafkaManager $manager)
     {
-        $this->kafkaManager = $kafka;
+        $this->kafkaManager = $manager?->shouldFake();
         $this->makeProducerBuilderFake();
     }
 
@@ -34,7 +35,7 @@ class KafkaFake
     }
 
     /** Return a ConsumerBuilder instance. */
-    public function createConsumer(array $topics = [], string $groupId = null, string $brokers = null): BuilderFake
+    public function consumer(array $topics = [], string $groupId = null, string $brokers = null): BuilderFake
     {
         return BuilderFake::create(
             brokers: $brokers ?? config('kafka.brokers'),
@@ -64,7 +65,7 @@ class KafkaFake
     }
 
     /** Assert if a messages was published based on a truth-test callback. */
-    public function assertPublished(?ProducerMessage $expectedMessage = null, ?callable $callback = null)
+    public function assertPublished(?ProducerMessage $expectedMessage = null, ?callable $callback = null): void
     {
         PHPUnit::assertTrue(
             condition: $this->published($callback, $expectedMessage)->count() > 0,
@@ -73,7 +74,7 @@ class KafkaFake
     }
 
     /** Assert if a messages was published based on a truth-test callback. */
-    public function assertPublishedTimes(int $times = 1, ?ProducerMessage $expectedMessage = null, ?callable $callback = null)
+    public function assertPublishedTimes(int $times = 1, ?ProducerMessage $expectedMessage = null, ?callable $callback = null): void
     {
         $count = $this->published($callback, $expectedMessage)->count();
 
@@ -84,7 +85,7 @@ class KafkaFake
     }
 
     /** Assert that a message was published on a specific topic. */
-    public function assertPublishedOn(string $topic, ?ProducerMessage $expectedMessage = null, ?callable $callback = null)
+    public function assertPublishedOn(string $topic, ?ProducerMessage $expectedMessage = null, ?callable $callback = null): void
     {
         PHPUnit::assertTrue(
             condition: $this->published($callback, $expectedMessage, $topic)->count() > 0,
@@ -93,7 +94,7 @@ class KafkaFake
     }
 
     /** Assert that a message was published on a specific topic. */
-    public function assertPublishedOnTimes(string $topic, int $times = 1, ?ProducerMessage $expectedMessage = null, ?callable $callback = null)
+    public function assertPublishedOnTimes(string $topic, int $times = 1, ?ProducerMessage $expectedMessage = null, ?callable $callback = null): void
     {
         $count = $this->published($callback, $expectedMessage, $topic)->count();
 
