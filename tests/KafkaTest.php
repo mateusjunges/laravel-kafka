@@ -235,14 +235,14 @@ final class KafkaTest extends LaravelKafkaTestCase
 
     public function testCreateConsumerReturnsAConsumerBuilderInstance(): void
     {
-        $consumer = Kafka::consumer();
+        $consumer = Kafka::createConsumer();
 
         $this->assertInstanceOf(ConsumerBuilder::class, $consumer);
     }
 
     public function testCreateConsumerDefaultConfigs(): void
     {
-        $consumer = Kafka::consumer();
+        $consumer = Kafka::createConsumer();
 
         $this->assertInstanceOf(ConsumerBuilder::class, $consumer);
         $this->assertEquals('group', $this->getPropertyWithReflection('groupId', $consumer));

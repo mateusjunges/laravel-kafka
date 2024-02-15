@@ -254,7 +254,7 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
 
         Kafka::shouldReceiveMessages($message);
 
-        $consumer = Kafka::consumer()
+        $consumer = Kafka::createConsumer()
             ->subscribe(['test-topic'])
             ->withBrokers('localhost:9092')
             ->withConsumerGroupId('group')
@@ -294,7 +294,7 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
 
         $consumedMessages = [];
 
-        $consumer = Kafka::consumer(['test-topic'])
+        $consumer = Kafka::createConsumer(['test-topic'])
             ->withHandler(function (ConsumerMessage $message) use (&$consumedMessages) {
                 $consumedMessages[] = $message;
             })
@@ -337,7 +337,7 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
 
         Kafka::shouldReceiveMessages($messages);
 
-        $consumer = Kafka::consumer(['mark-post-as-published-topic'])
+        $consumer = Kafka::createConsumer(['mark-post-as-published-topic'])
             ->withHandler(function (ConsumerMessage $message) use (&$posts) {
                 $post = $posts[$message->getBody()['post_id']];
 
@@ -381,7 +381,7 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         Kafka::shouldReceiveMessages($messages);
 
         $stopped = false;
-        $this->consumer = Kafka::consumer(['test-topic'])
+        $this->consumer = Kafka::createConsumer(['test-topic'])
             ->withHandler(function (ConsumerMessage $message) use (&$stopped) {
                 //stop consumer after first message
                 $this->consumer->stopConsuming();
@@ -426,7 +426,7 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         Kafka::shouldReceiveMessages($messages);
 
         $consumedMessages = [];
-        $consumer = Kafka::consumer(['test-topic'])
+        $consumer = Kafka::createConsumer(['test-topic'])
             ->enableBatching()
             ->withBatchSizeLimit(10)
             ->withHandler(function (Collection $messages) use (&$consumedMessages) {
@@ -501,7 +501,7 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         $secondBatch = [];
         $thirdBatch = [];
 
-        $consumer = Kafka::consumer(['test-topic'])
+        $consumer = Kafka::createConsumer(['test-topic'])
             ->enableBatching()
             ->withBatchSizeLimit(2)
             ->withHandler(function (Collection $messages) use (&$firstBatch, &$secondBatch, &$thirdBatch) {
@@ -561,7 +561,7 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         Kafka::shouldReceiveMessages($messages);
 
         $stopped = false;
-        $this->consumer = Kafka::consumer(['test-topic'])
+        $this->consumer = Kafka::createConsumer(['test-topic'])
             ->enableBatching()
             ->withBatchSizeLimit(2)
             ->withHandler(function (Collection $messages) use (&$stopped) {

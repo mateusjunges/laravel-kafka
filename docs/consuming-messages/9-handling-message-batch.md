@@ -11,7 +11,7 @@ The example below shows that batch is going to be handled if batch size is great
 Batching feature could be helpful when you work with databases like ClickHouse, where you insert data in large batches.
 
 ```php
-$consumer = \Junges\Kafka\Facades\Kafka::consumer()
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer()
     ->enableBatching()
     ->withBatchSizeLimit(1000)
     ->withBatchReleaseInterval(1500)

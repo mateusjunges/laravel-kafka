@@ -9,7 +9,7 @@ This interface force you to declare the `deserialize` method.
 To set the deserializer you want to use, use the `usingDeserializer` method:
 
 ```php
-$consumer = \Junges\Kafka\Facades\Kafka::consumer()->usingDeserializer(new MyCustomDeserializer());
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer()->usingDeserializer(new MyCustomDeserializer());
 ```
 
 > NOTE: The deserializer class must use the same algorithm as the serializer used to produce this message.
@@ -17,7 +17,6 @@ $consumer = \Junges\Kafka\Facades\Kafka::consumer()->usingDeserializer(new MyCus
 
 ### Using AVRO deserializer
 To use the AVRO deserializer on your consumer, add the Avro deserializer:
-
 ```php
 use FlixTech\AvroSerializer\Objects\RecordSerializer;
 use FlixTech\SchemaRegistryApi\Registry\CachedRegistry;
@@ -54,5 +53,5 @@ $registry->addKeySchemaMappingForTopic(
 // per default both key and body will get decoded
 $deserializer = new \Junges\Kafka\Message\Deserializers\AvroDeserializer($registry, $recordSerializer /*, AvroDecoderInterface::DECODE_BODY */);
 
-$consumer = \Junges\Kafka\Facades\Kafka::consumer()->usingDeserializer($deserializer);
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer()->usingDeserializer($deserializer);
 ```

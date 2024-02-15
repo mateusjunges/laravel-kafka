@@ -8,7 +8,7 @@ It's also a secure way to enable your clients to endorse an identity. To provide
 passing a `Junges\Kafka\Config\Sasl` instance as the argument:
 
 ```php
-$consumer = \Junges\Kafka\Facades\Kafka::consumer()
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer()
     ->withSasl(
         password: 'password',
         username: 'username',
@@ -19,7 +19,7 @@ $consumer = \Junges\Kafka\Facades\Kafka::consumer()
 You can also set the security protocol used with sasl. It's optional and by default `SASL_PLAINTEXT` is used, but you can set it to `SASL_SSL`:
 
 ```php
-$consumer = \Junges\Kafka\Facades\Kafka::consumer()
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer()
     ->withSasl(
         password: 'password',
         username: 'username',

@@ -7,7 +7,7 @@ Now that you have created your kafka consumer, you must create a handler for the
 You can use an invokable class or a simple callback. Use the `withHandler` method to specify your handler:
 
 ```php
-$consumer = \Junges\Kafka\Facades\Kafka::consumer();
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer();
 
 // Using callback:
 $consumer->withHandler(function(\Junges\Kafka\Contracts\ConsumerMessage $message) {
@@ -25,7 +25,7 @@ class Handler
     }
 }
 
-$consumer = \Junges\Kafka\Facades\Kafka::consumer()->withHandler(new Handler)
+$consumer = \Junges\Kafka\Facades\Kafka::createConsumer()->withHandler(new Handler)
 ```
 
 The `KafkaConsumerMessage` contract gives you some handy methods to get the message properties:

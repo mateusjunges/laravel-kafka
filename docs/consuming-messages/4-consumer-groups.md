@@ -10,5 +10,5 @@ To attach your consumer to a consumer group, you can use the method `withConsume
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-$consumer = Kafka::consumer()->withConsumerGroupId('foo');
+$consumer = Kafka::createConsumer()->withConsumerGroupId('foo');
 ```
