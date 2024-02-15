@@ -24,7 +24,9 @@ class Kafka extends Facade
     /** Replace the bound instance with a fake. */
     public static function fake(): KafkaFake
     {
-        static::swap($fake = new KafkaFake(static::getFacadeRoot()));
+        static::swap($fake = new KafkaFake(
+            (static::getFacadeRoot())->shouldFake()
+        ));
 
         return $fake;
     }
