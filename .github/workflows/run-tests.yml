@@ -11,9 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php: ["8.3", "8.2"]
-        librdkafka: [ v1.8.2]
-        extrdkafka: [6.0.0]
+        php: ["8.3"]
+        librdkafka: [ v2.0.3]
+        extrdkafka: [6.0.3]
         laravel: [10]
 
     steps:
