@@ -35,7 +35,7 @@ class ProducerFake implements Producer
         return $this;
     }
 
-    public function produce(ProducerMessage $message): bool
+    public function produce(ProducerMessage $message, bool $shouldFlush = false): bool
     {
         if ($this->producerCallback !== null) {
             $callback = $this->producerCallback;
@@ -46,7 +46,7 @@ class ProducerFake implements Producer
     }
 
     /** @throws \Junges\Kafka\Exceptions\CouldNotPublishMessageBatch */
-    public function produceBatch(MessageBatch $messageBatch): int
+    public function produceBatch(MessageBatch $messageBatch, bool $shouldFlush = false): int
     {
         if ($messageBatch->getTopicName() === '') {
             throw CouldNotPublishMessageBatch::invalidTopicName($messageBatch->getTopicName());
