@@ -13,7 +13,7 @@ jobs:
       matrix:
         php: ["8.2"]
         librdkafka: [ v1.8.2]
-        extrdkafka: [6.0.3]
+        extrdkafka: [6.0.0]
         laravel: [9]
 
     steps:
