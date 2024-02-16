@@ -24,7 +24,7 @@ COPY start.sh /application/laravel-kafka/
 
 COPY wait-for-it.sh /application/laravel-kafka/
 
-RUN cd /application/laravel-kafka && composer update
+RUN cd /application/laravel-kafka && composer install
 
 RUN cd /application/laravel-test && composer update --with-all-dependencies
 
