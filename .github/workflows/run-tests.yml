@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         php: ["8.3"]
-        librdkafka: [ v2.0.3]
+        librdkafka: [v2.3.0]
         extrdkafka: [6.0.3]
         laravel: [10]
 
