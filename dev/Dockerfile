@@ -1,4 +1,4 @@
-FROM mateusjunges/laravel:8.2-v1.8.2-6.0.0-10
+FROM mateusjunges/laravel:8.3-v2.3.0-6.0.3-10
 
 RUN apk add libzip-dev
 
