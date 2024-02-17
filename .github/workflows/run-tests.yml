@@ -1,23 +1,39 @@
 name: Continuous Integration
 
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+on: ['push', 'pull_request']
 
 jobs:
-  run-tests:
-    runs-on: ubuntu-latest
+  ci:
+    runs-on: ubuntu-22.04
+
     strategy:
       matrix:
-        php: ["8.2"]
-        librdkafka: [ v1.8.2]
-        extrdkafka: [6.0.0]
-        laravel: [10]
+        php: [8.3, 8.2]
+        laravel: [10.*]
+        dependency-version: [prefer-stable]
+        include:
+          - laravel: 10.*
+            testbench: 8.*
+
+    name: CI - PHP ${{ matrix.php }}  - Laravel ${{ matrix.laravel }} - Testbench ${{ matrix.testbench }} (${{ matrix.dependency-version }})
 
     steps:
-      - uses: actions/checkout@v2
-      - name: Test ${{ matrix.php }}-${{ matrix.librdkafka }}-${{ matrix.extrdkafka }}-${{ matrix.laravel }}
-        run:
-          make version-test-10-${{ matrix.php }}-${{ matrix.librdkafka }}-${{ matrix.extrdkafka }}-${{ matrix.laravel }}
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, zip, rdkafka
+          tools: prestissimo
+          coverage: pcov
+
+      - name: Install Composer dependencies
+        run: |
+          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
+          composer update --${{ matrix.dependency-version }} --no-interaction --prefer-dist --no-suggest
+
+      - name: PHPUnit Testing
+        run: vendor/bin/phpunit
