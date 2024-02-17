@@ -4,7 +4,7 @@
     "type": "library",
     "require": {
         "php": "^8.2|^8.3",
-        "ext-rdkafka": "^5.0|^6.0",
+        "ext-rdkafka": "^6.0",
         "monolog/monolog": "^3.4",
         "mateusjunges/avro-serde-php": "^3.0",
         "illuminate/support": "^9.0|^10.0",
