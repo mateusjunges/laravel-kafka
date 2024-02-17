@@ -5,7 +5,7 @@
     "require": {
         "php": "^8.1|^8.2",
         "ext-rdkafka": "^5.0|^6.0",
-        "monolog/monolog": "^3.4",
+        "monolog/monolog": "^2.2|^3.4",
         "mateusjunges/avro-serde-php": "^3.0",
         "illuminate/support": "^9.0|^10.0|^11.0",
         "illuminate/contracts": "^9.0|^10.0|^11.0"
