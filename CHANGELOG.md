@@ -2,6 +2,9 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2024-02-17 v1.13.12](https://github.com/mateusjunges/laravel-kafka/compare/v1.13.11...v1.13.12)
+* Add support for laravel 11 by @mateusjunges in [#256](https://github.com/mateusjunges/laravel-kafka/pull/256)
+
 ## [2024-02-14 v1.13.11](https://github.com/mateusjunges/laravel-kafka/compare/v1.13.10...v1.13.11)
 * Store published messages when using macros by @mateusjunges in [#249](https://github.com/mateusjunges/laravel-kafka/pull/249)
 
