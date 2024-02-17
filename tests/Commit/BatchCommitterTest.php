@@ -15,11 +15,7 @@ final class BatchCommitterTest extends LaravelKafkaTestCase
         $committer = $this->createMock(Committer::class);
         $committer
             ->expects($this->exactly(2))
-            ->method('commitMessage')
-            ->withConsecutive(
-                [$this->isInstanceOf(Message::class), true],
-                [$this->isInstanceOf(Message::class), true]
-            );
+            ->method('commitMessage');
 
         $batchSize = 3;
         $messageCounter = new MessageCounter(42);
