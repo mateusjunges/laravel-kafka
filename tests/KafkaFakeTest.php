@@ -13,7 +13,7 @@ use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\Message\Message;
 use Junges\Kafka\Producers\MessageBatch;
 use Junges\Kafka\Support\Testing\Fakes\KafkaFake;
-use PHPUnit\Framework\Constraint\ExceptionMessage;
+use PHPUnit\Framework\Constraint\ExceptionMessageIsOrContains;
 use PHPUnit\Framework\ExpectationFailedException;
 
 class KafkaFakeTest extends LaravelKafkaTestCase
@@ -44,7 +44,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         try {
             $this->fake->assertPublished(new Message('foo'));
         } catch (ExpectationFailedException $exception) {
-            $this->assertThat($exception, new ExceptionMessage('The expected message was not published.'));
+            $this->assertThat($exception, new ExceptionMessageIsOrContains('The expected message was not published.'));
         }
 
         $producer = $this->fake->publishOn('topic')
@@ -61,7 +61,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         try {
             $this->fake->assertPublished(new Message('foo'));
         } catch (ExpectationFailedException $exception) {
-            $this->assertThat($exception, new ExceptionMessage('The expected message was not published.'));
+            $this->assertThat($exception, new ExceptionMessageIsOrContains('The expected message was not published.'));
         }
 
         $producer = $this->fake->publishOn('topic')
@@ -80,7 +80,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         try {
             $this->fake->assertPublishedTimes(2);
         } catch (ExpectationFailedException $exception) {
-            $this->assertThat($exception, new ExceptionMessage('Kafka published 1 messages instead of 2.'));
+            $this->assertThat($exception, new ExceptionMessageIsOrContains('Kafka published 1 messages instead of 2.'));
         }
     }
 
@@ -109,7 +109,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
                 return $message->getKey() === 'not-published-uuid';
             });
         } catch (ExpectationFailedException $exception) {
-            $this->assertThat($exception, new ExceptionMessage('The expected message was not published.'));
+            $this->assertThat($exception, new ExceptionMessageIsOrContains('The expected message was not published.'));
         }
     }
 
@@ -129,7 +129,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         try {
             $this->fake->assertPublishedOn('not-published-on-this-topic', $producer->getMessage());
         } catch (ExpectationFailedException $exception) {
-            $this->assertThat($exception, new ExceptionMessage('The expected message was not published.'));
+            $this->assertThat($exception, new ExceptionMessageIsOrContains('The expected message was not published.'));
         }
     }
 
@@ -149,7 +149,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         try {
             $this->fake->assertPublishedOnTimes('topic', 4, $producer->getMessage());
         } catch (ExpectationFailedException $exception) {
-            $this->assertThat($exception, new ExceptionMessage('Kafka published 1 messages instead of 4.'));
+            $this->assertThat($exception, new ExceptionMessageIsOrContains('Kafka published 1 messages instead of 4.'));
         }
     }
 
@@ -194,7 +194,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
                 return $message->getKey() === 'different-key';
             });
         } catch (ExpectationFailedException $exception) {
-            $this->assertThat($exception, new ExceptionMessage('The expected message was not published.'));
+            $this->assertThat($exception, new ExceptionMessageIsOrContains('The expected message was not published.'));
         }
 
         $this->fake->assertPublishedOn('topic', $producer->getMessage(), function ($message) use ($uuid) {
@@ -211,7 +211,7 @@ class KafkaFakeTest extends LaravelKafkaTestCase
         try {
             $this->fake->assertNothingPublished();
         } catch (ExpectationFailedException $exception) {
-            $this->assertThat($exception, new ExceptionMessage('Messages were published unexpectedly.'));
+            $this->assertThat($exception, new ExceptionMessageIsOrContains('Messages were published unexpectedly.'));
         }
     }
 
