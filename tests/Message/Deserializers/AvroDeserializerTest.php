@@ -7,19 +7,26 @@ use FlixTech\AvroSerializer\Objects\RecordSerializer;
 use Junges\Kafka\Contracts\AvroSchemaRegistry;
 use Junges\Kafka\Contracts\KafkaAvroSchemaRegistry;
 use Junges\Kafka\Contracts\KafkaConsumerMessage;
+use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\Message\Deserializers\AvroDeserializer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
+use Mockery as m;
 
 class AvroDeserializerTest extends LaravelKafkaTestCase
 {
     public function testDeserializeTombstone()
     {
-        $message = $this->getMockForAbstractClass(KafkaConsumerMessage::class);
-        $message->expects($this->once())->method('getBody')->willReturn(null);
+        $message = m::mock(ConsumedMessage::class);
+        $message->expects('getBody')->once()->andReturn(null);
+        $message->expects('getTopicName')->times(3)->andReturn('topicName');
+        $message->expects('getPartition')->once()->andReturn(0);
+        $message->expects('getHeaders')->once()->andReturn([]);
+        $message->expects('getKey')->once()->andReturn(1);
+        $message->expects('getOffset');
+        $message->expects('getTimestamp');
 
-        $registry = $this->getMockForAbstractClass(AvroSchemaRegistry::class);
-        $registry->expects($this->never())->method('hasBodySchemaForTopic');
-        $registry->expects($this->never())->method('hasKeySchemaForTopic');
+        $registry = m::mock(AvroSchemaRegistry::class);
+        $registry->expects('hasKeySchemaForTopic');
 
         $recordSerializer = $this->getMockBuilder(RecordSerializer::class)->disableOriginalConstructor()->getMock();
         $recordSerializer->expects($this->never())->method('decodeMessage');
@@ -36,7 +43,7 @@ class AvroDeserializerTest extends LaravelKafkaTestCase
     {
         $schemaDefinition = $this->getMockBuilder(AvroSchema::class)->disableOriginalConstructor()->getMock();
 
-        $avroSchema = $this->getMockForAbstractClass(KafkaAvroSchemaRegistry::class);
+        $avroSchema = m::mock(KafkaAvroSchemaRegistry::class);
         $avroSchema->expects($this->exactly(2))->method('getDefinition')->willReturn($schemaDefinition);
 
         $message = $this->getMockForAbstractClass(KafkaConsumerMessage::class);
