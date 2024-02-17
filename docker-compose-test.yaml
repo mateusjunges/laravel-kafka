@@ -39,10 +39,10 @@ services:
       context: .
       dockerfile: build/test/Dockerfile
       args:
-        TAG: 8.2-v1.6.0-5.0.2-9
-        LIBRDKAFKA_VERSION: v1.6.0
-        EXT_RDKAFKA_VERSION: 5.0.2
-        PHP_VERSION: 8.2
+        TAG: 8.3-v2.3.0-6.0.3-10
+        LIBRDKAFKA_VERSION: v2.3.0
+        EXT_RDKAFKA_VERSION: 6.0.3
+        PHP_VERSION: 8.3
         LARAVEL_VERSION: 10
     entrypoint: /application/laravel-kafka/start.sh
     networks:
