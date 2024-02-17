@@ -3,23 +3,25 @@
 namespace Junges\Kafka\Tests\Message\Serializers;
 
 use FlixTech\AvroSerializer\Objects\RecordSerializer;
-use Junges\Kafka\Contracts\AvroSchemaRegistry;
-use Junges\Kafka\Contracts\KafkaAvroSchemaRegistry;
 use Junges\Kafka\Contracts\KafkaProducerMessage;
 use Junges\Kafka\Exceptions\Serializers\AvroSerializerException;
+use Junges\Kafka\Message\KafkaAvroSchema;
+use Junges\Kafka\Message\Message;
+use Junges\Kafka\Message\Registry\AvroSchemaRegistry;
 use Junges\Kafka\Message\Serializers\AvroSerializer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
+use Mockery as m;
 
 class AvroSerializerTest extends LaravelKafkaTestCase
 {
     public function testSerializeTombstone()
     {
-        $producerMessage = $this->getMockForAbstractClass(KafkaProducerMessage::class);
-        $producerMessage->expects($this->exactly(2))->method('getBody')->willReturn(null);
+        $producerMessage = m::mock(Message::class);
+        $producerMessage->expects('getTopicName')->times(2);
+        $producerMessage->expects('getKey');
+        $producerMessage->expects('getBody')->times(2)->andReturn(null);
 
-        $registry = $this->getMockForAbstractClass(AvroSchemaRegistry::class);
-        $registry->expects($this->never())->method('hasBodySchemaForTopic');
-        $registry->expects($this->never())->method('hasKeySchemaForTopic');
+        $registry = m::mock(AvroSchemaRegistry::class);
 
         $recordSerializer = $this->getMockBuilder(RecordSerializer::class)->disableOriginalConstructor()->getMock();
         $recordSerializer->expects($this->never())->method('encodeRecord');
@@ -35,16 +37,17 @@ class AvroSerializerTest extends LaravelKafkaTestCase
 
     public function testSerializeWithoutSchemaDefinition()
     {
-        $avroSchema = $this->getMockForAbstractClass(KafkaAvroSchemaRegistry::class);
-        $avroSchema->expects($this->once())->method('getDefinition')->willReturn(null);
+        $avroSchema = m::mock(KafkaAvroSchema::class);
+        $avroSchema->expects('getName')->times(3)->andReturn('test');
+        $avroSchema->expects('getDefinition')->once()->andReturn(null);
 
-        $producerMessage = $this->getMockForAbstractClass(KafkaProducerMessage::class);
-        $producerMessage->expects($this->once())->method('getTopicName')->willReturn('test');
-        $producerMessage->expects($this->once())->method('getBody')->willReturn('test');
+        $producerMessage = m::mock(Message::class);
+        $producerMessage->expects('getTopicName')->once()->andReturn('topic');
+        $producerMessage->expects('getBody')->andReturn([]);
 
-        $registry = $this->getMockForAbstractClass(AvroSchemaRegistry::class);
-        $registry->expects($this->once())->method('hasBodySchemaForTopic')->willReturn(true);
-        $registry->expects($this->once())->method('getBodySchemaForTopic')->willReturn($avroSchema);
+        $registry = m::mock(AvroSchemaRegistry::class);
+        $registry->expects('hasBodySchemaForTopic')->andReturn(true);
+        $registry->expects('getBodySchemaForTopic')->andReturn($avroSchema);
 
         $this->expectException(AvroSerializerException::class);
         $this->expectExceptionMessage(
@@ -64,32 +67,29 @@ class AvroSerializerTest extends LaravelKafkaTestCase
     {
         $schemaDefinition = $this->getMockBuilder(\AvroSchema::class)->disableOriginalConstructor()->getMock();
 
-        $avroSchema = $this->getMockForAbstractClass(KafkaAvroSchemaRegistry::class);
-        $avroSchema->expects($this->exactly(4))->method('getName')->willReturn('schemaName');
-        $avroSchema->expects($this->never())->method('getVersion');
-        $avroSchema->expects($this->exactly(4))->method('getDefinition')->willReturn($schemaDefinition);
+        $avroSchema = m::mock(KafkaAvroSchema::class);
+        $avroSchema->expects('getName')->times(2)->andReturn('schemaName');
+        $avroSchema->expects('getVersion')->never();
+        $avroSchema->expects('getDefinition')->times(2)->andReturn($schemaDefinition);
 
-        $registry = $this->getMockForAbstractClass(AvroSchemaRegistry::class);
-        $registry->expects($this->once())->method('getBodySchemaForTopic')->willReturn($avroSchema);
-        $registry->expects($this->once())->method('getKeySchemaForTopic')->willReturn($avroSchema);
-        $registry->expects($this->once())->method('hasBodySchemaForTopic')->willReturn(true);
-        $registry->expects($this->once())->method('hasKeySchemaForTopic')->willReturn(true);
+        $registry = m::mock(AvroSchemaRegistry::class);
+        $registry->expects('getBodySchemaForTopic')->andReturn($avroSchema);
+        $registry->expects('getKeySchemaForTopic')->andReturn($avroSchema);
+        $registry->expects('hasBodySchemaForTopic')->andReturn(true);
+        $registry->expects('hasKeySchemaForTopic')->andReturn(true);
 
-        $producerMessage = $this->getMockForAbstractClass(KafkaProducerMessage::class);
-        $producerMessage->expects($this->exactly(2))->method('getTopicName')->willReturn('test');
-        $producerMessage->expects($this->once())->method('getBody')->willReturn([]);
-        $producerMessage->expects($this->once())->method('getKey')->willReturn('test-key');
-        $producerMessage->expects($this->once())->method('withBody')->with('encodedValue')->willReturn($producerMessage);
-        $producerMessage->expects($this->once())->method('withKey')->with('encodedKey')->willReturn($producerMessage);
+        $producerMessage = m::mock(Message::class);
+        $producerMessage->expects('getTopicName')->times(2)->andReturn('test');
+        $producerMessage->expects('getBody')->andReturn([]);
+        $producerMessage->expects('getKey')->andReturn('test-key');
+        $producerMessage->expects('withBody')->with('encodedValue')->andReturn($producerMessage);
+        $producerMessage->expects('withKey')->with('encodedKey')->andReturn($producerMessage);
 
         $recordSerializer = $this->getMockBuilder(RecordSerializer::class)->disableOriginalConstructor()->getMock();
         $recordSerializer
             ->expects($this->exactly(2))
             ->method('encodeRecord')
-            ->withConsecutive(
-                [$avroSchema->getName(), $avroSchema->getDefinition(), []],
-                [$avroSchema->getName(), $avroSchema->getDefinition(), 'test-key']
-            )->willReturnOnConsecutiveCalls('encodedValue', 'encodedKey');
+            ->willReturnOnConsecutiveCalls('encodedValue', 'encodedKey');
 
         $serializer = new AvroSerializer($registry, $recordSerializer);
 
@@ -100,23 +100,22 @@ class AvroSerializerTest extends LaravelKafkaTestCase
     {
         $schemaDefinition = $this->getMockBuilder(\AvroSchema::class)->disableOriginalConstructor()->getMock();
 
-        $avroSchema = $this->getMockForAbstractClass(KafkaAvroSchemaRegistry::class);
-        $avroSchema->expects($this->exactly(2))->method('getName')->willReturn('schemaName');
-        $avroSchema->expects($this->never())->method('getVersion');
-        $avroSchema->expects($this->exactly(2))->method('getDefinition')->willReturn($schemaDefinition);
+        $avroSchema = $this->mock(KafkaAvroSchema::class);
+        $avroSchema->expects('getName')->twice()->andReturn('schemaName');
+        $avroSchema->expects('getVersion')->never();
+        $avroSchema->expects('getDefinition')->twice()->andReturn($schemaDefinition);
 
-        $registry = $this->getMockForAbstractClass(AvroSchemaRegistry::class);
-        $registry->expects($this->never())->method('getBodySchemaForTopic');
-        $registry->expects($this->once())->method('getKeySchemaForTopic')->willReturn($avroSchema);
-        $registry->expects($this->once())->method('hasBodySchemaForTopic')->willReturn(false);
-        $registry->expects($this->once())->method('hasKeySchemaForTopic')->willReturn(true);
+        $registry = $this->mock(AvroSchemaRegistry::class);
+        $registry->expects('getBodySchemaForTopic')->never();
+        $registry->expects('getKeySchemaForTopic')->andReturn($avroSchema);
+        $registry->expects('hasBodySchemaForTopic')->andReturn(false);
+        $registry->expects('hasKeySchemaForTopic')->andReturn(true);
 
-        $producerMessage = $this->getMockForAbstractClass(KafkaProducerMessage::class);
-        $producerMessage->expects($this->exactly(2))->method('getTopicName')->willReturn('test');
-        $producerMessage->expects($this->once())->method('getBody')->willReturn([]);
-        $producerMessage->expects($this->once())->method('getKey')->willReturn('test-key');
-        $producerMessage->expects($this->never())->method('withBody');
-        $producerMessage->expects($this->once())->method('withKey')->with('encodedKey')->willReturn($producerMessage);
+        $producerMessage = m::mock(KafkaProducerMessage::class);
+        $producerMessage->expects('getTopicName')->twice()->andReturn('test');
+        $producerMessage->expects('getBody')->andReturn([]);
+        $producerMessage->expects('getKey')->andReturn('test-key');
+        $producerMessage->expects('withKey')->with('encodedKey')->andReturn($producerMessage);
 
         $recordSerializer = $this->getMockBuilder(RecordSerializer::class)->disableOriginalConstructor()->getMock();
         $recordSerializer->expects($this->once())->method('encodeRecord')->with($avroSchema->getName(), $avroSchema->getDefinition(), 'test-key')->willReturn('encodedKey');
@@ -130,23 +129,21 @@ class AvroSerializerTest extends LaravelKafkaTestCase
     {
         $schemaDefinition = $this->getMockBuilder(\AvroSchema::class)->disableOriginalConstructor()->getMock();
 
-        $avroSchema = $this->getMockForAbstractClass(KafkaAvroSchemaRegistry::class);
-        $avroSchema->expects($this->exactly(2))->method('getName')->willReturn('schemaName');
-        $avroSchema->expects($this->never())->method('getVersion');
-        $avroSchema->expects($this->exactly(2))->method('getDefinition')->willReturn($schemaDefinition);
+        $avroSchema = m::mock(KafkaAvroSchema::class);
+        $avroSchema->expects('getName')->twice()->andReturn('schemaName');
+        $avroSchema->expects('getDefinition')->times(2)->andReturn($schemaDefinition);
 
-        $registry = $this->getMockForAbstractClass(AvroSchemaRegistry::class);
-        $registry->expects($this->once())->method('getBodySchemaForTopic')->willReturn($avroSchema);
-        $registry->expects($this->never())->method('getKeySchemaForTopic');
-        $registry->expects($this->once())->method('hasBodySchemaForTopic')->willReturn(true);
-        $registry->expects($this->once())->method('hasKeySchemaForTopic')->willReturn(false);
+        $registry = m::mock(AvroSchemaRegistry::class);
+        $registry->expects('getBodySchemaForTopic')->andReturn($avroSchema);
+        $registry->expects('hasKeySchemaForTopic')->andReturn(false);
+        $registry->expects('hasBodySchemaForTopic')->andReturn(true);
 
-        $producerMessage = $this->getMockForAbstractClass(KafkaProducerMessage::class);
-        $producerMessage->expects($this->exactly(2))->method('getTopicName')->willReturn('test');
-        $producerMessage->expects($this->once())->method('getBody')->willReturn([]);
-        $producerMessage->expects($this->once())->method('getKey')->willReturn('test-key');
-        $producerMessage->expects($this->once())->method('withBody')->with('encodedBody')->willReturn($producerMessage);
-        $producerMessage->expects($this->never())->method('withKey');
+        $producerMessage = m::mock(Message::class);
+        $producerMessage->expects('getTopicName')->times(2)->andReturn('test');
+        $producerMessage->expects('getBody')->once()->andReturn([]);
+        $producerMessage->expects('getKey')->once()->andReturn('test-key');
+        $producerMessage->expects('withBody')->once()->with('encodedBody')->andReturn($producerMessage);
+        $producerMessage->expects('withKey')->never();
 
         $recordSerializer = $this->getMockBuilder(RecordSerializer::class)->disableOriginalConstructor()->getMock();
         $recordSerializer->expects($this->once())->method('encodeRecord')->with($avroSchema->getName(), $avroSchema->getDefinition(), [])->willReturn('encodedBody');
@@ -154,15 +151,5 @@ class AvroSerializerTest extends LaravelKafkaTestCase
         $serializer = new AvroSerializer($registry, $recordSerializer);
 
         $this->assertSame($producerMessage, $serializer->serialize($producerMessage));
-    }
-
-    public function testGetRegistry()
-    {
-        $registry = $this->getMockForAbstractClass(AvroSchemaRegistry::class);
-
-        $recordSerializer = $this->getMockBuilder(RecordSerializer::class)->disableOriginalConstructor()->getMock();
-        $serializer = new AvroSerializer($registry, $recordSerializer);
-
-        $this->assertSame($registry, $serializer->getRegistry());
     }
 }
