@@ -162,11 +162,11 @@ class Builder implements MessageProducer
      *
      * @throws \Exception
      */
-    public function send(): bool
+    public function send(bool $shouldFlush = false): bool
     {
         $producer = $this->build();
 
-        return $producer->produce($this->message);
+        return $producer->produce($this->message, $shouldFlush);
     }
 
     /**
@@ -174,7 +174,7 @@ class Builder implements MessageProducer
      *
      * @throws \Junges\Kafka\Exceptions\CouldNotPublishMessage
      */
-    public function sendBatch(MessageBatch $messageBatch): int
+    public function sendBatch(MessageBatch $messageBatch, bool $shouldFlush = false): int
     {
         $producer = $this->build();
 
@@ -182,7 +182,7 @@ class Builder implements MessageProducer
             $messageBatch->onTopic($this->topic);
         }
 
-        return $producer->produceBatch($messageBatch);
+        return $producer->produceBatch($messageBatch, $shouldFlush);
     }
 
     public function build(): Producer

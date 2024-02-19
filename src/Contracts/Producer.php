@@ -13,13 +13,13 @@ interface Producer
      * @return mixed
      * @throws \Exception
      */
-    public function produce(ProducerMessage $message): bool;
+    public function produce(ProducerMessage $message, bool $shouldFlush = false): bool;
 
     /**
      * @throws CouldNotPublishMessage
      * @throws \Junges\Kafka\Exceptions\CouldNotPublishMessageBatch
      */
-    public function produceBatch(MessageBatch $messageBatch): int;
+    public function produceBatch(MessageBatch $messageBatch, bool $shouldFlush = false): int;
 
     /**
      * @throws \Junges\Kafka\Exceptions\Transactions\TransactionShouldBeRetriedException

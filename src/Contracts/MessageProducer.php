@@ -59,7 +59,7 @@ interface MessageProducer extends InteractsWithConfigCallbacks
      *
      * @throws \Exception
      */
-    public function send(): bool;
+    public function send(bool $shouldFlush = false): bool;
 
     public function build(): Producer|ProducerFake;
 
@@ -68,5 +68,5 @@ interface MessageProducer extends InteractsWithConfigCallbacks
      *
      * @throws \Junges\Kafka\Exceptions\CouldNotPublishMessage
      */
-    public function sendBatch(MessageBatch $messageBatch): int;
+    public function sendBatch(MessageBatch $messageBatch, bool $shouldFlush = false): int;
 }
