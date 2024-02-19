@@ -4,6 +4,7 @@ namespace Junges\Kafka\Producers;
 
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Lottery;
 use Junges\Kafka\Concerns\ManagesTransactions;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\MessageSerializer;
@@ -58,7 +59,7 @@ class Producer implements ProducerContract
     }
 
     /** @inheritDoc */
-    public function produce(ProducerMessage $message): bool
+    public function produce(ProducerMessage $message, bool $shouldFlush = false): bool
     {
         $this->dispatcher->dispatch(new PublishingMessage($message));
 
@@ -72,11 +73,11 @@ class Producer implements ProducerContract
 
         $this->producer->poll(0);
 
-        return $this->flush();
+        return $this->flush($shouldFlush);
     }
 
     /** @inheritDoc */
-    public function produceBatch(MessageBatch $messageBatch): int
+    public function produceBatch(MessageBatch $messageBatch, bool $shouldFlush = false): int
     {
         if ($messageBatch->getTopicName() === '') {
             throw CouldNotPublishMessageBatch::invalidTopicName($messageBatch->getTopicName());
@@ -91,6 +92,7 @@ class Producer implements ProducerContract
         $produced = 0;
 
         $this->dispatcher->dispatch(new PublishingMessageBatch($messageBatch));
+
         foreach ($messagesIterator as $message) {
             assert($message instanceof Message);
             $message->onTopic($messageBatch->getTopicName());
@@ -103,7 +105,7 @@ class Producer implements ProducerContract
             $produced++;
         }
 
-        $this->flush();
+        $this->flush($shouldFlush);
 
         $this->dispatcher->dispatch(new MessageBatchPublished($messageBatch, $produced));
 
@@ -140,30 +142,44 @@ class Producer implements ProducerContract
      * @throws CouldNotPublishMessage
      * @throws \Exception
      */
-    private function flush(): mixed
+    private function flush(bool $shouldFlush = true): mixed
     {
-        $sleepMilliseconds = config('kafka.flush_retry_sleep_in_ms', 100);
+        // Here we define the flush callback that is called when flush is requested by
+        // the developer or when the lottery wins. Flush is not needed in after all
+        // messages, but is recommended to be called once in a while on kafka.
+        $flush = function () {
+            $sleepMilliseconds = config('kafka.flush_retry_sleep_in_ms', 100);
 
-        try {
-            return retry(10, function () {
-                $result = $this->producer->flush(1000);
+            try {
+                return retry(10, function () {
+                    $result = $this->producer->flush(1000);
 
-                if (RD_KAFKA_RESP_ERR_NO_ERROR === $result) {
-                    return true;
-                }
+                    if (RD_KAFKA_RESP_ERR_NO_ERROR === $result) {
+                        return true;
+                    }
 
-                $message = rd_kafka_err2str($result);
+                    $message = rd_kafka_err2str($result);
 
-                throw CouldNotPublishMessage::withMessage($message, $result);
-            }, $sleepMilliseconds);
-        } catch (CouldNotPublishMessage $exception) {
-            $this->dispatcher->dispatch(new \Junges\Kafka\Events\CouldNotPublishMessage(
-                $exception->getKafkaErrorCode(),
-                $exception->getMessage(),
-                $exception,
-            ));
+                    throw CouldNotPublishMessage::withMessage($message, $result);
+                }, $sleepMilliseconds);
+            } catch (CouldNotPublishMessage $exception) {
+                $this->dispatcher->dispatch(new \Junges\Kafka\Events\CouldNotPublishMessage(
+                    $exception->getKafkaErrorCode(),
+                    $exception->getMessage(),
+                    $exception,
+                ));
 
-            throw  $exception;
+                throw  $exception;
+            }
+        };
+
+        if ($shouldFlush) {
+            return $flush();
         }
+
+        return Lottery::odds(1, 200)
+            ->winner($flush)
+            ->loser(fn () => true)
+            ->choose();
     }
 }
