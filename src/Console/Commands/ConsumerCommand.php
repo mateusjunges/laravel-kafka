@@ -7,6 +7,7 @@ use Junges\Kafka\Config\Config;
 use Junges\Kafka\Console\Commands\KafkaConsumer\Options;
 use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Contracts\MessageDeserializer;
+use Symfony\Component\Console\Command\Command as SymfonyCommand;
 
 class ConsumerCommand extends Command
 {
@@ -43,18 +44,18 @@ class ConsumerCommand extends Command
         ];
     }
 
-    public function handle()
+    public function handle(): int
     {
         if (empty($this->option('consumer'))) {
             $this->error('The [--consumer] option is required.');
 
-            return;
+            return SymfonyCommand::SUCCESS;
         }
 
         if (empty($this->option('topics'))) {
             $this->error('The [--topics option is required.');
 
-            return;
+            return SymfonyCommand::SUCCESS;
         }
 
         $parsedOptions = array_map($this->parseOptions(...), $this->options());
@@ -84,6 +85,8 @@ class ConsumerCommand extends Command
         ]);
 
         $consumer->consume();
+
+        return SymfonyCommand::SUCCESS;
     }
 
     private function parseOptions(int|string|null $option): int|string|null
