@@ -26,6 +26,7 @@ class ConsumerFake implements MessageConsumer
     ) {
         $this->messageCounter = new MessageCounter($config->getMaxMessages());
         $this->batchConfig = $this->config->getBatchConfig();
+        $this->whenStopConsuming = $this->config->getWhenStopConsumingCallback();
     }
 
     /** Consume messages from a kafka topic in loop. */
@@ -83,15 +84,6 @@ class ConsumerFake implements MessageConsumer
     private function shouldStopConsuming(): bool
     {
         return $this->maxMessagesLimitReached() || $this->stopRequested;
-    }
-
-    /** Consume messages */
-    /** @inheritdoc  */
-    public function onStopConsuming(?Closure $onStopConsuming = null): self
-    {
-        $this->whenStopConsuming = $onStopConsuming;
-
-        return $this;
     }
 
     /**

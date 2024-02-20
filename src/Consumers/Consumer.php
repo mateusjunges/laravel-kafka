@@ -61,7 +61,7 @@ class Consumer implements MessageConsumer
     private readonly Retryable $retryable;
     private readonly CommitterFactory $committerFactory;
     private bool $stopRequested = false;
-    private ?Closure $whenStopConsuming = null;
+    private ?Closure $whenStopConsuming;
     protected int $lastRestart = 0;
     protected Timer $restartTimer;
     private Dispatcher $dispatcher;
@@ -74,6 +74,7 @@ class Consumer implements MessageConsumer
 
         $this->committerFactory = $committerFactory ?? new DefaultCommitterFactory($this->messageCounter);
         $this->dispatcher = App::make(Dispatcher::class);
+        $this->whenStopConsuming = $this->config->getWhenStopConsumingCallback();
     }
 
     /**
@@ -168,14 +169,6 @@ class Consumer implements MessageConsumer
     public function stopConsuming(): void
     {
         $this->stopRequested = true;
-    }
-
-    /** @inheritdoc  */
-    public function onStopConsuming(?Closure $onStopConsuming = null): self
-    {
-        $this->whenStopConsuming = $onStopConsuming;
-
-        return $this;
     }
 
     /** Will cancel the stopConsume request initiated by calling the stopConsume method */

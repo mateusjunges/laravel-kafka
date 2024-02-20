@@ -56,6 +56,7 @@ class BuilderFake extends Builder implements ConsumerBuilderContract
             batchConfig: $this->getBatchConfig(),
             stopAfterLastMessage: $this->stopAfterLastMessage,
             callbacks: $this->callbacks,
+            whenStopConsuming: $this->onStopConsuming,
         );
 
         return new ConsumerFake(

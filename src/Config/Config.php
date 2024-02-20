@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Config;
 
+use Closure;
 use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Contracts\Consumer;
 use Junges\Kafka\Contracts\HandlesBatchConfiguration;
@@ -83,6 +84,7 @@ class Config
         private readonly array $afterConsumingCallbacks = [],
         private readonly int $maxTime = 0,
         private readonly array $partitionAssignment = [],
+        private readonly ?Closure $whenStopConsuming = null,
     ) {
     }
 
@@ -224,5 +226,10 @@ class Config
     public function getPartitionAssigment(): array
     {
         return $this->partitionAssignment;
+    }
+
+    public function getWhenStopConsumingCallback(): ?Closure
+    {
+        return $this->whenStopConsuming;
     }
 }
