@@ -6,7 +6,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Traits\ForwardsCalls;
 use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Contracts\ConsumerMessage;
-use Junges\Kafka\Contracts\KafkaManager;
+use Junges\Kafka\Contracts\Manager;
 use Junges\Kafka\Contracts\ProducerMessage;
 use Junges\Kafka\Message\Message;
 use PHPUnit\Framework\Assert as PHPUnit;
@@ -15,14 +15,14 @@ class KafkaFake
 {
     use ForwardsCalls;
 
-    private KafkaManager $kafkaManager;
+    private Manager $kafkaManager;
 
     private array $publishedMessages = [];
 
     /** @var \Junges\Kafka\Contracts\ConsumerMessage[] */
     private array $messagesToConsume = [];
 
-    public function __construct(?KafkaManager $manager)
+    public function __construct(?Manager $manager)
     {
         $this->kafkaManager = $manager?->shouldFake();
         $this->makeProducerBuilderFake();

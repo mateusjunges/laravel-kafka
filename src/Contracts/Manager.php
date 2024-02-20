@@ -2,7 +2,7 @@
 
 namespace Junges\Kafka\Contracts;
 
-interface KafkaManager
+interface Manager
 {
     /** Creates a new ProducerBuilder instance, setting brokers and topic. */
     public function publish(?string $broker = null): MessageProducer;
