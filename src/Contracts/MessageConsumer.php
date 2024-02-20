@@ -2,8 +2,6 @@
 
 namespace Junges\Kafka\Contracts;
 
-use Closure;
-
 interface MessageConsumer
 {
     /**
