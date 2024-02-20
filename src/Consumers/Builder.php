@@ -51,6 +51,8 @@ class Builder implements ConsumerBuilderContract
     /** @var list<callable> */
     protected array $beforeConsumingCallbacks = [];
 
+    protected ?Closure $beforeDeserializing = null;
+
     /** @var list<callable> */
     protected array $afterConsumingCallbacks = [];
 
@@ -314,6 +316,13 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
+    public function beforeDeserializing(callable $beforeDeserializing): self
+    {
+        $this->beforeDeserializing = $beforeDeserializing(...);
+
+        return $this;
+    }
+
     /** @inheritDoc */
     public function build(): MessageConsumer
     {
@@ -334,6 +343,7 @@ class Builder implements ConsumerBuilderContract
             stopAfterLastMessage: $this->stopAfterLastMessage,
             callbacks: $this->callbacks,
             beforeConsumingCallbacks: $this->beforeConsumingCallbacks,
+            beforeDeserializing: $this->beforeDeserializing,
             afterConsumingCallbacks: $this->afterConsumingCallbacks,
             maxTime: $this->maxTime,
             partitionAssignment: $this->partitionAssignment,
