@@ -14,7 +14,7 @@ weight: 6
 - The `\Junges\Kafka\Contracts\CanConsumeMessagesFromKafka` was removed.
 - The `\Junges\Kafka\Contracts\CanConsumeBatchMessages` contract was renamed to `\Junges\Kafka\Contracts\BatchMessageConsumer`
 - The `\Junges\Kafka\Contracts\CanConsumeMessages` contract was renamed to `\Junges\Kafka\Contracts\MessageConsumer`
-- Introduced a new `\Junges\Kafka\Contracts\KafkaManager` used by `\Junges\Kafka\Manager`
+- Introduced a new `\Junges\Kafka\Contracts\Manager` used by `\Junges\Kafka\Factory` class
 
 ### The `withSasl` method signature was changed.
 
