@@ -5,6 +5,7 @@ namespace Junges\Kafka\Concerns;
 use Closure;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\Handler;
+use Junges\Kafka\Contracts\MessageConsumer;
 
 /**
  * @internal
@@ -12,7 +13,7 @@ use Junges\Kafka\Contracts\Handler;
  */
 trait HandleConsumedMessage
 {
-    private function handleConsumedMessage(ConsumerMessage $message, Handler|Closure $handler, array $middlewares = []): void
+    private function handleConsumedMessage(ConsumerMessage $message, Handler|Closure $handler, ?MessageConsumer $consumer = null, array $middlewares = []): void
     {
         $middlewares = array_map($this->wrapMiddleware(...), $middlewares);
         $middlewares = array_reverse($middlewares);
@@ -21,6 +22,6 @@ trait HandleConsumedMessage
             $handler = $middleware($handler);
         }
 
-        $handler($message);
+        $handler($message, $consumer);
     }
 }

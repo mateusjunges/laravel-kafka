@@ -61,7 +61,7 @@ class Consumer implements MessageConsumer
     private readonly Retryable $retryable;
     private readonly CommitterFactory $committerFactory;
     private bool $stopRequested = false;
-    private ?Closure $whenStopConsuming = null;
+    private ?Closure $whenStopConsuming;
     protected int $lastRestart = 0;
     protected Timer $restartTimer;
     private Dispatcher $dispatcher;
@@ -74,6 +74,7 @@ class Consumer implements MessageConsumer
 
         $this->committerFactory = $committerFactory ?? new DefaultCommitterFactory($this->messageCounter);
         $this->dispatcher = App::make(Dispatcher::class);
+        $this->whenStopConsuming = $this->config->getWhenStopConsumingCallback();
     }
 
     /**
@@ -170,14 +171,6 @@ class Consumer implements MessageConsumer
         $this->stopRequested = true;
     }
 
-    /** @inheritdoc  */
-    public function onStopConsuming(?Closure $onStopConsuming = null): self
-    {
-        $this->whenStopConsuming = $onStopConsuming;
-
-        return $this;
-    }
-
     /** Will cancel the stopConsume request initiated by calling the stopConsume method */
     public function cancelStopConsume(): void
     {
@@ -232,7 +225,10 @@ class Consumer implements MessageConsumer
             // was received and will be consumed as soon as a consumer is available to process it.
             $this->dispatcher->dispatch(new StartedConsumingMessage($consumedMessage));
 
-            $this->config->getConsumer()->handle($consumedMessage = $this->deserializer->deserialize($consumedMessage));
+            $this->config->getConsumer()->handle(
+                $consumedMessage = $this->deserializer->deserialize($consumedMessage),
+                $this
+            );
             $success = true;
 
             // Dispatch an event informing that a message was consumed.
@@ -283,7 +279,7 @@ class Consumer implements MessageConsumer
             $consumedMessages = $collection
                 ->map(fn (Message $message) => $this->deserializer->deserialize($this->getConsumerMessage($message)));
 
-            $this->config->getBatchConfig()->getConsumer()->handle($consumedMessages);
+            $this->config->getBatchConfig()->getConsumer()->handle($consumedMessages, $this);
 
             $collection->each(fn (Message $message) => $this->commit($message, true));
         } catch (Throwable $throwable) {

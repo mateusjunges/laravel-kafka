@@ -386,14 +386,15 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
                 //stop consumer after first message
                 $this->consumer->stopConsuming();
             })
-            ->build()
             ->onStopConsuming(function () use (&$stopped) {
                 $stopped = true;
-            });
+            })
+            ->build();
 
         $this->consumer->consume();
+
         //testing stop callback
-        $this->assertTrue((bool)$stopped);
+        $this->assertTrue($stopped);
         //should have consumed only one message
         $this->assertEquals(1, $this->consumer->consumedMessagesCount());
     }
@@ -560,22 +561,17 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
 
         Kafka::shouldReceiveMessages($messages);
 
-        $stopped = false;
         $this->consumer = Kafka::consumer(['test-topic'])
             ->enableBatching()
             ->withBatchSizeLimit(2)
-            ->withHandler(function (Collection $messages) use (&$stopped) {
+            ->withHandler(function (Collection $messages, MessageConsumer $consumer) {
                 //stop consumer after first batch
-                $this->consumer->onStopConsuming(function () use (&$stopped) {
-                    $stopped = true;
-                })->stopConsuming();
+                $consumer->stopConsuming();
             })
             ->build();
 
         $this->consumer->consume();
 
-        //testing stop callback
-        $this->assertTrue((bool)$stopped);
         //should have consumed only two messages
         $this->assertEquals(2, $this->consumer->consumedMessagesCount());
     }

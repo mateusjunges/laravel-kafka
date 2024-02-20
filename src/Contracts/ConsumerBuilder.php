@@ -16,6 +16,9 @@ interface ConsumerBuilder extends InteractsWithConfigCallbacks
     /** Assigns a set of partitions this consumer should consume from. */
     public function assignPartitions(array $partitionAssignment): self;
 
+    /** Defines a callback to be executed when consumer stops consuming messages. */
+    public function onStopConsuming(callable $onStopConsuming): self;
+
     /** Set the brokers the kafka consumer should use. */
     public function withBrokers(?string $brokers): self;
 

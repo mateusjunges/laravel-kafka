@@ -177,12 +177,13 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $this->mockProducer();
 
         $this->stoppableConsumer = Kafka::consumer(['test'])
-            ->withHandler(function (ConsumerMessage $message) {
-                if ($message->getKey() === 'key2' && $this->stoppableConsumer) {
-                    $this->stoppableConsumer->onStopConsuming(function () {
-                        $this->stoppableConsumerStopped = true;
-                        $this->stoppedConsumerMessage = 'Consumer stopped.';
-                    })->stopConsuming();
+            ->onStopConsuming(function () {
+                $this->stoppableConsumerStopped = true;
+                $this->stoppedConsumerMessage = 'Consumer stopped.';
+            })
+            ->withHandler(function (ConsumerMessage $message, MessageConsumer $consumer) {
+                if ($message->getKey() === 'key2') {
+                    $consumer->stopConsuming();
                 }
             })
             ->withAutoCommit()

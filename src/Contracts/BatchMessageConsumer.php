@@ -7,5 +7,5 @@ use Illuminate\Support\Collection;
 interface BatchMessageConsumer
 {
     /** Handles messages released from batch repository. */
-    public function handle(Collection $collection): void;
+    public function handle(Collection $collection, MessageConsumer $consumer): void;
 }

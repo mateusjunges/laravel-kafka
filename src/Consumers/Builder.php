@@ -57,6 +57,8 @@ class Builder implements ConsumerBuilderContract
     /** @var array<int, TopicPartition> */
     protected array $partitionAssignment = [];
 
+    protected ?Closure $onStopConsuming = null;
+
     protected function __construct(protected string $brokers, array $topics = [], protected ?string $groupId = null)
     {
         if (count($topics) > 0) {
@@ -314,6 +316,13 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
+    public function onStopConsuming(callable $onStopConsuming): self
+    {
+        $this->onStopConsuming = $onStopConsuming(...);
+
+        return $this;
+    }
+
     /** @inheritDoc */
     public function build(): MessageConsumer
     {
@@ -337,6 +346,7 @@ class Builder implements ConsumerBuilderContract
             afterConsumingCallbacks: $this->afterConsumingCallbacks,
             maxTime: $this->maxTime,
             partitionAssignment: $this->partitionAssignment,
+            whenStopConsuming: $this->onStopConsuming,
         );
 
         return new Consumer($config, $this->deserializer, $this->committerFactory);

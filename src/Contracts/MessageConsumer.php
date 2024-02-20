@@ -21,7 +21,4 @@ interface MessageConsumer
 
     /** Count the number of messages consumed by this consumer */
     public function consumedMessagesCount(): int;
-
-    /** Defines a callable that will run when the consumer stops consuming messages. */
-    public function onStopConsuming(?Closure $onStopConsuming = null): self;
 }

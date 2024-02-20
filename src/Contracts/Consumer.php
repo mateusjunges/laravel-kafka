@@ -7,7 +7,7 @@ use Throwable;
 
 abstract class Consumer
 {
-    abstract public function handle(ConsumerMessage $message): void;
+    abstract public function handle(ConsumerMessage $message, MessageConsumer $consumer): void;
 
     /** @throws Throwable  */
     public function failed(string $message, string $topic, Throwable $exception): never
