@@ -7,13 +7,14 @@ weight: 6
 
 ## High impact changes
  - The `\Junges\Kafka\Contracts\CanProduceMessages` contract was renamed to `\Junges\Kafka\Contracts\MessageProducer`
- - The `\Junges\Kafka\Contracts\CanPublishMessagesToKafka` contract was renamed to `\Junges\Kafka\Contracts\MessagePublisher`
 - The `\Junges\Kafka\Contracts\KafkaProducerMessage` contract was renamed to `\Junges\Kafka\Contracts\ProducerMessage`
 - The `\Junges\Kafka\Contracts\CanConsumeMessages` was renamed to `\Junges\Kafka\Contracts\MessageConsumer`
 - The `\Junges\Kafka\Contracts\KafkaConsumerMessage` was renamed to `\Junges\Kafka\Contracts\ConsumerMessage`
-- The `\Junges\Kafka\Contracts\CanConsumeMessagesFromKafka` was renamed to `\Junges\Kafka\Contracts\ConsumeMessagesFromKafka`
+- The `\Junges\Kafka\Contracts\CanPublishMessagesToKafka` contract was removed.
+- The `\Junges\Kafka\Contracts\CanConsumeMessagesFromKafka` was removed.
 - The `\Junges\Kafka\Contracts\CanConsumeBatchMessages` contract was renamed to `\Junges\Kafka\Contracts\BatchMessageConsumer`
 - The `\Junges\Kafka\Contracts\CanConsumeMessages` contract was renamed to `\Junges\Kafka\Contracts\MessageConsumer`
+- Introduced a new `\Junges\Kafka\Contracts\KafkaManager` used by `\Junges\Kafka\Manager`
 
 ### The `withSasl` method signature was changed.
 
