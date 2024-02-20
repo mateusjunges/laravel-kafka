@@ -28,6 +28,7 @@ final class DispatchQueuedHandler implements ShouldQueue
 
     public function handle(): void
     {
+        // Queued handlers does not have access to an instance of the MessageConsumer class.
         $this->handleConsumedMessage(
             message: $this->message,
             handler: $this->handler,
