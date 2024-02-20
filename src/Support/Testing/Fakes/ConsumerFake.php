@@ -153,13 +153,13 @@ class ConsumerFake implements MessageConsumer
                 fn (Message $message) => $this->getConsumerMessage($message)
             );
 
-        $this->config->getBatchConfig()->getConsumer()->handle($consumedMessages);
+        $this->config->getBatchConfig()->getConsumer()->handle($consumedMessages, $this);
     }
 
     /** Handle the message. */
     private function handleMessage(ConsumerMessage $message): void
     {
-        $this->config->getConsumer()->handle($message);
+        $this->config->getConsumer()->handle($message, $this);
         $this->messageCounter->add();
     }
 

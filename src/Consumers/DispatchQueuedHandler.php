@@ -28,6 +28,10 @@ final class DispatchQueuedHandler implements ShouldQueue
 
     public function handle(): void
     {
-        $this->handleConsumedMessage($this->message, $this->handler, $this->middlewares);
+        $this->handleConsumedMessage(
+            message: $this->message,
+            handler: $this->handler,
+            middlewares: $this->middlewares
+        );
     }
 }

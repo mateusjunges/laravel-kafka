@@ -232,7 +232,10 @@ class Consumer implements MessageConsumer
             // was received and will be consumed as soon as a consumer is available to process it.
             $this->dispatcher->dispatch(new StartedConsumingMessage($consumedMessage));
 
-            $this->config->getConsumer()->handle($consumedMessage = $this->deserializer->deserialize($consumedMessage));
+            $this->config->getConsumer()->handle(
+                $consumedMessage = $this->deserializer->deserialize($consumedMessage),
+                $this
+            );
             $success = true;
 
             // Dispatch an event informing that a message was consumed.
@@ -283,7 +286,7 @@ class Consumer implements MessageConsumer
             $consumedMessages = $collection
                 ->map(fn (Message $message) => $this->deserializer->deserialize($this->getConsumerMessage($message)));
 
-            $this->config->getBatchConfig()->getConsumer()->handle($consumedMessages);
+            $this->config->getBatchConfig()->getConsumer()->handle($consumedMessages, $this);
 
             $collection->each(fn (Message $message) => $this->commit($message, true));
         } catch (Throwable $throwable) {
