@@ -15,7 +15,7 @@ $consumer = \Junges\Kafka\Facades\Kafka::consumer()
     ->enableBatching()
     ->withBatchSizeLimit(1000)
     ->withBatchReleaseInterval(1500)
-    ->withHandler(function (\Illuminate\Support\Collection $collection) {
+    ->withHandler(function (\Illuminate\Support\Collection $collection, \Junges\Kafka\Contracts\MessageConsumer $consumer) {
          // Handle batch
     })
     ->build();
