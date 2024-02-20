@@ -11,7 +11,7 @@ Consumer classes are very simple, and it is basically a Laravel Command class. T
 namespace App\Console\Commands\Consumers;
 
 use Illuminate\Console\Command;
-use Junges\Kafka\Facades\Kafka;
+use Junges\Kafka\Contracts\MessageConsumer;use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Contracts\ConsumerMessage;
 
 class MyTopicConsumer extends Command
@@ -25,7 +25,7 @@ class MyTopicConsumer extends Command
         $consumer = Kafka::consumer(['my-topic'])
             ->withBrokers('localhost:8092')
             ->withAutoCommit()
-            ->withHandler(function(ConsumerMessage $message) {
+            ->withHandler(function(ConsumerMessage $message, MessageConsumer $consumer) {
                 // Handle your message here
             })
             ->build();

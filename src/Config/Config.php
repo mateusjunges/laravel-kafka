@@ -85,6 +85,7 @@ class Config
         private readonly array $afterConsumingCallbacks = [],
         private readonly int $maxTime = 0,
         private readonly array $partitionAssignment = [],
+        private readonly ?Closure $whenStopConsuming = null,
     ) {
     }
 
@@ -231,5 +232,10 @@ class Config
     public function getPartitionAssigment(): array
     {
         return $this->partitionAssignment;
+    }
+
+    public function getWhenStopConsumingCallback(): ?Closure
+    {
+        return $this->whenStopConsuming;
     }
 }

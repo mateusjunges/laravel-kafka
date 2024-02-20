@@ -76,7 +76,9 @@ class Consumer implements MessageConsumer
 
         $this->committerFactory = $committerFactory ?? new DefaultCommitterFactory($this->messageCounter);
         $this->dispatcher = App::make(Dispatcher::class);
+
         $this->beforeDeserializing = $this->config->getBeforeDeserializingCallback();
+        $this->whenStopConsuming = $this->config->getWhenStopConsumingCallback();
     }
 
     /**
@@ -173,14 +175,6 @@ class Consumer implements MessageConsumer
         $this->stopRequested = true;
     }
 
-    /** @inheritdoc  */
-    public function onStopConsuming(?Closure $onStopConsuming = null): self
-    {
-        $this->whenStopConsuming = $onStopConsuming;
-
-        return $this;
-    }
-
     /** Will cancel the stopConsume request initiated by calling the stopConsume method */
     public function cancelStopConsume(): void
     {
@@ -239,7 +233,8 @@ class Consumer implements MessageConsumer
                 return;
             }
 
-            $this->config->getConsumer()->handle($consumedMessage);
+            $this->config->getConsumer()->handle($consumedMessage, $this);
+
             $success = true;
 
             // Dispatch an event informing that a message was consumed.
@@ -310,7 +305,7 @@ class Consumer implements MessageConsumer
             $consumedMessages = $collection
                 ->map(fn (Message $message) => $this->deserializer->deserialize($this->getConsumerMessage($message)));
 
-            $this->config->getBatchConfig()->getConsumer()->handle($consumedMessages);
+            $this->config->getBatchConfig()->getConsumer()->handle($consumedMessages, $this);
 
             $collection->each(fn (Message $message) => $this->commit($message, true));
         } catch (Throwable $throwable) {

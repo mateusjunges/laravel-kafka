@@ -11,6 +11,7 @@ use Junges\Kafka\Concerns\PrepareMiddlewares;
 use Junges\Kafka\Contracts\Consumer;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\Handler;
+use Junges\Kafka\Contracts\MessageConsumer;
 
 class CallableConsumer extends Consumer
 {
@@ -29,7 +30,7 @@ class CallableConsumer extends Consumer
     }
 
     /** Handle the received message. */
-    public function handle(ConsumerMessage $message): void
+    public function handle(ConsumerMessage $message, MessageConsumer $consumer): void
     {
         // If the message handler should be queued, we will dispatch a job to handle this message.
         // Otherwise, the message will be handled synchronously.
@@ -39,7 +40,7 @@ class CallableConsumer extends Consumer
             return;
         }
 
-        $this->handleMessageSynchronously($message);
+        $this->handleMessageSynchronously($message, $consumer);
     }
 
     private function shouldQueueHandler(): bool
@@ -47,9 +48,9 @@ class CallableConsumer extends Consumer
         return $this->handler instanceof ShouldQueue;
     }
 
-    private function handleMessageSynchronously(ConsumerMessage $message): void
+    private function handleMessageSynchronously(ConsumerMessage $message, MessageConsumer $consumer): void
     {
-        $this->handleConsumedMessage($message, $this->handler, $this->middlewares);
+        $this->handleConsumedMessage($message, $this->handler, $consumer, $this->middlewares);
     }
 
     /**

@@ -4,10 +4,11 @@ namespace Junges\Kafka\Consumers;
 
 use Illuminate\Support\Collection;
 use Junges\Kafka\Contracts\BatchMessageConsumer;
+use Junges\Kafka\Contracts\MessageConsumer;
 
-class NullBatchConsumer implements BatchMessageConsumer
+readonly class NullBatchConsumer implements BatchMessageConsumer
 {
-    public function handle(Collection $collection): void
+    public function handle(Collection $collection, MessageConsumer $consumer): void
     {
     }
 }
