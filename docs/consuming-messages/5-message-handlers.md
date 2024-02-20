@@ -10,7 +10,7 @@ You can use an invokable class or a simple callback. Use the `withHandler` metho
 $consumer = \Junges\Kafka\Facades\Kafka::consumer();
 
 // Using callback:
-$consumer->withHandler(function(\Junges\Kafka\Contracts\ConsumerMessage $message) {
+$consumer->withHandler(function(\Junges\Kafka\Contracts\ConsumerMessage $message, \Junges\Kafka\Contracts\MessageConsumer $consumer) {
     // Handle your message here
 });
 ```
@@ -20,7 +20,7 @@ Or, using an invokable class:
 ```php
 class Handler
 {
-    public function __invoke(\Junges\Kafka\Contracts\ConsumerMessage $message){
+    public function __invoke(\Junges\Kafka\Contracts\ConsumerMessage $message, \Junges\Kafka\Contracts\MessageConsumer $consumer) {
         // Handle your message here
     }
 }
@@ -28,7 +28,7 @@ class Handler
 $consumer = \Junges\Kafka\Facades\Kafka::consumer()->withHandler(new Handler)
 ```
 
-The `KafkaConsumerMessage` contract gives you some handy methods to get the message properties:
+The `ConsumerMessage` contract gives you some handy methods to get the message properties:
 
 - `getKey()`: Returns the Kafka Message Key
 - `getTopicName()`: Returns the topic where the message was published
