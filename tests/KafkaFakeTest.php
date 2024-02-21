@@ -6,7 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Junges\Kafka\Contracts\ConsumerMessage;
-use Junges\Kafka\Contracts\KafkaManager;
+use Junges\Kafka\Contracts\Manager;
 use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\ConsumedMessage;
@@ -24,7 +24,7 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
     public function setUp(): void
     {
         parent::setUp();
-        $this->fake = new KafkaFake(app(KafkaManager::class));
+        $this->fake = new KafkaFake(app(Manager::class));
     }
 
     public function testItStorePublishedMessagesOnArray(): void
