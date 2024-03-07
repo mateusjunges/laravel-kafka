@@ -11,4 +11,7 @@ interface Manager
     public function consumer(array $topics = [], string $groupId = null, string $brokers = null): ConsumerBuilder;
 
     public function shouldFake(): self;
+
+    /** @param array<int, ConsumerMessage> $messages */
+    public function shouldReceiveMessages(array $messages): self;
 }

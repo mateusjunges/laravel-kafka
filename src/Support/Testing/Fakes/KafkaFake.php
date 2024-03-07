@@ -165,6 +165,8 @@ class KafkaFake
      */
     public function __call(string $method, array $parameters)
     {
+        $this->kafkaManager->shouldReceiveMessages($this->messagesToConsume);
+
         return $this->forwardCallTo($this->kafkaManager, $method, $parameters);
     }
 }

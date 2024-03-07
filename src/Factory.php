@@ -4,6 +4,7 @@ namespace Junges\Kafka;
 
 use Illuminate\Support\Traits\Macroable;
 use Junges\Kafka\Consumers\Builder as ConsumerBuilder;
+use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\Manager;
 use Junges\Kafka\Contracts\MessageProducer;
 use Junges\Kafka\Facades\Kafka;
@@ -14,6 +15,9 @@ class Factory implements Manager
     use Macroable;
 
     private bool $shouldFake = false;
+
+    /** @var array<int, ConsumerMessage> $fakeMessages This array is passed to the underlying consumer when faking macroed consumers. */
+    private array $fakeMessages = [];
 
     /** Creates a new ProducerBuilder instance, setting brokers and topic. */
     public function publish(string $broker = null): MessageProducer
@@ -35,7 +39,7 @@ class Factory implements Manager
                 $topics,
                 $groupId,
                 $brokers
-            );
+            )->setMessages($this->fakeMessages);
         }
 
         return ConsumerBuilder::create(
@@ -48,6 +52,14 @@ class Factory implements Manager
     public function shouldFake(): self
     {
         $this->shouldFake = true;
+
+        return $this;
+    }
+
+    /** @param array<int, ConsumerMessage> $messages */
+    public function shouldReceiveMessages(array $messages): self
+    {
+        $this->fakeMessages = $messages;
 
         return $this;
     }
