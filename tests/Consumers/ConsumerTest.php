@@ -415,6 +415,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
             ),
         ]);
 
+        /** @var MessageConsumer $consumer */
         $consumer = Kafka::macroedConsumer('change-key-to-true')->build();
         $consumer->consume();
 
