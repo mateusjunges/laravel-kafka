@@ -20,6 +20,7 @@ use Junges\Kafka\Message\Deserializers\JsonDeserializer;
 use Junges\Kafka\Tests\Fakes\FakeConsumer;
 use Junges\Kafka\Tests\Fakes\FakeHandler;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
+use PHPUnit\Framework\Attributes\Test;
 use RdKafka\Message;
 
 final class ConsumerTest extends LaravelKafkaTestCase
@@ -389,5 +390,35 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $this->assertInstanceOf(ConsumedMessage::class, $fakeHandler->lastMessage());
         $this->assertSame(2, $this->countBeforeConsuming);
         $this->assertSame(2, $this->countAfterConsuming);
+    }
+
+    #[Test]
+    public function it_can_test_macroed_consumers(): void
+    {
+        $array = ['key' => false];
+        Kafka::macro('macroedConsumer', function (string $topic) use (&$array) {
+            return $this->consumer([$topic])->withHandler(function () use (&$array) {
+                $array['key'] = true;
+            });
+        });
+
+        Kafka::fake();
+        Kafka::shouldReceiveMessages([
+            new ConsumedMessage(
+                topicName: 'change-key-to-true',
+                partition: 0,
+                headers: [],
+                body: ['post_id' => 1],
+                key: null,
+                offset: 0,
+                timestamp: 0
+            ),
+        ]);
+
+        /** @var MessageConsumer $consumer */
+        $consumer = Kafka::macroedConsumer('change-key-to-true')->build();
+        $consumer->consume();
+
+        $this->assertTrue($array['key']);
     }
 }
