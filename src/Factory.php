@@ -16,7 +16,7 @@ class Factory implements Manager
 
     private bool $shouldFake = false;
 
-    /** @var array<int, ConsumerMessage> $fakeMessages This array is passed to the underlying consumer when faking macroed consumers. */
+    /** @var array<int, ConsumerMessage> This array is passed to the underlying consumer when faking macroed consumers. */
     private array $fakeMessages = [];
 
     /** Creates a new ProducerBuilder instance, setting brokers and topic. */
