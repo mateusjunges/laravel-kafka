@@ -2,12 +2,24 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
-## [2024-01-xx v2.0.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.13.x...v2.0.0)
-- Add the ability to queue message handlers by @mateusjunges in [#177](https://github.com/mateusjunges/laravel-kafka/pull/177)
-- Add after and before consuming callbacks by @mateusjunges and @ebrahimradi in [#192](https://github.com/mateusjunges/laravel-kafka/pull/192)
-- Add simple events to kafka producer and consumers by @mateusjunges in [#193](https://github.com/mateusjunges/laravel-kafka/pull/193)
-- Append throwable/exception info when sending a message to DLQ by @mateusjunges in [#194](https://github.com/mateusjunges/laravel-kafka/pull/194)
-- Add the ability to assign partitions to a consumer by @mateusjunges in [#234](https://github.com/mateusjunges/laravel-kafka/pull/234) 
+## [2024-03-12 v2.0.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.13.x...v2.0.0)
+* Allow to queue message handlers by @mateusjunges in [#177](https://github.com/mateusjunges/laravel-kafka/pull/177)
+* Add missing return types by @mateusjunges in [#189](https://github.com/mateusjunges/laravel-kafka/pull/189)
+* Upgrade to PHP 8.1 and make code more maintainable by @mateusjunges in [#161](https://github.com/mateusjunges/laravel-kafka/pull/161)
+* Allow to define **before** callbacks by @ebrahimradi in [#192](https://github.com/mateusjunges/laravel-kafka/pull/192)
+* Add publishing/consuming events by @mateusjunges in [#193](https://github.com/mateusjunges/laravel-kafka/pull/193)
+* Send throwable info to DLQ by @mateusjunges in [#194](https://github.com/mateusjunges/laravel-kafka/pull/194)
+* Add the ability to use Kafka transactional producers by @mateusjunges in [#223](https://github.com/mateusjunges/laravel-kafka/pull/223)
+* Partition assignment by @mateusjunges in [#234](https://github.com/mateusjunges/laravel-kafka/pull/234)
+* Document subscribing to topics using regex by @mateusjunges in [#239](https://github.com/mateusjunges/laravel-kafka/pull/239)
+* Passthru missing methods on `KafkaFake` for macro accessibility by @mateusjunges in [#246]https://github.com/mateusjunges/laravel-kafka/pull/246 and (https://github.com/mateusjunges/laravel-kafka/pull/250)
+* Allow to uniquely identify messages by @mateusjunges in [#244](https://github.com/mateusjunges/laravel-kafka/pull/244)
+* Update CI to run without docker on Github CI by @mateusjunges in [#254](https://github.com/mateusjunges/laravel-kafka/pull/254)
+* Drop support for Laravel 9 by @mateusjunges in [#255](https://github.com/mateusjunges/laravel-kafka/pull/255)
+* Add support for Laravel 11 by @mateusjunges in [#257](https://github.com/mateusjunges/laravel-kafka/pull/257)
+* Improve producer performance by reducing `flush` calls by @mateusjunges in [#252](https://github.com/mateusjunges/laravel-kafka/pull/252)
+* Allow to test macroed consumers by @mateusjunges in [#267](https://github.com/mateusjunges/laravel-kafka/pull/267)
+ 
 
 ## [2024-01-23 v1.13.9](https://github.com/mateusjunges/laravel-kafka/compare/v1.13.8...v1.13.9)
 * Install a signal handler for SIGINT (cmd/ctrl + c) by @mateusjunges
