@@ -15,7 +15,8 @@ class MyTest extends TestCase
      {
          Kafka::fake();
          
-         $producer = Kafka::publishOn('topic')
+         $producer = Kafka::publish('broker')
+             ->onTopic('topic')
              ->withHeaders(['key' => 'value'])
              ->withBodyKey('foo', 'bar');
              
@@ -38,7 +39,8 @@ class MyTest extends TestCase
      {
          Kafka::fake();
          
-         Kafka::publishOn('topic')
+         Kafka::publish('broker')
+             ->onTopic('topic')
              ->withHeaders(['key' => 'value'])
              ->withBodyKey('foo', 'bar');
              

@@ -9,7 +9,8 @@ After configuring all your message options, you must use the send method, to sen
 use Junges\Kafka\Facades\Kafka;
 
 /** @var \Junges\Kafka\Producers\Builder $producer */
-$producer = Kafka::publishOn('topic')
+$producer = Kafka::publish('broker')
+    ->onTopic('topic')
     ->withConfigOptions(['key' => 'value'])
     ->withKafkaKey('kafka-key')
     ->withHeaders(['header-key' => 'header-value']);

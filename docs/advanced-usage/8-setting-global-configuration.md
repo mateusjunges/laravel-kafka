@@ -11,7 +11,8 @@ to achieve that. Here's an example:
 // In a service provider:
 
 \Junges\Kafka\Facades\Kafka::macro('myProducer', function () {
-    return $this->publishOn('my-awesome-topic')
+    return $this->publish('broker')
+        ->onTopic('my-awesome-topic')
         ->withConfigOption('key', 'value');
 });
 ```

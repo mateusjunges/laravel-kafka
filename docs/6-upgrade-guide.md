@@ -36,6 +36,18 @@ $consumer = Kafka::consumer(['topic'])
     })
 ```
 
+### Renamed `createConsumer` method
+The `Kafka::createConsumer` method has been renamed to just `consumer`
+
+### Renamed `publishOn` method
+The `Kafka::publishOn` method has been renamed to `publish`, and it does not accept the `$topics` parameter anymore.
+
+Please chain a call to `onTopic` to specify in which topic the message should be published.
+
+```php
+\Junges\Kafka\Facades\Kafka::publish('broker')->onTopic('topic-name');
+```
+
 ### Setting `onStopConsuming` callbacks
 
 To set `onStopConsuming` callbacks you need to define them while building the consumer, instead of after calling the `build` method as in `v1.13.x`:

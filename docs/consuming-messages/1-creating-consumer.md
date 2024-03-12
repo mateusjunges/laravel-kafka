@@ -5,7 +5,7 @@ weight: 1
 
 If your application needs to read messages from a Kafka topic, you must create a consumer object, subscribe to the appropriate topic and start receiving messages.
 
-To create a consumer using this package you can use the `createConsumer` method, on Kafka facade:
+To create a consumer using this package you can use the `consumer` method, on Kafka facade:
 
 ```php
 use Junges\Kafka\Facades\Kafka;

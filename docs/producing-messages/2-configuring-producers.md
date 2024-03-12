@@ -3,18 +3,19 @@ title: Configuring your kafka producer
 weight: 2
 ---
 
-The producer builder, returned by the publishOn call, gives you a series of methods which you can use to configure your kafka producer options.
+The producer builder, returned by the `publish` call, gives you a series of methods which you can use to configure your kafka producer options.
 
 ### Defining configuration options
 
 The `withConfigOption` method sets a `\RdKafka\Conf::class` option. You can check all available options [here][rdkafka_config].
-This methods set one config per call, and you can use `withConfigOptions` passing an array of config name and config value
+This method sets one config per call, and you can use `withConfigOptions` passing an array of config name and config value
 as argument. Here's an example:
 
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-Kafka::publishOn('topic')
+Kafka::publish('broker')
+    ->onTopic('topic')
     ->withConfigOption('property-name', 'property-value')
     ->withConfigOptions([
         'property-name' => 'property-value'
@@ -27,7 +28,8 @@ To disable debug mode, you can use `->withDebugEnabled(false)`, or `withDebugDis
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-Kafka::publishOn('topic')
+Kafka::publish('broker')
+    ->onTopic('topic')
     ->withConfigOption('property-name', 'property-value')
     ->withConfigOptions([
         'property-name' => 'property-value'

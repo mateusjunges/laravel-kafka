@@ -79,7 +79,9 @@ class CustomCommitterFactory implements CommitterFactory
 To use this committer implementation, you just need to inform your consumer that you want to use a custom committer class:
 
 ```php
-$consumer = Kafka::createConsumer()
+use Junges\Kafka\Facades\Kafka;
+
+$consumer = Kafka::consumer()
     ->usingCommitterFactory(new CustomCommitterFactory())
     ->build();
 ```

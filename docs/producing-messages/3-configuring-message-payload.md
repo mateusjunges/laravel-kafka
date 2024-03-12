@@ -11,7 +11,8 @@ To configure the message headers, use the `withHeaders` method:
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-Kafka::publishOn('topic')
+Kafka::publish('broker')
+    ->onTopic('topic')
     ->withHeaders([
         'header-key' => 'header-value'
     ])
@@ -34,7 +35,7 @@ $message = new Message(
     key: 'kafka key here'  
 )
 
-Kafka::publishOn('topic')->withMessage($message);
+Kafka::publish('broker')->onTopic('topic')->withMessage($message);
 ```
 
 The `withBodyKey` method sets only a key in your message.
@@ -42,7 +43,7 @@ The `withBodyKey` method sets only a key in your message.
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-Kafka::publishOn('topic')->withBodyKey('key', 'value');
+Kafka::publish('broker')->onTopic('topic')->withBodyKey('key', 'value');
 ```
 
 ### Using Kafka Keys
@@ -52,5 +53,5 @@ If you want to use a key in your message, you should use the `withKafkaKey` meth
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-Kafka::publishOn('topic')->withKafkaKey('your-kafka-key');
+Kafka::publish('broker')->onTopic('topic')->withKafkaKey('your-kafka-key');
 ```
