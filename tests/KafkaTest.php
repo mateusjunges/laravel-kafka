@@ -159,11 +159,11 @@ final class KafkaTest extends LaravelKafkaTestCase
         $this->assertTrue($test);
 
         $test = Kafka::publish()
+            ->onTopic('test')
             ->withConfigOptions([
                 'metadata.broker.list' => 'broker',
             ])
             ->withMessage(new Message(
-                topicName: 'test',
                 headers: ['foo' => 'bar'],
                 body: ['foo' => 'bar'],
                 key: 'message-key',

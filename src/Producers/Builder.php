@@ -166,6 +166,10 @@ class Builder implements MessageProducer
     {
         $producer = $this->build();
 
+        if ($this->message->getTopicName() === null && $this->topic !== '') {
+            $this->message->onTopic($this->topic);
+        }
+
         return $producer->produce($this->message, $shouldFlush);
     }
 
