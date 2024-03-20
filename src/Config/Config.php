@@ -81,6 +81,7 @@ class Config
         private readonly int $restartInterval = 1000,
         private readonly array $callbacks = [],
         private readonly array $beforeConsumingCallbacks = [],
+        private readonly ?Closure $beforeDeserializing = null,
         private readonly array $afterConsumingCallbacks = [],
         private readonly int $maxTime = 0,
         private readonly array $partitionAssignment = [],
@@ -205,6 +206,11 @@ class Config
     public function getBeforeConsumingCallbacks(): array
     {
         return $this->beforeConsumingCallbacks;
+    }
+
+    public function getBeforeDeserializingCallback(): ?Closure
+    {
+        return $this->beforeDeserializing;
     }
 
     public function getAfterConsumingCallbacks(): array

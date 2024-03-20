@@ -61,7 +61,9 @@ class Consumer implements MessageConsumer
     private readonly Retryable $retryable;
     private readonly CommitterFactory $committerFactory;
     private bool $stopRequested = false;
-    private ?Closure $whenStopConsuming;
+    private ?Closure $whenStopConsuming = null;
+
+    private ?Closure $beforeDeserializing;
     protected int $lastRestart = 0;
     protected Timer $restartTimer;
     private Dispatcher $dispatcher;
@@ -74,6 +76,8 @@ class Consumer implements MessageConsumer
 
         $this->committerFactory = $committerFactory ?? new DefaultCommitterFactory($this->messageCounter);
         $this->dispatcher = App::make(Dispatcher::class);
+
+        $this->beforeDeserializing = $this->config->getBeforeDeserializingCallback();
         $this->whenStopConsuming = $this->config->getWhenStopConsumingCallback();
     }
 
@@ -225,10 +229,12 @@ class Consumer implements MessageConsumer
             // was received and will be consumed as soon as a consumer is available to process it.
             $this->dispatcher->dispatch(new StartedConsumingMessage($consumedMessage));
 
-            $this->config->getConsumer()->handle(
-                $consumedMessage = $this->deserializer->deserialize($consumedMessage),
-                $this
-            );
+            if (($consumedMessage = $this->deserialize($consumedMessage)) === null) {
+                return;
+            }
+
+            $this->config->getConsumer()->handle($consumedMessage, $this);
+
             $success = true;
 
             // Dispatch an event informing that a message was consumed.
@@ -239,6 +245,26 @@ class Consumer implements MessageConsumer
         }
 
         $this->commit($message, $success);
+    }
+
+    private function deserialize(ConsumerMessage $message): ?ConsumerMessage
+    {
+        if ($this->runBeforeDeserializingCallback($message) === false) {
+            return null;
+        }
+
+        return $this->deserializer->deserialize($message);
+    }
+
+    private function runBeforeDeserializingCallback(ConsumerMessage $message): bool
+    {
+        if ($this->beforeDeserializing === null) {
+            return true;
+        }
+
+        $beforeDeserializingCallback = $this->beforeDeserializing;
+
+        return $beforeDeserializingCallback($message);
     }
 
     /**
