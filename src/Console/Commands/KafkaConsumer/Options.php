@@ -11,7 +11,7 @@ final class Options
     private ?string $consumer = null;
     private ?string $deserializer = null;
     private ?string $groupId = null;
-    private int|string|null $commit = 1;
+    private int $commit = 1;
     private ?string $dlq = null;
     private int $maxMessages = -1;
     private int $maxTime = 0;
@@ -54,9 +54,9 @@ final class Options
         return strlen((string) $this->groupId) > 1 ? $this->groupId : $this->config['groupId'];
     }
 
-    public function getCommit(): ?string
+    public function getCommit(): int
     {
-        return (string) $this->commit;
+        return $this->commit;
     }
 
     public function getDlq(): ?string
