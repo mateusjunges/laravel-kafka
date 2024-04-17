@@ -67,7 +67,7 @@ class Config
         private readonly string $broker,
         private readonly array $topics,
         private readonly ?string $securityProtocol = null,
-        private readonly int|string|null $commit = null,
+        private readonly int $commit = 1,
         private readonly ?string $groupId = null,
         private readonly ?Consumer $consumer = null,
         private readonly ?Sasl $sasl = null,
