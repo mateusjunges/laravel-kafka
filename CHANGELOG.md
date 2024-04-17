@@ -2,6 +2,12 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2024-03-12 v2.0.2](https://github.com/mateusjunges/laravel-kafka/compare/v2.0.1...v2.0.2)
+* Fix type error caused by wrong type on `commit` parameter by @panaiteandreisilviu on [#276](https://github.com/mateusjunges/laravel-kafka/pull/276)
+
+## [2024-03-13 v2.0.1](https://github.com/mateusjunges/laravel-kafka/compare/v2.0.0...v2.0.1)
+* Do not require to specify message topic twice by @mateusjunges in [#270](https://github.com/mateusjunges/laravel-kafka/pull/270)
+
 ## [2024-03-12 v2.0.0](https://github.com/mateusjunges/laravel-kafka/compare/v1.13.x...v2.0.0)
 * Allow to queue message handlers by @mateusjunges in [#177](https://github.com/mateusjunges/laravel-kafka/pull/177)
 * Add missing return types by @mateusjunges in [#189](https://github.com/mateusjunges/laravel-kafka/pull/189)
