@@ -138,6 +138,25 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         }
     }
 
+    public function testAssertPublishedOnBySpecifyingMessageObject(): void
+    {
+        $message = Message::create()->withBody(['test' => ['test']])->withHeaders(['custom' => 'header'])->withKey(Str::uuid()->toString());
+
+        $producer = $this->fake->publish()->onTopic('topic')->withMessage($message);
+
+        $producer->send();
+
+        $this->fake->assertPublished($producer->getMessage());
+
+        $this->fake->assertPublishedOn('topic', $producer->getMessage());
+
+        try {
+            $this->fake->assertPublishedOn('not-published-on-this-topic', $producer->getMessage());
+        } catch (ExpectationFailedException $exception) {
+            $this->assertThat($exception, new ExceptionMessageIsOrContains('The expected message was not published.'));
+        }
+    }
+
     public function testAssertPublishedOnTimes(): void
     {
         $producer = $this->fake->publish()

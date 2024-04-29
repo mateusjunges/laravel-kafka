@@ -45,6 +45,7 @@ class ProducerBuilderFake implements MessageProducer
 
     public function onTopic(string $topic): self
     {
+        $this->topic = $topic;
         $this->message->onTopic($topic);
 
         return $this;
@@ -156,6 +157,10 @@ class ProducerBuilderFake implements MessageProducer
     public function send(bool $shouldFlush = false): bool
     {
         $producer = $this->build();
+
+        if ($this->message->getTopicName() === null && $this->topic !== '') {
+            $this->message->onTopic($this->topic);
+        }
 
         return $producer->produce($this->getMessage());
     }
