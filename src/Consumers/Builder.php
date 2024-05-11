@@ -79,7 +79,7 @@ class Builder implements ConsumerBuilderContract
         $this->autoCommit = config('kafka.auto_commit');
         $this->options = [];
 
-        $this->deserializer = resolve(MessageDeserializer::class);
+        $this->deserializer = app(MessageDeserializer::class);
     }
 
     /** @inheritDoc */
