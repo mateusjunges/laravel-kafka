@@ -2,6 +2,9 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2024-05-11 v2.0.4](https://github.com/mateusjunges/laravel-kafka/compare/v2.0.3...v2.0.4)
+* Replace `resolve` with `app` by @SachinBahukhandi in [#280](https://github.com/mateusjunges/laravel-kafka/pull/280)
+
 ## [2024-04-29 v2.0.3](https://github.com/mateusjunges/laravel-kafka/compare/v2.0.2...v2.0.3)
 * Mirror logic to enable fake builder set the topic name for all the messages at once by @cvairlis in [#279](https://github.com/mateusjunges/laravel-kafka/pull/279)
 
