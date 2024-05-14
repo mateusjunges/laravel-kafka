@@ -141,6 +141,8 @@ class Config
             'enable.auto.commit' => config('kafka.auto_commit', true) === true ? 'true' : 'false',
             'group.id' => $this->groupId,
             'bootstrap.servers' => $this->broker,
+            'linger.ms' => 0,
+            'queue.buffering.max.ms' => 0
         ];
 
         if (isset($this->autoCommit)) {
