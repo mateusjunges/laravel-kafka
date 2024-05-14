@@ -162,7 +162,7 @@ class Builder implements MessageProducer
      *
      * @throws \Exception
      */
-    public function send(bool $shouldFlush = false): bool
+    public function send(bool $shouldFlush = true): bool
     {
         $producer = $this->build();
 

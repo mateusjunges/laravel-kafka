@@ -30,6 +30,8 @@ class Producer implements ProducerContract
     private readonly KafkaProducer $producer;
     private readonly Dispatcher $dispatcher;
 
+    private string $topic;
+
     public bool $transactionInitialized = false;
 
     public function __construct(
@@ -40,6 +42,13 @@ class Producer implements ProducerContract
             'conf' => $this->setConf($this->config->getProducerOptions()),
         ]);
         $this->dispatcher = App::make(Dispatcher::class);
+    }
+
+    public function setTopic(string $topic): self
+    {
+        $this->topic = $topic;
+
+        return $this;
     }
 
     /** Set the Kafka Configuration. */
@@ -63,7 +72,7 @@ class Producer implements ProducerContract
     {
         $this->dispatcher->dispatch(new PublishingMessage($message));
 
-        $topic = $this->producer->newTopic($message->getTopicName());
+        $topic = $this->producer->newTopic($message->getTopicName() ?? $this->topic);
 
         $message = clone $message;
 
@@ -77,7 +86,7 @@ class Producer implements ProducerContract
     }
 
     /** @inheritDoc */
-    public function produceBatch(MessageBatch $messageBatch, bool $shouldFlush = false): int
+    public function produceBatch(MessageBatch $messageBatch): int
     {
         if ($messageBatch->getTopicName() === '') {
             throw CouldNotPublishMessageBatch::invalidTopicName($messageBatch->getTopicName());
@@ -105,7 +114,7 @@ class Producer implements ProducerContract
             $produced++;
         }
 
-        $this->flush($shouldFlush);
+        $this->flush();
 
         $this->dispatcher->dispatch(new MessageBatchPublished($messageBatch, $produced));
 
@@ -142,7 +151,7 @@ class Producer implements ProducerContract
      * @throws CouldNotPublishMessage
      * @throws \Exception
      */
-    private function flush(bool $shouldFlush = true): mixed
+    public function flush(bool $shouldFlush = true): mixed
     {
         // Here we define the flush callback that is called when flush is requested by
         // the developer or when the lottery wins. Flush is not needed in after all

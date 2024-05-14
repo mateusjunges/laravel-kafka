@@ -2,8 +2,6 @@
 
 namespace Junges\Kafka\Contracts;
 
-use Junges\Kafka\Config\Sasl;
-use Junges\Kafka\Message\Message;
 use Junges\Kafka\Producers\MessageBatch;
 use Junges\Kafka\Producers\Producer;
 use Junges\Kafka\Support\Testing\Fakes\ProducerFake;

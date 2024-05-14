@@ -19,7 +19,7 @@ interface Producer
      * @throws CouldNotPublishMessage
      * @throws \Junges\Kafka\Exceptions\CouldNotPublishMessageBatch
      */
-    public function produceBatch(MessageBatch $messageBatch, bool $shouldFlush = false): int;
+    public function produceBatch(MessageBatch $messageBatch): int;
 
     /**
      * @throws \Junges\Kafka\Exceptions\Transactions\TransactionShouldBeRetriedException
@@ -41,4 +41,7 @@ interface Producer
      * @throws \Junges\Kafka\Exceptions\Transactions\TransactionShouldBeAbortedException
      */
     public function commitTransaction(int $timeoutInMilliseconds = 1000): void;
+
+    /** Used to properly shut down the producer. */
+    public function flush(bool $shouldFlush = true): mixed;
 }

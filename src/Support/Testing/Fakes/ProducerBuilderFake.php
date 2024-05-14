@@ -203,4 +203,9 @@ class ProducerBuilderFake implements MessageProducer
 
         return $this->makeProducer($conf);
     }
+
+    public function getProducer(): ProducerFake
+    {
+        return $this->build();
+    }
 }

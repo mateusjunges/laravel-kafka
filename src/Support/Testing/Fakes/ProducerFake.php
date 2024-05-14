@@ -46,7 +46,7 @@ class ProducerFake implements Producer
     }
 
     /** @throws \Junges\Kafka\Exceptions\CouldNotPublishMessageBatch */
-    public function produceBatch(MessageBatch $messageBatch, bool $shouldFlush = false): int
+    public function produceBatch(MessageBatch $messageBatch): int
     {
         if ($messageBatch->getTopicName() === '') {
             throw CouldNotPublishMessageBatch::invalidTopicName($messageBatch->getTopicName());
