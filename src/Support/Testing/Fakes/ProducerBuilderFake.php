@@ -154,7 +154,7 @@ class ProducerBuilderFake implements MessageProducer
     }
 
     /** Send the message to the producer to be published on kafka. */
-    public function send(bool $shouldFlush = false): bool
+    public function send(): bool
     {
         $producer = $this->build();
 
@@ -166,7 +166,7 @@ class ProducerBuilderFake implements MessageProducer
     }
 
     /** Send a message batch to Kafka. */
-    public function sendBatch(MessageBatch $messageBatch, bool $shouldFlush = false): int
+    public function sendBatch(MessageBatch $messageBatch): int
     {
         $producer = $this->build();
 

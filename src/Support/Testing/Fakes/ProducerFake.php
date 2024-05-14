@@ -35,7 +35,7 @@ class ProducerFake implements Producer
         return $this;
     }
 
-    public function produce(ProducerMessage $message, bool $shouldFlush = false): bool
+    public function produce(ProducerMessage $message): bool
     {
         if ($this->producerCallback !== null) {
             $callback = $this->producerCallback;
@@ -66,5 +66,10 @@ class ProducerFake implements Producer
         }
 
         return $produced;
+    }
+
+    public function flush(): int
+    {
+        return 1;
     }
 }

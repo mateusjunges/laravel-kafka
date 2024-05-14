@@ -13,7 +13,7 @@ interface Producer
      * @return mixed
      * @throws \Exception
      */
-    public function produce(ProducerMessage $message, bool $shouldFlush = false): bool;
+    public function produce(ProducerMessage $message): bool;
 
     /**
      * @throws CouldNotPublishMessage
@@ -43,5 +43,5 @@ interface Producer
     public function commitTransaction(int $timeoutInMilliseconds = 1000): void;
 
     /** Used to properly shut down the producer. */
-    public function flush(bool $shouldFlush = true): mixed;
+    public function flush(): mixed;
 }

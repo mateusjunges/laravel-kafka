@@ -274,7 +274,7 @@ final class KafkaTest extends LaravelKafkaTestCase
 
         $this->app->bind(Producer::class, fn () => $mockedProducer);
 
-        Kafka::publish()->onTopic('test')->withBodyKey('foo', 'bar')->send(shouldFlush: true);
+        Kafka::publish()->onTopic('test')->withBodyKey('foo', 'bar')->send();
 
         Event::assertDispatched(CouldNotPublishMessageEvent::class, function (CouldNotPublishMessageEvent $event) use ($expectedMessage) {
             return $event->throwable instanceof CouldNotPublishMessage
@@ -314,7 +314,7 @@ final class KafkaTest extends LaravelKafkaTestCase
 
         Event::fake();
 
-        Kafka::publish()->withBodyKey('foo', 'bar')->onTopic('test')->sendBatch($messageBatch, shouldFlush: true);
+        Kafka::publish()->withBodyKey('foo', 'bar')->onTopic('test')->sendBatch($messageBatch);
 
         Event::assertDispatched(PublishingMessageBatch::class, function (PublishingMessageBatch $event) use ($messageBatch) {
             return $event->batch === $messageBatch;
