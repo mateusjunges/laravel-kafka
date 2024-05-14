@@ -158,8 +158,6 @@ class Config
             'compression.codec' => config('kafka.compression', 'snappy'),
             'bootstrap.servers' => $this->broker,
             'metadata.broker.list' => $this->broker,
-            'linger.ms' => 0,
-            'queue.buffering.max.ms' => 0,
         ];
 
         return collect(array_merge($config, $this->customOptions, $this->getSaslOptions()))

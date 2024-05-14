@@ -2,8 +2,6 @@
 
 namespace Junges\Kafka\Contracts;
 
-use Junges\Kafka\Config\Sasl;
-use Junges\Kafka\Message\Message;
 use Junges\Kafka\Producers\MessageBatch;
 use Junges\Kafka\Producers\Producer;
 use Junges\Kafka\Support\Testing\Fakes\ProducerFake;
@@ -59,7 +57,7 @@ interface MessageProducer extends InteractsWithConfigCallbacks
      *
      * @throws \Exception
      */
-    public function send(bool $shouldFlush = false): bool;
+    public function send(): bool;
 
     public function build(): Producer|ProducerFake;
 
@@ -68,5 +66,5 @@ interface MessageProducer extends InteractsWithConfigCallbacks
      *
      * @throws \Junges\Kafka\Exceptions\CouldNotPublishMessage
      */
-    public function sendBatch(MessageBatch $messageBatch, bool $shouldFlush = false): int;
+    public function sendBatch(MessageBatch $messageBatch): int;
 }

@@ -59,7 +59,7 @@ class Producer implements ProducerContract
     }
 
     /** @inheritDoc */
-    public function produce(ProducerMessage $message, bool $shouldFlush = false): bool
+    public function produce(ProducerMessage $message): bool
     {
         $this->dispatcher->dispatch(new PublishingMessage($message));
 
@@ -73,11 +73,11 @@ class Producer implements ProducerContract
 
         $this->producer->poll(0);
 
-        return $this->flush($shouldFlush);
+        return $this->flush();
     }
 
     /** @inheritDoc */
-    public function produceBatch(MessageBatch $messageBatch, bool $shouldFlush = false): int
+    public function produceBatch(MessageBatch $messageBatch): int
     {
         if ($messageBatch->getTopicName() === '') {
             throw CouldNotPublishMessageBatch::invalidTopicName($messageBatch->getTopicName());
@@ -105,7 +105,7 @@ class Producer implements ProducerContract
             $produced++;
         }
 
-        $this->flush($shouldFlush);
+        $this->flush();
 
         $this->dispatcher->dispatch(new MessageBatchPublished($messageBatch, $produced));
 
@@ -142,11 +142,11 @@ class Producer implements ProducerContract
      * @throws CouldNotPublishMessage
      * @throws \Exception
      */
-    private function flush(bool $shouldFlush = true): mixed
+    public function flush(): mixed
     {
-        // Here we define the flush callback that is called when flush is requested by
-        // the developer or when the lottery wins. Flush is not needed in after all
-        // messages, but is recommended to be called once in a while on kafka.
+        // Here we define the flush callback that is called shutting down a consumer.
+        // This is called after every single message sent using Producer::send or
+        // after sending all messages with Producer::sendBatch
         $flush = function () {
             $sleepMilliseconds = config('kafka.flush_retry_sleep_in_ms', 100);
 
@@ -173,13 +173,6 @@ class Producer implements ProducerContract
             }
         };
 
-        if ($shouldFlush) {
-            return $flush();
-        }
-
-        return Lottery::odds(1, 200)
-            ->winner($flush)
-            ->loser(fn () => true)
-            ->choose();
+        return $flush();
     }
 }
