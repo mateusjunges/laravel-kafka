@@ -30,8 +30,6 @@ class Producer implements ProducerContract
     private readonly KafkaProducer $producer;
     private readonly Dispatcher $dispatcher;
 
-    private string $topic;
-
     public bool $transactionInitialized = false;
 
     public function __construct(
@@ -42,13 +40,6 @@ class Producer implements ProducerContract
             'conf' => $this->setConf($this->config->getProducerOptions()),
         ]);
         $this->dispatcher = App::make(Dispatcher::class);
-    }
-
-    public function setTopic(string $topic): self
-    {
-        $this->topic = $topic;
-
-        return $this;
     }
 
     /** Set the Kafka Configuration. */
@@ -72,7 +63,7 @@ class Producer implements ProducerContract
     {
         $this->dispatcher->dispatch(new PublishingMessage($message));
 
-        $topic = $this->producer->newTopic($message->getTopicName() ?? $this->topic);
+        $topic = $this->producer->newTopic($message->getTopicName());
 
         $message = clone $message;
 
