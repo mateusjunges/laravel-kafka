@@ -4,7 +4,6 @@ namespace Junges\Kafka\Producers;
 
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Lottery;
 use Junges\Kafka\Concerns\ManagesTransactions;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\MessageSerializer;
