@@ -33,8 +33,8 @@ public function test_post_is_marked_as_published()
     
     // Now, instantiate your consumer and start consuming messages. It will consume only the messages
     // specified in `shouldReceiveMessages` method:
-    $consumer = Kafka::consumer(['mark-post-as-published-topic'])
-        ->withHandler(function (KafkaConsumerMessage $message) use (&$posts) {
+    $consumer = \Junges\Kafka\Facades\Kafka::createConsumer(['mark-post-as-published-topic'])
+        ->withHandler(function (\Junges\Kafka\Contracts\KafkaConsumerMessage $message) use (&$posts) {
             $post = Post::find($message->getBody()['post_id']);
     
             $post->update(['published_at' => now()->format("Y-m-d H:i:s")]);
