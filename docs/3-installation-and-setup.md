@@ -15,7 +15,9 @@ You need to publish the configuration file using
 php artisan vendor:publish --tag=laravel-kafka-config
 ```
 
-[[announcement-placeholder]]
+```+parse
+<x-pairing-session-announcement/>
+```
 
 This is the default content of the configuration file:
 
