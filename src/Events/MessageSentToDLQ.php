@@ -2,14 +2,14 @@
 
 namespace Junges\Kafka\Events;
 
-final class MessageSentToDLQ
+final readonly class MessageSentToDLQ
 {
     public function __construct(
-        public readonly string $payload,
-        public readonly ?string $key,
-        public readonly array $headers,
-        public readonly ?\Throwable $throwable,
-        public readonly ?string $messageIdentifier,
+        public ?string $payload,
+        public ?string $key,
+        public array $headers,
+        public ?\Throwable $throwable,
+        public ?string $messageIdentifier,
     ) {
     }
 
