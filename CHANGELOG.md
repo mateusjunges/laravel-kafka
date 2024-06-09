@@ -2,6 +2,9 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2024-05-14 v2.1.1](https://github.com/mateusjunges/laravel-kafka/compare/v2.1.0...v2.1.1)
+* Allow null payloads when sending the message to DLQ
+
 ## [2024-05-14 v2.1.0](https://github.com/mateusjunges/laravel-kafka/compare/v2.0.4...v2.1.0)
 * Properly shut down the producer for single messages. Improve docs for sending single and multiple messages by @mateusjunges on [#283](https://github.com/mateusjunges/laravel-kafka/pull/283)
 
