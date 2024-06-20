@@ -18,7 +18,7 @@ If you think this package helped you in any way, you can sponsor me on GitHub!
 [![Sponsor Me](art/sponsor.png)](https://github.com/sponsors/mateusjunges)
 
 # Documentation
-You can [find the documentations for this package here](https://junges.dev/documentation/laravel-kafka/v1.13/1-introduction)
+You can [find the documentations for this package here](https://junges.dev/documentation/laravel-kafka/v2.0/1-introduction)
 
 # Testing
 Run `composer test` to test this package.
