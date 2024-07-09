@@ -434,7 +434,10 @@ class Consumer implements MessageConsumer
         if (! in_array($message->err, self::IGNORABLE_CONSUMER_ERRORS, true)) {
             $this->logger->error($message, null, 'CONSUMER');
 
-            throw new ConsumerException($message->errstr(), $message->err);
+            $exception = new ConsumerException($message->errstr(), $message->err);
+            $exception->setKafkaMessage($message);
+
+            throw $exception;
         }
     }
 
