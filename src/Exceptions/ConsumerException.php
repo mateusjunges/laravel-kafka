@@ -6,20 +6,20 @@ use RdKafka\Message;
 
 class ConsumerException extends LaravelKafkaException
 {
-    protected Message $message;
+    protected Message $kafkaMessage;
 
     public static function dlqCanNotBeSetWithoutSubscribingToAnyTopics(): self
     {
         return new static("You must subscribe to a kafka topic before specifying the DLQ.");
     }
 
-    public function setKafkaMessage(Message $message)
+    public function setKafkaMessage(Message $kafkaMessage)
     {
-        $this->message = $message;
+        $this->kafkaMessage = $kafkaMessage;
     }
 
     public function getKafkaMessage(): Message
     {
-        return $this->message;
+        return $this->kafkaMessage;
     }
 }
