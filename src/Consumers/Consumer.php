@@ -480,6 +480,6 @@ class Consumer implements MessageConsumer
 
     protected function getLastRestart(): int
     {
-        return Cache::driver(config('kafka.cache_driver'))->get('laravel-kafka:consumer:restart', 0);
+        return (int) Cache::driver(config('kafka.cache_driver'))->get('laravel-kafka:consumer:restart', 0);
     }
 }
