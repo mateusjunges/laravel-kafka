@@ -15,7 +15,7 @@ trait HandleConsumedMessage
 {
     private function handleConsumedMessage(ConsumerMessage $message, Handler|Closure $handler, ?MessageConsumer $consumer = null, array $middlewares = []): void
     {
-        $middlewares = array_map($this->wrapMiddleware(...), $middlewares);
+        $middlewares = array_map(fn ($middleware) => $this->wrapMiddleware($middleware, $consumer), $middlewares);
         $middlewares = array_reverse($middlewares);
 
         foreach ($middlewares as $middleware) {
