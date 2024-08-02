@@ -2,6 +2,12 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+##[2024-08-02 v2.1.3](https://github.com/mateusjunges/laravel-kafka/compare/v2.1.2...v2.1.3)
+* Attempt to fix invalid group id generation by @mateusjunges in [#305](https://github.com/mateusjunges/laravel-kafka/pull/305)
+
+##[2024-07-19 v2.1.2](https://github.com/mateusjunges/laravel-kafka/compare/v2.1.1...v2.1.2)
+* Add int casting to getLastRestart method by @glioympas in [#298](https://github.com/mateusjunges/laravel-kafka/pull/298)
+
 ## [2024-05-14 v2.1.1](https://github.com/mateusjunges/laravel-kafka/compare/v2.1.0...v2.1.1)
 * Allow null payloads when sending the message to DLQ
 
