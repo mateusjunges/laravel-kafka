@@ -70,9 +70,7 @@ class CustomCommitterFactory implements CommitterFactory
     public function make(KafkaConsumer $kafkaConsumer, Config $config): CommitterContract
     {
         return new RetryableCommitter(
-            new SuccessCommitter(
-                $kafkaConsumer
-            ),
+            new SuccessCommitter($kafkaConsumer),
             new NativeSleeper(),
             $config->getMaxCommitRetries()
         );
