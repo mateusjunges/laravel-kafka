@@ -11,6 +11,7 @@ use RdKafka\Message;
 class RetryableCommitter implements Committer
 {
     private const RETRYABLE_ERRORS = [
+        RD_KAFKA_RESP_ERR_ILLEGAL_GENERATION,
         RD_KAFKA_RESP_ERR_REQUEST_TIMED_OUT,
     ];
     private readonly Retryable $retryable;
