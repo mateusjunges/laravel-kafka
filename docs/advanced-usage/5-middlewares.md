@@ -7,7 +7,7 @@ Middlewares provides a convenient way to filter and inspecting your Kafka messag
 
 ```php
 $consumer = \Junges\Kafka\Facades\Kafka::consumer()
-    ->withMiddleware(function($message, callable $next) {
+    ->withMiddleware(function(\Junges\Kafka\Message\ConsumedMessage $message, callable $next) {
         // Perform some work here
         return $next($message);
     });

@@ -8,7 +8,11 @@ By default, the committers provided by the `DefaultCommitterFactory` are provide
 To set a custom committer on your consumer, add the committer via a factory that implements the `CommitterFactory` interface:
 
 ```php
-use Junges\Kafka\Config\Config;use Junges\Kafka\Contracts\Committer;use Junges\Kafka\Contracts\CommitterFactory;use RdKafka\KafkaConsumer;use RdKafka\Message;
+use Junges\Kafka\Config\Config;
+use Junges\Kafka\Contracts\Committer;
+use Junges\Kafka\Contracts\CommitterFactory;
+use RdKafka\KafkaConsumer;
+use RdKafka\Message;
 
 class MyCommitter implements Committer
 {
