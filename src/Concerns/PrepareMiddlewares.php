@@ -18,6 +18,6 @@ trait PrepareMiddlewares
             default => throw new \LogicException('Invalid middleware.')
         };
 
-        return static fn (callable $handler) => static fn ($message) => $middleware($message, fn($message) => $handler($message, $consumer));
+        return static fn (callable $handler) => static fn ($message) => $middleware($message, fn ($message) => $handler($message, $consumer));
     }
 }
