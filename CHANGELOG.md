@@ -2,6 +2,9 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+##[2024-08-05 v2.1.4](https://github.com/mateusjunges/laravel-kafka/compare/v2.1.3...v2.1.4)
+* Fix consumer middlewares not working as expected when using the `$consumer` parameter in message handlers by @sash in [#304](https://github.com/mateusjunges/laravel-kafka/pull/304)
+
 ##[2024-08-02 v2.1.3](https://github.com/mateusjunges/laravel-kafka/compare/v2.1.2...v2.1.3)
 * Attempt to fix invalid group id generation by @mateusjunges in [#305](https://github.com/mateusjunges/laravel-kafka/pull/305)
 
