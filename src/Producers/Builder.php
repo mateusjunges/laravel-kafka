@@ -24,18 +24,16 @@ class Builder implements MessageProducer
     private readonly string $broker;
     private bool $isTransactionProducer = false;
     private int $maxTransactionRetryAttempts = 5;
-    private bool $asyncProducer = false;
 
     public function __construct(
         ?string $broker = null,
-        bool $asyncProducer = false,
+        private readonly bool $asyncProducer = false,
     ) {
         /** @var ProducerMessage $message */
         $message = app(ProducerMessage::class);
         $this->message = $message::create();
         $this->serializer = app(MessageSerializer::class);
         $this->broker = $broker ?? config('kafka.brokers');
-        $this->asyncProducer = $asyncProducer;
     }
 
     /** Return a new Junges\Commit\ProducerBuilder instance. */
