@@ -18,21 +18,24 @@ class Builder implements MessageProducer
     private array $options = [];
     private ProducerMessage $message;
     private MessageSerializer $serializer;
-    private Producer $producer;
+    private ?Producer $producer = null;
     private string $topic = '';
     private ?Sasl $saslConfig = null;
     private readonly string $broker;
     private bool $isTransactionProducer = false;
     private int $maxTransactionRetryAttempts = 5;
+    private bool $asyncProducer = false;
 
     public function __construct(
         ?string $broker = null,
+        bool $asyncProducer = false,
     ) {
         /** @var ProducerMessage $message */
         $message = app(ProducerMessage::class);
         $this->message = $message::create();
         $this->serializer = app(MessageSerializer::class);
         $this->broker = $broker ?? config('kafka.brokers');
+        $this->asyncProducer = $asyncProducer;
     }
 
     /** Return a new Junges\Commit\ProducerBuilder instance. */
@@ -191,6 +194,9 @@ class Builder implements MessageProducer
 
     public function build(): Producer
     {
+        if ($this->asyncProducer && $this->producer){
+            return $this->producer;
+        }
         $conf = new Config(
             broker: $this->broker,
             topics: [],
@@ -200,9 +206,14 @@ class Builder implements MessageProducer
             callbacks: $this->callbacks,
         );
 
-        return app(Producer::class, [
+        $res = app(Producer::class, [
             'config' => $conf,
             'serializer' => $this->serializer,
+            'async' => $this->asyncProducer,
         ]);
+        if ($this->asyncProducer) {
+            $this->producer = $res;
+        }
+        return $res;
     }
 }
