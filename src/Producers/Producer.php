@@ -40,6 +40,7 @@ class Producer implements ProducerContract
             'conf' => $this->setConf($this->config->getProducerOptions()),
         ]);
         $this->dispatcher = App::make(Dispatcher::class);
+
         if ($this->async) {
             app()->terminating(function () {
                 $this->flush();
@@ -114,7 +115,7 @@ class Producer implements ProducerContract
             $produced++;
         }
 
-        if (!$this->async) {
+        if (! $this->async) {
             $this->flush();
         }
 

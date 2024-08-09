@@ -195,6 +195,7 @@ class Builder implements MessageProducer
         if ($this->asyncProducer && $this->producer){
             return $this->producer;
         }
+
         $conf = new Config(
             broker: $this->broker,
             topics: [],
@@ -204,14 +205,16 @@ class Builder implements MessageProducer
             callbacks: $this->callbacks,
         );
 
-        $res = app(Producer::class, [
+        $producer = app(Producer::class, [
             'config' => $conf,
             'serializer' => $this->serializer,
             'async' => $this->asyncProducer,
         ]);
+
         if ($this->asyncProducer) {
-            $this->producer = $res;
+            $this->producer = $producer;
         }
-        return $res;
+
+        return $producer;
     }
 }
