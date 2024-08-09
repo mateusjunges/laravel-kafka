@@ -14,7 +14,7 @@ Kafka::publish('broker')->onTopic('topic-name')
 This method returns a `ProducerBuilder` instance, which contains a few methods to configure your kafka producer. 
 The following lines describes these methods.
 
-If you are going to produce a lot of messages to different topics, please use the `asyncPublish` method on the `Junges\Kafka\Facades\Kafka` class
+If you are going to produce a lot of messages to different topics, please use the `asyncPublish` method on the `Junges\Kafka\Facades\Kafka` class:
 
 ```php
 use Junges\Kafka\Facades\Kafka;
