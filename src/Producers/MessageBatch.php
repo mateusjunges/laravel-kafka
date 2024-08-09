@@ -3,6 +3,7 @@
 namespace Junges\Kafka\Producers;
 
 use Illuminate\Support\Str;
+use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\Message;
 use SplDoublyLinkedList;
 
@@ -10,6 +11,7 @@ use SplDoublyLinkedList;
  * Class stores multiple messages to produce them to kafka topic as a batch
  *
  * @see MessageProducer::sendBatch
+ * @deprecated Please use {@see Kafka::asyncPublish()} instead of batch messaging.
  */
 class MessageBatch
 {

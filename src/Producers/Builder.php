@@ -178,6 +178,7 @@ class Builder implements MessageProducer
      * Send a message batch to Kafka.
      *
      * @throws \Junges\Kafka\Exceptions\CouldNotPublishMessage
+     * @deprecated Please use {@see Kafka::asyncPublish()} instead of batch messages.
      */
     public function sendBatch(MessageBatch $messageBatch): int
     {

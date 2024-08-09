@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Contracts;
 
+use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Producers\MessageBatch;
 use Junges\Kafka\Producers\Producer;
 use Junges\Kafka\Support\Testing\Fakes\ProducerFake;
@@ -65,6 +66,7 @@ interface MessageProducer extends InteractsWithConfigCallbacks
      * Send a message batch to Kafka.
      *
      * @throws \Junges\Kafka\Exceptions\CouldNotPublishMessage
+     * @deprecated Please use {@see Kafka::asyncPublish()} instead of batch messages.
      */
     public function sendBatch(MessageBatch $messageBatch): int;
 }

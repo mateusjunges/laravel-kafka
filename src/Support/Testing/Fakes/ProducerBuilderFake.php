@@ -165,7 +165,10 @@ class ProducerBuilderFake implements MessageProducer
         return $producer->produce($this->getMessage());
     }
 
-    /** Send a message batch to Kafka. */
+    /**
+     * Send a message batch to Kafka.
+     * @deprecated Please use {@see Kafka::asyncPublish()} instead of batch messages.
+     */
     public function sendBatch(MessageBatch $messageBatch): int
     {
         $producer = $this->build();

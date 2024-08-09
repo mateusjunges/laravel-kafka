@@ -86,7 +86,10 @@ class Producer implements ProducerContract
         return $this->flush();
     }
 
-    /** @inheritDoc */
+    /**
+     * @inheritDoc
+     * @deprecated This will be removed in the future. Please use asyncPublish instead of batch messages.
+     */
     public function produceBatch(MessageBatch $messageBatch): int
     {
         if ($messageBatch->getTopicName() === '') {
