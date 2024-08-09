@@ -3,6 +3,8 @@ title: Producing message batch to kafka
 weight: 6
 ---
 
+> This is deprecated. Please use [async producers](1-producing-messages.md) instead of batch messaging.
+
 You can publish multiple messages at the same time by using message batches.
 To use a message batch, you must create a `Junges\Kafka\Producers\MessageBatch` instance.
 Then create as many messages as you want and push them to the `MesageBatch` instance.
