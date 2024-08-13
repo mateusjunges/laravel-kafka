@@ -31,7 +31,11 @@ class Factory implements Manager
         );
     }
 
-    /** Creates a new ProducerBuilder instance, optionally setting the brokers. The producer will be flushed only when the application terminates, and doing SEND does not mean that the message was flushed! */
+    /**
+     * Creates a new ProducerBuilder instance, optionally setting the brokers.
+     * The producer will be flushed only when the application terminates,
+     * and doing SEND does not mean that the message was flushed!
+     */
     public function asyncPublish(string $broker = null): MessageProducer
     {
         if ($this->shouldFake) {
