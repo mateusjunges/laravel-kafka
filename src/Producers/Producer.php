@@ -92,11 +92,7 @@ class Producer implements ProducerContract
      */
     public function produceBatch(MessageBatch $messageBatch): int
     {
-        if ($messageBatch->getTopicName() === '') {
-            throw CouldNotPublishMessageBatch::invalidTopicName($messageBatch->getTopicName());
-        }
-
-        $topic = $this->producer->newTopic($messageBatch->getTopicName());
+        $this->assertTopicWasSetForAllBatchMessages($messageBatch);
 
         $messagesIterator = $messageBatch->getMessages();
 
@@ -108,7 +104,13 @@ class Producer implements ProducerContract
 
         foreach ($messagesIterator as $message) {
             assert($message instanceof Message);
-            $message->onTopic($messageBatch->getTopicName());
+
+            if ($message->getTopicName() === null) {
+                $message->onTopic($messageBatch->getTopicName());
+            }
+
+            $topic = $this->producer->newTopic($message->getTopicName());
+
             $message = $this->serializer->serialize($message);
 
             $this->produceMessageBatch($topic, $message, $messageBatch->getBatchUuid());
@@ -125,6 +127,30 @@ class Producer implements ProducerContract
         $this->dispatcher->dispatch(new MessageBatchPublished($messageBatch, $produced));
 
         return $produced;
+    }
+
+    /** @throws CouldNotPublishMessageBatch */
+    private function assertTopicWasSetForAllBatchMessages(MessageBatch $batch): void
+    {
+        // If the message batch has a topic set, we can return here because
+        // we can use that topic as a fallback in case not all batch
+        // messages have a specific topic to be used.
+        if ($batch->getTopicName() !== '') {
+            return;
+        }
+
+        $messagesIterator = $batch->getMessages();
+
+        foreach ($messagesIterator as $message) {
+            assert($message instanceof Message);
+
+            // If the batch does not have a topic defined, we check if the message
+            // itself has specified a topic in which it should be published.
+            // If it does not, then we throw an exception.
+            if ($message->getTopicName() === '' || $message->getTopicName() === null) {
+                throw CouldNotPublishMessageBatch::invalidTopicName($message->getTopicName() ?? '');
+            }
+        }
     }
 
     private function produceMessage(ProducerTopic $topic, ProducerMessage $message): void
