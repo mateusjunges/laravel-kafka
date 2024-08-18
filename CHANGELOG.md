@@ -2,6 +2,9 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+##[2024-08-17 v2.1.5](https://github.com/mateusjunges/laravel-kafka/compare/v2.1.4...v2.1.5)
+* Do not override topic when publishing batch messages by @mateusjunges in [#313](https://github.com/mateusjunges/laravel-kafka/pull/313)
+
 ##[2024-08-05 v2.1.4](https://github.com/mateusjunges/laravel-kafka/compare/v2.1.3...v2.1.4)
 * Fix consumer middlewares not working as expected when using the `$consumer` parameter in message handlers by @sash in [#304](https://github.com/mateusjunges/laravel-kafka/pull/304)
 
