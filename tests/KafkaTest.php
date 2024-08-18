@@ -70,8 +70,7 @@ final class KafkaTest extends LaravelKafkaTestCase
             ->getMock();
 
         $mockedProducer = m::mock(Producer::class)
-            ->shouldReceive('newTopic')
-            ->andReturn($mockedProducerTopic)
+            ->shouldReceive('newTopic')->with('test')->twice()->andReturn($mockedProducerTopic)
             ->shouldReceive('poll')->twice()
             ->shouldReceive('flush')->once()
             ->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
