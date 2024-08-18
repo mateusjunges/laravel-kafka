@@ -2,6 +2,10 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+##[2024-08-18 v2.2.0](https://github.com/mateusjunges/laravel-kafka/compare/v2.1.5...v2.2.0)
+* Introduce async publishing by @mateusjunges and @sash in [#312](https://github.com/mateusjunges/laravel-kafka/pull/312)
+* Allow to reset the Kafka Manager by @mateusjunges in [#314](https://github.com/mateusjunges/laravel-kafka/pull/314)
+
 ##[2024-08-17 v2.1.5](https://github.com/mateusjunges/laravel-kafka/compare/v2.1.4...v2.1.5)
 * Do not override topic when publishing batch messages by @mateusjunges in [#313](https://github.com/mateusjunges/laravel-kafka/pull/313)
 
