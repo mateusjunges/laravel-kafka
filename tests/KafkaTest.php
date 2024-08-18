@@ -13,12 +13,14 @@ use Junges\Kafka\Events\MessageBatchPublished;
 use Junges\Kafka\Events\MessagePublished;
 use Junges\Kafka\Events\PublishingMessageBatch;
 use Junges\Kafka\Exceptions\CouldNotPublishMessage;
+use Junges\Kafka\Exceptions\CouldNotPublishMessageBatch;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\Message;
 use Junges\Kafka\Message\Serializers\JsonSerializer;
 use Junges\Kafka\Producers\Builder as ProducerBuilder;
 use Junges\Kafka\Producers\MessageBatch;
 use Mockery as m;
+use PHPUnit\Framework\Attributes\Test;
 use RdKafka\Producer;
 use RdKafka\ProducerTopic;
 
@@ -285,10 +287,10 @@ final class KafkaTest extends LaravelKafkaTestCase
 
     public function testSendMessageBatch(): void
     {
-        $messageBatch = (new MessageBatch())->onTopic('test');
-        $messageBatch->push(new Message('test'));
-        $messageBatch->push(new Message('test'));
-        $messageBatch->push(new Message('test'));
+        $messageBatch = new MessageBatch;
+        $messageBatch->push(new Message('test_1'));
+        $messageBatch->push(new Message('test_2'));
+        $messageBatch->push(new Message('test_3'));
 
         $expectedUuid = $messageBatch->getBatchUuid();
 
@@ -299,8 +301,9 @@ final class KafkaTest extends LaravelKafkaTestCase
             ->getMock();
 
         $mockedProducer = m::mock(Producer::class)
-            ->shouldReceive('newTopic')
-            ->andReturn($mockedProducerTopic)
+            ->shouldReceive('newTopic')->with('test_1')->once()->andReturn($mockedProducerTopic)
+            ->shouldReceive('newTopic')->with('test_2')->once()->andReturn($mockedProducerTopic)
+            ->shouldReceive('newTopic')->with('test_3')->once()->andReturn($mockedProducerTopic)
             ->shouldReceive('poll')
             ->times($messageBatch->getMessages()->count())
             ->shouldReceive('flush')
@@ -314,7 +317,7 @@ final class KafkaTest extends LaravelKafkaTestCase
 
         Event::fake();
 
-        Kafka::publish()->withBodyKey('foo', 'bar')->onTopic('test')->sendBatch($messageBatch);
+        Kafka::publish()->withBodyKey('foo', 'bar')->sendBatch($messageBatch);
 
         Event::assertDispatched(PublishingMessageBatch::class, function (PublishingMessageBatch $event) use ($messageBatch) {
             return $event->batch === $messageBatch;
@@ -327,6 +330,20 @@ final class KafkaTest extends LaravelKafkaTestCase
             return $event->batch === $messageBatch
                 && $event->publishedCount === 3;
         });
+    }
+
+    #[Test]
+    public function it_throws_an_exception_if_there_is_a_message_in_batch_with_no_topic_specified(): void
+    {
+        $messageBatch = new MessageBatch;
+        $messageBatch->push(new Message('test_1'));
+        $messageBatch->push(new Message('test_2'));
+        $messageBatch->push(new Message);
+
+        $this->expectException(CouldNotPublishMessageBatch::class);
+        $this->expectExceptionMessage("The provided topic name [''] is invalid for the message batch. Try again with a valid topic name.");
+
+        Kafka::publish()->sendBatch($messageBatch);
     }
 
     public function testMacro(): void

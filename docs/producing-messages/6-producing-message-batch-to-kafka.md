@@ -20,7 +20,8 @@ use Junges\Kafka\Message\Message;
 $message = new Message(
     headers: ['header-key' => 'header-value'],
     body: ['key' => 'value'],
-    key: 'kafka key here'  
+    key: 'kafka key here',
+    topicName: 'my_topic'
 )
 
 $messageBatch = new MessageBatch();
@@ -36,3 +37,8 @@ $producer = Kafka::publish('broker')
 
 $producer->sendBatch($messageBatch);
 ```
+
+When producing batch messages, you can specify the topic for each message that you want to publish. If you want to publish all messages in the same topic,
+you can use the `onTopic` method on the `MessageBatch` class to specify the topic once for all messages. Please note that
+if a message within the batch specifies a topic, we will use that topic to publish the message, instead of the topic defined on the 
+batch itself.
