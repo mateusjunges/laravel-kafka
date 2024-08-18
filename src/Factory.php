@@ -33,6 +33,12 @@ class Factory implements Manager
         );
     }
 
+    /** Returns a fresh factory instance. */
+    public function fresh(): self
+    {
+        return new self;
+    }
+
     /**
      * Creates a new ProducerBuilder instance, optionally setting the brokers.
      * The producer will be flushed only when the application terminates,

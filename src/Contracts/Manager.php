@@ -4,6 +4,9 @@ namespace Junges\Kafka\Contracts;
 
 interface Manager
 {
+    /** Returns a new fresh instance of the Manager. */
+    public function fresh(): self;
+
     /** Creates a new ProducerBuilder instance, setting brokers and topic. */
     public function publish(?string $broker = null): MessageProducer;
 
