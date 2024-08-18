@@ -37,7 +37,7 @@ class Producer implements ProducerContract
         private readonly bool $async = false,
     ) {
         $this->producer = app(KafkaProducer::class, [
-            'conf' => $this->setConf($this->config->getProducerOptions()),
+            'conf' => $this->getConf($this->config->getProducerOptions()),
         ]);
         $this->dispatcher = App::make(Dispatcher::class);
 
@@ -49,7 +49,7 @@ class Producer implements ProducerContract
     }
 
     /** Set the Kafka Configuration. */
-    private function setConf(array $options): Conf
+    private function getConf(array $options): Conf
     {
         $conf = new Conf();
 
