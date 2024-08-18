@@ -60,6 +60,54 @@ final class KafkaTest extends LaravelKafkaTestCase
         $this->assertTrue($test);
     }
 
+    #[Test]
+    public function it_can_publish_messages_asynchronously(): void
+    {
+        Event::fake();
+        $mockedProducerTopic = m::mock(ProducerTopic::class)
+            ->shouldReceive('producev')->twice()
+            ->andReturn(m::self())
+            ->getMock();
+
+        $mockedProducer = m::mock(Producer::class)
+            ->shouldReceive('newTopic')->with('test')->twice()->andReturn($mockedProducerTopic)
+            ->shouldReceive('poll')->twice()
+            ->shouldReceive('flush')->once()
+            ->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
+            ->getMock();
+
+        $this->app->bind(Producer::class, fn () => $mockedProducer);
+
+        $test1 = Kafka::asyncPublish()
+            ->onTopic('test')
+            ->withConfigOptions([
+                'metadata.broker.list' => 'broker',
+            ])
+            ->withKafkaKey(Str::uuid()->toString())
+            ->withBodyKey('test', ['test'])
+            ->withHeaders(['custom' => 'header'])
+            ->withDebugEnabled()
+            ->send();
+
+        $test2 = Kafka::asyncPublish()
+            ->onTopic('test')
+            ->withConfigOptions([
+                'metadata.broker.list' => 'broker',
+            ])
+            ->withKafkaKey(Str::uuid()->toString())
+            ->withBodyKey('test', ['test'])
+            ->withHeaders(['custom' => 'header'])
+            ->withDebugEnabled()
+            ->send();
+
+        $this->app->terminate();
+
+        Event::assertDispatched(MessagePublished::class);
+
+        $this->assertTrue($test1);
+        $this->assertTrue($test2);
+    }
+
     public function testICanSwitchSerializersOnTheFly(): void
     {
         $mockedProducerTopic = m::mock(ProducerTopic::class)

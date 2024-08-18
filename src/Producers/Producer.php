@@ -34,11 +34,18 @@ class Producer implements ProducerContract
     public function __construct(
         private readonly Config $config,
         private readonly MessageSerializer $serializer,
+        private readonly bool $async = false,
     ) {
         $this->producer = app(KafkaProducer::class, [
             'conf' => $this->getConf($this->config->getProducerOptions()),
         ]);
         $this->dispatcher = App::make(Dispatcher::class);
+
+        if ($this->async) {
+            app()->terminating(function () {
+                $this->flush();
+            });
+        }
     }
 
     /** Set the Kafka Configuration. */
@@ -72,10 +79,17 @@ class Producer implements ProducerContract
 
         $this->producer->poll(0);
 
+        if ($this->async) {
+            return true;
+        }
+
         return $this->flush();
     }
 
-    /** @inheritDoc */
+    /**
+     * @inheritDoc
+     * @deprecated This will be removed in the future. Please use asyncPublish instead of batch messages.
+     */
     public function produceBatch(MessageBatch $messageBatch): int
     {
         $this->assertTopicWasSetForAllBatchMessages($messageBatch);
@@ -106,7 +120,9 @@ class Producer implements ProducerContract
             $produced++;
         }
 
-        $this->flush();
+        if (! $this->async) {
+            $this->flush();
+        }
 
         $this->dispatcher->dispatch(new MessageBatchPublished($messageBatch, $produced));
 

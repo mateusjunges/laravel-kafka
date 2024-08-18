@@ -6,3 +6,4 @@ node_modules/
 tests/reports
 .php-cs-fixer.cache
 composer.lock
+.phpunit.cache/

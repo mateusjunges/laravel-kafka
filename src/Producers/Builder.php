@@ -18,7 +18,7 @@ class Builder implements MessageProducer
     private array $options = [];
     private ProducerMessage $message;
     private MessageSerializer $serializer;
-    private Producer $producer;
+    private ?Producer $producer = null;
     private string $topic = '';
     private ?Sasl $saslConfig = null;
     private readonly string $broker;
@@ -27,6 +27,7 @@ class Builder implements MessageProducer
 
     public function __construct(
         ?string $broker = null,
+        private readonly bool $asyncProducer = false,
     ) {
         /** @var ProducerMessage $message */
         $message = app(ProducerMessage::class);
@@ -177,6 +178,7 @@ class Builder implements MessageProducer
      * Send a message batch to Kafka.
      *
      * @throws \Junges\Kafka\Exceptions\CouldNotPublishMessage
+     * @deprecated Please use {@see Kafka::asyncPublish()} instead of batch messages.
      */
     public function sendBatch(MessageBatch $messageBatch): int
     {
@@ -191,6 +193,10 @@ class Builder implements MessageProducer
 
     public function build(): Producer
     {
+        if ($this->asyncProducer && $this->producer) {
+            return $this->producer;
+        }
+
         $conf = new Config(
             broker: $this->broker,
             topics: [],
@@ -200,9 +206,16 @@ class Builder implements MessageProducer
             callbacks: $this->callbacks,
         );
 
-        return app(Producer::class, [
+        $producer = app(Producer::class, [
             'config' => $conf,
             'serializer' => $this->serializer,
+            'async' => $this->asyncProducer,
         ]);
+
+        if ($this->asyncProducer) {
+            $this->producer = $producer;
+        }
+
+        return $producer;
     }
 }
