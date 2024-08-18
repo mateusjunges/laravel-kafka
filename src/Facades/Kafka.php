@@ -9,6 +9,7 @@ use Junges\Kafka\Support\Testing\Fakes\KafkaFake;
 /**
  * @method static \Junges\Kafka\Contracts\MessageProducer publish(string $broker = null)
  * @method static \Junges\Kafka\Contracts\MessageProducer asyncPublish(string $broker = null)
+ * @method static \Junges\Kafka\Factory fresh(string $broker = null)
  * @method static \Junges\Kafka\Consumers\Builder consumer(array $topics = [], string $groupId = null, string $brokers = null)
  * @method static void assertPublished(ProducerMessage $expectedMessage = null, callable $callback = null)
  * @method static void assertPublishedTimes(int $times = 1, ProducerMessage $expectedMessage = null, callable $callback = null)
