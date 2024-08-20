@@ -87,7 +87,7 @@ class Message extends AbstractMessage implements Arrayable, ProducerMessage
         // id is already set, then array_merge will override it. It's safe to do it
         // here because this class is used only when we produce a new message.
         return array_merge(parent::getHeaders(), [
-            'laravel-kafka::message-id' => Str::uuid()->toString(),
+            config('kafka.message_id_key') => Str::uuid()->toString(),
         ]);
     }
 }

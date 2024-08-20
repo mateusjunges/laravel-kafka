@@ -443,8 +443,8 @@ class Consumer implements MessageConsumer
         // First, we set a new unique id that allows us to identify this message. Then
         // we create a new consumer message instance that will be passed as an arg
         // to the consumer class/closure responsible for consuming this message.
-        if (! array_key_exists('laravel-kafka::message-id', $message->headers)) {
-            $message->headers['laravel-kafka::message-id'] = Str::uuid()->toString();
+        if (! array_key_exists(config('kafka.message_id_key'), $message->headers)) {
+            $message->headers[config('kafka.message_id_key')] = Str::uuid()->toString();
         }
 
         return app(ConsumerMessage::class, [

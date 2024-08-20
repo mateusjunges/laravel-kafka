@@ -74,4 +74,9 @@ return [
      | The cache driver that will be used
      */
     'cache_driver' => env('KAFKA_CACHE_DRIVER', env('CACHE_DRIVER', 'file')),
+
+    /*
+     | Kafka message id key name
+     */
+    'message_id_key' => env('MESSAGE_ID_KEY', 'laravel-kafka::message-id'),
 ];
