@@ -22,6 +22,8 @@ class ProducerBuilderFake implements MessageProducer
     private ?Sasl $saslConfig = null;
     private string $topic = '';
     private ?Closure $producerCallback = null;
+    private ?int $flushRetries = null;
+    private ?int $flushTimeoutInMs = null;
 
     public function __construct(
         private readonly ?string $broker = null,
@@ -145,6 +147,14 @@ class ProducerBuilderFake implements MessageProducer
         return $this;
     }
 
+    public function withFlushOptions(int $retries, int $timeoutInMs): self
+    {
+        $this->flushRetries = $retries;
+        $this->flushTimeoutInMs = $timeoutInMs;
+
+        return $this;
+    }
+
     /** Specifies which serializer should be used. */
     public function usingSerializer(MessageSerializer $serializer): MessageProducer
     {
@@ -202,6 +212,8 @@ class ProducerBuilderFake implements MessageProducer
             sasl: $this->saslConfig,
             customOptions: $this->options,
             callbacks: $this->callbacks,
+            flushRetries: $this->flushRetries,
+            flushTimeoutInMs: $this->flushTimeoutInMs,
         );
 
         return $this->makeProducer($conf);
