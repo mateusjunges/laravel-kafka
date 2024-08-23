@@ -99,6 +99,14 @@ class Builder implements MessageProducer
         return $this;
     }
 
+    /** Set a message body.  */
+    public function withBody(mixed $body): self
+    {
+        $this->message->withBody($body);
+
+        return $this;
+    }
+
     public function transactional(int $maxRetryAttempts = 5): self
     {
         $this->isTransactionProducer = true;

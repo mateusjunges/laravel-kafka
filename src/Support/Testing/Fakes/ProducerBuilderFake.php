@@ -104,6 +104,14 @@ class ProducerBuilderFake implements MessageProducer
         return $this;
     }
 
+    /** Set a message body.  */
+    public function withBody(mixed $body): self
+    {
+        $this->message->withBody($body);
+
+        return $this;
+    }
+
     /** Set the entire message.  */
     public function withMessage(ProducerMessage $message): self
     {

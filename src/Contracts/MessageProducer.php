@@ -41,6 +41,9 @@ interface MessageProducer extends InteractsWithConfigCallbacks
     /** Set a message array key. */
     public function withBodyKey(string $key, mixed $message): self;
 
+    /** Set a message body. */
+    public function withBody(mixed $body): self;
+
     /** Set the message to be published. */
     public function withMessage(ProducerMessage $message): self;
 
