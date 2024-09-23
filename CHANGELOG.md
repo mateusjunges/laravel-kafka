@@ -2,6 +2,9 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+## [2024-09-23](https://github.com/mateusjunges/laravel-kafka/compare/v1.13.12...v1.13.13)
+* Fix invalid group id generation by @huynt5 [#318](https://github.com/mateusjunges/laravel-kafka/pull/318) - Original PR by @mateusjunges in [#305](https://github.com/mateusjunges/laravel-kafka/pull/305)
+
 ## [2024-02-17 v1.13.12](https://github.com/mateusjunges/laravel-kafka/compare/v1.13.11...v1.13.12)
 * Add support for laravel 11 by @mateusjunges in [#256](https://github.com/mateusjunges/laravel-kafka/pull/256)
 
