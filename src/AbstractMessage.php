@@ -51,10 +51,10 @@ abstract class AbstractMessage implements KafkaMessage
     /** @throws MessageIdNotSet */
     public function getMessageIdentifier(): string
     {
-        if (! is_string($this->getHeaders()['laravel-kafka::message-id'])) {
+        if (! is_string($this->getHeaders()[config('kafka.message_id_key')])) {
             throw new MessageIdNotSet();
         }
 
-        return $this->getHeaders()['laravel-kafka::message-id'];
+        return $this->getHeaders()[config('kafka.message_id_key')];
     }
 }
