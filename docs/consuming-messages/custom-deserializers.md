@@ -12,7 +12,11 @@ To set the deserializer you want to use, use the `usingDeserializer` method:
 $consumer = \Junges\Kafka\Facades\Kafka::consumer()->usingDeserializer(new MyCustomDeserializer());
 ```
 
-> NOTE: The deserializer class must use the same algorithm as the serializer used to produce this message.
+```+parse
+<x-docs.tip title="Hot tip!">
+    The deserializer class must use the same algorithm as the serializer used to produce this message.
+</x-docs.tip>
+```
 
 
 ### Using AVRO deserializer
