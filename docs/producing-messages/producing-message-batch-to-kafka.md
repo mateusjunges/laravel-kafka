@@ -5,7 +5,11 @@ weight: 6
 
 ```+parse
 <x-docs.warning title="This feature is deprecated">
-    This is deprecated and will be removed in a future version. Please use async producers instead of batch messaging.
+    This is deprecated and will be removed in a future version. Please use 
+    <a href="https://laravelkafka.com/docs/v2.0/producing-messages/producing-messages">
+        async producers
+    </a>
+    instead of batch messaging.
 </x-docs.warning>
 ```
 
