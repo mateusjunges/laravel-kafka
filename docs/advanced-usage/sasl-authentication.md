@@ -33,3 +33,17 @@ $consumer = \Junges\Kafka\Facades\Kafka::consumer()
     When using the `withSasl` method, the securityProtocol set in this method takes priority over `withSecurityProtocol` method.
 </x-docs.tip>
 ```
+
+### TLS Authentication
+
+For using TLS authentication with Laravel Kafka you can configure your client using the following options:
+
+```php
+$consumer = \Junges\Kafka\Facades\Kafka::consumer()
+    ->withOptions([
+        'ssl.ca.location' => '/some/location/kafka.crt',
+        'ssl.certificate.location' => '/some/location/client.crt',
+        'ssl.key.location' => '/some/location/client.key',
+        'ssl.endpoint.identification.algorithm' => 'none'
+    ]);
+```
