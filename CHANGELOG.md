@@ -2,6 +2,11 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+##[2024-10-06 v2.3.0](https://github.com/mateusjunges/laravel-kafka/compare/v2.2.0...v2.3.0)
+* Add message id key name to config by @LabbeAramis in [#315](https://github.com/mateusjunges/laravel-kafka/pull/315)
+* Adds in the ability to set complete body when producing messages by @sash in [#316](https://github.com/mateusjunges/laravel-kafka/pull/316)
+
+
 ##[2024-08-18 v2.2.0](https://github.com/mateusjunges/laravel-kafka/compare/v2.1.5...v2.2.0)
 * Introduce async publishing by @mateusjunges and @sash in [#312](https://github.com/mateusjunges/laravel-kafka/pull/312)
 * Allow to reset the Kafka Manager by @mateusjunges in [#314](https://github.com/mateusjunges/laravel-kafka/pull/314)
