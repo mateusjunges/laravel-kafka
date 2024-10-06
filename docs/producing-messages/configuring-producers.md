@@ -39,4 +39,4 @@ Kafka::publish('broker')
     ->withDebugEnabled(false) // Also to disable debug mode
 ```
 
-[rdkafka_config]:https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
+[rdkafka_config]:https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md
