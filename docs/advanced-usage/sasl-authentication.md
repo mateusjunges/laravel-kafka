@@ -28,4 +28,8 @@ $consumer = \Junges\Kafka\Facades\Kafka::consumer()
     );
 ```
 
-Note: When using the `withSasl` method, the securityProtocol set in this method takes priority over `withSecurityProtocol` method.
+```+parse
+<x-docs.tip title="Hot tip!">
+    When using the `withSasl` method, the securityProtocol set in this method takes priority over `withSecurityProtocol` method.
+</x-docs.tip>
+```
