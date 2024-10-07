@@ -160,9 +160,15 @@ class Builder implements MessageProducer
         return $this->withDebugEnabled(false);
     }
 
-    public function withFlushOptions(int $retries, int $timeoutInMs): self
+    public function withFlushRetries(int $retries): self
     {
         $this->flushRetries = $retries;
+
+        return $this;
+    }
+    
+    public function withFlushTimeout(int $timeoutInMs): self
+    {
         $this->flushTimeoutInMs = $timeoutInMs;
 
         return $this;
