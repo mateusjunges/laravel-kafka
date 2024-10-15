@@ -2,6 +2,9 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+##[2024-10-14 v2.3.1](https://github.com/mateusjunges/laravel-kafka/compare/v2.3.0...v2.3.1)
+* Convert `KAFKA_CONSUMER_DEFAULT_TIMEOUT` to an integer to avoid type error by @niuf416 in [#230](https://github.com/mateusjunges/laravel-kafka/pull/320)
+
 ##[2024-10-06 v2.3.0](https://github.com/mateusjunges/laravel-kafka/compare/v2.2.0...v2.3.0)
 * Add message id key name to config by @LabbeAramis in [#315](https://github.com/mateusjunges/laravel-kafka/pull/315)
 * Adds in the ability to set complete body when producing messages by @sash in [#316](https://github.com/mateusjunges/laravel-kafka/pull/316)
