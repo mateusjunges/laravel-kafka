@@ -17,3 +17,9 @@ This package provides a nice way of producing and consuming kafka messages in yo
     <a href="https://github.com/mateusjunges/laravel-kafka/actions/workflows/php-cs-fixer.yml"><img src="https://github.com/mateusjunges/laravel-kafka/actions/workflows/php-cs-fixer.yml/badge.svg" alt="Check fix & Styling"></a>
     <a href="https://packagist.org/packages/mateusjunges/laravel-kafka"><img src="http://poser.pugx.org/mateusjunges/laravel-kafka/require/php" alt="PHP Version"></a>
 </section>
+
+
+```+parse
+<x-sponsors.request-sponsor/>
+```
+
