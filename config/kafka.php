@@ -71,6 +71,16 @@ return [
     'flush_retry_sleep_in_ms' => 100,
 
     /*
+     * The number of retries that will be used when flushing the producer
+     */
+    'flush_retries' => 10,
+
+    /**
+     * The flush timeout in milliseconds
+     */
+    'flush_timeout_in_ms' => 1000,
+
+    /*
      | The cache driver that will be used
      */
     'cache_driver' => env('KAFKA_CACHE_DRIVER', env('CACHE_DRIVER', 'file')),
