@@ -3,7 +3,11 @@ title: Configuring consumer options
 weight: 6
 ---
 
-The `ConsumerBuilder` offers you some few configuration options:
+The `ConsumerBuilder` offers you some few configuration options.
+
+```+parse
+<x-sponsors.request-sponsor/>
+```
 
 ### Configuring a dead letter queue
 In kafka, a Dead Letter Queue (or DLQ), is a simple kafka topic in the kafka cluster which acts as the destination for messages that were not

@@ -5,6 +5,10 @@ weight: 3
 
 In kafka, you can configure your payload with a message, message headers and message key. All these configurations are available within ProducerBuilder class.
 
+```+parse
+<x-sponsors.request-sponsor/>
+```
+
 ### Configuring message headers
 To configure the message headers, use the `withHeaders` method:
 

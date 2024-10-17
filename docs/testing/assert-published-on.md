@@ -3,6 +3,10 @@ title: Assert published On
 weight: 3
 ---
 
+```+parse
+<x-sponsors.request-sponsor/>
+```
+
 If you want to assert that a message was published in a specific kafka topic, you can use the `assertPublishedOn` method:
 
 ```php

@@ -22,3 +22,7 @@ $consumer = Kafka::consumer(['topic-1', 'topic-2'], 'group-id', 'broker');
 ```
 
 This method returns a `Junges\Kafka\Consumers\ConsumerBuilder::class` instance, and you can use it to configure your consumer.
+
+```+parse
+<x-sponsors.request-sponsor/>
+```

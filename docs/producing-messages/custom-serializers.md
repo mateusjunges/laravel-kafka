@@ -5,6 +5,10 @@ weight: 4
 
 Serialization is the process of converting messages to bytes. Deserialization is the inverse process - converting a stream of bytes into and object. In a nutshell, it transforms the content into readable and interpretable information.
 
+```+parse
+<x-sponsors.request-sponsor/>
+```
+
 Basically, in order to prepare the message for transmission from the producer we use serializers. This package supports three serializers out of the box:
 
 - NullSerializer / NullDeserializer

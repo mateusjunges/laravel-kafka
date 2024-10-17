@@ -19,3 +19,7 @@ $consumer = \Junges\Kafka\Facades\Kafka::consumer(['topic'])
 
 $consumer->consume();
 ```
+
+```+parse
+<x-sponsors.request-sponsor/>
+```

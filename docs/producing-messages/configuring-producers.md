@@ -5,6 +5,10 @@ weight: 2
 
 The producer builder, returned by the `publish` call, gives you a series of methods which you can use to configure your kafka producer options.
 
+```+parse
+<x-sponsors.request-sponsor/>
+```
+
 ### Defining configuration options
 
 The `withConfigOption` method sets a `\RdKafka\Conf::class` option. You can check all available options [here][rdkafka_config].

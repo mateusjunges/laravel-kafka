@@ -14,3 +14,7 @@ $consumer = \Junges\Kafka\Facades\Kafka::consumer()
 ```
 
 You can add as many middlewares as you need, so you can divide different tasks into different middlewares.
+
+```+parse
+<x-sponsors.request-sponsor/>
+```

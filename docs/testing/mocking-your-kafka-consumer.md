@@ -6,6 +6,11 @@ weight: 7
 If you want to test that your consumers are working correctly, you can mock and execute the consumer to
 ensure that everything works as expected.
 
+```+parse
+<x-sponsors.request-sponsor/>
+```
+
+
 You just need to tell kafka which messages the consumer should receive and then start your consumer. This package will
 run all the specified messages through the consumer and stop after the last message, so you can perform whatever
 assertions you want to.

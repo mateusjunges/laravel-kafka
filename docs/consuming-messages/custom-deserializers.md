@@ -6,6 +6,10 @@ weight: 7
 To create a custom deserializer, you need to create a class that implements the `\Junges\Kafka\Contracts\MessageDeserializer` contract.
 This interface force you to declare the `deserialize` method.
 
+```+parse
+<x-sponsors.request-sponsor/>
+```
+
 To set the deserializer you want to use, use the `usingDeserializer` method:
 
 ```php

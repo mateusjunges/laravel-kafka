@@ -3,6 +3,10 @@ title: SASL Authentication
 weight: 3
 ---
 
+```+parse
+<x-sponsors.request-sponsor/>
+```
+
 SASL allows your producers and your consumers to authenticate to your Kafka cluster, which verifies their identity.
 It's also a secure way to enable your clients to endorse an identity. To provide SASL configuration, you can use the `withSasl` method,
 passing a `Junges\Kafka\Config\Sasl` instance as the argument:

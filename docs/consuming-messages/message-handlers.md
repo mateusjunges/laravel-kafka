@@ -37,3 +37,8 @@ The `ConsumerMessage` contract gives you some handy methods to get the message p
 - `getBody()`: Returns the body of the message
 - `getOffset()`: Returns the offset where the message was published
 
+
+```+parse
+<x-sponsors.request-sponsor/>
+```
+

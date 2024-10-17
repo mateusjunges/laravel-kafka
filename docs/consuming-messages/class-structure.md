@@ -37,6 +37,10 @@ class MyTopicConsumer extends Command
 
 Now, to keep this consumer process running permanently in the background, you should use a process monitor such as [supervisor](http://supervisord.org/) to ensure that the consumer does not stop running.
 
+```+parse
+<x-sponsors.request-sponsor/>
+```
+
 ## Supervisor configuration
 In production, you need a way to keep your consumer processes running. For this reason, you need to configure a process monitor that can detect when your consumer processes exit and automatically restart them. In addition, process monitors can allow you to specify how many consumer processes you would like to run concurrently. Supervisor is a process monitor commonly used in Linux environments and we will discuss how to configure it in the following documentation.
 

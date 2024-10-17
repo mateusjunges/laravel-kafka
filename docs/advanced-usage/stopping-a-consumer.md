@@ -23,3 +23,7 @@ $consumer->consume();
 ```
 
 The `onStopConsuming` callback will be executed before stopping your consumer.
+
+```+parse
+<x-sponsors.request-sponsor/>
+```

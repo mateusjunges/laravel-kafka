@@ -30,3 +30,7 @@ class MyTest extends TestCase
     }
 } 
 ```
+
+```+parse
+<x-sponsors.request-sponsor/>
+```

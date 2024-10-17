@@ -18,3 +18,8 @@ to achieve that. Here's an example:
 ```
 
 Now, you can call `\Junges\Kafka\Facades\Kafka::myProducer()`, which will always apply the configs you defined in your service provider.
+
+
+```+parse
+<x-sponsors.request-sponsor/>
+```

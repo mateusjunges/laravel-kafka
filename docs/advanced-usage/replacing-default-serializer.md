@@ -5,6 +5,10 @@ weight: 1
 
 The default Serializer is resolved using the `MessageSerializer` and `MessageDeserializer` contracts. Out of the box, the `Json` serializers are used.
 
+```+parse
+<x-sponsors.request-sponsor/>
+```
+
 To set the default serializer you can bind the `MessageSerializer` and `MessageDeserializer` contracts to any class which implements this interfaces.
 
 Open your `AppServiceProvider` class and add this lines to the `register` method:

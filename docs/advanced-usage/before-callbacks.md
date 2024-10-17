@@ -21,3 +21,7 @@ $consumer = \Junges\Kafka\Facades\Kafka::consumer()
 These callbacks are not middlewares, so you can not interact with the consumed message.
 You can add as many callback as you need, so you can divide different tasks into 
 different callbacks.
+
+```+parse
+<x-sponsors.request-sponsor/>
+```

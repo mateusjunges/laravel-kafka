@@ -3,6 +3,10 @@ title: Subscribing to kafka topics
 weight: 2
 ---
 
+```+parse
+<x-sponsors.request-sponsor/>
+```
+
 With a consumer created, you can subscribe to a kafka topic using the `subscribe` method:
 
 ```php

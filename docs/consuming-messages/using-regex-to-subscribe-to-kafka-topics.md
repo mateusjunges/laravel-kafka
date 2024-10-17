@@ -4,6 +4,10 @@ weight: 2
 ---
 
 Kafka allows you to subscribe to topics using regex, and regex pattern matching is automatically performed for topics prefixed with `^` (e.g. `^myPfx[0-9]_.*`).
+
+```+parse
+<x-sponsors.request-sponsor/>
+```
  
 The consumer will see the new topics on its next periodic metadata refresh which is controlled by the `topic.metadata.refresh.interval.ms` 
 

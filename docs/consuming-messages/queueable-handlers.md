@@ -5,6 +5,10 @@ weight: 11
 
 Queueable handlers allow you to handle your kafka messages in a queue. This will put a job into the Laravel queue system for each message received by your Kafka consumer.
 
+```+parse
+<x-sponsors.request-sponsor/>
+```
+
 This only requires you to implements the `Illuminate\Contracts\Queue\ShouldQueue` interface in your Handler.
 
 This is how a queueable handler looks like:

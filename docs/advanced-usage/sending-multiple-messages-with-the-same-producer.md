@@ -17,3 +17,8 @@ Sometimes you may want to send multiple messages without having to create the co
 ```
 
 Now, you can call `\Junges\Kafka\Facades\Kafka::myProducer()`, which will always apply the configs you defined in your service provider.
+
+
+```+parse
+<x-sponsors.request-sponsor/>
+```

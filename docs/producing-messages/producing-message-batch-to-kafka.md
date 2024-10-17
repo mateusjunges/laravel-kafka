@@ -19,6 +19,10 @@ Then create as many messages as you want and push them to the `MesageBatch` inst
 Finally, create your producer and call the `sendBatch`, passing the `MessageBatch` instance as a parameter.
 This is helpful when you persist messages in storage before publishing (e.g. TransactionalOutbox Pattern).
 
+```+parse
+<x-sponsors.request-sponsor/>
+```
+
 By using message batch, you can send multiple messages using the same producer instance, which is way faster than the default `send` method, which flushes the producer after each produced message.
 Messages are queued for asynchronous sending, and there is no guarantee that it will be sent immediately. The `sendBatch` is recommended for a system with high throughput.
 

@@ -7,6 +7,10 @@ Stopping consumers is very useful if you want to ensure you don't kill a process
 
 Consumers automatically listen to the `SIGTERM`, `SIGINT` and `SIQUIT` signals, which means you can easily stop your consumers using those signals.
 
+```+parse
+<x-sponsors.request-sponsor/>
+```
+
 ### Running callbacks when the consumer stops
 If your app requires that you run sum sort of processing when the consumers stop processing messages, you can use the `onStopConsume` method, available on the `\Junges\Kafka\Contracts\CanConsumeMessages` interface. This method accepts a `Closure` that will run once your consumer stops consuming.
 

@@ -5,6 +5,10 @@ weight: 4
 
 By default, the committers provided by the `DefaultCommitterFactory` are provided.
 
+```+parse
+<x-sponsors.request-sponsor/>
+```
+
 To set a custom committer on your consumer, add the committer via a factory that implements the `CommitterFactory` interface:
 
 ```php

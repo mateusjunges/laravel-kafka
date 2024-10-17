@@ -16,3 +16,7 @@ After building the consumer, you must call the `consume` method to consume the m
 ```php
 $consumer->consume();
 ```
+
+```+parse
+<x-sponsors.request-sponsor/>
+```
