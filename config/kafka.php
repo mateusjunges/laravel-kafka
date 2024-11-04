@@ -73,7 +73,7 @@ return [
     /*
      | The cache driver that will be used
      */
-    'cache_driver' => env('KAFKA_CACHE_DRIVER', env('CACHE_DRIVER', 'file')),
+    'cache_driver' => env('KAFKA_CACHE_DRIVER', env('CACHE_DRIVER', env('CACHE_STORE', 'database'))),
 
     /*
      | Kafka message id key name
