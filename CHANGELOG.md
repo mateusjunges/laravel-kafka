@@ -2,6 +2,9 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+##[2024-11-04 v2.3.2](https://github.com/mateusjunges/laravel-kafka/compare/v2.3.1...v2.3.2)
+* Prefer new Laravel 11 Cache key by @cragonnyunt in [#321](https://github.com/mateusjunges/laravel-kafka/pull/321)
+
 ##[2024-10-14 v2.3.1](https://github.com/mateusjunges/laravel-kafka/compare/v2.3.0...v2.3.1)
 * Convert `KAFKA_CONSUMER_DEFAULT_TIMEOUT` to an integer to avoid type error by @niuf416 in [#230](https://github.com/mateusjunges/laravel-kafka/pull/320)
 
