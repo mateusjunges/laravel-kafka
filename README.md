@@ -16,6 +16,10 @@ If you think this package helped you in any way, you can sponsor me on GitHub!
 
 [![Sponsor Me](art/sponsor.png)](https://github.com/sponsors/mateusjunges)
 
+- My personal website: https://mateusjunges.com
+- Follow me on Twitter: https://twitter.com/mateusjungess
+- Follow me on Bluesky: https://bsky.app/profile/mateusjunges.com
+
 # Documentation
 You can [find the documentations for this package here](https://laravelkafka.com/)
 
