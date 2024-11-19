@@ -8,11 +8,11 @@ use Junges\Kafka\Exceptions\MessageIdNotSet;
 abstract class AbstractMessage implements KafkaMessage
 {
     public function __construct(
-        protected ?string  $topicName = null,
-        protected ?int    $partition = RD_KAFKA_PARTITION_UA,
-        protected ?array  $headers = [],
-        protected mixed   $body = [],
-        protected mixed   $key = null,
+        protected ?string $topicName = null,
+        protected ?int $partition = RD_KAFKA_PARTITION_UA,
+        protected ?array $headers = [],
+        protected mixed $body = [],
+        protected mixed $key = null,
     ) {
     }
 

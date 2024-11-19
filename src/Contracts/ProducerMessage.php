@@ -6,7 +6,7 @@ interface ProducerMessage extends KafkaMessage
 {
     public static function create(string $topicName = null, int $partition = RD_KAFKA_PARTITION_UA): ProducerMessage;
 
-    public function withKey(?string $key): ProducerMessage;
+    public function withKey(mixed $key): ProducerMessage;
 
     public function withBody(mixed $body): ProducerMessage;
 

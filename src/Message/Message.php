@@ -50,7 +50,7 @@ class Message extends AbstractMessage implements Arrayable, ProducerMessage
     }
 
     /** Set the kafka message key. */
-    public function withKey(?string $key): Message
+    public function withKey(mixed $key): Message
     {
         $this->key = $key;
 
