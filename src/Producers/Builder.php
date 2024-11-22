@@ -24,6 +24,8 @@ class Builder implements MessageProducer
     private readonly string $broker;
     private bool $isTransactionProducer = false;
     private int $maxTransactionRetryAttempts = 5;
+    private ?int $flushRetries = null;
+    private ?int $flushTimeoutInMs = null;
 
     public function __construct(
         ?string $broker = null,
@@ -166,6 +168,20 @@ class Builder implements MessageProducer
         return $this->withDebugEnabled(false);
     }
 
+    public function withFlushRetries(int $retries): self
+    {
+        $this->flushRetries = $retries;
+
+        return $this;
+    }
+    
+    public function withFlushTimeout(int $timeoutInMs): self
+    {
+        $this->flushTimeoutInMs = $timeoutInMs;
+
+        return $this;
+    }
+
     /**
      * Send the given message to Kakfa.
      *
@@ -212,6 +228,8 @@ class Builder implements MessageProducer
             sasl: $this->saslConfig,
             customOptions: $this->options,
             callbacks: $this->callbacks,
+            flushRetries: $this->flushRetries,
+            flushTimeoutInMs: $this->flushTimeoutInMs,
         );
 
         $producer = app(Producer::class, [
