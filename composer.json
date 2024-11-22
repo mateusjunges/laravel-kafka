@@ -15,7 +15,6 @@
         "orchestra/testbench": "^7.16|^8.0",
         "predis/predis": "^1",
         "friendsofphp/php-cs-fixer": "^3.62",
-        "kwn/php-rdkafka-stubs": "^2.2.1",
         "rector/rector": "^0.19.8"
     },
     "minimum-stability": "dev",
@@ -49,6 +48,7 @@
         }
     },
     "suggest": {
-        "ext-pcntl": "Required to enable all features of the kafka consumer"
+        "ext-pcntl": "Required to enable all features of the kafka consumer",
+        "kwn/php-rdkafka-stubs": "Useful for providing IDE autocompletion and static analysis when working with Kafka, version ^2.2.1."
     }
 }
