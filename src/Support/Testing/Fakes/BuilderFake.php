@@ -61,7 +61,8 @@ class BuilderFake extends Builder implements ConsumerBuilderContract
 
         return new ConsumerFake(
             $config,
-            $this->messages
+            $this->messages,
+            identifier: $this->identifier,
         );
     }
 
