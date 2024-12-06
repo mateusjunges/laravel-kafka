@@ -21,6 +21,7 @@ use Junges\Kafka\Events\ConsumerStopped;
 use Junges\Kafka\Events\ConsumerStopping;
 use Junges\Kafka\Events\MessageConsumed;
 use Junges\Kafka\Events\MessageSentToDLQ;
+use Junges\Kafka\Events\RunningOnStopConsumingCallbacks;
 use Junges\Kafka\Events\StartedConsumingMessage;
 use Junges\Kafka\Exceptions\ConsumerException;
 use Junges\Kafka\MessageCounter;
@@ -139,6 +140,10 @@ class Consumer implements MessageConsumer
         ));
 
         if ($this->shouldRunStopConsumingCallback()) {
+            $this->dispatcher->dispatch(new RunningOnStopConsumingCallbacks(
+                identifier: $this->identifier
+            ));
+
             $callback = $this->whenStopConsuming;
             $callback(...)();
         }
