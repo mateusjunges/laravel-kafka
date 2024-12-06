@@ -3,11 +3,16 @@
 namespace Junges\Kafka\Support\Testing\Fakes;
 
 use Closure;
+use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\App;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\HandlesBatchConfiguration;
 use Junges\Kafka\Contracts\MessageConsumer;
+use Junges\Kafka\Events\ConsumerStopped;
+use Junges\Kafka\Events\ConsumerStopping;
+use Junges\Kafka\Events\RunningOnStopConsumingCallbacks;
 use Junges\Kafka\MessageCounter;
 use RdKafka\Conf;
 use RdKafka\Message;
@@ -16,17 +21,22 @@ class ConsumerFake implements MessageConsumer
 {
     private readonly MessageCounter $messageCounter;
     private readonly HandlesBatchConfiguration $batchConfig;
+    private Dispatcher $dispatcher;
+    private readonly string $identifier;
 
     /** @param \Junges\Kafka\Contracts\ConsumerMessage[] $messages  */
     public function __construct(
         private readonly Config $config,
         private readonly array $messages = [],
         private bool $stopRequested = false,
-        private ?Closure $whenStopConsuming = null
+        private ?Closure $whenStopConsuming = null,
+        ?string $identifier = null,
     ) {
         $this->messageCounter = new MessageCounter($config->getMaxMessages());
         $this->batchConfig = $this->config->getBatchConfig();
         $this->whenStopConsuming = $this->config->getWhenStopConsumingCallback();
+        $this->dispatcher = App::make(Dispatcher::class);
+        $this->identifier = $identifier ?? str()->random();
     }
 
     /** Consume messages from a kafka topic in loop. */
@@ -38,10 +48,22 @@ class ConsumerFake implements MessageConsumer
             $this->defaultConsume();
         }
 
+        $this->dispatcher->dispatch(new ConsumerStopping(
+            identifier: $this->identifier,
+        ));
+
         if ($this->shouldRunStopConsumingCallback()) {
+            $this->dispatcher->dispatch(new RunningOnStopConsumingCallbacks(
+                identifier: $this->identifier
+            ));
+
             $callback = $this->whenStopConsuming;
             $callback(...)();
         }
+
+        $this->dispatcher->dispatch(new ConsumerStopped(
+            identifier: $this->identifier
+        ));
     }
 
     private function shouldRunStopConsumingCallback(): bool
