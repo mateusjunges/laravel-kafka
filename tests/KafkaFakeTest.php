@@ -439,6 +439,16 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
                 offset: 0,
                 timestamp: 0
             ),
+
+            new ConsumedMessage(
+                topicName: 'test-topic',
+                partition: 0,
+                headers: [],
+                body: ['test'],
+                key: null,
+                offset: 0,
+                timestamp: 0
+            ),
         ];
 
         Kafka::shouldReceiveMessages($messages);
