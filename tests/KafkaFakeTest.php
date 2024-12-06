@@ -4,15 +4,20 @@ namespace Junges\Kafka\Tests;
 
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\Manager;
 use Junges\Kafka\Contracts\MessageConsumer;
+use Junges\Kafka\Events\ConsumerStopped;
+use Junges\Kafka\Events\ConsumerStopping;
+use Junges\Kafka\Events\RunningOnStopConsumingCallbacks;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\Message\Message;
 use Junges\Kafka\Producers\MessageBatch;
 use Junges\Kafka\Support\Testing\Fakes\KafkaFake;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Constraint\ExceptionMessageIsOrContains;
 use PHPUnit\Framework\ExpectationFailedException;
 
@@ -416,6 +421,56 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         $this->assertTrue($stopped);
         //should have consumed only one message
         $this->assertEquals(1, $this->consumer->consumedMessagesCount());
+    }
+
+    #[Test]
+    public function it_dispatches_consumer_events(): void
+    {
+        Kafka::fake();
+        Event::fake();
+
+        $messages = [
+            new ConsumedMessage(
+                topicName: 'test-topic',
+                partition: 0,
+                headers: [],
+                body: ['test'],
+                key: null,
+                offset: 0,
+                timestamp: 0
+            ),
+        ];
+
+        Kafka::shouldReceiveMessages($messages);
+
+        $stopped = false;
+        $this->consumer = Kafka::consumer(['test-topic'])
+            ->withIdentifier('my-consumer')
+            ->withHandler(function (ConsumerMessage $message) use (&$stopped) {
+                //stop consumer after first message
+                $this->consumer->stopConsuming();
+            })
+            ->onStopConsuming(function () use (&$stopped) {
+                $stopped = true;
+            })
+            ->build();
+
+        $this->consumer->consume();
+
+        Event::assertDispatched(
+            ConsumerStopping::class,
+            fn (ConsumerStopping $event) => $event->identifier === 'my-consumer'
+        );
+
+        Event::assertDispatched(
+            RunningOnStopConsumingCallbacks::class,
+            fn (RunningOnStopConsumingCallbacks $event) => $event->identifier === 'my-consumer'
+        );
+
+        Event::assertDispatched(
+            ConsumerStopped::class,
+            fn (ConsumerStopped $event) => $event->identifier === 'my-consumer'
+        );
     }
 
     public function testFakeBatchConsumer(): void
