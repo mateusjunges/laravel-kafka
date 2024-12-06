@@ -17,6 +17,7 @@ use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\Logger;
 use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Contracts\MessageDeserializer;
+use Junges\Kafka\Events\ConsumerStopped;
 use Junges\Kafka\Events\MessageConsumed;
 use Junges\Kafka\Events\MessageSentToDLQ;
 use Junges\Kafka\Events\StartedConsumingMessage;
@@ -136,6 +137,10 @@ class Consumer implements MessageConsumer
             $callback = $this->whenStopConsuming;
             $callback(...)();
         }
+
+        $this->dispatcher->dispatch(new ConsumerStopped(
+            identifier: $this->identifier
+        ));
     }
 
     private function runBeforeCallbacks(): void
