@@ -85,6 +85,8 @@ class Config
         private readonly int $maxTime = 0,
         private readonly array $partitionAssignment = [],
         private readonly ?Closure $whenStopConsuming = null,
+        public readonly ?int $flushRetries = null,
+        public readonly ?int $flushTimeoutInMs = null,
     ) {
     }
 

@@ -190,10 +190,12 @@ class Producer implements ProducerContract
         // after sending all messages with Producer::sendBatch
         $flush = function () {
             $sleepMilliseconds = config('kafka.flush_retry_sleep_in_ms', 100);
+            $retries = $this->config->flushRetries ?? config('kafka.flush_retries', 10);
+            $timeout = $this->config->flushTimeoutInMs ?? config('kafka.flush_timeout_in_ms', 1000);
 
             try {
-                return retry(10, function () {
-                    $result = $this->producer->flush(1000);
+                return retry($retries, function () use ($timeout) {
+                    $result = $this->producer->flush($timeout);
 
                     if (RD_KAFKA_RESP_ERR_NO_ERROR === $result) {
                         return true;
