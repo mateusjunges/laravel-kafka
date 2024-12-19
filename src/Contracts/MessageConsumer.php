@@ -11,6 +11,8 @@ interface MessageConsumer
      */
     public function consume(): void;
 
+    public function identifier(): string;
+
     /** Requests the consumer to stop after it's finished processing any messages to allow graceful exit. */
     public function stopConsuming(): void;
 

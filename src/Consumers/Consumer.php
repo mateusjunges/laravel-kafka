@@ -88,6 +88,11 @@ class Consumer implements MessageConsumer
         $this->identifier = $identifier ?? str()->random();
     }
 
+    public function identifier(): string
+    {
+        return $this->identifier;
+    }
+
     /**
      * Consume messages from a kafka topic in loop.
      *
@@ -145,7 +150,7 @@ class Consumer implements MessageConsumer
             ));
 
             $callback = $this->whenStopConsuming;
-            $callback(...)();
+            $callback(...)($this);
         }
 
         $this->dispatcher->dispatch(new ConsumerStopped(
@@ -255,7 +260,7 @@ class Consumer implements MessageConsumer
             $success = true;
 
             // Dispatch an event informing that a message was consumed.
-            $this->dispatcher->dispatch(new MessageConsumed($consumedMessage));
+            $this->dispatcher->dispatch(new MessageConsumed($consumedMessage, $this->identifier()));
         } catch (Throwable $throwable) {
             $this->logger->error($message, $throwable);
             $success = $this->handleException($throwable, $message);
