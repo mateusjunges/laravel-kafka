@@ -2,6 +2,9 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+##[2024-11-22 v2.4.1](https://github.com/mateusjunges/laravel-kafka/compare/v2.4.1...v2.4.2)
+* Update dependencies by [@mateusjunges](https://github.com/mateusjunges) in [`161361d`](https://github.com/mateusjunges/laravel-kafka/commit/161361d588a2d9cdbfda7f1b4c1cc6849f857cd6)
+
 ##[2024-11-22 v2.4.1](https://github.com/mateusjunges/laravel-kafka/compare/v2.4.0...v2.4.1)
 * Allow to customize flush settings (retries + timeout) by @sash in [#317](https://github.com/mateusjunges/laravel-kafka/pull/317)
 
