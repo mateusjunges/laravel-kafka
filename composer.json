@@ -3,7 +3,7 @@
     "description": "A kafka driver for laravel",
     "type": "library",
     "require": {
-        "php": "^8.2|^8.3",
+        "php": "^8.2|^8.3|^8.4",
         "ext-rdkafka": "^6.0",
         "monolog/monolog": "^3",
         "mateusjunges/avro-serde-php": "^3.0",
@@ -15,7 +15,6 @@
         "orchestra/testbench": "^7.16|^8.0",
         "predis/predis": "^1",
         "friendsofphp/php-cs-fixer": "^3.64",
-        "kwn/php-rdkafka-stubs": "^2.2.1",
         "rector/rector": "^0.19.8"
     },
     "minimum-stability": "dev",
@@ -49,6 +48,7 @@
         }
     },
     "suggest": {
-        "ext-pcntl": "Required to enable all features of the kafka consumer"
+        "ext-pcntl": "Required to enable all features of the kafka consumer",
+        "kwn/php-rdkafka-stubs": "Useful for providing IDE autocompletion and static analysis when working with Kafka, version ^2.2.1."
     }
 }
