@@ -15,7 +15,6 @@
         "orchestra/testbench": "^7.16|^8.0",
         "predis/predis": "^1",
         "friendsofphp/php-cs-fixer": "^3.64",
-        "kwn/php-rdkafka-stubs": "^2.2.1",
         "rector/rector": "^0.19.8"
     },
     "minimum-stability": "dev",
