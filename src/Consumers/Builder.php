@@ -59,6 +59,8 @@ class Builder implements ConsumerBuilderContract
 
     protected ?Closure $onStopConsuming = null;
 
+    protected ?string $identifier = null;
+
     protected function __construct(protected string $brokers, array $topics = [], protected ?string $groupId = null)
     {
         if (count($topics) > 0) {
@@ -114,6 +116,13 @@ class Builder implements ConsumerBuilderContract
     public function withBrokers(?string $brokers): self
     {
         $this->brokers = $brokers ?? config('kafka.brokers');
+
+        return $this;
+    }
+
+    public function withIdentifier(string $identifier): self
+    {
+        $this->identifier = $identifier;
 
         return $this;
     }
@@ -349,7 +358,7 @@ class Builder implements ConsumerBuilderContract
             whenStopConsuming: $this->onStopConsuming,
         );
 
-        return new Consumer($config, $this->deserializer, $this->committerFactory);
+        return new Consumer($config, $this->deserializer, $this->committerFactory, $this->identifier);
     }
 
     /** Validates each topic before subscribing. */
