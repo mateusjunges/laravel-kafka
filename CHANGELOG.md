@@ -2,6 +2,9 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+##[2025-02-21 v2.5.0](https://github.com/mateusjunges/laravel-kafka/compare/v2.4.2...v2.5.0)
+* Add support for Laravel 12 by [@mateusjunges](https://github.com/mateusjunges) in [#332](https://github.com/mateusjunges/laravel-kafka/pull/332)
+
 ##[2024-12-19 v2.4.2](https://github.com/mateusjunges/laravel-kafka/compare/v2.4.1...v2.4.2)
 * Update dependencies by [@mateusjunges](https://github.com/mateusjunges) in [`161361d`](https://github.com/mateusjunges/laravel-kafka/commit/161361d588a2d9cdbfda7f1b4c1cc6849f857cd6)
 

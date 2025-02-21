@@ -9,13 +9,15 @@ jobs:
     strategy:
       matrix:
         php: [8.4, 8.3, 8.2]
-        laravel: [11.*, 10.*]
+        laravel: [12.*, 11.*, 10.*]
         dependency-version: [prefer-stable]
         include:
           - laravel: 10.*
             testbench: 8.*
           - laravel: 11.*
             testbench: 9.*
+          - laravel: 12.*
+            testbench: 10.*
 
     name: CI - PHP ${{ matrix.php }}  - Laravel ${{ matrix.laravel }} - Testbench ${{ matrix.testbench }} (${{ matrix.dependency-version }})
 
@@ -35,7 +37,7 @@ jobs:
       - name: Install Composer dependencies
         run: |
           composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
-          composer update --${{ matrix.dependency-version }} --no-interaction --prefer-dist --no-suggest
+          composer update --${{ matrix.dependency-version }} --no-interaction --prefer-dist
 
       - name: PHPUnit Testing
         run: vendor/bin/phpunit
