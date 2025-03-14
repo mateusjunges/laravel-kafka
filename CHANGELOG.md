@@ -2,6 +2,10 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+##[2025-03-14 v2.5.1](https://github.com/mateusjunges/laravel-kafka/compare/v2.5.0...v2.5.1)
+* Mark rebalance errors as retryable by [@mateusjunges](https://github.com/mateusjunges) in [#335]
+  (https://github.com/mateusjunges/laravel-kafka/pull/335)
+
 ##[2025-02-21 v2.5.0](https://github.com/mateusjunges/laravel-kafka/compare/v2.4.2...v2.5.0)
 * Add support for Laravel 12 by [@mateusjunges](https://github.com/mateusjunges) in [#332](https://github.com/mateusjunges/laravel-kafka/pull/332)
 
