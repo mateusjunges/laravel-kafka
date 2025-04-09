@@ -34,6 +34,11 @@ class KafkaFake
         return $this->makeProducerBuilderFake($broker);
     }
 
+    public function asyncPublish(?string $broker = null): ProducerBuilderFake
+    {
+        return $this->publish($broker);
+    }
+
     /** Return a ConsumerBuilder instance. */
     public function consumer(array $topics = [], string $groupId = null, string $brokers = null): BuilderFake
     {
