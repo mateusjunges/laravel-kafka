@@ -40,6 +40,30 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         $this->fake->assertPublished($producer->getMessage());
     }
 
+    public function testItStoresMultipleMessages(): void
+    {
+        for ($i = 0; $i < 3; $i++) {
+            $this->fake->publish()
+                ->onTopic('topic')
+                ->withBody('test')
+                ->send();
+        }
+
+        $this->fake->assertPublishedTimes(3);
+    }
+
+    public function testItStoresMultipleMessagesWhenPublishingAsync(): void
+    {
+        for ($i = 0; $i < 3; $i++) {
+            $this->fake->asyncPublish()
+                ->onTopic('topic')
+                ->withBody('test')
+                ->send();
+        }
+
+        $this->fake->assertPublishedTimes(3);
+    }
+
     public function testAssertPublished(): void
     {
         try {
