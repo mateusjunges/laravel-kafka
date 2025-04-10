@@ -2,6 +2,9 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+##[2025-04-10 v2.5.2](https://github.com/mateusjunges/laravel-kafka/compare/v2.5.1...v2.5.2)
+* Fix assertions against messages published asynchronously by [@hauke-d](https://github.com/hauke-d) in [#340](https://github.com/mateusjunges/laravel-kafka/pull/340)
+
 ##[2025-03-14 v2.5.1](https://github.com/mateusjunges/laravel-kafka/compare/v2.5.0...v2.5.1)
 * Mark rebalance errors as retryable by [@mateusjunges](https://github.com/mateusjunges) in [#335]
   (https://github.com/mateusjunges/laravel-kafka/pull/335)
