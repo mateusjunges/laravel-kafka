@@ -11,7 +11,8 @@ Consumer classes are very simple, and it is basically a Laravel Command class. T
 namespace App\Console\Commands\Consumers;
 
 use Illuminate\Console\Command;
-use Junges\Kafka\Contracts\MessageConsumer;use Junges\Kafka\Facades\Kafka;
+use Junges\Kafka\Facades\Kafka;
+use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Contracts\ConsumerMessage;
 
 class MyTopicConsumer extends Command
@@ -70,6 +71,7 @@ redirect_stderr=true
 stdout_logfile=/var/log/supervisor-laravel-worker.log
 stopwaitsecs=3600
 ```
+
 #### Starting Supervisor
 Onnce the configuration file has been created, you may update Supervisor configuration and start the processes using the following commands:
 
