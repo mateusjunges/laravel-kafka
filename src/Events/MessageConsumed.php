@@ -7,7 +7,8 @@ use Junges\Kafka\Contracts\ConsumerMessage;
 final class MessageConsumed
 {
     public function __construct(
-        public readonly ConsumerMessage $message
+        public readonly ConsumerMessage $message,
+        public readonly string $consumerIdentifier,
     ) {
     }
 
