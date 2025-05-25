@@ -30,6 +30,32 @@ class Handler implements HandlerContract, ShouldQueue
 As you can see on the `__invoke` method, queued handlers does not have access to a `MessageConsumer` instance when handling the message,
 because it's running on a laravel queue and there are no actions that can be performed asynchronously on Kafka message consumer.
 
+You can specify which queue connection and queue name to use for your handler by implementing the `onConnection` and `onQueue` methods:
+
+```php
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Junges\Kafka\Contracts\Handler as HandlerContract;
+use Junges\Kafka\Contracts\KafkaConsumerMessage;
+
+class Handler implements HandlerContract, ShouldQueue
+{
+    public function __invoke(KafkaConsumerMessage $message): void
+    {
+        // Handle the consumed message.
+    }
+
+    public function onConnection(): string
+    {
+        return 'sqs'; // Specify your queue connection
+    }
+
+    public function onQueue(): string
+    {
+        return 'kafka-handlers'; // Specify your queue name
+    }
+}
+```
+
 After creating your handler class, you can use it just as a normal handler, and `laravel-kafka` will know how to handle it under the hoods 😄.
 
 
