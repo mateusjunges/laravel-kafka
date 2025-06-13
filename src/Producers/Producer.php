@@ -40,11 +40,12 @@ class Producer implements ProducerContract
             'conf' => $this->getConf($this->config->getProducerOptions()),
         ]);
         $this->dispatcher = App::make(Dispatcher::class);
+    }
 
+    public function __destruct()
+    {
         if ($this->async) {
-            app()->terminating(function () {
-                $this->flush();
-            });
+            $this->flush();
         }
     }
 
