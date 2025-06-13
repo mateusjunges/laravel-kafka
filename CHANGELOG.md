@@ -2,6 +2,9 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+##[2025-04-10 v2.5.2](https://github.com/mateusjunges/laravel-kafka/compare/v2.5.2...v2.6.0)
+* Resolve memory leak in async Kafka producers preventing connection cleanup by [@mateusjunges](https://github.com/mateusjunges) & [@sash](https://github.com/sash) in [#341](https://github.com/mateusjunges/laravel-kafka/pull/341)
+
 ##[2025-04-10 v2.5.2](https://github.com/mateusjunges/laravel-kafka/compare/v2.5.1...v2.5.2)
 * Fix assertions against messages published asynchronously by [@hauke-d](https://github.com/hauke-d) in [#340](https://github.com/mateusjunges/laravel-kafka/pull/340)
 
