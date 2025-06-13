@@ -42,13 +42,6 @@ class Producer implements ProducerContract
         $this->dispatcher = App::make(Dispatcher::class);
     }
 
-    public function __destruct()
-    {
-        if ($this->async) {
-            $this->flush();
-        }
-    }
-
     /** Set the Kafka Configuration. */
     private function getConf(array $options): Conf
     {
@@ -218,5 +211,12 @@ class Producer implements ProducerContract
         };
 
         return $flush();
+    }
+
+    public function __destruct()
+    {
+        if ($this->async) {
+            $this->flush();
+        }
     }
 }
