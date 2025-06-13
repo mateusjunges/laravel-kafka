@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Tests;
 
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Junges\Kafka\Config\Sasl;
@@ -64,6 +65,7 @@ final class KafkaTest extends LaravelKafkaTestCase
     public function it_can_publish_messages_asynchronously(): void
     {
         Event::fake();
+
         $mockedProducerTopic = m::mock(ProducerTopic::class)
             ->shouldReceive('producev')->twice()
             ->andReturn(m::self())
@@ -100,12 +102,14 @@ final class KafkaTest extends LaravelKafkaTestCase
             ->withDebugEnabled()
             ->send();
 
-        $this->app->terminate();
-
         Event::assertDispatched(MessagePublished::class);
 
         $this->assertTrue($test1);
         $this->assertTrue($test2);
+
+        Kafka::clearResolvedInstances();
+
+        Event::assertDispatched(MessagePublished::class);
     }
 
     public function testICanSwitchSerializersOnTheFly(): void
