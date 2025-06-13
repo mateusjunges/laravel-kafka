@@ -4,10 +4,12 @@ namespace Junges\Kafka\Tests\Config;
 
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 final class SaslTest extends LaravelKafkaTestCase
 {
-    public function testGetUsername(): void
+    #[Test]
+    public function get_username(): void
     {
         $sasl = new Sasl(
             username: 'username',
@@ -18,7 +20,8 @@ final class SaslTest extends LaravelKafkaTestCase
         $this->assertEquals('username', $sasl->getUsername());
     }
 
-    public function testGetPassword(): void
+    #[Test]
+    public function get_password(): void
     {
         $sasl = new Sasl(
             username: 'username',
@@ -29,7 +32,8 @@ final class SaslTest extends LaravelKafkaTestCase
         $this->assertEquals('password', $sasl->getPassword());
     }
 
-    public function testGetMechanisms(): void
+    #[Test]
+    public function get_mechanisms(): void
     {
         $sasl = new Sasl(
             username: 'username',

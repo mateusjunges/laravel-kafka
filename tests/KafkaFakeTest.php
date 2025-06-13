@@ -13,6 +13,7 @@ use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\Message\Message;
 use Junges\Kafka\Producers\MessageBatch;
 use Junges\Kafka\Support\Testing\Fakes\KafkaFake;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Constraint\ExceptionMessageIsOrContains;
 use PHPUnit\Framework\ExpectationFailedException;
 
@@ -27,7 +28,8 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         $this->fake = new KafkaFake(app(Manager::class));
     }
 
-    public function testItStorePublishedMessagesOnArray(): void
+    #[Test]
+    public function it_stores_published_messages_on_array(): void
     {
         $producer = $this->fake->publish()
             ->onTopic('topic')
@@ -40,7 +42,8 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         $this->fake->assertPublished($producer->getMessage());
     }
 
-    public function testItStoresMultipleMessages(): void
+    #[Test]
+    public function it_stores_multiple_messages(): void
     {
         for ($i = 0; $i < 3; $i++) {
             $this->fake->publish()
@@ -52,7 +55,8 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         $this->fake->assertPublishedTimes(3);
     }
 
-    public function testItStoresMultipleMessagesWhenPublishingAsync(): void
+    #[Test]
+    public function it_stores_multiple_messages_when_publishing_async(): void
     {
         for ($i = 0; $i < 3; $i++) {
             $this->fake->asyncPublish()
@@ -64,7 +68,8 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         $this->fake->assertPublishedTimes(3);
     }
 
-    public function testAssertPublished(): void
+    #[Test]
+    public function assert_published(): void
     {
         try {
             $this->fake->assertPublished(new Message('foo'));
@@ -82,7 +87,8 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         $this->fake->assertPublished($producer->getMessage());
     }
 
-    public function testAssertPublishedTimes(): void
+    #[Test]
+    public function assert_published_times(): void
     {
         try {
             $this->fake->assertPublished(new Message('foo'));
@@ -111,7 +117,8 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         }
     }
 
-    public function testItCanPerformAssertionsOnPublishedMessages(): void
+    #[Test]
+    public function it_can_perform_assertions_on_published_messages(): void
     {
         $producer = $this->fake->publish()
             ->onTopic('topic')
@@ -141,7 +148,8 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         }
     }
 
-    public function testAssertPublishedOn(): void
+    #[Test]
+    public function assert_published_on(): void
     {
         $producer = $this->fake->publish()
             ->onTopic('topic')
@@ -162,7 +170,8 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         }
     }
 
-    public function testAssertPublishedOnBySpecifyingMessageObject(): void
+    #[Test]
+    public function assert_published_on_by_specifying_message_object(): void
     {
         $message = Message::create()->withBody(['test' => ['test']])->withHeaders(['custom' => 'header'])->withKey(Str::uuid()->toString());
 
@@ -181,7 +190,8 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         }
     }
 
-    public function testAssertPublishedOnTimes(): void
+    #[Test]
+    public function assert_published_on_times(): void
     {
         $producer = $this->fake->publish()
             ->onTopic('topic')
@@ -202,7 +212,8 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         }
     }
 
-    public function testAssertPublishedOnTimesForBatchMessages(): void
+    #[Test]
+    public function assert_published_on_times_for_batch_messages(): void
     {
         $producer = $this->fake->publish()
             ->onTopic('batch-topic')
@@ -226,7 +237,8 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         $this->fake->assertPublishedOn('batch-topic');
     }
 
-    public function testICanPerformAssertionsUsingAssertPublishedOn(): void
+    #[Test]
+    public function i_can_perform_assertions_using_assert_published_on(): void
     {
         $producer = $this->fake->publish()
             ->onTopic('topic')
@@ -253,7 +265,8 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         });
     }
 
-    public function testNothingPublished(): void
+    #[Test]
+    public function nothing_published(): void
     {
         $this->fake->assertNothingPublished();
 
@@ -266,7 +279,8 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         }
     }
 
-    public function testPublishMessageBatch(): void
+    #[Test]
+    public function publish_message_batch(): void
     {
         $messageBatch = (new MessageBatch())->onTopic('test');
         $messageBatch->push(new Message());
@@ -281,7 +295,8 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         $this->assertEquals(3, $producer->sendBatch($messageBatch));
     }
 
-    public function testFakeConsumer(): void
+    #[Test]
+    public function fake_consumer(): void
     {
         Kafka::fake();
 
@@ -308,7 +323,8 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         $consumer->consume();
     }
 
-    public function testFakeConsumerWithSingleMultipleMessages(): void
+    #[Test]
+    public function fake_consumer_with_single_multiple_messages(): void
     {
         Kafka::fake();
 
@@ -349,7 +365,8 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         $this->assertEquals(count($messages), $consumer->consumedMessagesCount());
     }
 
-    public function testAReceivedMessageDoesItsJob(): void
+    #[Test]
+    public function a_received_message_does_its_job(): void
     {
         Kafka::fake();
 
@@ -396,7 +413,8 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         $this->assertEquals('1998-08-11 04:30:00', $posts[1]['published_at']);
     }
 
-    public function testStopFakeConsumer(): void
+    #[Test]
+    public function stop_fake_consumer(): void
     {
         Kafka::fake();
 
@@ -442,7 +460,8 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         $this->assertEquals(1, $this->consumer->consumedMessagesCount());
     }
 
-    public function testFakeBatchConsumer(): void
+    #[Test]
+    public function fake_batch_consumer(): void
     {
         Kafka::fake();
 
@@ -483,7 +502,8 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         $this->assertEquals(count($messages), $consumer->consumedMessagesCount());
     }
 
-    public function testFakeMultipleBatchConsumer(): void
+    #[Test]
+    public function fake_multiple_batch_consumer(): void
     {
         Kafka::fake();
 
@@ -568,7 +588,8 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         $this->assertEquals(count($messages), $consumer->consumedMessagesCount());
     }
 
-    public function testStopFakeBatchConsumer(): void
+    #[Test]
+    public function stop_fake_batch_consumer(): void
     {
         Kafka::fake();
 
@@ -619,7 +640,7 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         $this->assertEquals(2, $this->consumer->consumedMessagesCount());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_handle_macros(): void
     {
         Kafka::macro('onTopicExample', fn () => 'this is a test');

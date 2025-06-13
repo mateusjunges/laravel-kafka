@@ -6,10 +6,12 @@ use JsonException;
 use Junges\Kafka\Contracts\ProducerMessage;
 use Junges\Kafka\Message\Serializers\JsonSerializer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase as TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 final class JsonSerializerTest extends TestCase
 {
-    public function testSerialize(): void
+    #[Test]
+    public function serialize(): void
     {
         $message = $this->getMockForAbstractClass(ProducerMessage::class);
         $message->expects($this->once())->method('getBody')->willReturn(['name' => 'foo']);
@@ -20,7 +22,8 @@ final class JsonSerializerTest extends TestCase
         $this->assertSame($message, $serializer->serialize($message));
     }
 
-    public function testSerializeThrowsException(): void
+    #[Test]
+    public function serialize_throws_exception(): void
     {
         $message = $this->getMockForAbstractClass(ProducerMessage::class);
         $message->expects($this->once())->method('getBody')->willReturn(chr(255));

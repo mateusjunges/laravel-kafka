@@ -6,12 +6,14 @@ use Junges\Kafka\Commit\RetryableCommitter;
 use Junges\Kafka\Tests\FailingCommitter;
 use Junges\Kafka\Tests\Fakes\FakeSleeper;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
+use PHPUnit\Framework\Attributes\Test;
 use RdKafka\Exception as RdKafkaException;
 use RdKafka\Message;
 
 final class RetryableCommitterTest extends LaravelKafkaTestCase
 {
-    public function testItShouldRetryToCommit(): void
+    #[Test]
+    public function it_should_retry_to_commit(): void
     {
         $exception = new RdKafkaException("Something went wrong", RD_KAFKA_RESP_ERR_REQUEST_TIMED_OUT);
         $failingCommitter = new FailingCommitter($exception, 3);
@@ -24,7 +26,8 @@ final class RetryableCommitterTest extends LaravelKafkaTestCase
         $this->assertEquals(4, $failingCommitter->getTimesTriedToCommitDlq());
     }
 
-    public function testItShouldRetryOnlyUpToTheMaximumNumberOfRetries(): void
+    #[Test]
+    public function it_should_retry_only_up_to_the_maximum_number_of_retries(): void
     {
         $expectedException = new RdKafkaException("Something went wrong", RD_KAFKA_RESP_ERR_REQUEST_TIMED_OUT);
         $failingCommitter = new FailingCommitter($expectedException, 99);
@@ -54,7 +57,8 @@ final class RetryableCommitterTest extends LaravelKafkaTestCase
         $this->assertSame($expectedException, $commitDlqException);
     }
 
-    public function testItShouldProgressivelyWaitForTheNextRetry(): void
+    #[Test]
+    public function it_should_progressively_wait_for_the_next_retry(): void
     {
         $expectedException = new RdKafkaException("Something went wrong", RD_KAFKA_RESP_ERR_REQUEST_TIMED_OUT);
 

@@ -6,11 +6,13 @@ use Junges\Kafka\Commit\BatchCommitter;
 use Junges\Kafka\Contracts\Committer;
 use Junges\Kafka\MessageCounter;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
+use PHPUnit\Framework\Attributes\Test;
 use RdKafka\Message;
 
 final class BatchCommitterTest extends LaravelKafkaTestCase
 {
-    public function testShouldCommitMessageOnlyAfterTheBatchSizeIsReached(): void
+    #[Test]
+    public function should_commit_message_only_after_the_batch_size_is_reached(): void
     {
         $committer = $this->createMock(Committer::class);
         $committer
@@ -26,7 +28,8 @@ final class BatchCommitterTest extends LaravelKafkaTestCase
         }
     }
 
-    public function testShouldAlwaysCommitDlq(): void
+    #[Test]
+    public function should_always_commit_dlq(): void
     {
         $committer = $this->createMock(Committer::class);
         $committer

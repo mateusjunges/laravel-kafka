@@ -5,6 +5,7 @@ namespace Junges\Kafka\Tests\Message;
 use Illuminate\Support\Str;
 use Junges\Kafka\Message\Message;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 final class MessageTest extends LaravelKafkaTestCase
 {
@@ -16,7 +17,8 @@ final class MessageTest extends LaravelKafkaTestCase
         $this->message = new Message();
     }
 
-    public function testItCanSetAMessageKey(): void
+    #[Test]
+    public function it_can_set_a_message_key(): void
     {
         $this->message->withBodyKey('foo', 'bar');
 
@@ -27,7 +29,8 @@ final class MessageTest extends LaravelKafkaTestCase
         $this->assertEquals($expected, $this->message);
     }
 
-    public function testItCanForgetAMessageKey(): void
+    #[Test]
+    public function it_can_forget_a_message_key(): void
     {
         $this->message->withBodyKey('foo', 'bar');
         $this->message->withBodyKey('bar', 'foo');
@@ -41,7 +44,8 @@ final class MessageTest extends LaravelKafkaTestCase
         $this->assertEquals($expected, $this->message);
     }
 
-    public function testItCanSetMessageHeaders(): void
+    #[Test]
+    public function it_can_set_message_headers(): void
     {
         $this->message->withHeaders([
             'foo' => 'bar',
@@ -54,7 +58,8 @@ final class MessageTest extends LaravelKafkaTestCase
         $this->assertEquals($expected, $this->message);
     }
 
-    public function testItCanSetTheMessageKey(): void
+    #[Test]
+    public function it_can_set_the_message_key(): void
     {
         $this->message->withKey($uuid = Str::uuid()->toString());
 
@@ -65,7 +70,8 @@ final class MessageTest extends LaravelKafkaTestCase
         $this->assertEquals($expected, $this->message);
     }
 
-    public function testItCanGetTheMessagePayload(): void
+    #[Test]
+    public function it_can_get_the_message_payload(): void
     {
         $this->message->withBodyKey('foo', 'bar');
         $this->message->withBodyKey('bar', 'foo');
@@ -81,7 +87,8 @@ final class MessageTest extends LaravelKafkaTestCase
         $this->assertEquals($expectedPayload, $this->message->getBody());
     }
 
-    public function testItCanTransformAMessageInArray(): void
+    #[Test]
+    public function it_can_transform_a_message_in_array(): void
     {
         $this->message->withBodyKey('foo', 'bar');
         $this->message->withBodyKey('bar', 'foo');

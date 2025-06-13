@@ -6,10 +6,12 @@ use AvroSchema;
 use Junges\Kafka\Contracts\KafkaAvroSchemaRegistry;
 use Junges\Kafka\Message\KafkaAvroSchema;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 final class KafkaAvroSchemaTest extends LaravelKafkaTestCase
 {
-    public function testGetters(): void
+    #[Test]
+    public function getters(): void
     {
         $definition = $this->getMockBuilder(AvroSchema::class)->disableOriginalConstructor()->getMock();
 
@@ -23,7 +25,8 @@ final class KafkaAvroSchemaTest extends LaravelKafkaTestCase
         $this->assertEquals($definition, $avroSchema->getDefinition());
     }
 
-    public function testSetters(): void
+    #[Test]
+    public function setters(): void
     {
         $definition = $this->getMockBuilder(AvroSchema::class)->disableOriginalConstructor()->getMock();
 
@@ -36,7 +39,8 @@ final class KafkaAvroSchemaTest extends LaravelKafkaTestCase
         $this->assertEquals($definition, $avroSchema->getDefinition());
     }
 
-    public function testAvroSchemaWithJustName(): void
+    #[Test]
+    public function avro_schema_with_just_name(): void
     {
         $schemaName = 'testSchema';
 

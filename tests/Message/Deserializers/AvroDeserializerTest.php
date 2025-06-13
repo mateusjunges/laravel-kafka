@@ -10,10 +10,12 @@ use Junges\Kafka\Contracts\KafkaAvroSchemaRegistry;
 use Junges\Kafka\Message\Deserializers\AvroDeserializer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use Mockery as m;
+use PHPUnit\Framework\Attributes\Test;
 
 final class AvroDeserializerTest extends LaravelKafkaTestCase
 {
-    public function testDeserializeTombstone(): void
+    #[Test]
+    public function deserialize_tombstone(): void
     {
         $message = m::mock(ConsumerMessage::class);
         $message->expects('getBody')->andReturn(null);
@@ -39,7 +41,8 @@ final class AvroDeserializerTest extends LaravelKafkaTestCase
         $this->assertNull($result->getBody());
     }
 
-    public function testDeserializeWithSchema(): void
+    #[Test]
+    public function deserialize_with_schema(): void
     {
         $schemaDefinition = $this->getMockBuilder(AvroSchema::class)->disableOriginalConstructor()->getMock();
 
@@ -75,7 +78,8 @@ final class AvroDeserializerTest extends LaravelKafkaTestCase
         $this->assertSame('decoded-key', $result->getKey());
     }
 
-    public function testDeserializeKeyMode(): void
+    #[Test]
+    public function deserialize_key_mode(): void
     {
         $schemaDefinition = $this->getMockBuilder(AvroSchema::class)->disableOriginalConstructor()->getMock();
 
@@ -109,7 +113,8 @@ final class AvroDeserializerTest extends LaravelKafkaTestCase
         $this->assertSame('body', $result->getBody());
     }
 
-    public function testDeserializeBodyMode(): void
+    #[Test]
+    public function deserialize_body_mode(): void
     {
         $schemaDefinition = $this->getMockBuilder(AvroSchema::class)->disableOriginalConstructor()->getMock();
 
@@ -142,7 +147,8 @@ final class AvroDeserializerTest extends LaravelKafkaTestCase
         $this->assertSame(['test'], $result->getBody());
     }
 
-    public function testGetRegistry(): void
+    #[Test]
+    public function get_registry(): void
     {
         $registry = m::mock(AvroSchemaRegistry::class);
         $recordSerializer = $this->getMockBuilder(RecordSerializer::class)->disableOriginalConstructor()->getMock();

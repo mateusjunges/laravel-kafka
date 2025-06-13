@@ -8,11 +8,13 @@ use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
 use Junges\Kafka\Tests\Fakes\FakeHandler;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
+use PHPUnit\Framework\Attributes\Test;
 use RdKafka\Message;
 
 final class KafkaConsumerCommandTest extends LaravelKafkaTestCase
 {
-    public function testItCanConsumeMessages(): void
+    #[Test]
+    public function it_can_consume_messages(): void
     {
         $this->mockProducer();
 

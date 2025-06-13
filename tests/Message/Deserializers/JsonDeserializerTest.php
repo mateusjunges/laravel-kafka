@@ -5,10 +5,12 @@ namespace Junges\Kafka\Tests\Message\Deserializers;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase as TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 final class JsonDeserializerTest extends TestCase
 {
-    public function testDeserialize(): void
+    #[Test]
+    public function deserialize(): void
     {
         $message = $this->getMockForAbstractClass(ConsumerMessage::class);
         $message->expects($this->once())->method('getBody')->willReturn('{"name":"foo"}');
@@ -19,7 +21,8 @@ final class JsonDeserializerTest extends TestCase
         $this->assertEquals(['name' => 'foo'], $result->getBody());
     }
 
-    public function testDeserializeNonJson(): void
+    #[Test]
+    public function deserialize_non_json(): void
     {
         $message = $this->getMockForAbstractClass(ConsumerMessage::class);
         $message->expects($this->once())->method('getBody')->willReturn('test');

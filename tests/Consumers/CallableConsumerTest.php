@@ -7,13 +7,15 @@ use Junges\Kafka\Consumers\CallableConsumer;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
+use PHPUnit\Framework\Attributes\Test;
 use Mockery as m;
 use RdKafka\Message;
 use stdClass;
 
 final class CallableConsumerTest extends LaravelKafkaTestCase
 {
-    public function testItDecodesMessages(): void
+    #[Test]
+    public function it_decodes_messages(): void
     {
         $message = new Message();
         $message->payload =

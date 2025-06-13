@@ -12,11 +12,13 @@ use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\Consumer;
 use Junges\Kafka\MessageCounter;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
+use PHPUnit\Framework\Attributes\Test;
 use RdKafka\KafkaConsumer;
 
 final class CommitterFactoryTest extends LaravelKafkaTestCase
 {
-    public function testShouldBuildAVoidCommitterWhenAutoCommitIsDisabled(): void
+    #[Test]
+    public function should_build_a_void_committer_when_auto_commit_is_disabled(): void
     {
         $config = new Config(
             broker: 'broker',
@@ -45,7 +47,8 @@ final class CommitterFactoryTest extends LaravelKafkaTestCase
         $this->assertEquals($expectedCommitter, $committer);
     }
 
-    public function testShouldBuildARetryableBatchCommitterWhenAutoCommitIsEnabled(): void
+    #[Test]
+    public function should_build_a_retryable_batch_committer_when_auto_commit_is_enabled(): void
     {
         $config = new Config(
             broker: 'broker',

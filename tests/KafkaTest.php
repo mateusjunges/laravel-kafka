@@ -26,7 +26,8 @@ use RdKafka\ProducerTopic;
 
 final class KafkaTest extends LaravelKafkaTestCase
 {
-    public function testItCanPublishMessagesToKafka(): void
+    #[Test]
+    public function it_can_publish_messages_to_kafka(): void
     {
         Event::fake();
         $mockedProducerTopic = m::mock(ProducerTopic::class)
@@ -111,7 +112,8 @@ final class KafkaTest extends LaravelKafkaTestCase
         Event::assertDispatched(MessagePublished::class);
     }
 
-    public function testICanSwitchSerializersOnTheFly(): void
+    #[Test]
+    public function i_can_switch_serializers_on_the_fly(): void
     {
         $mockedProducerTopic = m::mock(ProducerTopic::class)
             ->shouldReceive('producev')->once()
@@ -148,7 +150,8 @@ final class KafkaTest extends LaravelKafkaTestCase
         $this->assertInstanceOf(JsonSerializer::class, $serializer);
     }
 
-    public function testItDoesNotSendMessagesToKafkaIfUsingFake(): void
+    #[Test]
+    public function it_does_not_send_messages_to_kafka_if_using_fake(): void
     {
         $mockedProducer = m::mock(Producer::class)
             ->shouldReceive('newTopic')->never()
@@ -175,7 +178,8 @@ final class KafkaTest extends LaravelKafkaTestCase
         $this->assertTrue($test);
     }
 
-    public function testICanSetTheEntireMessageWithMessageObject(): void
+    #[Test]
+    public function i_can_set_the_entire_message_with_message_object(): void
     {
         $mockedProducerTopic = m::mock(ProducerTopic::class)
             ->shouldReceive('producev')->times(2)
@@ -227,7 +231,8 @@ final class KafkaTest extends LaravelKafkaTestCase
         $this->assertTrue($test);
     }
 
-    public function testICanDisableDebugUsingWithDebugDisabledMethod(): void
+    #[Test]
+    public function i_can_disable_debug_using_with_debug_disabled_method(): void
     {
         $mockedProducerTopic = m::mock(ProducerTopic::class)
             ->shouldReceive('producev')->once()
@@ -269,7 +274,8 @@ final class KafkaTest extends LaravelKafkaTestCase
         $this->assertArrayNotHasKey('debug', $message->getHeaders());
     }
 
-    public function testICanUseCustomOptionsForProducerConfig(): void
+    #[Test]
+    public function i_can_use_custom_options_for_producer_config(): void
     {
         $producer = Kafka::publish()
             ->withConfigOptions($expectedOptions = [
@@ -286,14 +292,16 @@ final class KafkaTest extends LaravelKafkaTestCase
         $this->assertEquals($expectedOptions, $options);
     }
 
-    public function testCreateConsumerReturnsAConsumerBuilderInstance(): void
+    #[Test]
+    public function create_consumer_returns_a_consumer_builder_instance(): void
     {
         $consumer = Kafka::consumer();
 
         $this->assertInstanceOf(ConsumerBuilder::class, $consumer);
     }
 
-    public function testCreateConsumerDefaultConfigs(): void
+    #[Test]
+    public function create_consumer_default_configs(): void
     {
         $consumer = Kafka::consumer();
 
@@ -303,7 +311,8 @@ final class KafkaTest extends LaravelKafkaTestCase
         $this->assertEquals([], $this->getPropertyWithReflection('topics', $consumer));
     }
 
-    public function testProducerThrowsExceptionIfMessageCouldNotBePublished(): void
+    #[Test]
+    public function producer_throws_exception_if_message_could_not_be_published(): void
     {
         Event::fake();
 
@@ -336,7 +345,8 @@ final class KafkaTest extends LaravelKafkaTestCase
         });
     }
 
-    public function testSendMessageBatch(): void
+    #[Test]
+    public function send_message_batch(): void
     {
         $messageBatch = new MessageBatch;
         $messageBatch->push(new Message('test_1'));
@@ -397,7 +407,8 @@ final class KafkaTest extends LaravelKafkaTestCase
         Kafka::publish()->sendBatch($messageBatch);
     }
 
-    public function testMacro(): void
+    #[Test]
+    public function macro(): void
     {
         $sasl = new Sasl(username: 'username', password: 'password', mechanisms: 'mechanisms');
 
@@ -415,7 +426,7 @@ final class KafkaTest extends LaravelKafkaTestCase
         $this->assertEquals($sasl, $this->getPropertyWithReflection('saslConfig', $producer));
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_published_messages_when_using_macros(): void
     {
         $expectedMessage = (new Message)

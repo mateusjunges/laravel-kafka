@@ -7,12 +7,14 @@ use Junges\Kafka\Handlers\RetryableHandler;
 use Junges\Kafka\Handlers\RetryStrategies\DefaultRetryStrategy;
 use Junges\Kafka\Tests\FailingHandler;
 use Junges\Kafka\Tests\Fakes\FakeSleeper;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
 final class RetryableHandlerTest extends TestCase
 {
-    public function testItPassesWhenNoExceptionOccurred(): void
+    #[Test]
+    public function it_passes_when_no_exception_occurred(): void
     {
         $failingHandler = new FailingHandler(0, new RuntimeException('test'));
         $handler = new RetryableHandler($failingHandler(...), new DefaultRetryStrategy(), new FakeSleeper());
@@ -23,7 +25,8 @@ final class RetryableHandlerTest extends TestCase
         $this->assertSame(1, $failingHandler->getTimesInvoked());
     }
 
-    public function testItDoesRetriesOnException(): void
+    #[Test]
+    public function it_does_retries_on_exception(): void
     {
         $failingHandler = new FailingHandler(4, new RuntimeException('test'));
         $sleeper = new FakeSleeper();
@@ -36,7 +39,8 @@ final class RetryableHandlerTest extends TestCase
         $this->assertEquals([1e6, 2e6, 4e6, 8e6], $sleeper->getSleeps());
     }
 
-    public function testItBubblesExceptionWhenRetriesExceeded(): void
+    #[Test]
+    public function it_bubbles_exception_when_retries_exceeded(): void
     {
         $failingHandler = new FailingHandler(100, new RuntimeException('test'));
         $sleeper = new FakeSleeper();

@@ -15,19 +15,22 @@ use Junges\Kafka\Exceptions\ConsumerException;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
 use Junges\Kafka\Tests\Fakes\FakeConsumer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
+use PHPUnit\Framework\Attributes\Test;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
 
 final class ConsumerBuilderTest extends LaravelKafkaTestCase
 {
-    public function testItReturnsAConsumerInstance(): void
+    #[Test]
+    public function it_returns_a_consumer_instance(): void
     {
         $consumer = Builder::create('broker')->build();
 
         $this->assertInstanceOf(Consumer::class, $consumer);
     }
 
-    public function testItCanSubscribeToATopic(): void
+    #[Test]
+    public function it_can_subscribe_to_a_topic(): void
     {
         $consumer = Builder::create('broker');
 
@@ -38,7 +41,8 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertEquals(['foo'], $topics);
     }
 
-    public function testItDoesNotSubscribeToATopicTwice(): void
+    #[Test]
+    public function it_does_not_subscribe_to_a_topic_twice(): void
     {
         $consumer = Builder::create('broker');
 
@@ -49,7 +53,8 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertEquals(['foo'], $topics);
     }
 
-    public function testICanChangeDeserializersOnTheFly(): void
+    #[Test]
+    public function i_can_change_deserializers_on_the_fly(): void
     {
         $consumer = Builder::create('broker');
 
@@ -60,7 +65,8 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertInstanceOf(JsonDeserializer::class, $deserializer);
     }
 
-    public function testItCanSubscribeToMoreThanOneTopicsAtOnce(): void
+    #[Test]
+    public function it_can_subscribe_to_more_than_one_topics_at_once(): void
     {
         $consumer = Builder::create('broker');
 
@@ -79,7 +85,8 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertEquals(['foo', 'bar'], $topics);
     }
 
-    public function testItCanSetConsumerGroupId(): void
+    #[Test]
+    public function it_can_set_consumer_group_id(): void
     {
         $consumer = Builder::create('broker')->withConsumerGroupId('foo');
 
@@ -88,14 +95,16 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertEquals('foo', $groupId);
     }
 
-    public function testItThrowsInvalidArgumentExceptionIfCreatingWithInvalidTopic(): void
+    #[Test]
+    public function it_throws_invalid_argument_exception_if_creating_with_invalid_topic(): void
     {
         $this->expectException(InvalidArgumentException::class);
 
         Builder::create('broker', [1234], 'group');
     }
 
-    public function testItCanSaveTheCommitBatchSize(): void
+    #[Test]
+    public function it_can_save_the_commit_batch_size(): void
     {
         $consumer = Builder::create('broker')
             ->withCommitBatchSize(1);
@@ -105,7 +114,8 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertEquals(1, $commitValue);
     }
 
-    public function testItUsesTheCorrectHandler(): void
+    #[Test]
+    public function it_uses_the_correct_handler(): void
     {
         $consumer = Builder::create('broker')->withHandler(new FakeConsumer());
 
@@ -116,7 +126,8 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertInstanceOf(Closure::class, $handler);
     }
 
-    public function testItCanSetMaxMessages(): void
+    #[Test]
+    public function it_can_set_max_messages(): void
     {
         $consumer = Builder::create('broker')->withMaxMessages(2);
 
@@ -127,7 +138,8 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertEquals(2, $maxMessages);
     }
 
-    public function testItCanSetMaxCommitRetries(): void
+    #[Test]
+    public function it_can_set_max_commit_retries(): void
     {
         $consumer = Builder::create('broker')->withMaxCommitRetries(2);
 
@@ -138,7 +150,8 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertEquals(2, $maxCommitRetries);
     }
 
-    public function testItCanSetTheDeadLetterQueue(): void
+    #[Test]
+    public function it_can_set_the_dead_letter_queue(): void
     {
         $consumer = Builder::create('broker')->subscribe('test')->withDlq('test-topic-dlq');
 
@@ -149,7 +162,8 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertEquals('test-topic-dlq', $dlq);
     }
 
-    public function testItUsesDlqSuffixIfDlqIsNull(): void
+    #[Test]
+    public function it_uses_dlq_suffix_if_dlq_is_null(): void
     {
         $consumer = Builder::create('broker', ['foo'])->withDlq();
 
@@ -160,7 +174,8 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertEquals('foo-dlq', $dlq);
     }
 
-    public function testItCanSetSasl(): void
+    #[Test]
+    public function it_can_set_sasl(): void
     {
         $consumer = Builder::create('broker')
             ->withSasl('username', 'password', 'mechanisms');
@@ -174,7 +189,8 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertEquals($expectedSaslConfig, $saslConfig);
     }
 
-    public function testItCanAddMiddlewaresToTheHandler(): void
+    #[Test]
+    public function it_can_add_middlewares_to_the_handler(): void
     {
         $consumer = Builder::create('broker', ['foo'], 'group')
             ->withMiddleware(function ($message, callable $next) {
@@ -190,7 +206,8 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertIsCallable($middlewares[0]);
     }
 
-    public function testItCanAddInvokableClassesAsMiddleware(): void
+    #[Test]
+    public function it_can_add_invokable_classes_as_middleware(): void
     {
         $consumer = Builder::create('broker', ['foo'], 'group')
             ->withMiddleware(new TestMiddleware());
@@ -204,7 +221,8 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertIsCallable($middlewares[0]);
     }
 
-    public function testItCanSetSecurityProtocol(): void
+    #[Test]
+    public function it_can_set_security_protocol(): void
     {
         $consumer = Builder::create('broker', ['foo'], 'group')
             ->withSecurityProtocol('security');
@@ -216,7 +234,8 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertEquals('security', $securityProtocol);
     }
 
-    public function testItCanSetSecurityProtocolViaSaslConfig(): void
+    #[Test]
+    public function it_can_set_security_protocol_via_sasl_config(): void
     {
         $consumer = Builder::create('broker', ['foo'], 'group')
             ->withSasl(
@@ -235,7 +254,8 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertEquals('protocol', $securityProtocol);
     }
 
-    public function testItCanSetAutoCommit(): void
+    #[Test]
+    public function it_can_set_auto_commit(): void
     {
         $consumer = Builder::create('broker')->withAutoCommit();
 
@@ -254,7 +274,8 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertFalse($autoCommit);
     }
 
-    public function testItCanSetStopAfterLastMessage(): void
+    #[Test]
+    public function it_can_set_stop_after_last_message(): void
     {
         $consumer = Builder::create('broker')->stopAfterLastMessage();
 
@@ -273,7 +294,8 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertFalse($autoCommit);
     }
 
-    public function testItCanSetConsumerOptions(): void
+    #[Test]
+    public function it_can_set_consumer_options(): void
     {
         $consumer = Builder::create('broker')
             ->withOptions([
@@ -292,7 +314,8 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertEquals('false', $options['enable.auto.commit']);
     }
 
-    public function testItCanSpecifyBrokersUsingWithBrokers(): void
+    #[Test]
+    public function it_can_specify_brokers_using_with_brokers(): void
     {
         $consumer = Builder::create('broker')->withBrokers('my-test-broker');
 
@@ -303,7 +326,8 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertEquals('my-test-broker', $brokers);
     }
 
-    public function testItCanBuildWithCustomCommitter(): void
+    #[Test]
+    public function it_can_build_with_custom_committer(): void
     {
         $adhocCommitterFactory = new class implements CommitterFactory {
             public function make(KafkaConsumer $kafkaConsumer, Config $config): Committer
@@ -319,7 +343,8 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertInstanceOf($adhocCommitterFactory::class, $committerFactory);
     }
 
-    public function testItCantCreateAConsumerWithDlqWithoutSubscribingToAnyTopics(): void
+    #[Test]
+    public function it_cant_create_a_consumer_with_dlq_without_subscribing_to_any_topics(): void
     {
         $this->expectException(ConsumerException::class);
 

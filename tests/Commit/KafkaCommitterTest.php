@@ -6,13 +6,15 @@ use Junges\Kafka\Commit\Committer;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use Mockery as m;
+use PHPUnit\Framework\Attributes\Test;
 use RdKafka\Conf;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
 
 final class KafkaCommitterTest extends LaravelKafkaTestCase
 {
-    public function testItCanCommit(): void
+    #[Test]
+    public function it_can_commit(): void
     {
         $kafkaConsumer = m::mock(KafkaConsumer::class)
             ->shouldReceive('commit')->once()
@@ -41,7 +43,8 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
         $kafkaCommitter->commitMessage(new Message(), true);
     }
 
-    public function testItCanCommitToDlq(): void
+    #[Test]
+    public function it_can_commit_to_dlq(): void
     {
         $kafkaConsumer = m::mock(KafkaConsumer::class)
             ->shouldReceive('commit')->once()
