@@ -2,7 +2,6 @@
 
 namespace Junges\Kafka\Tests;
 
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Junges\Kafka\Config\Sasl;
