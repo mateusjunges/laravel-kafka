@@ -7,8 +7,8 @@ use Junges\Kafka\Consumers\CallableConsumer;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
-use PHPUnit\Framework\Attributes\Test;
 use Mockery as m;
+use PHPUnit\Framework\Attributes\Test;
 use RdKafka\Message;
 use stdClass;
 
