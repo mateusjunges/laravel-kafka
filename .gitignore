@@ -7,3 +7,4 @@ tests/reports
 .php-cs-fixer.cache
 composer.lock
 .phpunit.cache/
+.claude/
