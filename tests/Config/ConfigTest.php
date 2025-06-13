@@ -11,6 +11,7 @@ use Junges\Kafka\Consumers\CallableBatchConsumer;
 use Junges\Kafka\Contracts\Consumer;
 use Junges\Kafka\Support\Timer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 final class ConfigTest extends LaravelKafkaTestCase
 {
