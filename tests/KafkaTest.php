@@ -72,6 +72,7 @@ final class KafkaTest extends LaravelKafkaTestCase
         $mockedProducer = m::mock(Producer::class)
             ->shouldReceive('newTopic')->with('test')->twice()->andReturn($mockedProducerTopic)
             ->shouldReceive('poll')->twice()
+            ->shouldReceive('flush')->once()
             ->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
             ->getMock();
 
@@ -142,6 +143,33 @@ final class KafkaTest extends LaravelKafkaTestCase
         $serializer = $this->getPropertyWithReflection('serializer', $producer);
 
         $this->assertInstanceOf(JsonSerializer::class, $serializer);
+    }
+
+    public function testItDoesNotSendMessagesToKafkaIfUsingFake(): void
+    {
+        $mockedProducer = m::mock(Producer::class)
+            ->shouldReceive('newTopic')->never()
+            ->shouldReceive('producev')->never()
+            ->shouldReceive('poll')->never()
+            ->shouldReceive('flush')->never()
+            ->getMock();
+
+        $this->app->bind(Producer::class, fn () => $mockedProducer);
+
+        Kafka::fake();
+
+        $test = Kafka::publish()
+            ->onTopic('test-topic')
+            ->withConfigOptions([
+                'metadata.broker.list' => 'broker',
+            ])
+            ->withKafkaKey(Str::uuid()->toString())
+            ->withBodyKey('test', ['test'])
+            ->withHeaders(['custom' => 'header'])
+            ->withDebugEnabled()
+            ->send();
+
+        $this->assertTrue($test);
     }
 
     public function testICanSetTheEntireMessageWithMessageObject(): void
