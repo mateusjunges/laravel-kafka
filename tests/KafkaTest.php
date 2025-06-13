@@ -401,6 +401,12 @@ final class KafkaTest extends LaravelKafkaTestCase
         $messageBatch->push(new Message('test_2'));
         $messageBatch->push(new Message);
 
+        $mockedProducer = m::mock(Producer::class);
+
+        $this->app->bind(Producer::class, function () use ($mockedProducer) {
+            return $mockedProducer;
+        });
+
         $this->expectException(CouldNotPublishMessageBatch::class);
         $this->expectExceptionMessage("The provided topic name [''] is invalid for the message batch. Try again with a valid topic name.");
 
