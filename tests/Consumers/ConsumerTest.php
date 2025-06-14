@@ -247,7 +247,6 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $this->assertInstanceOf(VoidCommitter::class, $committer);
     }
 
-
     #[Test]
     public function can_consume_tombstone_messages(): void
     {
