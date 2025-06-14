@@ -7,5 +7,5 @@ use Throwable;
 
 interface Logger
 {
-    public function error(Message $message, Throwable $e = null, string $prefix = 'ERROR'): void;
+    public function error(Message $message, ?Throwable $e = null, string $prefix = 'ERROR'): void;
 }

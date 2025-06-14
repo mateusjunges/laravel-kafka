@@ -31,7 +31,7 @@ class Logger implements LoggerContract
     }
 
     /** Log an error message. */
-    public function error(Message $message, Throwable $e = null, string $prefix = 'ERROR'): void
+    public function error(Message $message, ?Throwable $e = null, string $prefix = 'ERROR'): void
     {
         $this->logger->error("[{$prefix}] Error to consume message", [
             'message' => $message,

@@ -13,7 +13,7 @@ class Message extends AbstractMessage implements Arrayable, ProducerMessage
 {
     /** Creates a new message instance.*/
     #[Pure]
-    public static function create(string $topicName = null, int $partition = RD_KAFKA_PARTITION_UA): ProducerMessage
+    public static function create(?string $topicName = null, int $partition = RD_KAFKA_PARTITION_UA): ProducerMessage
     {
         return new self($topicName, $partition);
     }

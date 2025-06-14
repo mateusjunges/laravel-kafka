@@ -22,7 +22,7 @@ class Factory implements Manager
     private ?ProducerBuilder $builder = null;
 
     /** Creates a new ProducerBuilder instance, setting brokers and topic. */
-    public function publish(string $broker = null): MessageProducer
+    public function publish(?string $broker = null): MessageProducer
     {
         if ($this->shouldFake) {
             return Kafka::fake()->publish($broker);
@@ -44,7 +44,7 @@ class Factory implements Manager
      * The producer will be flushed only when the application terminates,
      * and doing SEND does not mean that the message was flushed!
      */
-    public function asyncPublish(string $broker = null): MessageProducer
+    public function asyncPublish(?string $broker = null): MessageProducer
     {
         if ($this->shouldFake) {
             return Kafka::fake()->publish($broker);
@@ -63,13 +63,13 @@ class Factory implements Manager
     }
 
     /** This is an alias for the asyncPublish method. */
-    public function publishAsync(string $broker = null): MessageProducer
+    public function publishAsync(?string $broker = null): MessageProducer
     {
         return $this->asyncPublish($broker);
     }
 
     /** Return a ConsumerBuilder instance.  */
-    public function consumer(array $topics = [], string $groupId = null, string $brokers = null): ConsumerBuilder
+    public function consumer(array $topics = [], ?string $groupId = null, ?string $brokers = null): ConsumerBuilder
     {
         if ($this->shouldFake) {
             return Kafka::fake()->consumer(

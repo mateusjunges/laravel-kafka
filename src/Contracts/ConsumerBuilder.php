@@ -8,7 +8,7 @@ use Junges\Kafka\Config\Sasl;
 interface ConsumerBuilder extends InteractsWithConfigCallbacks
 {
     /** Creates a new ConsumerBuilder instance. */
-    public static function create(string $brokers, array $topics = [], string $groupId = null): self;
+    public static function create(string $brokers, array $topics = [], ?string $groupId = null): self;
 
     /** Subscribe to a Kafka topic. */
     public function subscribe(...$topics): self;
