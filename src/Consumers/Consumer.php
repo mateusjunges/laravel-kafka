@@ -299,7 +299,7 @@ class Consumer implements MessageConsumer
             // using the fallback provided by the consumer. Message will be sent to
             // a dead letter queue only if the failed method throws an exception.
             $this->config->getConsumer()->failed(
-                $message->payload,
+                $message->payload ?? '',
                 $this->config->getTopics()[0],
                 $exception
             );

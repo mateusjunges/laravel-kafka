@@ -11,7 +11,9 @@ class JsonDeserializer implements MessageDeserializer
     /** @throws \JsonException  */
     public function deserialize(ConsumerMessage $message): ConsumerMessage
     {
-        $body = json_decode((string) $message->getBody(), true, 512, JSON_THROW_ON_ERROR);
+        $body = $message->getBody() !== null
+            ? json_decode((string) $message->getBody(), true, 512, JSON_THROW_ON_ERROR)
+            : null;
 
         return new ConsumedMessage(
             topicName: $message->getTopicName(),
