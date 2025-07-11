@@ -2,6 +2,12 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+##[2025-07-10 v2.7.2](https://github.com/mateusjunges/laravel-kafka/compare/v2.7.1...v2.7.2)
+* Fix deprecation warnings on PHP 8.4 by [@mateusjunges](https://github.com/mateusjunges) in [#350](https://github.com/mateusjunges/laravel-kafka/pull/350)
+
+##[2025-06-24 v2.7.1](https://github.com/mateusjunges/laravel-kafka/compare/v2.7.0...v2.7.1)
+* Fix deprecation warnings by [@mateusjunges](https://github.com/mateusjunges) in [`a6e3d42`](https://github.com/mateusjunges/laravel-kafka/commit/a6e3d42e8a795a8dba26cb7630d83a116b707094)
+
 ##[2025-06-14 v2.7.0](https://github.com/mateusjunges/laravel-kafka/compare/v2.6.0...v2.7.0)
 * Fix consuming tombstone messages by [@mateusjunges](https://github.com/mateusjunges) in [#346](https://github.com/mateusjunges/laravel-kafka/pull/346)
 
