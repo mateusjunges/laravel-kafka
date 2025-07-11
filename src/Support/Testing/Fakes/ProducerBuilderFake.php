@@ -40,7 +40,7 @@ class ProducerBuilderFake implements MessageProducer
     }
 
     /** Return a new Junges\Commit\ProducerBuilder instance. */
-    public static function create(string $broker = null): self
+    public static function create(?string $broker = null): self
     {
         return new ProducerBuilderFake($broker);
     }

@@ -59,7 +59,7 @@ class Builder implements ConsumerBuilderContract
 
     protected ?Closure $onStopConsuming = null;
 
-    protected function __construct(protected string $brokers, array $topics = [], protected ?string $groupId = null)
+    protected function __construct(protected ?string $brokers, array $topics = [], protected ?string $groupId = null)
     {
         if (count($topics) > 0) {
             foreach ($topics as $topic) {
@@ -83,7 +83,7 @@ class Builder implements ConsumerBuilderContract
     }
 
     /** @inheritDoc */
-    public static function create(string $brokers, array $topics = [], string $groupId = null): self
+    public static function create(?string $brokers, array $topics = [], ?string $groupId = null): self
     {
         return new Builder(
             brokers: $brokers,

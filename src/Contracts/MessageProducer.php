@@ -11,7 +11,7 @@ use Junges\Kafka\Support\Testing\Fakes\ProducerFake;
 interface MessageProducer extends InteractsWithConfigCallbacks
 {
     /** Return a new Junges\Commit\ProducerBuilder instance. */
-    public static function create(string $broker = null): self;
+    public static function create(?string $broker = null): self;
 
     /** Sets a specific config option. */
     public function withConfigOption(string $name, mixed $option): self;

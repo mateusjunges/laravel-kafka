@@ -40,7 +40,7 @@ class KafkaFake
     }
 
     /** Return a ConsumerBuilder instance. */
-    public function consumer(array $topics = [], string $groupId = null, string $brokers = null): BuilderFake
+    public function consumer(array $topics = [], ?string $groupId = null, ?string $brokers = null): BuilderFake
     {
         return BuilderFake::create(
             brokers: $brokers ?? config('kafka.brokers'),
