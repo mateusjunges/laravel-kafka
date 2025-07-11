@@ -20,7 +20,7 @@ class BuilderFake extends Builder implements ConsumerBuilderContract
     private array $messages = [];
 
     /** @inheritDoc */
-    public static function create(string $brokers, array $topics = [], string $groupId = null): self
+    public static function create(string $brokers, array $topics = [], ?string $groupId = null): self
     {
         return new BuilderFake(
             brokers: $brokers,

@@ -21,7 +21,7 @@ class Builder implements MessageProducer
     private ?Producer $producer = null;
     private string $topic = '';
     private ?Sasl $saslConfig = null;
-    private readonly string $broker;
+    private readonly ?string $broker;
     private bool $isTransactionProducer = false;
     private int $maxTransactionRetryAttempts = 5;
     private ?int $flushRetries = null;
