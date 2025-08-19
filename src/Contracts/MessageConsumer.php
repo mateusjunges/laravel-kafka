@@ -19,4 +19,7 @@ interface MessageConsumer
 
     /** Count the number of messages consumed by this consumer */
     public function consumedMessagesCount(): int;
+
+    /** Get the current partition assignment for this consumer */
+    public function getAssignedPartitions(): array;
 }
