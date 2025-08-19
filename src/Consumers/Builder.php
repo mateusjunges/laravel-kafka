@@ -239,6 +239,13 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
+    public function withManualCommit(): self
+    {
+        $this->autoCommit = false;
+
+        return $this;
+    }
+
     /** @inheritDoc */
     public function withOptions(array $options): self
     {
