@@ -26,9 +26,11 @@ use Junges\Kafka\Retryable;
 use Junges\Kafka\Support\InfiniteTimer;
 use Junges\Kafka\Support\Timer;
 use RdKafka\Conf;
+use RdKafka\Exception;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
 use RdKafka\Producer as KafkaProducer;
+use RdKafka\TopicPartition;
 use Throwable;
 
 class Consumer implements MessageConsumer
@@ -183,6 +185,32 @@ class Consumer implements MessageConsumer
         return $this->messageCounter->messagesCounted();
     }
 
+    /** @inheritdoc */
+    public function commit(mixed $messageOrOffsets = null): void
+    {
+        try {
+            $this->committer->commit($messageOrOffsets);
+        } catch (\Throwable $throwable) {
+            if ($throwable->getCode() !== RD_KAFKA_RESP_ERR__NO_OFFSET) {
+                $this->logger->error($messageOrOffsets, $throwable, 'COMMIT_ERROR');
+                throw $throwable;
+            }
+        }
+    }
+
+    /** @inheritdoc */
+    public function commitAsync(mixed $message_or_offsets = null): void
+    {
+        try {
+            $this->committer->commitAsync($message_or_offsets);
+        } catch (\Throwable $throwable) {
+            if ($throwable->getCode() !== RD_KAFKA_RESP_ERR__NO_OFFSET) {
+                $this->logger->error($message_or_offsets, $throwable, 'COMMIT_ERROR');
+                throw $throwable;
+            }
+        }
+    }
+
     /**
      * Execute the consume method on RdKafka consumer.
      *
@@ -238,7 +266,7 @@ class Consumer implements MessageConsumer
             $success = $this->handleException($throwable, $message);
         }
 
-        $this->commit($message, $success);
+        $this->autoCommitIfEnabled($message, $success);
     }
 
     /**
@@ -281,12 +309,12 @@ class Consumer implements MessageConsumer
 
             $this->config->getBatchConfig()->getConsumer()->handle($consumedMessages, $this);
 
-            $collection->each(fn (Message $message) => $this->commit($message, true));
+            $collection->each(fn (Message $message) => $this->autoCommitIfEnabled($message, true));
         } catch (Throwable $throwable) {
             $collection->each(function (Message $message) use ($throwable) {
                 $this->logger->error($message, $throwable);
 
-                $this->commit($message, $this->handleException($throwable, $message));
+                $this->autoCommitIfEnabled($message, $this->handleException($throwable, $message));
             });
         }
     }
@@ -365,13 +393,17 @@ class Consumer implements MessageConsumer
     }
 
     /** @throws \Throwable */
-    private function commit(Message $message, bool $success): void
+    private function autoCommitIfEnabled(Message $message, bool $success): void
     {
+        if (! $this->config->isAutoCommit()) {
+            return;
+        }
+
         try {
             $this->committer->commitMessage($message, $success);
         } catch (Throwable $throwable) {
             if ($throwable->getCode() !== RD_KAFKA_RESP_ERR__NO_OFFSET) {
-                $this->logger->error($message, $throwable, 'MESSAGE_COMMIT');
+                $this->logger->error($message, $throwable, 'AUTO_COMMIT');
 
                 throw $throwable;
             }
