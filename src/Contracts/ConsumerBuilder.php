@@ -90,6 +90,9 @@ interface ConsumerBuilder extends InteractsWithConfigCallbacks
     /** Enable or disable consumer auto commit option. */
     public function withAutoCommit(bool $autoCommit = true): self;
 
+    /** Enables manual commit. */
+    public function withManualCommit(): self;
+
     /** Set the configuration options. */
     public function withOptions(array $options): self;
 
