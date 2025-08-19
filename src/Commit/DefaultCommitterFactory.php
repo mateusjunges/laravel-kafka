@@ -16,10 +16,6 @@ class DefaultCommitterFactory implements CommitterFactory
 
     public function make(KafkaConsumer $kafkaConsumer, Config $config): CommitterContract
     {
-        if (! $config->isAutoCommit()) {
-            return new VoidCommitter();
-        }
-
         return new BatchCommitter(
             new RetryableCommitter(
                 new Committer(
