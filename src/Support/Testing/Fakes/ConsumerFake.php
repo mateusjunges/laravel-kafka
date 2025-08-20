@@ -68,6 +68,18 @@ class ConsumerFake implements MessageConsumer
         return $this->messageCounter->messagesCounted();
     }
 
+    /** @inheritdoc */
+    public function commit(mixed $messageOrOffsets = null): void
+    {
+        //
+    }
+
+    /** @inheritdoc */
+    public function commitAsync(mixed $message_or_offsets = null): void
+    {
+        //
+    }
+
     /** Set the consumer configuration. */
     public function setConf(array $options = []): Conf
     {
