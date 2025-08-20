@@ -28,6 +28,7 @@ class MyTopicConsumer extends Command
             ->withAutoCommit()
             ->withHandler(function(ConsumerMessage $message, MessageConsumer $consumer) {
                 // Handle your message here
+                // For manual commit control, use ->withManualCommit() and call $consumer->commit($message)
             })
             ->build();
             

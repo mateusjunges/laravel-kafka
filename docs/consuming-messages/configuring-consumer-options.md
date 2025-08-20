@@ -29,13 +29,55 @@ When your message is sent to the dead letter queue, we will add three header key
 - `kafka_throwable_code`: The exception code
 - `kafka_throwable_class_name`: The exception class name.
 
-### Using auto commit
-The auto-commit check is called in every poll, and it checks that the time elapsed is greater than the configured time. To enable auto commit,
-use the `withAutoCommit` method:
+### Commit modes: Auto vs Manual
+The package supports two commit modes for controlling when message offsets are committed to Kafka:
+
+#### Auto Commit (Default)
+With auto-commit enabled, messages are automatically committed after your handler successfully processes them. This is the default behavior and simplest to use:
 
 ```php
-$consumer = \Junges\Kafka\Facades\Kafka::consumer()->withAutoCommit();
+$consumer = \Junges\Kafka\Facades\Kafka::consumer()
+    ->withAutoCommit() // Optional as this is the default
+    ->withHandler(function($message, $consumer) {
+        // Process your message.
+        // Message is automatically committed after handler returns successfully
+    });
 ```
+
+#### Manual Commit
+With manual commit, you have full control over when messages are committed. This provides better error handling and processing guarantees:
+
+```php
+$consumer = \Junges\Kafka\Facades\Kafka::consumer()
+    ->withManualCommit()
+    ->withHandler(function($message, $consumer) {
+        try {
+            // Process your message
+            processMessage($message);
+            
+            // Manually commit the message
+            $consumer->commit($message);  // Synchronous commit
+            // OR: $consumer->commitAsync($message);  // Asynchronous commit
+            
+        } catch (Exception $e) {
+            Log::error('Message processing failed', ['error' => $e->getMessage()]);
+        }
+    });
+```
+
+#### When to use each mode:
+- **Auto-commit**: Simple use cases where message loss is acceptable, and you want automatic offset management
+- **Manual commit**: When you need guaranteed processing, complex error handling, or want to implement custom commit strategies
+
+#### Available commit methods:
+When using manual commit mode, your handlers can use these methods on the `$consumer` parameter:
+
+- `commit()` - Commit current assignment offsets (synchronous)
+- `commit($message)` - Commit specific message offset (synchronous)
+- `commitAsync()` - Commit current assignment offsets (asynchronous)
+- `commitAsync($message)` - Commit specific message offset (asynchronous)
+
+For more detailed information about manual commit patterns, see the [Manual Commit guide](../advanced-usage/manual-commit.md).
 
 ### Configuring max messages to be consumed
 If you want to consume a limited amount of messages, you can use the `withMaxMessages` method to set the max number of messages to be consumed by a
