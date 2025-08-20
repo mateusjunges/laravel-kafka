@@ -26,7 +26,7 @@ final class FailingCommitter implements Committer
     public function commitMessage(Message $message = null, bool $success = null): void
     {
         $this->timesTriedToCommitMessage++;
-        $this->commit();
+        $this->doCommit();
     }
 
     /**
@@ -35,23 +35,7 @@ final class FailingCommitter implements Committer
     public function commitDlq(Message $message): void
     {
         $this->timesTriedToCommitDlq++;
-        $this->commit();
-    }
-
-    /**
-     * @throws \Exception
-     */
-    private function commit(): void
-    {
-        $this->commitCount++;
-
-        if ($this->commitCount > $this->timesToFail) {
-            $this->commitCount = 0;
-
-            return;
-        }
-
-        throw $this->failure;
+        $this->doCommit();
     }
 
     public function getTimesTriedToCommitMessage(): int
@@ -62,5 +46,37 @@ final class FailingCommitter implements Committer
     public function getTimesTriedToCommitDlq(): int
     {
         return $this->timesTriedToCommitDlq;
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function commit(mixed $messageOrOffsets = null): void
+    {
+        $this->doCommit();
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function commitAsync(mixed $messageOrOffsets = null): void
+    {
+        $this->doCommit();
+    }
+
+    /**
+     * @throws \Exception
+     */
+    private function doCommit(): void
+    {
+        $this->commitCount++;
+
+        if ($this->commitCount > $this->timesToFail) {
+            $this->commitCount = 0;
+
+            return;
+        }
+
+        throw $this->failure;
     }
 }
