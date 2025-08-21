@@ -27,8 +27,28 @@ by adding more entries to the `assignPartitions` parameter:
 ```php
 $consumer = \Junges\Kafka\Facades\Kafka::consumer()
     ->assignPartitions([
-        new \RdKafka\TopicPartition('your-topic-name', 1)
-        new \RdKafka\TopicPartition('your-topic-name', 2)
+        new \RdKafka\TopicPartition('your-topic-name', 1),
+        new \RdKafka\TopicPartition('your-topic-name', 2),
         new \RdKafka\TopicPartition('your-topic-name', 3)
     ]);
 ```
+
+## Dynamic Partition Discovery
+
+If you don't know the partition numbers in advance (which is common when using consumer groups), you can use the partition discovery features:
+
+```php
+$consumer = \Junges\Kafka\Facades\Kafka::consumer(['your-topic-name'], 'your-group')
+    ->withPartitionAssignmentCallback(function ($partitions) {
+        echo "Assigned " . count($partitions) . " partitions\n";
+        
+        foreach ($partitions as $partition) {
+            echo "Partition: {$partition->getPartition()}\n";
+        }
+    })
+    ->withHandler(function ($message) {
+        // Handle message
+    });
+```
+
+For more advanced partition discovery and dynamic offset assignment, see the [Partition Discovery documentation](partition-discovery.md).

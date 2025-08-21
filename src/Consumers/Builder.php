@@ -59,6 +59,8 @@ class Builder implements ConsumerBuilderContract
 
     protected ?Closure $onStopConsuming = null;
 
+    protected ?Closure $partitionAssignmentCallback = null;
+
     protected function __construct(protected ?string $brokers, array $topics = [], protected ?string $groupId = null)
     {
         if (count($topics) > 0) {
@@ -326,6 +328,40 @@ class Builder implements ConsumerBuilderContract
     public function onStopConsuming(callable $onStopConsuming): self
     {
         $this->onStopConsuming = $onStopConsuming(...);
+
+        return $this;
+    }
+
+    public function withPartitionAssignmentCallback(callable $callback): self
+    {
+        $this->partitionAssignmentCallback = $callback(...);
+
+        $this->withRebalanceCb(function ($consumer, $err, $partitions = null) use ($callback) {
+            if ($err === RD_KAFKA_RESP_ERR__ASSIGN_PARTITIONS) {
+                $consumer->assign($partitions);
+                $callback($partitions);
+            } elseif ($err === RD_KAFKA_RESP_ERR__REVOKE_PARTITIONS) {
+                $consumer->assign(null);
+            }
+        });
+
+        return $this;
+    }
+
+    public function assignPartitionsWithOffsets(callable $offsetProvider): self
+    {
+        // Set up the rebalance callback to handle dynamic partition assignment with offsets
+        $this->withRebalanceCb(function ($consumer, $err, $partitions = null) use ($offsetProvider) {
+            if ($err === RD_KAFKA_RESP_ERR__ASSIGN_PARTITIONS) {
+                // Get offset assignments from the provided callback
+                $partitionsWithOffsets = $offsetProvider($partitions);
+                
+                // Assign the partitions with their offsets
+                $consumer->assign($partitionsWithOffsets);
+            } elseif ($err === RD_KAFKA_RESP_ERR__REVOKE_PARTITIONS) {
+                $consumer->assign(null);
+            }
+        });
 
         return $this;
     }

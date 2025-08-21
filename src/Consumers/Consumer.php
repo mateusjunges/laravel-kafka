@@ -211,6 +211,16 @@ class Consumer implements MessageConsumer
         }
     }
 
+    /** Get the current partition assignment for this consumer */
+    public function getAssignedPartitions(): array
+    {
+        if (! isset($this->consumer)) {
+            return [];
+        }
+
+        return $this->consumer->getAssignment();
+    }
+
     /**
      * Execute the consume method on RdKafka consumer.
      *

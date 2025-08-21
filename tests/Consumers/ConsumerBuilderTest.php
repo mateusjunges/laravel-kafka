@@ -350,6 +350,52 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
 
         Builder::create('broker')->withDlq();
     }
+
+    #[Test]
+    public function it_can_set_partition_assignment_callback(): void
+    {
+        $called = false;
+        $receivedPartitions = null;
+
+        $consumer = Builder::create('broker', ['test-topic'], 'group')
+            ->withPartitionAssignmentCallback(function ($partitions) use (&$called, &$receivedPartitions) {
+                $called = true;
+                $receivedPartitions = $partitions;
+            });
+
+        $this->assertInstanceOf(Consumer::class, $consumer->build());
+
+        $partitionAssignmentCallback = $this->getPropertyWithReflection('partitionAssignmentCallback', $consumer);
+        $this->assertInstanceOf(Closure::class, $partitionAssignmentCallback);
+
+        // Verify that a rebalance callback was set
+        $callbacks = $this->getPropertyWithReflection('callbacks', $consumer);
+        $this->assertArrayHasKey('setRebalanceCb', $callbacks);
+        $this->assertIsCallable($callbacks['setRebalanceCb']);
+    }
+
+    #[Test]
+    public function it_can_set_assign_partitions_with_offsets_callback(): void
+    {
+        $called = false;
+        $receivedPartitions = null;
+
+        $consumer = Builder::create('broker', ['test-topic'], 'group')
+            ->assignPartitionsWithOffsets(function ($partitions) use (&$called, &$receivedPartitions) {
+                $called = true;
+                $receivedPartitions = $partitions;
+
+                // Return the same partitions for testing
+                return $partitions;
+            });
+
+        $this->assertInstanceOf(Consumer::class, $consumer->build());
+
+        // Verify that a rebalance callback was set
+        $callbacks = $this->getPropertyWithReflection('callbacks', $consumer);
+        $this->assertArrayHasKey('setRebalanceCb', $callbacks);
+        $this->assertIsCallable($callbacks['setRebalanceCb']);
+    }
 }
 
 final class TestMiddleware

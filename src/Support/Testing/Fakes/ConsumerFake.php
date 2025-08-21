@@ -80,6 +80,12 @@ class ConsumerFake implements MessageConsumer
         //
     }
 
+    /** Get the current partition assignment for this consumer */
+    public function getAssignedPartitions(): array
+    {
+        return [];
+    }
+
     /** Set the consumer configuration. */
     public function setConf(array $options = []): Conf
     {

@@ -21,10 +21,11 @@ use Junges\Kafka\Message\Deserializers\JsonDeserializer;
 use Junges\Kafka\Tests\Fakes\FakeConsumer;
 use Junges\Kafka\Tests\Fakes\FakeHandler;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
+use Mockery as m;
 use PHPUnit\Framework\Attributes\Test;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
-use Mockery as m;
+use RdKafka\TopicPartition;
 
 final class ConsumerTest extends LaravelKafkaTestCase
 {
@@ -33,6 +34,25 @@ final class ConsumerTest extends LaravelKafkaTestCase
     private string $stoppedConsumerMessage = "";
     private int $countBeforeConsuming = 0;
     private int $countAfterConsuming = 0;
+
+    private function mockConsumerWithMessageAndPartitions(Message $message, array $partitions): void
+    {
+        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+            ->shouldReceive('subscribe')
+            ->andReturn(m::self())
+            ->shouldReceive('consume')
+            ->withAnyArgs()
+            ->andReturn($message)
+            ->shouldReceive('commit')
+            ->andReturn()
+            ->shouldReceive('getAssignment')
+            ->andReturn($partitions)
+            ->getMock();
+
+        $this->app->bind(KafkaConsumer::class, function () use ($mockedKafkaConsumer) {
+            return $mockedKafkaConsumer;
+        });
+    }
 
     #[Test]
     public function it_consumes_a_message_successfully_and_commit(): void
@@ -642,5 +662,76 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $this->assertEquals('test-topic', $commitParams->getTopicName());
         $this->assertEquals(2, $commitParams->getPartition());
         $this->assertEquals(3, $commitParams->getOffset());
+    }
+
+    #[Test]
+    public function it_returns_empty_array_when_consumer_not_initialized(): void
+    {
+        $config = new Config(
+            broker: 'broker',
+            topics: ['test-topic'],
+            securityProtocol: 'security',
+            commit: 1,
+            groupId: 'group',
+            consumer: new FakeHandler(),
+            sasl: null,
+            dlq: null,
+            maxMessages: 1,
+            maxCommitRetries: 1
+        );
+
+        $consumer = new Consumer($config, new JsonDeserializer());
+
+        $partitions = $consumer->getAssignedPartitions();
+
+        $this->assertIsArray($partitions);
+        $this->assertEmpty($partitions);
+    }
+
+    #[Test]
+    public function it_returns_assigned_partitions_when_consumer_initialized(): void
+    {
+        $fakeHandler = new FakeHandler();
+
+        $message = new Message();
+        $message->err = 0;
+        $message->key = 'key';
+        $message->topic_name = 'test-topic';
+        $message->payload = '{"body": "message payload"}';
+        $message->offset = 0;
+        $message->partition = 1;
+        $message->headers = [];
+
+        $expectedPartitions = [
+            new TopicPartition('test-topic', 0),
+            new TopicPartition('test-topic', 1),
+        ];
+
+        $this->mockConsumerWithMessageAndPartitions($message, $expectedPartitions);
+        $this->mockProducer();
+
+        $config = new Config(
+            broker: 'broker',
+            topics: ['test-topic'],
+            securityProtocol: 'security',
+            commit: 1,
+            groupId: 'group',
+            consumer: $fakeHandler,
+            sasl: null,
+            dlq: null,
+            maxMessages: 1,
+            maxCommitRetries: 1
+        );
+
+        $consumer = new Consumer($config, new JsonDeserializer());
+
+        $consumer->consume();
+
+        $partitions = $consumer->getAssignedPartitions();
+
+        $this->assertIsArray($partitions);
+        $this->assertCount(2, $partitions);
+        $this->assertInstanceOf(TopicPartition::class, $partitions[0]);
+        $this->assertInstanceOf(TopicPartition::class, $partitions[1]);
     }
 }
