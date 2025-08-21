@@ -2,6 +2,13 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+##[2025-08-20 v2.8.0](https://github.com/mateusjunges/laravel-kafka/compare/v2.7.2...v2.8.0)
+- Add partition discovery and dynamic offset assignment by @mateusjunges in [#353](https://github.com/mateusjunges/laravel-kafka/pull/353)
+- Fixes manual committing by @mateusjunges in [#354](https://github.com/mateusjunges/laravel-kafka/pull/354)
+ 
+> This release includes a breaking change. Please take a look
+at [issue#355](https://github.com/mateusjunges/laravel-kafka/issues/355) for more details.
+
 ##[2025-07-10 v2.7.2](https://github.com/mateusjunges/laravel-kafka/compare/v2.7.1...v2.7.2)
 * Fix deprecation warnings on PHP 8.4 by [@mateusjunges](https://github.com/mateusjunges) in [#350](https://github.com/mateusjunges/laravel-kafka/pull/350)
 
