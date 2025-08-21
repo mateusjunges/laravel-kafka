@@ -384,6 +384,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
             ->assignPartitionsWithOffsets(function ($partitions) use (&$called, &$receivedPartitions) {
                 $called = true;
                 $receivedPartitions = $partitions;
+
                 // Return the same partitions for testing
                 return $partitions;
             });
