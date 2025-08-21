@@ -30,7 +30,6 @@ use RdKafka\Exception;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
 use RdKafka\Producer as KafkaProducer;
-use RdKafka\TopicPartition;
 use Throwable;
 
 class Consumer implements MessageConsumer
@@ -193,6 +192,7 @@ class Consumer implements MessageConsumer
         } catch (\Throwable $throwable) {
             if ($throwable->getCode() !== RD_KAFKA_RESP_ERR__NO_OFFSET) {
                 $this->logger->error($messageOrOffsets, $throwable, 'COMMIT_ERROR');
+
                 throw $throwable;
             }
         }
@@ -206,6 +206,7 @@ class Consumer implements MessageConsumer
         } catch (\Throwable $throwable) {
             if ($throwable->getCode() !== RD_KAFKA_RESP_ERR__NO_OFFSET) {
                 $this->logger->error($message_or_offsets, $throwable, 'COMMIT_ERROR');
+
                 throw $throwable;
             }
         }

@@ -17,7 +17,7 @@ interface Committer
      *
      * @param mixed $messageOrOffsets Can be:
      *   - null: Commit offsets for current assignment
-     *   - \RdKafka\Message: Commit offset for a single topic+partition  
+     *   - \RdKafka\Message: Commit offset for a single topic+partition
      *   - \Junges\Kafka\Contracts\ConsumerMessage: Commit offset for a single topic+partition
      *   - array of \RdKafka\TopicPartition: Commit offsets for provided partitions
      */
@@ -28,7 +28,7 @@ interface Committer
      *
      * @param mixed $messageOrOffsets Can be:
      *   - null: Commit offsets for current assignment
-     *   - \RdKafka\Message: Commit offset for a single topic+partition  
+     *   - \RdKafka\Message: Commit offset for a single topic+partition
      *   - \Junges\Kafka\Contracts\ConsumerMessage: Commit offset for a single topic+partition
      *   - array of \RdKafka\TopicPartition: Commit offsets for provided partitions
      */

@@ -98,13 +98,14 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
             ->withAnyArgs()
             ->andReturn($message)
             ->shouldReceive('commit')
-            ->andReturnUsing(function() use (&$commitCalled) {
+            ->andReturnUsing(function () use (&$commitCalled) {
                 $commitCalled = true;
+
                 return null;
             })
             ->getMock();
 
-        $this->app->bind(KafkaConsumer::class, fn() => $mockedKafkaConsumer);
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
         $this->mockProducer();
 
         $handlerCalled = false;
@@ -158,7 +159,7 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
             ->never()
             ->getMock();
 
-        $this->app->bind(KafkaConsumer::class, fn() => $mockedKafkaConsumer);
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
         $this->mockProducer();
 
         $handlerCalled = false;
@@ -209,13 +210,14 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
             ->withAnyArgs()
             ->andReturn($message)
             ->shouldReceive('commit')
-            ->andReturnUsing(function() use (&$autoCommitCalled) {
+            ->andReturnUsing(function () use (&$autoCommitCalled) {
                 $autoCommitCalled = true;
+
                 return null;
             })
             ->getMock();
 
-        $this->app->bind(KafkaConsumer::class, fn() => $mockedKafkaConsumer);
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
         $this->mockProducer();
 
         $handlerCalled = false;

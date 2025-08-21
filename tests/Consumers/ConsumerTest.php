@@ -511,7 +511,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
             ->andReturn($message)
             ->getMock();
 
-        $this->app->bind(KafkaConsumer::class, fn() => $mockedKafkaConsumer);
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
         $this->mockProducer();
 
         $handlerCalled = false;
@@ -523,7 +523,8 @@ final class ConsumerTest extends LaravelKafkaTestCase
                 private bool &$handlerCalledRef,
                 private bool &$consumerProvidedRef,
                 private mixed &$messageDataRef
-            ) {}
+            ) {
+            }
 
             public function __invoke(ConsumerMessage $message, MessageConsumer $consumer): void
             {
@@ -534,7 +535,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
                     'partition' => $message->getPartition(),
                     'offset' => $message->getOffset(),
                     'has_consumer' => $consumer !== null,
-                    'can_commit' => method_exists($consumer, 'commit')
+                    'can_commit' => method_exists($consumer, 'commit'),
                 ];
             }
         };
@@ -624,7 +625,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
             ->andReturn($message)
             ->getMock();
 
-        $this->app->bind(KafkaConsumer::class, fn() => $mockedKafkaConsumer);
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
         $this->mockProducer();
 
         $handlerCalled = false;

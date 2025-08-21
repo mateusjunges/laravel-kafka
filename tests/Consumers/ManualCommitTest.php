@@ -39,25 +39,29 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             ->withAnyArgs()
             ->andReturn($message)
             ->shouldReceive('commit')
-            ->with(m::on(function($topicPartitions) use (&$commitCalled, &$committedOffsets) {
+            ->with(m::on(function ($topicPartitions) use (&$commitCalled, &$committedOffsets) {
                 $commitCalled = true;
+
                 if (is_array($topicPartitions) && count($topicPartitions) === 1) {
                     $tp = $topicPartitions[0];
+
                     if ($tp instanceof TopicPartition) {
                         $committedOffsets = [
                             'topic' => $tp->getTopic(),
                             'partition' => $tp->getPartition(),
-                            'offset' => $tp->getOffset()
+                            'offset' => $tp->getOffset(),
                         ];
+
                         return true;
                     }
                 }
+
                 return false;
             }))
             ->andReturn()
             ->getMock();
 
-        $this->app->bind(KafkaConsumer::class, fn() => $mockedKafkaConsumer);
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
         $this->mockProducer();
 
         $handlerCalled = false;
@@ -94,7 +98,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $this->assertEquals(6, $committedOffsets['offset']); // offset + 1
     }
 
-    #[Test] 
+    #[Test]
     public function it_can_commit_async_with_consumer_message(): void
     {
         $message = new Message();
@@ -115,15 +119,16 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             ->withAnyArgs()
             ->andReturn($message)
             ->shouldReceive('commitAsync')
-            ->with(m::on(function($topicPartitions) use (&$commitAsyncCalled) {
+            ->with(m::on(function ($topicPartitions) use (&$commitAsyncCalled) {
                 $commitAsyncCalled = true;
-                return is_array($topicPartitions) && count($topicPartitions) === 1 
+
+                return is_array($topicPartitions) && count($topicPartitions) === 1
                     && $topicPartitions[0] instanceof TopicPartition;
             }))
             ->andReturn()
             ->getMock();
 
-        $this->app->bind(KafkaConsumer::class, fn() => $mockedKafkaConsumer);
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
         $this->mockProducer();
 
         $fakeHandler = new CallableConsumer(
@@ -172,13 +177,14 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             ->andReturn($message)
             ->shouldReceive('commit')
             ->with(null)
-            ->andReturnUsing(function() use (&$commitCalled) {
+            ->andReturnUsing(function () use (&$commitCalled) {
                 $commitCalled = true;
+
                 return null;
             })
             ->getMock();
 
-        $this->app->bind(KafkaConsumer::class, fn() => $mockedKafkaConsumer);
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
         $this->mockProducer();
 
         $fakeHandler = new CallableConsumer(
@@ -228,15 +234,16 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             ->withAnyArgs()
             ->andReturn($message)
             ->shouldReceive('commit')
-            ->with(m::on(function($msg) use (&$commitCalled, &$committedMessage, $message) {
+            ->with(m::on(function ($msg) use (&$commitCalled, &$committedMessage, $message) {
                 $commitCalled = true;
                 $committedMessage = $msg;
+
                 return $msg === $message;
             }))
             ->andReturn()
             ->getMock();
 
-        $this->app->bind(KafkaConsumer::class, fn() => $mockedKafkaConsumer);
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
         $this->mockProducer();
 
         $fakeHandler = new CallableConsumer(
@@ -291,7 +298,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             ->never() // Should never be called for auto-commit
             ->getMock();
 
-        $this->app->bind(KafkaConsumer::class, fn() => $mockedKafkaConsumer);
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
         $this->mockProducer();
 
         $fakeHandler = new CallableConsumer(
@@ -347,25 +354,29 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             ->withAnyArgs()
             ->andReturn($dummyMessage)
             ->shouldReceive('commit')
-            ->with(m::on(function($topicPartitions) use (&$commitCalled, &$topicPartitionData) {
+            ->with(m::on(function ($topicPartitions) use (&$commitCalled, &$topicPartitionData) {
                 $commitCalled = true;
+
                 if (is_array($topicPartitions) && count($topicPartitions) === 1) {
                     $tp = $topicPartitions[0];
+
                     if ($tp instanceof TopicPartition) {
                         $topicPartitionData = [
                             'topic' => $tp->getTopic(),
                             'partition' => $tp->getPartition(),
-                            'offset' => $tp->getOffset()
+                            'offset' => $tp->getOffset(),
                         ];
+
                         return true;
                     }
                 }
+
                 return false;
             }))
             ->andReturn()
             ->getMock();
 
-        $this->app->bind(KafkaConsumer::class, fn() => $mockedKafkaConsumer);
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
         $this->mockProducer();
 
         $fakeHandler = new CallableConsumer(
@@ -420,7 +431,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             ->andThrow(new \RdKafka\Exception('Commit failed', RD_KAFKA_RESP_ERR_INVALID_CONFIG))
             ->getMock();
 
-        $this->app->bind(KafkaConsumer::class, fn() => $mockedKafkaConsumer);
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
         $this->mockProducer();
 
         $fakeHandler = new CallableConsumer(
@@ -475,7 +486,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             ->andThrow(new \RdKafka\Exception('No offset', RD_KAFKA_RESP_ERR__NO_OFFSET))
             ->getMock();
 
-        $this->app->bind(KafkaConsumer::class, fn() => $mockedKafkaConsumer);
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
         $this->mockProducer();
 
         $fakeHandler = new CallableConsumer(
@@ -529,13 +540,14 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             ->andReturn($message)
             ->shouldReceive('commit')
             ->with($message) // Auto-commit should pass the original message
-            ->andReturnUsing(function() use (&$autoCommitCalled) {
+            ->andReturnUsing(function () use (&$autoCommitCalled) {
                 $autoCommitCalled = true;
+
                 return null;
             })
             ->getMock();
 
-        $this->app->bind(KafkaConsumer::class, fn() => $mockedKafkaConsumer);
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
         $this->mockProducer();
 
         $handlerCalled = false;
@@ -588,13 +600,14 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             ->andReturn($message)
             ->shouldReceive('commit')
             ->with(m::type('array')) // Manual commit converts to TopicPartition array
-            ->andReturnUsing(function() use (&$manualCommitCalled) {
+            ->andReturnUsing(function () use (&$manualCommitCalled) {
                 $manualCommitCalled = true;
+
                 return null;
             })
             ->getMock();
 
-        $this->app->bind(KafkaConsumer::class, fn() => $mockedKafkaConsumer);
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
         $this->mockProducer();
 
         $handlerCalled = false;
@@ -649,7 +662,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             ->never()
             ->getMock();
 
-        $this->app->bind(KafkaConsumer::class, fn() => $mockedKafkaConsumerManualCommit);
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumerManualCommit);
         $this->mockProducer();
 
         $manualCommitHandlerCalled = false;
@@ -657,6 +670,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $fakeHandlerManualCommit = new CallableConsumer(
             function (ConsumerMessage $message, Consumer $consumer) use (&$manualCommitHandlerCalled) {
                 $manualCommitHandlerCalled = true;
+
                 throw new \Exception('Processing failed');
             },
             []
@@ -704,16 +718,17 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             ->withAnyArgs()
             ->andReturn($message, $message)
             ->shouldReceive('commit')
-            ->andReturnUsing(function($params) use (&$commitCallsLog) {
+            ->andReturnUsing(function ($params) use (&$commitCallsLog) {
                 $commitCallsLog[] = [
                     'type' => 'commit',
-                    'params' => $params
+                    'params' => $params,
                 ];
+
                 return null;
             })
             ->getMock();
 
-        $this->app->bind(KafkaConsumer::class, fn() => $mockedKafkaConsumer);
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
         $this->mockProducer();
 
         // Test 1: Auto-commit mode
