@@ -7,7 +7,6 @@ use Junges\Kafka\Commit\Committer;
 use Junges\Kafka\Commit\DefaultCommitterFactory;
 use Junges\Kafka\Commit\NativeSleeper;
 use Junges\Kafka\Commit\RetryableCommitter;
-use Junges\Kafka\Commit\VoidCommitter;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\Consumer;
 use Junges\Kafka\MessageCounter;
@@ -18,7 +17,7 @@ use RdKafka\KafkaConsumer;
 final class CommitterFactoryTest extends LaravelKafkaTestCase
 {
     #[Test]
-    public function should_build_a_void_committer_when_auto_commit_is_disabled(): void
+    public function should_build_a_functional_committer_when_auto_commit_is_disabled(): void
     {
         $config = new Config(
             broker: 'broker',
@@ -42,7 +41,17 @@ final class CommitterFactoryTest extends LaravelKafkaTestCase
 
         $committer = $factory->make($consumer, $config);
 
-        $expectedCommitter = new VoidCommitter();
+        $expectedCommitter = new BatchCommitter(
+            new RetryableCommitter(
+                new Committer(
+                    $consumer
+                ),
+                new NativeSleeper(),
+                $config->getMaxCommitRetries()
+            ),
+            $messageCounter,
+            $config->getCommit()
+        );
 
         $this->assertEquals($expectedCommitter, $committer);
     }

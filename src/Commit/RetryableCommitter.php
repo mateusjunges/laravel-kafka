@@ -34,4 +34,16 @@ class RetryableCommitter implements Committer
     {
         $this->retryable->retry(fn () => $this->committer->commitDlq($message));
     }
+
+    /** @throws \Carbon\Exceptions\Exception */
+    public function commit(mixed $messageOrOffsets = null): void
+    {
+        $this->retryable->retry(fn () => $this->committer->commit($messageOrOffsets));
+    }
+
+    /** @throws \Carbon\Exceptions\Exception */
+    public function commitAsync(mixed $messageOrOffsets = null): void
+    {
+        $this->retryable->retry(fn () => $this->committer->commitAsync($messageOrOffsets));
+    }
 }

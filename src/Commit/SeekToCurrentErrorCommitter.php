@@ -29,4 +29,14 @@ class SeekToCurrentErrorCommitter implements Committer
     {
         $this->committer->commitDlq($message);
     }
+
+    public function commit(mixed $messageOrOffsets = null): void
+    {
+        $this->committer->commit($messageOrOffsets);
+    }
+
+    public function commitAsync(mixed $messageOrOffsets = null): void
+    {
+        $this->committer->commitAsync($messageOrOffsets);
+    }
 }

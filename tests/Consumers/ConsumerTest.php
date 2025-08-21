@@ -11,6 +11,7 @@ use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Consumers\DispatchQueuedHandler;
 use Junges\Kafka\Contracts\CommitterFactory;
 use Junges\Kafka\Contracts\ConsumerMessage;
+use Junges\Kafka\Contracts\Handler;
 use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Events\MessageConsumed;
 use Junges\Kafka\Exceptions\ConsumerException;
@@ -491,6 +492,179 @@ final class ConsumerTest extends LaravelKafkaTestCase
     }
 
     #[Test]
+    public function it_provides_consumer_to_handler_classes(): void
+    {
+        $message = new Message();
+        $message->err = 0;
+        $message->key = 'key';
+        $message->topic_name = 'test-topic';
+        $message->payload = '{"body": "message payload"}';
+        $message->offset = 5;
+        $message->partition = 1;
+        $message->headers = [];
+
+        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+            ->shouldReceive('subscribe')
+            ->andReturn(m::self())
+            ->shouldReceive('consume')
+            ->withAnyArgs()
+            ->andReturn($message)
+            ->getMock();
+
+        $this->app->bind(KafkaConsumer::class, fn() => $mockedKafkaConsumer);
+        $this->mockProducer();
+
+        $handlerCalled = false;
+        $consumerProvided = false;
+        $messageData = null;
+
+        $handler = new class($handlerCalled, $consumerProvided, $messageData) implements Handler {
+            public function __construct(
+                private bool &$handlerCalledRef,
+                private bool &$consumerProvidedRef,
+                private mixed &$messageDataRef
+            ) {}
+
+            public function __invoke(ConsumerMessage $message, MessageConsumer $consumer): void
+            {
+                $this->handlerCalledRef = true;
+                $this->consumerProvidedRef = $consumer !== null;
+                $this->messageDataRef = [
+                    'topic' => $message->getTopicName(),
+                    'partition' => $message->getPartition(),
+                    'offset' => $message->getOffset(),
+                    'has_consumer' => $consumer !== null,
+                    'can_commit' => method_exists($consumer, 'commit')
+                ];
+            }
+        };
+
+        $config = new Config(
+            broker: 'broker',
+            topics: ['test-topic'],
+            securityProtocol: 'security',
+            commit: 1,
+            groupId: 'group',
+            consumer: new CallableConsumer($handler, []),
+            maxMessages: 1,
+            autoCommit: false
+        );
+
+        $consumer = new Consumer($config, new JsonDeserializer());
+        $consumer->consume();
+
+        $this->assertTrue($handlerCalled);
+        $this->assertTrue($consumerProvided);
+        $this->assertEquals('test-topic', $messageData['topic']);
+        $this->assertEquals(1, $messageData['partition']);
+        $this->assertEquals(5, $messageData['offset']);
+        $this->assertTrue($messageData['has_consumer']);
+        $this->assertTrue($messageData['can_commit']);
+    }
+
+    #[Test]
+    public function it_allows_handler_classes_to_commit_manually(): void
+    {
+        $message = new Message();
+        $message->err = 0;
+        $message->key = 'key';
+        $message->topic_name = 'test-topic';
+        $message->payload = '{"body": "message payload"}';
+        $message->offset = 3;
+        $message->partition = 2;
+        $message->headers = [];
+
+        $commitCalled = false;
+        $commitParams = null;
+
+        // Mock the committer to track manual commits
+        $customCommitter = new class($commitCalled, $commitParams) implements \Junges\Kafka\Contracts\Committer {
+            public function __construct(private bool &$commitCalledRef, private mixed &$commitParamsRef)
+            {
+            }
+
+            public function commitMessage(\RdKafka\Message $message, bool $success): void
+            {
+                // Not called for manual commits
+            }
+
+            public function commitDlq(\RdKafka\Message $message): void
+            {
+                // Not relevant for this test
+            }
+
+            public function commit(mixed $messageOrOffsets = null): void
+            {
+                $this->commitCalledRef = true;
+                $this->commitParamsRef = $messageOrOffsets;
+            }
+
+            public function commitAsync(mixed $messageOrOffsets = null): void
+            {
+                // Not used in this test
+            }
+        };
+
+        $customCommitterFactory = new class($customCommitter) implements \Junges\Kafka\Contracts\CommitterFactory {
+            public function __construct(private \Junges\Kafka\Contracts\Committer $committer)
+            {
+            }
+
+            public function make(KafkaConsumer $kafkaConsumer, Config $config): \Junges\Kafka\Contracts\Committer
+            {
+                return $this->committer;
+            }
+        };
+
+        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+            ->shouldReceive('subscribe')
+            ->andReturn(m::self())
+            ->shouldReceive('consume')
+            ->withAnyArgs()
+            ->andReturn($message)
+            ->getMock();
+
+        $this->app->bind(KafkaConsumer::class, fn() => $mockedKafkaConsumer);
+        $this->mockProducer();
+
+        $handlerCalled = false;
+
+        $handler = new class($handlerCalled) implements Handler {
+            public function __construct(private bool &$handlerCalledRef)
+            {
+            }
+
+            public function __invoke(ConsumerMessage $message, MessageConsumer $consumer): void
+            {
+                $this->handlerCalledRef = true;
+                // Manually commit using the consumer parameter - just like closures!
+                $consumer->commit($message);
+            }
+        };
+
+        $config = new Config(
+            broker: 'broker',
+            topics: ['test-topic'],
+            securityProtocol: 'security',
+            commit: 1,
+            groupId: 'group',
+            consumer: new CallableConsumer($handler, []),
+            maxMessages: 1,
+            autoCommit: false
+        );
+
+        $consumer = new Consumer($config, new JsonDeserializer(), $customCommitterFactory);
+        $consumer->consume();
+
+        $this->assertTrue($handlerCalled);
+        $this->assertTrue($commitCalled);
+        $this->assertInstanceOf(ConsumerMessage::class, $commitParams);
+        $this->assertEquals('test-topic', $commitParams->getTopicName());
+        $this->assertEquals(2, $commitParams->getPartition());
+        $this->assertEquals(3, $commitParams->getOffset());
+    }
+
+    #[Test]
     public function it_returns_empty_array_when_consumer_not_initialized(): void
     {
         $config = new Config(
@@ -507,9 +681,9 @@ final class ConsumerTest extends LaravelKafkaTestCase
         );
 
         $consumer = new Consumer($config, new JsonDeserializer());
-        
+
         $partitions = $consumer->getAssignedPartitions();
-        
+
         $this->assertIsArray($partitions);
         $this->assertEmpty($partitions);
     }
@@ -552,9 +726,9 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $consumer = new Consumer($config, new JsonDeserializer());
 
         $consumer->consume();
-        
+
         $partitions = $consumer->getAssignedPartitions();
-        
+
         $this->assertIsArray($partitions);
         $this->assertCount(2, $partitions);
         $this->assertInstanceOf(TopicPartition::class, $partitions[0]);

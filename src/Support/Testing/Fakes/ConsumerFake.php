@@ -68,6 +68,18 @@ class ConsumerFake implements MessageConsumer
         return $this->messageCounter->messagesCounted();
     }
 
+    /** @inheritdoc */
+    public function commit(mixed $messageOrOffsets = null): void
+    {
+        //
+    }
+
+    /** @inheritdoc */
+    public function commitAsync(mixed $message_or_offsets = null): void
+    {
+        //
+    }
+
     /** Get the current partition assignment for this consumer */
     public function getAssignedPartitions(): array
     {

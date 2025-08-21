@@ -14,4 +14,12 @@ class VoidCommitter implements Committer
     public function commitDlq(Message $message): void
     {
     }
+
+    public function commit(mixed $messageOrOffsets = null): void
+    {
+    }
+
+    public function commitAsync(mixed $messageOrOffsets = null): void
+    {
+    }
 }

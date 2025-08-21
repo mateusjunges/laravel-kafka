@@ -37,4 +37,14 @@ class BatchCommitter implements Committer
         $this->committer->commitDlq($message);
         $this->commits = 0;
     }
+
+    public function commit(mixed $messageOrOffsets = null): void
+    {
+        $this->committer->commit($messageOrOffsets);
+    }
+
+    public function commitAsync(mixed $messageOrOffsets = null): void
+    {
+        $this->committer->commitAsync($messageOrOffsets);
+    }
 }

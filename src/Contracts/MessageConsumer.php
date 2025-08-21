@@ -20,6 +20,32 @@ interface MessageConsumer
     /** Count the number of messages consumed by this consumer */
     public function consumedMessagesCount(): int;
 
+    /**
+     * Commit offsets synchronously.
+     *
+     * @param mixed $messageOrOffsets Can be:
+     *   - null: Commit offsets for current assignment
+     *   - \RdKafka\Message: Commit offset for a single topic+partition
+     *   - ConsumerMessage: Commit offset for a single topic+partition
+     *   - array of \RdKafka\TopicPartition: Commit offsets for provided partitions
+     *
+     * @throws \RdKafka\Exception
+     */
+    public function commit(mixed $messageOrOffsets = null): void;
+
+    /**
+     * Commit offsets asynchronously.
+     *
+     * @param mixed $message_or_offsets Can be:
+     *   - null: Commit offsets for current assignment
+     *   - \RdKafka\Message: Commit offset for a single topic+partition
+     *   - ConsumerMessage: Commit offset for a single topic+partition
+     *   - array of \RdKafka\TopicPartition: Commit offsets for provided partitions
+     *
+     * @throws \RdKafka\Exception
+     */
+    public function commitAsync(mixed $message_or_offsets = null): void;
+
     /** Get the current partition assignment for this consumer */
     public function getAssignedPartitions(): array;
 }
