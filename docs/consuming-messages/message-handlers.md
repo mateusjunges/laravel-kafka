@@ -43,7 +43,7 @@ When using manual commit mode (`withAutoCommit(false)`), your handlers receive a
 
 ```php
 $consumer = \Junges\Kafka\Facades\Kafka::consumer()
-    ->withAutoCommit(false)  // Enable manual commit mode
+    ->withManualCommit()  // Enable manual commit mode
     ->withHandler(function(\Junges\Kafka\Contracts\ConsumerMessage $message, \Junges\Kafka\Contracts\MessageConsumer $consumer) {
         try {
             // Process your message
@@ -123,7 +123,7 @@ class ProcessOrderHandler implements Handler
 use Junges\Kafka\Facades\Kafka;
 
 $consumer = Kafka::consumer(['orders'])
-    ->withAutoCommit(false)  // Enable manual commit mode
+    ->withManualCommit()  // Enable manual commit mode
     ->withHandler(new ProcessOrderHandler())
     ->build();
 
