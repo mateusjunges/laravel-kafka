@@ -2,6 +2,9 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+##[2025-08-23 v2.8.1](https://github.com/mateusjunges/laravel-kafka/compare/v2.8.0...v2.8.1)
+- Add helper for changing rebalance strategy for consumer groups by [@mateusjunges](https://github.com/mateusjunges) in [#356](https://github.com/mateusjunges/laravel-kafka/pull/356) 
+
 ##[2025-08-20 v2.8.0](https://github.com/mateusjunges/laravel-kafka/compare/v2.7.2...v2.8.0)
 - Add partition discovery and dynamic offset assignment by @mateusjunges in [#353](https://github.com/mateusjunges/laravel-kafka/pull/353)
 - Fixes manual committing by @mateusjunges in [#354](https://github.com/mateusjunges/laravel-kafka/pull/354)
