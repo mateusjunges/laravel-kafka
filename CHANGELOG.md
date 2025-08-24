@@ -2,9 +2,8 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
-## Unreleased
-- **BREAKING CHANGE**: Remove deprecated batch messages feature (MessageBatch, sendBatch, produceBatch) - use async producers instead
-- **BREAKING CHANGE**: Remove consumer batch messages feature (enableBatching, withBatchSizeLimit, withBatchReleaseInterval)
+##[2025-08-24 v2.9.0](https://github.com/mateusjunges/laravel-kafka/compare/v2.8.1...v2.9.0)
+- Remove support for batch messages by [@mateusjunges](https://github.com/mateusjunges) in [#357](https://github.com/mateusjunges/laravel-kafka/pull/357)
 
 ##[2025-08-23 v2.8.1](https://github.com/mateusjunges/laravel-kafka/compare/v2.8.0...v2.8.1)
 - Add helper for changing rebalance strategy for consumer groups by [@mateusjunges](https://github.com/mateusjunges) in [#356](https://github.com/mateusjunges/laravel-kafka/pull/356) 
