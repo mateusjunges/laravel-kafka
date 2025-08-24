@@ -3,7 +3,6 @@
 namespace Junges\Kafka\Contracts;
 
 use Junges\Kafka\Exceptions\CouldNotPublishMessage;
-use Junges\Kafka\Producers\MessageBatch;
 
 interface Producer
 {
@@ -15,11 +14,6 @@ interface Producer
      */
     public function produce(ProducerMessage $message): bool;
 
-    /**
-     * @throws CouldNotPublishMessage
-     * @throws \Junges\Kafka\Exceptions\CouldNotPublishMessageBatch
-     */
-    public function produceBatch(MessageBatch $messageBatch): int;
 
     /**
      * @throws \Junges\Kafka\Exceptions\Transactions\TransactionShouldBeRetriedException

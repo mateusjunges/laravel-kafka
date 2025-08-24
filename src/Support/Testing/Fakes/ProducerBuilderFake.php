@@ -10,7 +10,6 @@ use Junges\Kafka\Contracts\MessageProducer;
 use Junges\Kafka\Contracts\MessageSerializer;
 use Junges\Kafka\Contracts\ProducerMessage;
 use Junges\Kafka\Message\Message;
-use Junges\Kafka\Producers\MessageBatch;
 
 class ProducerBuilderFake implements MessageProducer
 {
@@ -189,20 +188,6 @@ class ProducerBuilderFake implements MessageProducer
         return $producer->produce($this->getMessage());
     }
 
-    /**
-     * Send a message batch to Kafka.
-     * @deprecated Please use {@see Kafka::asyncPublish()} instead of batch messages.
-     */
-    public function sendBatch(MessageBatch $messageBatch): int
-    {
-        $producer = $this->build();
-
-        if ($this->topic !== '' && $messageBatch->getTopicName() === '') {
-            $messageBatch->onTopic($this->topic);
-        }
-
-        return $producer->produceBatch($messageBatch);
-    }
 
     private function makeProducer(Config $config): ProducerFake
     {
