@@ -16,3 +16,11 @@ use Junges\Kafka\Facades\Kafka;
 
 $consumer = Kafka::consumer()->withConsumerGroupId('foo');
 ```
+
+### Kafka Consumer Group Rebalancing
+
+Watch how Kafka automatically redistributes partitions among consumers when the consumer group changes. Add or remove consumers to see the rebalancing process in action.
+
+```+parse
+<x-docs.animation.rebalance />
+```
