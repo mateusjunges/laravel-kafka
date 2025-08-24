@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Contracts;
 
+use Junges\Kafka\Config\RebalanceStrategy;
 use Junges\Kafka\Config\Sasl;
 
 /** @internal */
@@ -98,6 +99,9 @@ interface ConsumerBuilder extends InteractsWithConfigCallbacks
 
     /** Enables manual commit. */
     public function withManualCommit(): self;
+
+    /** Set the partition assignment (rebalance) strategy for consumer groups. */
+    public function withRebalanceStrategy(RebalanceStrategy|string $strategy): self;
 
     /** Set the configuration options. */
     public function withOptions(array $options): self;
