@@ -18,7 +18,7 @@ $producer = Kafka::publish('broker')
 $producer->send();
 ```
 
-If you want to send multiple messages, consider using the batch producer. The default `send` method is recommended for low-throughput systems only, as it 
+If you want to send multiple messages, consider using the async producer instead. The default `send` method is recommended for low-throughput systems only, as it 
 flushes the producer after every message that is sent.
 
 ```+parse

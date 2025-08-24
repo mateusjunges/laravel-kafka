@@ -3,6 +3,14 @@ title: Upgrade guide
 weight: 6
 ---
 
+## Upgrade to v2.9 from v2.8
+
+## High impact changes
+- **BREAKING CHANGE**: Deprecated producer batch messages feature has been removed (`MessageBatch`, `sendBatch`, `produceBatch`). Use `Kafka::asyncPublish()` instead for better performance
+- **BREAKING CHANGE**: Deprecated consumer batch messages feature has been removed (`enableBatching()`, `withBatchSizeLimit()`, `withBatchReleaseInterval()`). Process messages individually in your consumer handler
+- Removed classes: `BatchMessageConsumer`, `HandlesBatchConfiguration`, `BatchConfig`, `NullBatchConfig`, `CallableBatchConsumer`, etc.
+- Removed events: `BatchMessagePublished`, `MessageBatchPublished`, `PublishingMessageBatch`
+
 ## Upgrade to v2.8 from v2.x
 The only breaking change in this version was the change in the `Junges\Kafka\Contracts\Handler` contract signature.
 

@@ -4,7 +4,6 @@ namespace Junges\Kafka\Consumers;
 
 use Closure;
 use Illuminate\Contracts\Events\Dispatcher;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
@@ -112,11 +111,6 @@ class Consumer implements MessageConsumer
             $this->consumer->subscribe($this->config->getTopics());
         }
 
-        $batchConfig = $this->config->getBatchConfig();
-
-        if ($batchConfig->isBatchingEnabled()) {
-            $batchConfig->getTimer()->start($batchConfig->getBatchReleaseInterval());
-        }
 
         do {
             $this->runBeforeCallbacks();
@@ -280,56 +274,6 @@ class Consumer implements MessageConsumer
         $this->autoCommitIfEnabled($message, $success);
     }
 
-    /**
-     * Handles batch of consumed messages by checking two conditions:
-     * 1) if current batch size is greater than or equals to batch size limit
-     * 2) if batch release interval is timed out and current batch size greater than zero
-     *
-     * @throws Throwable
-     */
-    private function handleBatch(): void
-    {
-        $batchConfig = $this->config->getBatchConfig();
-
-        $executeBatchCallback = function () use ($batchConfig) {
-            $this->executeBatch($batchConfig->getBatchRepository()->getBatch());
-            $batchConfig->getBatchRepository()->reset();
-        };
-
-        match (true) {
-            $batchConfig->getBatchRepository()->getBatchSize() >= $batchConfig->getBatchSizeLimit(),
-            $batchConfig->getTimer()->isTimedOut() && $batchConfig->getBatchRepository()->getBatchSize() > 0 => $executeBatchCallback(),
-            default => null
-        };
-
-        if ($batchConfig->getTimer()->isTimedOut()) {
-            $batchConfig->getTimer()->start($batchConfig->getBatchReleaseInterval());
-        }
-    }
-
-    /**
-     * Tries to handle received batch of messages
-     *
-     * @throws Throwable
-     */
-    private function executeBatch(Collection $collection): void
-    {
-        try {
-            $consumedMessages = $collection
-                ->map(fn (Message $message) => $this->deserializer->deserialize($this->getConsumerMessage($message)));
-
-            $this->config->getBatchConfig()->getConsumer()->handle($consumedMessages, $this);
-
-            $collection->each(fn (Message $message) => $this->autoCommitIfEnabled($message, true));
-        } catch (Throwable $throwable) {
-            $collection->each(function (Message $message) use ($throwable) {
-                $this->logger->error($message, $throwable);
-
-                $this->autoCommitIfEnabled($message, $this->handleException($throwable, $message));
-            });
-        }
-    }
-
     /** Handle exceptions while consuming messages. */
     private function handleException(Throwable $exception, Message|ConsumerMessage $message): bool
     {
@@ -448,26 +392,12 @@ class Consumer implements MessageConsumer
      */
     private function handleMessage(Message $message): void
     {
-        $batchConfig = $this->config->getBatchConfig();
-
         if (RD_KAFKA_RESP_ERR_NO_ERROR === $message->err) {
             $this->messageCounter->add();
-
-            if ($batchConfig->isBatchingEnabled()) {
-                $batchConfig->getBatchRepository()->push($message);
-
-                $this->handleBatch();
-
-                return;
-            }
 
             $this->executeMessage($message);
 
             return;
-        }
-
-        if ($batchConfig->isBatchingEnabled()) {
-            $this->handleBatch();
         }
 
         if ($this->config->shouldStopAfterLastMessage() && in_array($message->err, self::CONSUME_STOP_EOF_ERRORS, true)) {

@@ -9,18 +9,12 @@ use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\MessageSerializer;
 use Junges\Kafka\Contracts\Producer as ProducerContract;
 use Junges\Kafka\Contracts\ProducerMessage;
-use Junges\Kafka\Events\BatchMessagePublished;
-use Junges\Kafka\Events\MessageBatchPublished;
 use Junges\Kafka\Events\MessagePublished;
 use Junges\Kafka\Events\PublishingMessage;
-use Junges\Kafka\Events\PublishingMessageBatch;
 use Junges\Kafka\Exceptions\CouldNotPublishMessage;
-use Junges\Kafka\Exceptions\CouldNotPublishMessageBatch;
-use Junges\Kafka\Message\Message;
 use RdKafka\Conf;
 use RdKafka\Producer as KafkaProducer;
 use RdKafka\ProducerTopic;
-use SplDoublyLinkedList;
 
 class Producer implements ProducerContract
 {
@@ -80,73 +74,6 @@ class Producer implements ProducerContract
         return $this->flush();
     }
 
-    /**
-     * @inheritDoc
-     * @deprecated This will be removed in the future. Please use asyncPublish instead of batch messages.
-     */
-    public function produceBatch(MessageBatch $messageBatch): int
-    {
-        $this->assertTopicWasSetForAllBatchMessages($messageBatch);
-
-        $messagesIterator = $messageBatch->getMessages();
-
-        $messagesIterator->setIteratorMode(SplDoublyLinkedList::IT_MODE_FIFO);
-
-        $produced = 0;
-
-        $this->dispatcher->dispatch(new PublishingMessageBatch($messageBatch));
-
-        foreach ($messagesIterator as $message) {
-            assert($message instanceof Message);
-
-            if ($message->getTopicName() === null) {
-                $message->onTopic($messageBatch->getTopicName());
-            }
-
-            $topic = $this->producer->newTopic($message->getTopicName());
-
-            $message = $this->serializer->serialize($message);
-
-            $this->produceMessageBatch($topic, $message, $messageBatch->getBatchUuid());
-
-            $this->producer->poll(0);
-
-            $produced++;
-        }
-
-        if (! $this->async) {
-            $this->flush();
-        }
-
-        $this->dispatcher->dispatch(new MessageBatchPublished($messageBatch, $produced));
-
-        return $produced;
-    }
-
-    /** @throws CouldNotPublishMessageBatch */
-    private function assertTopicWasSetForAllBatchMessages(MessageBatch $batch): void
-    {
-        // If the message batch has a topic set, we can return here because
-        // we can use that topic as a fallback in case not all batch
-        // messages have a specific topic to be used.
-        if ($batch->getTopicName() !== '') {
-            return;
-        }
-
-        $messagesIterator = $batch->getMessages();
-
-        foreach ($messagesIterator as $message) {
-            assert($message instanceof Message);
-
-            // If the batch does not have a topic defined, we check if the message
-            // itself has specified a topic in which it should be published.
-            // If it does not, then we throw an exception.
-            if ($message->getTopicName() === '' || $message->getTopicName() === null) {
-                throw CouldNotPublishMessageBatch::invalidTopicName($message->getTopicName() ?? '');
-            }
-        }
-    }
-
     private function produceMessage(ProducerTopic $topic, ProducerMessage $message): void
     {
         $topic->producev(
@@ -160,19 +87,6 @@ class Producer implements ProducerContract
         $this->dispatcher->dispatch(new MessagePublished($message));
     }
 
-    private function produceMessageBatch(ProducerTopic $topic, ProducerMessage $message, string $batchUuid): void
-    {
-        $topic->producev(
-            partition: $message->getPartition(),
-            msgflags: RD_KAFKA_MSG_F_BLOCK,
-            payload: $message->getBody(),
-            key: $message->getKey(),
-            headers: $message->getHeaders()
-        );
-
-        $this->dispatcher->dispatch(new BatchMessagePublished($message, $batchUuid));
-    }
-
     /**
      * @throws CouldNotPublishMessage
      * @throws \Exception
@@ -180,8 +94,7 @@ class Producer implements ProducerContract
     public function flush(): mixed
     {
         // Here we define the flush callback that is called shutting down a consumer.
-        // This is called after every single message sent using Producer::send or
-        // after sending all messages with Producer::sendBatch
+        // This is called after every single message sent using Producer::send
         $flush = function () {
             $sleepMilliseconds = config('kafka.flush_retry_sleep_in_ms', 100);
             $retries = $this->config->flushRetries ?? config('kafka.flush_retries', 10);

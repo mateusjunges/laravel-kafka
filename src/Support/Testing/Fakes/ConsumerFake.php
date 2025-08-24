@@ -3,10 +3,8 @@
 namespace Junges\Kafka\Support\Testing\Fakes;
 
 use Closure;
-use Illuminate\Support\Collection;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\ConsumerMessage;
-use Junges\Kafka\Contracts\HandlesBatchConfiguration;
 use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\MessageCounter;
 use RdKafka\Conf;
@@ -15,7 +13,6 @@ use RdKafka\Message;
 class ConsumerFake implements MessageConsumer
 {
     private readonly MessageCounter $messageCounter;
-    private readonly HandlesBatchConfiguration $batchConfig;
 
     /** @param \Junges\Kafka\Contracts\ConsumerMessage[] $messages  */
     public function __construct(
@@ -25,18 +22,13 @@ class ConsumerFake implements MessageConsumer
         private ?Closure $whenStopConsuming = null
     ) {
         $this->messageCounter = new MessageCounter($config->getMaxMessages());
-        $this->batchConfig = $this->config->getBatchConfig();
         $this->whenStopConsuming = $this->config->getWhenStopConsumingCallback();
     }
 
     /** Consume messages from a kafka topic in loop. */
     public function consume(): void
     {
-        if ($this->batchConfig->isBatchingEnabled()) {
-            $this->batchConsume();
-        } else {
-            $this->defaultConsume();
-        }
+        $this->doConsume();
 
         if ($this->shouldRunStopConsumingCallback()) {
             $callback = $this->whenStopConsuming;
@@ -109,7 +101,7 @@ class ConsumerFake implements MessageConsumer
      *
      * @return void
      */
-    public function defaultConsume(): void
+    public function doConsume(): void
     {
         foreach ($this->messages as $message) {
             if ($this->shouldStopConsuming()) {
@@ -118,52 +110,6 @@ class ConsumerFake implements MessageConsumer
 
             $this->handleMessage($message);
         }
-    }
-
-    /** Consume messages in batches */
-    public function batchConsume(): void
-    {
-        foreach ($this->messages as $message) {
-            if ($this->shouldStopConsuming()) {
-                break;
-            }
-
-            $this->messageCounter->add();
-            $this->batchConfig->getBatchRepository()->push(
-                $this->getRdKafkaMessage($message)
-            );
-            $this->handleBatch();
-        }
-
-        $this->handleIncompleteBatch();
-    }
-
-    /** Handles batch */
-    private function handleBatch(): void
-    {
-        if ($this->batchConfig->getBatchRepository()->getBatchSize() >= $this->batchConfig->getBatchSizeLimit()) {
-            $this->executeBatch($this->batchConfig->getBatchRepository()->getBatch());
-            $this->batchConfig->getBatchRepository()->reset();
-        }
-    }
-
-    private function handleIncompleteBatch(): void
-    {
-        if ($this->batchConfig->getBatchRepository()->getBatchSize() > 0) {
-            $this->executeBatch($this->batchConfig->getBatchRepository()->getBatch());
-            $this->batchConfig->getBatchRepository()->reset();
-        }
-    }
-
-    /** Tries to handle received batch of messages. */
-    private function executeBatch(Collection $collection): void
-    {
-        $consumedMessages = $collection
-            ->map(
-                fn (Message $message) => $this->getConsumerMessage($message)
-            );
-
-        $this->config->getBatchConfig()->getConsumer()->handle($consumedMessages, $this);
     }
 
     /** Handle the message. */

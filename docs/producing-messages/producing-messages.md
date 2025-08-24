@@ -22,7 +22,7 @@ use Junges\Kafka\Facades\Kafka;
 Kafka::asyncPublish('broker')->onTopic('topic-name')
 ```
 
-The main difference is that the Async Producer is a singleton and will only flush the producer when the application is shutting down, instead of after each send or batch send. 
+The main difference is that the Async Producer is a singleton and will only flush the producer when the application is shutting down, instead of after each send. 
 This reduces the overhead when you want to send a lot of messages in your request handlers.
 
 ```+parse

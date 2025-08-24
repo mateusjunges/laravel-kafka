@@ -5,7 +5,6 @@ namespace Junges\Kafka\Config;
 use Closure;
 use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Contracts\Consumer;
-use Junges\Kafka\Contracts\HandlesBatchConfiguration;
 use RdKafka\TopicPartition;
 
 class Config
@@ -76,7 +75,6 @@ class Config
         private readonly int $maxCommitRetries = 6,
         private readonly bool $autoCommit = true,
         private readonly array $customOptions = [],
-        private readonly HandlesBatchConfiguration $batchConfig = new NullBatchConfig(),
         private readonly bool $stopAfterLastMessage = false,
         private readonly int $restartInterval = 1000,
         private readonly array $callbacks = [],
@@ -165,11 +163,6 @@ class Config
         return collect(array_merge($config, $this->customOptions, $this->getSaslOptions()))
             ->reject(fn (string|int $option, string $key) => in_array($key, self::CONSUMER_ONLY_CONFIG_OPTIONS))
             ->toArray();
-    }
-
-    public function getBatchConfig(): HandlesBatchConfiguration
-    {
-        return $this->batchConfig;
     }
 
     public function getRestartInterval(): int

@@ -6,20 +6,16 @@ use Closure;
 use Illuminate\Support\Traits\Conditionable;
 use InvalidArgumentException;
 use Junges\Kafka\Concerns\InteractsWithConfigCallbacks;
-use Junges\Kafka\Config\BatchConfig;
 use Junges\Kafka\Config\Config;
-use Junges\Kafka\Config\NullBatchConfig;
 use Junges\Kafka\Config\RebalanceStrategy;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Contracts\CommitterFactory;
 use Junges\Kafka\Contracts\ConsumerBuilder as ConsumerBuilderContract;
 use Junges\Kafka\Contracts\Handler;
-use Junges\Kafka\Contracts\HandlesBatchConfiguration;
 use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Contracts\MessageDeserializer;
 use Junges\Kafka\Contracts\Middleware;
 use Junges\Kafka\Exceptions\ConsumerException;
-use Junges\Kafka\Support\Timer;
 use RdKafka\TopicPartition;
 
 class Builder implements ConsumerBuilderContract
@@ -44,9 +40,6 @@ class Builder implements ConsumerBuilderContract
     protected array $options;
     protected MessageDeserializer $deserializer;
     protected ?CommitterFactory $committerFactory = null;
-    protected bool $batchingEnabled = false;
-    protected int $batchSizeLimit = 0;
-    protected int $batchReleaseInterval = 0;
     protected bool $stopAfterLastMessage = false;
 
     /** @var list<callable> */
@@ -286,30 +279,6 @@ class Builder implements ConsumerBuilderContract
     }
 
     /** @inheritDoc */
-    public function enableBatching(): self
-    {
-        $this->batchingEnabled = true;
-
-        return $this;
-    }
-
-    /** @inheritDoc */
-    public function withBatchSizeLimit(int $batchSizeLimit): self
-    {
-        $this->batchSizeLimit = $batchSizeLimit;
-
-        return $this;
-    }
-
-    /** @inheritDoc */
-    public function withBatchReleaseInterval(int $batchReleaseIntervalInMilliseconds): self
-    {
-        $this->batchReleaseInterval = $batchReleaseIntervalInMilliseconds;
-
-        return $this;
-    }
-
-    /** @inheritDoc */
     public function stopAfterLastMessage(bool $stopAfterLastMessage = true): self
     {
         $this->stopAfterLastMessage = $stopAfterLastMessage;
@@ -401,7 +370,6 @@ class Builder implements ConsumerBuilderContract
             maxCommitRetries: $this->maxCommitRetries,
             autoCommit: $this->autoCommit,
             customOptions: $this->options,
-            batchConfig: $this->getBatchConfig(),
             stopAfterLastMessage: $this->stopAfterLastMessage,
             callbacks: $this->callbacks,
             beforeConsumingCallbacks: $this->beforeConsumingCallbacks,
@@ -430,25 +398,5 @@ class Builder implements ConsumerBuilderContract
         return $this->saslConfig !== null
             ? $this->saslConfig->getSecurityProtocol()
             : $this->securityProtocol;
-    }
-
-    /**
-     * Returns batch config if batching is enabled
-     * if batching is disabled then null config returned
-     */
-    protected function getBatchConfig(): HandlesBatchConfiguration
-    {
-        if (! $this->batchingEnabled) {
-            return new NullBatchConfig();
-        }
-
-        return new BatchConfig(
-            batchConsumer: new CallableBatchConsumer($this->handler),
-            timer: new Timer(),
-            batchRepository: app(config('kafka.batch_repository')),
-            batchingEnabled: $this->batchingEnabled,
-            batchSizeLimit: $this->batchSizeLimit,
-            batchReleaseInterval: $this->batchReleaseInterval
-        );
     }
 }

@@ -198,23 +198,6 @@ class Builder implements MessageProducer
         return $producer->produce($this->message);
     }
 
-    /**
-     * Send a message batch to Kafka.
-     *
-     * @throws \Junges\Kafka\Exceptions\CouldNotPublishMessage
-     * @deprecated Please use {@see Kafka::asyncPublish()} instead of batch messages.
-     */
-    public function sendBatch(MessageBatch $messageBatch): int
-    {
-        $producer = $this->build();
-
-        if ($this->topic !== '' && $messageBatch->getTopicName() === '') {
-            $messageBatch->onTopic($this->topic);
-        }
-
-        return $producer->produceBatch($messageBatch);
-    }
-
     public function build(): Producer
     {
         if ($this->asyncProducer && $this->producer) {

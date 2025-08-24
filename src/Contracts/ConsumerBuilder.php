@@ -109,21 +109,6 @@ interface ConsumerBuilder extends InteractsWithConfigCallbacks
     /** Set a specific configuration option. */
     public function withOption(string $name, mixed $value): self;
 
-    /** Enables messages batching. */
-    public function enableBatching(): self;
-
-    /**
-     * Set batch size limit
-     * Batch of messages will be released after batch size exceeds given limit.
-     */
-    public function withBatchSizeLimit(int $batchSizeLimit): self;
-
-    /**
-     * Set batch release interval in milliseconds
-     * Batch of messages will be released after timer exceeds given interval.
-     */
-    public function withBatchReleaseInterval(int $batchReleaseIntervalInMilliseconds): self;
-
     /** Enable or disable the read to end option. */
     public function stopAfterLastMessage(bool $stopAfterLastMessage = true): self;
 

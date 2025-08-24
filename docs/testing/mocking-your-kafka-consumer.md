@@ -56,4 +56,3 @@ public function test_post_is_marked_as_published()
 }
 ```
 
-It also works for batch messages
