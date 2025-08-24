@@ -9,9 +9,10 @@ The only breaking change in this version was the change in the `Junges\Kafka\Con
 The `handle` method now requires a second parameter of type `Junges\Kafka\Contracts\MessageConsumer`.
 
 Here's the updated signature:
-```php
+```diff
 class MyHandler implements Handler {
-    public function __invoke(ConsumerMessage $message, MessageConsumer $consumer): void {
+-    public function __invoke(ConsumerMessage $message): void {
++    public function __invoke(ConsumerMessage $message, MessageConsumer $consumer): void {
         // Process message here...
     }
 }
