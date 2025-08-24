@@ -9,6 +9,7 @@ use Junges\Kafka\Concerns\InteractsWithConfigCallbacks;
 use Junges\Kafka\Config\BatchConfig;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\NullBatchConfig;
+use Junges\Kafka\Config\RebalanceStrategy;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Contracts\CommitterFactory;
 use Junges\Kafka\Contracts\ConsumerBuilder as ConsumerBuilderContract;
@@ -246,6 +247,24 @@ class Builder implements ConsumerBuilderContract
         $this->autoCommit = false;
 
         return $this;
+    }
+
+    /** @inheritDoc */
+    public function withRebalanceStrategy(RebalanceStrategy|string $strategy): self
+    {
+        if (is_string($strategy)) {
+            $enum = RebalanceStrategy::tryFrom($strategy);
+
+            if ($enum === null) {
+                throw new InvalidArgumentException(
+                    "Invalid rebalance strategy [{$strategy}]. Valid strategies are: " . implode(', ', RebalanceStrategy::values())
+                );
+            }
+
+            $strategy = $enum;
+        }
+
+        return $this->withOption('partition.assignment.strategy', $strategy->value);
     }
 
     /** @inheritDoc */
