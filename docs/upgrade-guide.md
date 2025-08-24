@@ -3,6 +3,23 @@ title: Upgrade guide
 weight: 6
 ---
 
+## Upgrade to v2.8 from v2.x
+The only breaking change in this version was the change in the `Junges\Kafka\Contracts\Handler` contract signature.
+
+The `handle` method now requires a second parameter of type `Junges\Kafka\Contracts\MessageConsumer`.
+
+Here's the updated signature:
+```diff
+class MyHandler implements Handler {
+-    public function __invoke(ConsumerMessage $message): void {
++    public function __invoke(ConsumerMessage $message, MessageConsumer $consumer): void {
+        // Process message here...
+    }
+}
+```
+
+If you are handling your messages using a closure, no changes are needed as the closure signature already supports the second parameter.
+
 ## Upgrade to v2.x from v1.13.x
 
 ## High impact changes
