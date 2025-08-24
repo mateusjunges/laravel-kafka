@@ -6,6 +6,7 @@ use Closure;
 use InvalidArgumentException;
 use Junges\Kafka\Commit\VoidCommitter;
 use Junges\Kafka\Config\Config;
+use Junges\Kafka\Config\RebalanceStrategy;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Consumers\Builder;
 use Junges\Kafka\Consumers\Consumer;
@@ -312,6 +313,46 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertArrayHasKey('enable.auto.commit', $options);
         $this->assertEquals('latest', $options['auto.offset.reset']);
         $this->assertEquals('false', $options['enable.auto.commit']);
+    }
+
+    #[Test]
+    public function it_can_set_rebalance_strategy_with_enum(): void
+    {
+        $consumer = Builder::create('broker')
+            ->withRebalanceStrategy(RebalanceStrategy::ROUND_ROBIN);
+
+        $this->assertInstanceOf(Consumer::class, $consumer->build());
+
+        $options = $this->getPropertyWithReflection('options', $consumer);
+
+        $this->assertIsArray($options);
+        $this->assertArrayHasKey('partition.assignment.strategy', $options);
+        $this->assertEquals('roundrobin', $options['partition.assignment.strategy']);
+    }
+
+    #[Test]
+    public function it_can_set_rebalance_strategy_with_string(): void
+    {
+        $consumer = Builder::create('broker')
+            ->withRebalanceStrategy('sticky');
+
+        $this->assertInstanceOf(Consumer::class, $consumer->build());
+
+        $options = $this->getPropertyWithReflection('options', $consumer);
+
+        $this->assertIsArray($options);
+        $this->assertArrayHasKey('partition.assignment.strategy', $options);
+        $this->assertEquals('sticky', $options['partition.assignment.strategy']);
+    }
+
+    #[Test]
+    public function it_throws_exception_for_invalid_rebalance_strategy(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid rebalance strategy [invalid]. Valid strategies are: range, roundrobin, sticky, cooperative-sticky');
+
+        Builder::create('broker')
+            ->withRebalanceStrategy('invalid');
     }
 
     #[Test]
