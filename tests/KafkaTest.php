@@ -340,7 +340,6 @@ final class KafkaTest extends LaravelKafkaTestCase
         });
     }
 
-
     #[Test]
     public function macro(): void
     {

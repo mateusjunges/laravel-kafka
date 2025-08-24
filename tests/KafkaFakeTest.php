@@ -210,7 +210,6 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         }
     }
 
-
     #[Test]
     public function i_can_perform_assertions_using_assert_published_on(): void
     {
@@ -252,7 +251,6 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
             $this->assertThat($exception, new ExceptionMessageIsOrContains('Messages were published unexpectedly.'));
         }
     }
-
 
     #[Test]
     public function fake_consumer(): void
@@ -418,9 +416,6 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         //should have consumed only one message
         $this->assertEquals(1, $this->consumer->consumedMessagesCount());
     }
-
-
-
 
     #[Test]
     public function it_can_handle_macros(): void

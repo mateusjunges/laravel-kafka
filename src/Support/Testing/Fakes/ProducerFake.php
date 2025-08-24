@@ -7,7 +7,6 @@ use Junges\Kafka\Concerns\ManagesTransactions;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\Producer;
 use Junges\Kafka\Contracts\ProducerMessage;
-use Junges\Kafka\Message\Message;
 use RdKafka\Conf;
 
 class ProducerFake implements Producer
@@ -42,7 +41,6 @@ class ProducerFake implements Producer
 
         return true;
     }
-
 
     public function flush(): int
     {

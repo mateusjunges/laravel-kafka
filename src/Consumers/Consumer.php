@@ -274,8 +274,6 @@ class Consumer implements MessageConsumer
         $this->autoCommitIfEnabled($message, $success);
     }
 
-
-
     /** Handle exceptions while consuming messages. */
     private function handleException(Throwable $exception, Message|ConsumerMessage $message): bool
     {

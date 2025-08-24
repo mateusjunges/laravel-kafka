@@ -278,7 +278,6 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-
     /** @inheritDoc */
     public function stopAfterLastMessage(bool $stopAfterLastMessage = true): self
     {
@@ -400,5 +399,4 @@ class Builder implements ConsumerBuilderContract
             ? $this->saslConfig->getSecurityProtocol()
             : $this->securityProtocol;
     }
-
 }

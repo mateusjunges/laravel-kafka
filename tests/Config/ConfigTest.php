@@ -2,14 +2,9 @@
 
 namespace Junges\Kafka\Tests\Config;
 
-use Junges\Kafka\BatchRepositories\NullBatchRepository;
-use Junges\Kafka\Config\BatchConfig;
 use Junges\Kafka\Config\Config;
-use Junges\Kafka\Config\NullBatchConfig;
 use Junges\Kafka\Config\Sasl;
-use Junges\Kafka\Consumers\CallableBatchConsumer;
 use Junges\Kafka\Contracts\Consumer;
-use Junges\Kafka\Support\Timer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use PHPUnit\Framework\Attributes\Test;
 
@@ -219,50 +214,5 @@ final class ConfigTest extends LaravelKafkaTestCase
             $expectedOptions,
             $config->getProducerOptions()
         );
-    }
-
-    #[Test]
-    public function it_creates_null_batch_config_if_null_is_passed(): void
-    {
-        $config = new Config(
-            broker: 'broker',
-            topics: ['topic'],
-            securityProtocol: 'SASL_PLAINTEXT',
-            commit: 1,
-            groupId: 'group',
-            consumer: $this->createMock(Consumer::class),
-            dlq: null,
-        );
-
-        $this->assertInstanceOf(NullBatchConfig::class, $config->getBatchConfig());
-    }
-
-    #[Test]
-    public function it_returns_given_batch_config_if_instance_passed(): void
-    {
-        $batchConfig = new BatchConfig(
-            new CallableBatchConsumer(function () {
-            }),
-            new Timer(),
-            new NullBatchRepository(),
-        );
-
-        $config = new Config(
-            broker: 'broker',
-            topics: ['topic'],
-            securityProtocol: 'SASL_PLAINTEXT',
-            commit: 1,
-            groupId: 'group',
-            consumer: $this->createMock(Consumer::class),
-            dlq: null,
-            batchConfig: $batchConfig,
-        );
-
-        $this->assertEquals($batchConfig, $config->getBatchConfig());
-        $this->assertInstanceOf(CallableBatchConsumer::class, $batchConfig->getConsumer());
-        $this->assertInstanceOf(Timer::class, $batchConfig->getTimer());
-        $this->assertInstanceOf(NullBatchRepository::class, $batchConfig->getBatchRepository());
-        $this->assertEquals(0, $batchConfig->getBatchReleaseInterval());
-        $this->assertEquals(0, $batchConfig->getBatchSizeLimit());
     }
 }

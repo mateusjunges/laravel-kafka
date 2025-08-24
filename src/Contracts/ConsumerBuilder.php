@@ -109,7 +109,6 @@ interface ConsumerBuilder extends InteractsWithConfigCallbacks
     /** Set a specific configuration option. */
     public function withOption(string $name, mixed $value): self;
 
-
     /** Enable or disable the read to end option. */
     public function stopAfterLastMessage(bool $stopAfterLastMessage = true): self;
 

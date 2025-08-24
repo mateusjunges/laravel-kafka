@@ -188,7 +188,6 @@ class ProducerBuilderFake implements MessageProducer
         return $producer->produce($this->getMessage());
     }
 
-
     private function makeProducer(Config $config): ProducerFake
     {
         $producerFake = app(ProducerFake::class, [

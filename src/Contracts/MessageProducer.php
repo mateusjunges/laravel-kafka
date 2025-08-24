@@ -2,7 +2,6 @@
 
 namespace Junges\Kafka\Contracts;
 
-use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Producers\Producer;
 use Junges\Kafka\Support\Testing\Fakes\ProducerFake;
 
@@ -67,5 +66,4 @@ interface MessageProducer extends InteractsWithConfigCallbacks
     public function send(): bool;
 
     public function build(): Producer|ProducerFake;
-
 }

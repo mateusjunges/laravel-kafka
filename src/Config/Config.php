@@ -165,7 +165,6 @@ class Config
             ->toArray();
     }
 
-
     public function getRestartInterval(): int
     {
         return $this->restartInterval;

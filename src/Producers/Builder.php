@@ -198,7 +198,6 @@ class Builder implements MessageProducer
         return $producer->produce($this->message);
     }
 
-
     public function build(): Producer
     {
         if ($this->asyncProducer && $this->producer) {

@@ -12,7 +12,6 @@ use Junges\Kafka\Contracts\ProducerMessage;
 use Junges\Kafka\Events\MessagePublished;
 use Junges\Kafka\Events\PublishingMessage;
 use Junges\Kafka\Exceptions\CouldNotPublishMessage;
-use Junges\Kafka\Message\Message;
 use RdKafka\Conf;
 use RdKafka\Producer as KafkaProducer;
 use RdKafka\ProducerTopic;
@@ -75,8 +74,6 @@ class Producer implements ProducerContract
         return $this->flush();
     }
 
-
-
     private function produceMessage(ProducerTopic $topic, ProducerMessage $message): void
     {
         $topic->producev(
@@ -90,7 +87,6 @@ class Producer implements ProducerContract
         $this->dispatcher->dispatch(new MessagePublished($message));
     }
 
-
     /**
      * @throws CouldNotPublishMessage
      * @throws \Exception
@@ -98,8 +94,7 @@ class Producer implements ProducerContract
     public function flush(): mixed
     {
         // Here we define the flush callback that is called shutting down a consumer.
-        // This is called after every single message sent using Producer::send or
-        // after sending all messages with Producer::sendBatch
+        // This is called after every single message sent using Producer::send
         $flush = function () {
             $sleepMilliseconds = config('kafka.flush_retry_sleep_in_ms', 100);
             $retries = $this->config->flushRetries ?? config('kafka.flush_retries', 10);
