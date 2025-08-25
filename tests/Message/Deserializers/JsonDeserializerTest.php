@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Tests\Message\Deserializers;
 
+use JsonException;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase as TestCase;
@@ -14,7 +15,7 @@ final class JsonDeserializerTest extends TestCase
     {
         $message = $this->getMockForAbstractClass(ConsumerMessage::class);
         $message->expects($this->exactly(2))->method('getBody')->willReturn('{"name":"foo"}');
-        $deserializer = new JsonDeserializer();
+        $deserializer = new JsonDeserializer;
         $result = $deserializer->deserialize($message);
 
         $this->assertInstanceOf(ConsumerMessage::class, $result);
@@ -26,9 +27,9 @@ final class JsonDeserializerTest extends TestCase
     {
         $message = $this->getMockForAbstractClass(ConsumerMessage::class);
         $message->expects($this->exactly(2))->method('getBody')->willReturn('test');
-        $deserializer = new JsonDeserializer();
+        $deserializer = new JsonDeserializer;
 
-        $this->expectException(\JsonException::class);
+        $this->expectException(JsonException::class);
 
         $deserializer->deserialize($message);
     }

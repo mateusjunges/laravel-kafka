@@ -34,9 +34,9 @@ class LaravelKafkaServiceProvider extends ServiceProvider
 
     public function register(): void
     {
-        $this->app->bind(MessageSerializer::class, fn () => new JsonSerializer());
+        $this->app->bind(MessageSerializer::class, fn () => new JsonSerializer);
 
-        $this->app->bind(MessageDeserializer::class, fn () => new JsonDeserializer());
+        $this->app->bind(MessageDeserializer::class, fn () => new JsonDeserializer);
 
         $this->app->bind(ProducerMessage::class, fn () => new Message(''));
 
@@ -50,7 +50,7 @@ class LaravelKafkaServiceProvider extends ServiceProvider
     private function publishesConfiguration(): void
     {
         $this->publishes([
-            __DIR__."/../../config/kafka.php" => config_path('kafka.php'),
+            __DIR__.'/../../config/kafka.php' => config_path('kafka.php'),
         ], 'laravel-kafka-config');
     }
 }

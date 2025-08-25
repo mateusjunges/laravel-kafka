@@ -46,7 +46,7 @@ final class CommitterFactoryTest extends LaravelKafkaTestCase
                 new Committer(
                     $consumer
                 ),
-                new NativeSleeper(),
+                new NativeSleeper,
                 $config->getMaxCommitRetries()
             ),
             $messageCounter,
@@ -86,7 +86,7 @@ final class CommitterFactoryTest extends LaravelKafkaTestCase
                 new Committer(
                     $consumer
                 ),
-                new NativeSleeper(),
+                new NativeSleeper,
                 $config->getMaxCommitRetries()
             ),
             $messageCounter,

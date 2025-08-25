@@ -15,6 +15,7 @@ class RetryableCommitter implements Committer
         RD_KAFKA_RESP_ERR_REQUEST_TIMED_OUT,
         RD_KAFKA_RESP_ERR_REBALANCE_IN_PROGRESS,
     ];
+
     private readonly Retryable $retryable;
 
     #[Pure]

@@ -14,7 +14,7 @@ class ConsumerFake implements MessageConsumer
 {
     private readonly MessageCounter $messageCounter;
 
-    /** @param \Junges\Kafka\Contracts\ConsumerMessage[] $messages  */
+    /** @param ConsumerMessage[] $messages  */
     public function __construct(
         private readonly Config $config,
         private readonly array $messages = [],
@@ -36,12 +36,7 @@ class ConsumerFake implements MessageConsumer
         }
     }
 
-    private function shouldRunStopConsumingCallback(): bool
-    {
-        return $this->whenStopConsuming !== null;
-    }
-
-    /** @inheritdoc */
+    /** {@inheritdoc} */
     public function stopConsuming(): void
     {
         $this->stopRequested = true;
@@ -60,13 +55,13 @@ class ConsumerFake implements MessageConsumer
         return $this->messageCounter->messagesCounted();
     }
 
-    /** @inheritdoc */
+    /** {@inheritdoc} */
     public function commit(mixed $messageOrOffsets = null): void
     {
         //
     }
 
-    /** @inheritdoc */
+    /** {@inheritdoc} */
     public function commitAsync(mixed $message_or_offsets = null): void
     {
         //
@@ -81,7 +76,26 @@ class ConsumerFake implements MessageConsumer
     /** Set the consumer configuration. */
     public function setConf(array $options = []): Conf
     {
-        return new Conf();
+        return new Conf;
+    }
+
+    /**
+     * Consume messages
+     */
+    public function doConsume(): void
+    {
+        foreach ($this->messages as $message) {
+            if ($this->shouldStopConsuming()) {
+                break;
+            }
+
+            $this->handleMessage($message);
+        }
+    }
+
+    private function shouldRunStopConsumingCallback(): bool
+    {
+        return $this->whenStopConsuming !== null;
     }
 
     /** Determine if the max message limit is reached. */
@@ -96,22 +110,6 @@ class ConsumerFake implements MessageConsumer
         return $this->maxMessagesLimitReached() || $this->stopRequested;
     }
 
-    /**
-     * Consume messages
-     *
-     * @return void
-     */
-    public function doConsume(): void
-    {
-        foreach ($this->messages as $message) {
-            if ($this->shouldStopConsuming()) {
-                break;
-            }
-
-            $this->handleMessage($message);
-        }
-    }
-
     /** Handle the message. */
     private function handleMessage(ConsumerMessage $message): void
     {
@@ -121,7 +119,7 @@ class ConsumerFake implements MessageConsumer
 
     private function getRdKafkaMessage(ConsumerMessage $message): Message
     {
-        $rdKafkaMessage = new Message();
+        $rdKafkaMessage = new Message;
         $rdKafkaMessage->err = 0;
         $rdKafkaMessage->topic_name = $message->getTopicName();
         $rdKafkaMessage->partition = $message->getPartition();

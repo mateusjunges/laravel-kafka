@@ -11,10 +11,9 @@ class Retryable
         private readonly Sleeper $sleeper,
         private readonly int $maximumRetries,
         private readonly ?array $retryableErrors
-    ) {
-    }
+    ) {}
 
-    /** @throws \Exception  */
+    /** @throws Exception  */
     public function retry(
         callable $function,
         int $currentRetries = 0,
@@ -28,7 +27,7 @@ class Retryable
                 $currentRetries < $this->maximumRetries
                 && (is_null($this->retryableErrors) || in_array($exception->getCode(), $this->retryableErrors))
             ) {
-                $this->sleeper->sleep((int)($delayInSeconds * 1e6));
+                $this->sleeper->sleep((int) ($delayInSeconds * 1e6));
                 $this->retry(
                     $function,
                     ++$currentRetries,

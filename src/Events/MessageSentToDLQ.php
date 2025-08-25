@@ -2,16 +2,17 @@
 
 namespace Junges\Kafka\Events;
 
+use Throwable;
+
 final readonly class MessageSentToDLQ
 {
     public function __construct(
         public ?string $payload,
         public ?string $key,
         public array $headers,
-        public ?\Throwable $throwable,
+        public ?Throwable $throwable,
         public ?string $messageIdentifier,
-    ) {
-    }
+    ) {}
 
     public function getMessageIdentifier(): ?string
     {

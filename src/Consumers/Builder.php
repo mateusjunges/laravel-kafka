@@ -20,26 +20,39 @@ use RdKafka\TopicPartition;
 
 class Builder implements ConsumerBuilderContract
 {
-    use InteractsWithConfigCallbacks;
     use Conditionable;
+    use InteractsWithConfigCallbacks;
 
     /** @var list<string> */
     protected array $topics;
+
     protected int $commit;
-    protected Closure | Handler $handler;
+
+    protected Closure|Handler $handler;
+
     protected int $maxMessages;
+
     protected int $maxTime = 0;
+
     protected int $maxCommitRetries;
 
     /** @var list<callable> */
     protected array $middlewares;
+
     protected ?Sasl $saslConfig = null;
+
     protected ?string $dlq = null;
+
     protected string $securityProtocol;
+
     protected bool $autoCommit;
+
     protected array $options;
+
     protected MessageDeserializer $deserializer;
+
     protected ?CommitterFactory $committerFactory = null;
+
     protected bool $stopAfterLastMessage = false;
 
     /** @var list<callable> */
@@ -65,8 +78,7 @@ class Builder implements ConsumerBuilderContract
         $this->topics = array_unique($topics);
 
         $this->commit = 1;
-        $this->handler = function () {
-        };
+        $this->handler = function () {};
 
         $this->maxMessages = -1;
         $this->maxCommitRetries = 6;
@@ -78,17 +90,17 @@ class Builder implements ConsumerBuilderContract
         $this->deserializer = app(MessageDeserializer::class);
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public static function create(?string $brokers, array $topics = [], ?string $groupId = null): self
     {
-        return new Builder(
+        return new self(
             brokers: $brokers,
             topics: $topics,
             groupId: $groupId
         );
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function subscribe(...$topics): self
     {
         if (is_array($topics[0])) {
@@ -106,7 +118,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function withBrokers(?string $brokers): self
     {
         $this->brokers = $brokers ?? config('kafka.brokers');
@@ -114,7 +126,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function withConsumerGroupId(?string $groupId): self
     {
         $this->groupId = $groupId;
@@ -122,7 +134,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function withCommitBatchSize(int $size): self
     {
         $this->commit = $size;
@@ -130,7 +142,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function withHandler(callable|Handler $handler): self
     {
         $this->handler = $handler instanceof Handler
@@ -140,7 +152,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function usingDeserializer(MessageDeserializer $deserializer): self
     {
         $this->deserializer = $deserializer;
@@ -148,7 +160,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function usingCommitterFactory(CommitterFactory $committerFactory): self
     {
         $this->committerFactory = $committerFactory;
@@ -156,7 +168,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function withMaxMessages(int $maxMessages): self
     {
         $this->maxMessages = $maxMessages;
@@ -165,7 +177,7 @@ class Builder implements ConsumerBuilderContract
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function withMaxTime(int $maxTime): self
     {
@@ -174,7 +186,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function withMaxCommitRetries(int $maxCommitRetries): self
     {
         $this->maxCommitRetries = $maxCommitRetries;
@@ -182,15 +194,15 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function withDlq(?string $dlqTopic = null): self
     {
         if (! isset($this->topics[0])) {
             throw ConsumerException::dlqCanNotBeSetWithoutSubscribingToAnyTopics();
         }
 
-        if (null === $dlqTopic) {
-            $dlqTopic = $this->topics[0] . '-dlq';
+        if ($dlqTopic === null) {
+            $dlqTopic = $this->topics[0].'-dlq';
         }
 
         $this->dlq = $dlqTopic;
@@ -211,7 +223,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function withMiddleware(Middleware|callable|string $middleware): self
     {
         $this->middlewares[] = $middleware;
@@ -219,7 +231,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function withSecurityProtocol(string $securityProtocol): self
     {
         $this->securityProtocol = $securityProtocol;
@@ -227,7 +239,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function withAutoCommit(bool $autoCommit = true): self
     {
         $this->autoCommit = $autoCommit;
@@ -242,7 +254,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function withRebalanceStrategy(RebalanceStrategy|string $strategy): self
     {
         if (is_string($strategy)) {
@@ -250,7 +262,7 @@ class Builder implements ConsumerBuilderContract
 
             if ($enum === null) {
                 throw new InvalidArgumentException(
-                    "Invalid rebalance strategy [{$strategy}]. Valid strategies are: " . implode(', ', RebalanceStrategy::values())
+                    "Invalid rebalance strategy [{$strategy}]. Valid strategies are: ".implode(', ', RebalanceStrategy::values())
                 );
             }
 
@@ -260,7 +272,7 @@ class Builder implements ConsumerBuilderContract
         return $this->withOption('partition.assignment.strategy', $strategy->value);
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function withOptions(array $options): self
     {
         foreach ($options as $name => $value) {
@@ -270,7 +282,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function withOption(string $name, mixed $value): self
     {
         $this->options[$name] = $value;
@@ -278,7 +290,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function stopAfterLastMessage(bool $stopAfterLastMessage = true): self
     {
         $this->stopAfterLastMessage = $stopAfterLastMessage;
@@ -343,7 +355,7 @@ class Builder implements ConsumerBuilderContract
             if ($err === RD_KAFKA_RESP_ERR__ASSIGN_PARTITIONS) {
                 // Get offset assignments from the provided callback
                 $partitionsWithOffsets = $offsetProvider($partitions);
-                
+
                 // Assign the partitions with their offsets
                 $consumer->assign($partitionsWithOffsets);
             } elseif ($err === RD_KAFKA_RESP_ERR__REVOKE_PARTITIONS) {
@@ -354,7 +366,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function build(): MessageConsumer
     {
         $config = new Config(

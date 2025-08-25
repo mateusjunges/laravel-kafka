@@ -11,10 +11,10 @@ final class MessageTest extends LaravelKafkaTestCase
 {
     private Message $message;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
-        $this->message = new Message();
+        $this->message = new Message;
     }
 
     #[Test]

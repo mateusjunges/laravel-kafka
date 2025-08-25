@@ -16,18 +16,25 @@ class ProducerBuilderFake implements MessageProducer
     use InteractsWithConfigCallbacks;
 
     private array $options = [];
+
     private ProducerMessage $message;
+
     private MessageSerializer $serializer;
+
     private ?Sasl $saslConfig = null;
+
     private string $topic = '';
+
     private ?Closure $producerCallback = null;
+
     private ?int $flushRetries = null;
+
     private ?int $flushTimeoutInMs = null;
 
     public function __construct(
         private readonly ?string $broker = null,
     ) {
-        $this->message = new Message();
+        $this->message = new Message;
 
         $conf = new Config(
             broker: '',
@@ -41,7 +48,7 @@ class ProducerBuilderFake implements MessageProducer
     /** Return a new Junges\Commit\ProducerBuilder instance. */
     public static function create(?string $broker = null): self
     {
-        return new ProducerBuilderFake($broker);
+        return new self($broker);
     }
 
     public function onTopic(string $topic): self
@@ -188,19 +195,6 @@ class ProducerBuilderFake implements MessageProducer
         return $producer->produce($this->getMessage());
     }
 
-    private function makeProducer(Config $config): ProducerFake
-    {
-        $producerFake = app(ProducerFake::class, [
-            'config' => $config,
-        ]);
-
-        if ($this->producerCallback) {
-            $producerFake->withProduceCallback($this->producerCallback);
-        }
-
-        return $producerFake;
-    }
-
     /** Build the producer. */
     public function build(): ProducerFake
     {
@@ -220,5 +214,18 @@ class ProducerBuilderFake implements MessageProducer
     public function getProducer(): ProducerFake
     {
         return $this->build();
+    }
+
+    private function makeProducer(Config $config): ProducerFake
+    {
+        $producerFake = app(ProducerFake::class, [
+            'config' => $config,
+        ]);
+
+        if ($this->producerCallback) {
+            $producerFake->withProduceCallback($this->producerCallback);
+        }
+
+        return $producerFake;
     }
 }

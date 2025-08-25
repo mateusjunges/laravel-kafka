@@ -53,24 +53,35 @@ class Consumer implements MessageConsumer
         RD_KAFKA_RESP_ERR__NO_OFFSET,
     ];
 
-    private readonly Logger $logger;
-    private KafkaConsumer $consumer;
-    private KafkaProducer $producer;
-    private readonly MessageCounter $messageCounter;
-    private Committer $committer;
-    private readonly Retryable $retryable;
-    private readonly CommitterFactory $committerFactory;
-    private bool $stopRequested = false;
-    private ?Closure $whenStopConsuming;
     protected int $lastRestart = 0;
+
     protected Timer $restartTimer;
+
+    private readonly Logger $logger;
+
+    private KafkaConsumer $consumer;
+
+    private KafkaProducer $producer;
+
+    private readonly MessageCounter $messageCounter;
+
+    private Committer $committer;
+
+    private readonly Retryable $retryable;
+
+    private readonly CommitterFactory $committerFactory;
+
+    private bool $stopRequested = false;
+
+    private ?Closure $whenStopConsuming;
+
     private Dispatcher $dispatcher;
 
-    public function __construct(private readonly Config $config, private readonly MessageDeserializer $deserializer, CommitterFactory $committerFactory = null)
+    public function __construct(private readonly Config $config, private readonly MessageDeserializer $deserializer, ?CommitterFactory $committerFactory = null)
     {
         $this->logger = app(Logger::class);
         $this->messageCounter = new MessageCounter($config->getMaxMessages());
-        $this->retryable = new Retryable(new NativeSleeper(), 6, self::TIMEOUT_ERRORS);
+        $this->retryable = new Retryable(new NativeSleeper, 6, self::TIMEOUT_ERRORS);
 
         $this->committerFactory = $committerFactory ?? new DefaultCommitterFactory($this->messageCounter);
         $this->dispatcher = App::make(Dispatcher::class);
@@ -80,7 +91,7 @@ class Consumer implements MessageConsumer
     /**
      * Consume messages from a kafka topic in loop.
      *
-     * @throws \RdKafka\Exception
+     * @throws Exception
      */
     public function consume(): void
     {
@@ -111,7 +122,6 @@ class Consumer implements MessageConsumer
             $this->consumer->subscribe($this->config->getTopics());
         }
 
-
         do {
             $this->runBeforeCallbacks();
             $this->retryable->retry(fn () => $this->doConsume());
@@ -123,6 +133,100 @@ class Consumer implements MessageConsumer
             $callback = $this->whenStopConsuming;
             $callback(...)();
         }
+    }
+
+    /** @inheritdoc  */
+    public function stopConsuming(): void
+    {
+        $this->stopRequested = true;
+    }
+
+    /** Will cancel the stopConsume request initiated by calling the stopConsume method */
+    public function cancelStopConsume(): void
+    {
+        $this->stopRequested = false;
+    }
+
+    /** Count the number of messages consumed by this consumer */
+    public function consumedMessagesCount(): int
+    {
+        return $this->messageCounter->messagesCounted();
+    }
+
+    /** {@inheritdoc} */
+    public function commit(mixed $messageOrOffsets = null): void
+    {
+        try {
+            $this->committer->commit($messageOrOffsets);
+        } catch (Throwable $throwable) {
+            if ($throwable->getCode() !== RD_KAFKA_RESP_ERR__NO_OFFSET) {
+                $this->logger->error($messageOrOffsets, $throwable, 'COMMIT_ERROR');
+
+                throw $throwable;
+            }
+        }
+    }
+
+    /** {@inheritdoc} */
+    public function commitAsync(mixed $message_or_offsets = null): void
+    {
+        try {
+            $this->committer->commitAsync($message_or_offsets);
+        } catch (Throwable $throwable) {
+            if ($throwable->getCode() !== RD_KAFKA_RESP_ERR__NO_OFFSET) {
+                $this->logger->error($message_or_offsets, $throwable, 'COMMIT_ERROR');
+
+                throw $throwable;
+            }
+        }
+    }
+
+    /** Get the current partition assignment for this consumer */
+    public function getAssignedPartitions(): array
+    {
+        if (! isset($this->consumer)) {
+            return [];
+        }
+
+        return $this->consumer->getAssignment();
+    }
+
+    public function configureStopTimer(): Timer
+    {
+        $stopTimer = new Timer;
+
+        if ($this->config->getMaxTime() === 0) {
+            $stopTimer = new InfiniteTimer;
+        }
+
+        $stopTimer->start($this->config->getMaxTime() * 1000);
+
+        return $stopTimer;
+    }
+
+    protected function configureRestartTimer(): void
+    {
+        $this->lastRestart = $this->getLastRestart();
+        $this->restartTimer = new Timer;
+        $this->restartTimer->start($this->config->getRestartInterval());
+    }
+
+    protected function checkForRestart(): void
+    {
+        if (! $this->restartTimer->isTimedOut()) {
+            return;
+        }
+
+        $this->restartTimer->start($this->config->getRestartInterval());
+
+        if ($this->lastRestart !== $this->getLastRestart()) {
+            $this->stopRequested = true;
+        }
+    }
+
+    protected function getLastRestart(): int
+    {
+        return (int) Cache::driver(config('kafka.cache_driver'))->get('laravel-kafka:consumer:restart', 0);
     }
 
     private function runBeforeCallbacks(): void
@@ -160,67 +264,11 @@ class Consumer implements MessageConsumer
         return extension_loaded('pcntl');
     }
 
-    /** @inheritdoc  */
-    public function stopConsuming(): void
-    {
-        $this->stopRequested = true;
-    }
-
-    /** Will cancel the stopConsume request initiated by calling the stopConsume method */
-    public function cancelStopConsume(): void
-    {
-        $this->stopRequested = false;
-    }
-
-    /** Count the number of messages consumed by this consumer */
-    public function consumedMessagesCount(): int
-    {
-        return $this->messageCounter->messagesCounted();
-    }
-
-    /** @inheritdoc */
-    public function commit(mixed $messageOrOffsets = null): void
-    {
-        try {
-            $this->committer->commit($messageOrOffsets);
-        } catch (\Throwable $throwable) {
-            if ($throwable->getCode() !== RD_KAFKA_RESP_ERR__NO_OFFSET) {
-                $this->logger->error($messageOrOffsets, $throwable, 'COMMIT_ERROR');
-
-                throw $throwable;
-            }
-        }
-    }
-
-    /** @inheritdoc */
-    public function commitAsync(mixed $message_or_offsets = null): void
-    {
-        try {
-            $this->committer->commitAsync($message_or_offsets);
-        } catch (\Throwable $throwable) {
-            if ($throwable->getCode() !== RD_KAFKA_RESP_ERR__NO_OFFSET) {
-                $this->logger->error($message_or_offsets, $throwable, 'COMMIT_ERROR');
-
-                throw $throwable;
-            }
-        }
-    }
-
-    /** Get the current partition assignment for this consumer */
-    public function getAssignedPartitions(): array
-    {
-        if (! isset($this->consumer)) {
-            return [];
-        }
-
-        return $this->consumer->getAssignment();
-    }
-
     /**
      * Execute the consume method on RdKafka consumer.
      *
      * @throws ConsumerException
-     * @throws \RdKafka\Exception|\Throwable
+     * @throws Exception|Throwable
      */
     private function doConsume(): void
     {
@@ -231,7 +279,7 @@ class Consumer implements MessageConsumer
     /** Set the consumer configuration. */
     private function setConf(array $options): Conf
     {
-        $conf = new Conf();
+        $conf = new Conf;
 
         foreach ($options as $key => $value) {
             $conf->set($key, $value);
@@ -247,7 +295,7 @@ class Consumer implements MessageConsumer
     /**
      * Tries to handle the message received.
      *
-     * @throws \Throwable
+     * @throws Throwable
      */
     private function executeMessage(Message $message): void
     {
@@ -309,7 +357,7 @@ class Consumer implements MessageConsumer
     }
 
     /** Send a message to the Dead Letter Queue. */
-    private function sendToDlq(Message $message, ?string $messageIdentifier = null, Throwable $throwable = null): void
+    private function sendToDlq(Message $message, ?string $messageIdentifier = null, ?Throwable $throwable = null): void
     {
         $topic = $this->producer->newTopic($this->config->getDlq());
 
@@ -334,7 +382,7 @@ class Consumer implements MessageConsumer
         }
     }
 
-    private function buildHeadersForDlq(Message $message, Throwable $throwable = null): array
+    private function buildHeadersForDlq(Message $message, ?Throwable $throwable = null): array
     {
         if (! $throwable instanceof Throwable) {
             return [];
@@ -347,7 +395,7 @@ class Consumer implements MessageConsumer
         return array_merge($message->headers ?? [], $throwableHeaders);
     }
 
-    /** @throws \Throwable */
+    /** @throws Throwable */
     private function autoCommitIfEnabled(Message $message, bool $success): void
     {
         if (! $this->config->isAutoCommit()) {
@@ -371,28 +419,15 @@ class Consumer implements MessageConsumer
         return $this->messageCounter->maxMessagesLimitReached();
     }
 
-    public function configureStopTimer(): Timer
-    {
-        $stopTimer = new Timer();
-
-        if ($this->config->getMaxTime() === 0) {
-            $stopTimer = new InfiniteTimer();
-        }
-
-        $stopTimer->start($this->config->getMaxTime() * 1000);
-
-        return $stopTimer;
-    }
-
     /**
      * Handle the message.
      *
-     * @throws \Junges\Kafka\Exceptions\ConsumerException
-     * @throws \Throwable
+     * @throws ConsumerException
+     * @throws Throwable
      */
     private function handleMessage(Message $message): void
     {
-        if (RD_KAFKA_RESP_ERR_NO_ERROR === $message->err) {
+        if ($message->err === RD_KAFKA_RESP_ERR_NO_ERROR) {
             $this->messageCounter->add();
 
             $this->executeMessage($message);
@@ -429,30 +464,5 @@ class Consumer implements MessageConsumer
             'offset' => $message->offset,
             'timestamp' => $message->timestamp,
         ]);
-    }
-
-    protected function configureRestartTimer(): void
-    {
-        $this->lastRestart = $this->getLastRestart();
-        $this->restartTimer = new Timer();
-        $this->restartTimer->start($this->config->getRestartInterval());
-    }
-
-    protected function checkForRestart(): void
-    {
-        if (! $this->restartTimer->isTimedOut()) {
-            return;
-        }
-
-        $this->restartTimer->start($this->config->getRestartInterval());
-
-        if ($this->lastRestart !== $this->getLastRestart()) {
-            $this->stopRequested = true;
-        }
-    }
-
-    protected function getLastRestart(): int
-    {
-        return (int) Cache::driver(config('kafka.cache_driver'))->get('laravel-kafka:consumer:restart', 0);
     }
 }

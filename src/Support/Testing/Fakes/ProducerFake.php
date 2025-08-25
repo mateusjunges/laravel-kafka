@@ -17,12 +17,11 @@ class ProducerFake implements Producer
 
     public function __construct(
         private readonly Config $config,
-    ) {
-    }
+    ) {}
 
     public function setConf(array $options = []): Conf
     {
-        return new Conf();
+        return new Conf;
     }
 
     public function withProduceCallback(callable $callback): self

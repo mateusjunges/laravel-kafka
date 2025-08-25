@@ -13,18 +13,17 @@ use Junges\Kafka\Contracts\Handler;
 
 final class DispatchQueuedHandler implements ShouldQueue
 {
+    use HandleConsumedMessage;
     use InteractsWithQueue;
+    use PrepareMiddlewares;
     use Queueable;
     use SerializesModels;
-    use PrepareMiddlewares;
-    use HandleConsumedMessage;
 
     public function __construct(
         public readonly Handler $handler,
         public readonly ConsumerMessage $message,
         public readonly array $middlewares = []
-    ) {
-    }
+    ) {}
 
     public function handle(): void
     {

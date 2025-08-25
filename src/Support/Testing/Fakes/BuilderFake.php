@@ -13,10 +13,10 @@ class BuilderFake extends Builder implements ConsumerBuilderContract
     /** @var \Junges\Kafka\Contracts\ConsumerMessage[] */
     private array $messages = [];
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public static function create(?string $brokers, array $topics = [], ?string $groupId = null): self
     {
-        return new BuilderFake(
+        return new self(
             brokers: $brokers,
             topics: $topics,
             groupId: $groupId

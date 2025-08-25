@@ -6,9 +6,7 @@ class MessageCounter
 {
     private int $messageCount = 0;
 
-    public function __construct(private readonly int $maxMessages)
-    {
-    }
+    public function __construct(private readonly int $maxMessages) {}
 
     public function add(): self
     {

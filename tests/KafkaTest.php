@@ -130,11 +130,10 @@ final class KafkaTest extends LaravelKafkaTestCase
                 'metadata.broker.list' => 'broker',
             ])
             ->withKafkaKey(Str::uuid()->toString())
-            ->usingSerializer(new JsonSerializer())
+            ->usingSerializer(new JsonSerializer)
             ->withBodyKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
             ->withDebugEnabled();
-
 
         $test = $producer->send();
 

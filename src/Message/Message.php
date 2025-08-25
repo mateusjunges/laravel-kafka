@@ -19,7 +19,7 @@ class Message extends AbstractMessage implements Arrayable, ProducerMessage
     }
 
     /** Set a key in the message array. */
-    public function withBodyKey(string $key, mixed $message): Message
+    public function withBodyKey(string $key, mixed $message): self
     {
         $this->body[$key] = $message;
 
@@ -27,7 +27,7 @@ class Message extends AbstractMessage implements Arrayable, ProducerMessage
     }
 
     /** Unset a key in the message array. */
-    public function forgetBodyKey(string $key): Message
+    public function forgetBodyKey(string $key): self
     {
         unset($this->body[$key]);
 
@@ -35,7 +35,7 @@ class Message extends AbstractMessage implements Arrayable, ProducerMessage
     }
 
     /** Set the message headers. */
-    public function withHeaders(array $headers = []): Message
+    public function withHeaders(array $headers = []): self
     {
         $this->headers = $headers;
 
@@ -50,14 +50,14 @@ class Message extends AbstractMessage implements Arrayable, ProducerMessage
     }
 
     /** Set the kafka message key. */
-    public function withKey(mixed $key): Message
+    public function withKey(mixed $key): self
     {
         $this->key = $key;
 
         return $this;
     }
 
-    #[ArrayShape(['payload' => "array", 'key' => "null|string", 'headers' => "array"])]
+    #[ArrayShape(['payload' => 'array', 'key' => 'null|string', 'headers' => 'array'])]
     public function toArray(): array
     {
         return [

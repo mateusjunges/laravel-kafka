@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Producers;
 
+use Exception;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Facades\App;
 use Junges\Kafka\Concerns\ManagesTransactions;
@@ -20,10 +21,11 @@ class Producer implements ProducerContract
 {
     use ManagesTransactions;
 
-    private readonly KafkaProducer $producer;
-    private readonly Dispatcher $dispatcher;
-
     public bool $transactionInitialized = false;
+
+    private readonly KafkaProducer $producer;
+
+    private readonly Dispatcher $dispatcher;
 
     public function __construct(
         private readonly Config $config,
@@ -36,23 +38,14 @@ class Producer implements ProducerContract
         $this->dispatcher = App::make(Dispatcher::class);
     }
 
-    /** Set the Kafka Configuration. */
-    private function getConf(array $options): Conf
+    public function __destruct()
     {
-        $conf = new Conf();
-
-        foreach ($options as $key => $value) {
-            $conf->set($key, (string) $value);
+        if ($this->async) {
+            $this->flush();
         }
-
-        foreach ($this->config->getConfigCallbacks() as $method => $callback) {
-            $conf->{$method}($callback);
-        }
-
-        return $conf;
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function produce(ProducerMessage $message): bool
     {
         $this->dispatcher->dispatch(new PublishingMessage($message));
@@ -74,22 +67,9 @@ class Producer implements ProducerContract
         return $this->flush();
     }
 
-    private function produceMessage(ProducerTopic $topic, ProducerMessage $message): void
-    {
-        $topic->producev(
-            partition: $message->getPartition(),
-            msgflags: RD_KAFKA_MSG_F_BLOCK,
-            payload: $message->getBody(),
-            key: $message->getKey(),
-            headers: $message->getHeaders()
-        );
-
-        $this->dispatcher->dispatch(new MessagePublished($message));
-    }
-
     /**
      * @throws CouldNotPublishMessage
-     * @throws \Exception
+     * @throws Exception
      */
     public function flush(): mixed
     {
@@ -104,7 +84,7 @@ class Producer implements ProducerContract
                 return retry($retries, function () use ($timeout) {
                     $result = $this->producer->flush($timeout);
 
-                    if (RD_KAFKA_RESP_ERR_NO_ERROR === $result) {
+                    if ($result === RD_KAFKA_RESP_ERR_NO_ERROR) {
                         return true;
                     }
 
@@ -119,17 +99,39 @@ class Producer implements ProducerContract
                     $exception,
                 ));
 
-                throw  $exception;
+                throw $exception;
             }
         };
 
         return $flush();
     }
 
-    public function __destruct()
+    /** Set the Kafka Configuration. */
+    private function getConf(array $options): Conf
     {
-        if ($this->async) {
-            $this->flush();
+        $conf = new Conf;
+
+        foreach ($options as $key => $value) {
+            $conf->set($key, (string) $value);
         }
+
+        foreach ($this->config->getConfigCallbacks() as $method => $callback) {
+            $conf->{$method}($callback);
+        }
+
+        return $conf;
+    }
+
+    private function produceMessage(ProducerTopic $topic, ProducerMessage $message): void
+    {
+        $topic->producev(
+            partition: $message->getPartition(),
+            msgflags: RD_KAFKA_MSG_F_BLOCK,
+            payload: $message->getBody(),
+            key: $message->getKey(),
+            headers: $message->getHeaders()
+        );
+
+        $this->dispatcher->dispatch(new MessagePublished($message));
     }
 }

@@ -14,9 +14,8 @@ class AvroSerializer implements AvroMessageSerializer
 {
     public function __construct(
         private readonly AvroSchemaRegistry $registry,
-        private readonly RecordSerializer   $recordSerializer
-    ) {
-    }
+        private readonly RecordSerializer $recordSerializer
+    ) {}
 
     public function getRegistry(): AvroSchemaRegistry
     {
@@ -35,11 +34,11 @@ class AvroSerializer implements AvroMessageSerializer
         $topicName = $producerMessage->getTopicName();
         $body = $producerMessage->getBody();
 
-        if (null === $body) {
+        if ($body === null) {
             return $producerMessage;
         }
 
-        if (false === $this->registry->hasBodySchemaForTopic($topicName)) {
+        if ($this->registry->hasBodySchemaForTopic($topicName) === false) {
             return $producerMessage;
         }
 
@@ -59,11 +58,11 @@ class AvroSerializer implements AvroMessageSerializer
         $topicName = $producerMessage->getTopicName();
         $key = $producerMessage->getKey();
 
-        if (null === $key) {
+        if ($key === null) {
             return $producerMessage;
         }
 
-        if (false === $this->registry->hasKeySchemaForTopic($topicName)) {
+        if ($this->registry->hasKeySchemaForTopic($topicName) === false) {
             return $producerMessage;
         }
 
@@ -82,7 +81,7 @@ class AvroSerializer implements AvroMessageSerializer
     {
         $schemaDefinition = $avroSchema->getDefinition();
 
-        if (null === $schemaDefinition) {
+        if ($schemaDefinition === null) {
             throw new AvroSerializerException(
                 sprintf(
                     AvroSerializerException::UNABLE_TO_LOAD_DEFINITION_MESSAGE,

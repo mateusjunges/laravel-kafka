@@ -8,8 +8,7 @@ final readonly class StartedConsumingMessage
 {
     public function __construct(
         public readonly ConsumerMessage $message,
-    ) {
-    }
+    ) {}
 
     public function getMessageIdentifier(): string
     {

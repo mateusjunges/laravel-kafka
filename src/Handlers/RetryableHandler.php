@@ -3,7 +3,6 @@
 namespace Junges\Kafka\Handlers;
 
 use Closure;
-
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\RetryStrategy;
 use Junges\Kafka\Contracts\Sleeper;
@@ -11,9 +10,7 @@ use Junges\Kafka\Retryable;
 
 class RetryableHandler
 {
-    public function __construct(private readonly Closure $handler, private readonly RetryStrategy $retryStrategy, private readonly Sleeper $sleeper)
-    {
-    }
+    public function __construct(private readonly Closure $handler, private readonly RetryStrategy $retryStrategy, private readonly Sleeper $sleeper) {}
 
     public function __invoke(ConsumerMessage $message): void
     {

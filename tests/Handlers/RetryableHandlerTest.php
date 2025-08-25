@@ -17,7 +17,7 @@ final class RetryableHandlerTest extends TestCase
     public function it_passes_when_no_exception_occurred(): void
     {
         $failingHandler = new FailingHandler(0, new RuntimeException('test'));
-        $handler = new RetryableHandler($failingHandler(...), new DefaultRetryStrategy(), new FakeSleeper());
+        $handler = new RetryableHandler($failingHandler(...), new DefaultRetryStrategy, new FakeSleeper);
 
         $messageMock = $this->createMock(ConsumerMessage::class);
         $handler($messageMock);
@@ -29,8 +29,8 @@ final class RetryableHandlerTest extends TestCase
     public function it_does_retries_on_exception(): void
     {
         $failingHandler = new FailingHandler(4, new RuntimeException('test'));
-        $sleeper = new FakeSleeper();
-        $handler = new RetryableHandler($failingHandler(...), new DefaultRetryStrategy(), $sleeper);
+        $sleeper = new FakeSleeper;
+        $handler = new RetryableHandler($failingHandler(...), new DefaultRetryStrategy, $sleeper);
 
         $messageMock = $this->createMock(ConsumerMessage::class);
         $handler($messageMock);
@@ -43,8 +43,8 @@ final class RetryableHandlerTest extends TestCase
     public function it_bubbles_exception_when_retries_exceeded(): void
     {
         $failingHandler = new FailingHandler(100, new RuntimeException('test'));
-        $sleeper = new FakeSleeper();
-        $handler = new RetryableHandler($failingHandler(...), new DefaultRetryStrategy(), $sleeper);
+        $sleeper = new FakeSleeper;
+        $handler = new RetryableHandler($failingHandler(...), new DefaultRetryStrategy, $sleeper);
 
         $messageMock = $this->createMock(ConsumerMessage::class);
 

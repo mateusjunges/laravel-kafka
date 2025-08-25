@@ -34,7 +34,7 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
             groupId: 'groupId'
         );
 
-        $conf = new Conf();
+        $conf = new Conf;
 
         foreach ($config->getConsumerOptions() as $key => $value) {
             $conf->set($key, $value);
@@ -44,7 +44,7 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
             'conf' => $conf,
         ]));
 
-        $kafkaCommitter->commitMessage(new Message(), true);
+        $kafkaCommitter->commitMessage(new Message, true);
     }
 
     #[Test]
@@ -64,7 +64,7 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
             groupId: 'groupId'
         );
 
-        $conf = new Conf();
+        $conf = new Conf;
 
         foreach ($config->getConsumerOptions() as $key => $value) {
             $conf->set($key, $value);
@@ -74,13 +74,13 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
             'conf' => $conf,
         ]));
 
-        $kafkaCommitter->commitDlq(new Message());
+        $kafkaCommitter->commitDlq(new Message);
     }
 
     #[Test]
     public function it_allows_manual_commits_in_manual_commit_mode(): void
     {
-        $message = new Message();
+        $message = new Message;
         $message->err = 0;
         $message->key = 'key';
         $message->topic_name = 'test-topic';
@@ -130,7 +130,7 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
             autoCommit: false
         );
 
-        $consumer = new Consumer($config, new JsonDeserializer());
+        $consumer = new Consumer($config, new JsonDeserializer);
         $consumer->consume();
 
         $this->assertTrue($handlerCalled);
@@ -140,7 +140,7 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
     #[Test]
     public function it_disables_auto_commits_in_manual_commit_mode(): void
     {
-        $message = new Message();
+        $message = new Message;
         $message->err = 0;
         $message->key = 'key';
         $message->topic_name = 'test-topic';
@@ -183,7 +183,7 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
             autoCommit: false
         );
 
-        $consumer = new Consumer($config, new JsonDeserializer());
+        $consumer = new Consumer($config, new JsonDeserializer);
         $consumer->consume();
 
         $this->assertTrue($handlerCalled);
@@ -192,7 +192,7 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
     #[Test]
     public function it_enables_auto_commits_in_auto_commit_mode(): void
     {
-        $message = new Message();
+        $message = new Message;
         $message->err = 0;
         $message->key = 'key';
         $message->topic_name = 'test-topic';
@@ -241,7 +241,7 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
             autoCommit: true
         );
 
-        $consumer = new Consumer($config, new JsonDeserializer());
+        $consumer = new Consumer($config, new JsonDeserializer);
         $consumer->consume();
 
         $this->assertTrue($handlerCalled);

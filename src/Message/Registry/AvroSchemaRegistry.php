@@ -17,9 +17,7 @@ class AvroSchemaRegistry implements AvroSchemaRegistryContract
     ];
 
     /** AvroSchemaRegistry constructor. */
-    public function __construct(private readonly Registry $registry)
-    {
-    }
+    public function __construct(private readonly Registry $registry) {}
 
     public function addBodySchemaMappingForTopic(string $topicName, KafkaAvroSchemaRegistry $avroSchema): void
     {
@@ -51,9 +49,15 @@ class AvroSchemaRegistry implements AvroSchemaRegistryContract
         return isset($this->schemaMapping[self::KEY_IDX][$topicName]);
     }
 
+    /** @return array<string, AvroSchemaRegistry[]>  */
+    public function getTopicSchemaMapping(): array
+    {
+        return $this->schemaMapping;
+    }
+
     private function getSchemaForTopicAndType(string $topicName, string $type): KafkaAvroSchemaRegistry
     {
-        if (false === isset($this->schemaMapping[$type][$topicName])) {
+        if (isset($this->schemaMapping[$type][$topicName]) === false) {
             throw new SchemaRegistryException(
                 sprintf(
                     SchemaRegistryException::SCHEMA_MAPPING_NOT_FOUND,
@@ -65,7 +69,7 @@ class AvroSchemaRegistry implements AvroSchemaRegistryContract
 
         $avroSchema = $this->schemaMapping[$type][$topicName];
 
-        if (null !== $avroSchema->getDefinition()) {
+        if ($avroSchema->getDefinition() !== null) {
             return $avroSchema;
         }
 
@@ -77,16 +81,10 @@ class AvroSchemaRegistry implements AvroSchemaRegistryContract
 
     private function getSchemaDefinition(KafkaAvroSchemaRegistry $avroSchema): AvroSchema
     {
-        if (KafkaAvroSchemaRegistry::LATEST_VERSION === $avroSchema->getVersion()) {
+        if ($avroSchema->getVersion() === KafkaAvroSchemaRegistry::LATEST_VERSION) {
             return $this->registry->latestVersion($avroSchema->getName());
         }
 
         return $this->registry->schemaForSubjectAndVersion($avroSchema->getName(), $avroSchema->getVersion());
-    }
-
-    /** @return array<string, AvroSchemaRegistry[]>  */
-    public function getTopicSchemaMapping(): array
-    {
-        return $this->schemaMapping;
     }
 }

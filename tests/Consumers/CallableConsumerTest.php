@@ -17,9 +17,9 @@ final class CallableConsumerTest extends LaravelKafkaTestCase
     #[Test]
     public function it_decodes_messages(): void
     {
-        $message = new Message();
+        $message = new Message;
         $message->payload =
-            <<<JSON
+            <<<'JSON'
             {"foo": "bar"}
             JSON;
         $message->key = Str::uuid()->toString();

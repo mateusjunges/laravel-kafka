@@ -9,9 +9,13 @@ use RdKafka\Message;
 final class FailingCommitter implements Committer
 {
     private int $timesToFail;
+
     private Exception $failure;
+
     private int $timesTriedToCommitMessage = 0;
+
     private int $timesTriedToCommitDlq = 0;
+
     private int $commitCount = 0;
 
     public function __construct(Exception $failure, int $timesToFail)
@@ -21,16 +25,16 @@ final class FailingCommitter implements Committer
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
-    public function commitMessage(Message $message = null, bool $success = null): void
+    public function commitMessage(?Message $message = null, ?bool $success = null): void
     {
         $this->timesTriedToCommitMessage++;
         $this->doCommit();
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function commitDlq(Message $message): void
     {
@@ -49,7 +53,7 @@ final class FailingCommitter implements Committer
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function commit(mixed $messageOrOffsets = null): void
     {
@@ -57,7 +61,7 @@ final class FailingCommitter implements Committer
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function commitAsync(mixed $messageOrOffsets = null): void
     {
@@ -65,7 +69,7 @@ final class FailingCommitter implements Committer
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     private function doCommit(): void
     {

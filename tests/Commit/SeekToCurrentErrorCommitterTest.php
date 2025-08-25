@@ -23,7 +23,7 @@ final class SeekToCurrentErrorCommitterTest extends LaravelKafkaTestCase
 
         $seekToCurrentErrorCommitter = new SeekToCurrentErrorCommitter($mockedKafkaConsumer, $mockedCommitter);
 
-        $seekToCurrentErrorCommitter->commitMessage(new Message(), true);
+        $seekToCurrentErrorCommitter->commitMessage(new Message, true);
     }
 
     #[Test]
@@ -45,7 +45,7 @@ final class SeekToCurrentErrorCommitterTest extends LaravelKafkaTestCase
 
         $seekToCurrentErrorCommitter = new SeekToCurrentErrorCommitter($mockedKafkaConsumer, $mockedCommitter);
 
-        $seekToCurrentErrorCommitter->commitMessage(new Message(), false);
+        $seekToCurrentErrorCommitter->commitMessage(new Message, false);
     }
 
     #[Test]
@@ -55,11 +55,11 @@ final class SeekToCurrentErrorCommitterTest extends LaravelKafkaTestCase
 
         $mockedCommitter = $this->createMock(Committer::class);
         $mockedCommitter->expects($this->once())
-                        ->method('commitDlq')
-                        ->with($this->isInstanceOf(Message::class));
+            ->method('commitDlq')
+            ->with($this->isInstanceOf(Message::class));
 
         $seekToCurrentErrorCommitter = new SeekToCurrentErrorCommitter($mockedKafkaConsumer, $mockedCommitter);
 
-        $seekToCurrentErrorCommitter->commitDlq(new Message(), true);
+        $seekToCurrentErrorCommitter->commitDlq(new Message, true);
     }
 }

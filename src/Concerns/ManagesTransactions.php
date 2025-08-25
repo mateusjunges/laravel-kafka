@@ -11,9 +11,9 @@ use RdKafka\KafkaErrorException;
 trait ManagesTransactions
 {
     /**
-     * @throws \Junges\Kafka\Exceptions\Transactions\TransactionShouldBeRetriedException
-     * @throws \Junges\Kafka\Exceptions\Transactions\TransactionFatalErrorException
-     * @throws \Junges\Kafka\Exceptions\Transactions\TransactionShouldBeAbortedException
+     * @throws TransactionShouldBeRetriedException
+     * @throws TransactionFatalErrorException
+     * @throws TransactionShouldBeAbortedException
      */
     public function beginTransaction(int $timeoutInMilliseconds = 1000): void
     {
@@ -30,9 +30,9 @@ trait ManagesTransactions
     }
 
     /**
-     * @throws \Junges\Kafka\Exceptions\Transactions\TransactionShouldBeRetriedException
-     * @throws \Junges\Kafka\Exceptions\Transactions\TransactionFatalErrorException
-     * @throws \Junges\Kafka\Exceptions\Transactions\TransactionShouldBeAbortedException
+     * @throws TransactionShouldBeRetriedException
+     * @throws TransactionFatalErrorException
+     * @throws TransactionShouldBeAbortedException
      */
     public function abortTransaction(int $timeoutInMilliseconds = 1000): void
     {
@@ -44,9 +44,9 @@ trait ManagesTransactions
     }
 
     /**
-     * @throws \Junges\Kafka\Exceptions\Transactions\TransactionShouldBeRetriedException
-     * @throws \Junges\Kafka\Exceptions\Transactions\TransactionFatalErrorException
-     * @throws \Junges\Kafka\Exceptions\Transactions\TransactionShouldBeAbortedException
+     * @throws TransactionShouldBeRetriedException
+     * @throws TransactionFatalErrorException
+     * @throws TransactionShouldBeAbortedException
      */
     public function commitTransaction(int $timeoutInMilliseconds = 1000): void
     {
@@ -58,9 +58,9 @@ trait ManagesTransactions
     }
 
     /**
-     * @throws \Junges\Kafka\Exceptions\Transactions\TransactionShouldBeRetriedException
-     * @throws \Junges\Kafka\Exceptions\Transactions\TransactionShouldBeAbortedException
-     * @throws \Junges\Kafka\Exceptions\Transactions\TransactionFatalErrorException
+     * @throws TransactionShouldBeRetriedException
+     * @throws TransactionShouldBeAbortedException
+     * @throws TransactionFatalErrorException
      */
     private function handleTransactionException(KafkaErrorException $exception): void
     {

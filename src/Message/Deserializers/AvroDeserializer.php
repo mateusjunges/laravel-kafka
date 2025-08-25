@@ -12,9 +12,8 @@ class AvroDeserializer implements AvroMessageDeserializer
 {
     public function __construct(
         private readonly AvroSchemaRegistry $registry,
-        private readonly RecordSerializer   $recordSerializer
-    ) {
-    }
+        private readonly RecordSerializer $recordSerializer
+    ) {}
 
     public function getRegistry(): AvroSchemaRegistry
     {
@@ -39,11 +38,11 @@ class AvroDeserializer implements AvroMessageDeserializer
         $body = $message->getBody();
         $topicName = $message->getTopicName();
 
-        if (null === $body) {
+        if ($body === null) {
             return null;
         }
 
-        if (false === $this->registry->hasBodySchemaForTopic($topicName)) {
+        if ($this->registry->hasBodySchemaForTopic($topicName) === false) {
             return $body;
         }
 
@@ -58,11 +57,11 @@ class AvroDeserializer implements AvroMessageDeserializer
         $key = $message->getKey();
         $topicName = $message->getTopicName();
 
-        if (null === $key) {
+        if ($key === null) {
             return null;
         }
 
-        if (false === $this->registry->hasKeySchemaForTopic($topicName)) {
+        if ($this->registry->hasKeySchemaForTopic($topicName) === false) {
             return $key;
         }
 

@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Producers;
 
+use Exception;
 use Illuminate\Support\Traits\Conditionable;
 use Junges\Kafka\Concerns\InteractsWithConfigCallbacks;
 use Junges\Kafka\Config\Config;
@@ -12,19 +13,29 @@ use Junges\Kafka\Contracts\ProducerMessage;
 
 class Builder implements MessageProducer
 {
-    use InteractsWithConfigCallbacks;
     use Conditionable;
+    use InteractsWithConfigCallbacks;
 
     private array $options = [];
+
     private ProducerMessage $message;
+
     private MessageSerializer $serializer;
+
     private ?Producer $producer = null;
+
     private string $topic = '';
+
     private ?Sasl $saslConfig = null;
+
     private readonly ?string $broker;
+
     private bool $isTransactionProducer = false;
+
     private int $maxTransactionRetryAttempts = 5;
+
     private ?int $flushRetries = null;
+
     private ?int $flushTimeoutInMs = null;
 
     public function __construct(
@@ -41,7 +52,7 @@ class Builder implements MessageProducer
     /** Return a new Junges\Commit\ProducerBuilder instance. */
     public static function create(?string $broker = null): self
     {
-        return new Builder(
+        return new self(
             broker: $broker ?? config('kafka.brokers')
         );
     }
@@ -174,7 +185,7 @@ class Builder implements MessageProducer
 
         return $this;
     }
-    
+
     public function withFlushTimeout(int $timeoutInMs): self
     {
         $this->flushTimeoutInMs = $timeoutInMs;
@@ -185,7 +196,7 @@ class Builder implements MessageProducer
     /**
      * Send the given message to Kakfa.
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function send(): bool
     {

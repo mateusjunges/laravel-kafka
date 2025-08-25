@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Tests\Consumers;
 
+use Exception;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Consumers\CallableConsumer;
 use Junges\Kafka\Consumers\Consumer;
@@ -14,13 +15,14 @@ use PHPUnit\Framework\Attributes\Test;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
 use RdKafka\TopicPartition;
+use Throwable;
 
 final class ManualCommitTest extends LaravelKafkaTestCase
 {
     #[Test]
     public function it_can_commit_manually_with_consumer_message(): void
     {
-        $message = new Message();
+        $message = new Message;
         $message->err = 0;
         $message->key = 'key';
         $message->topic_name = 'test-topic';
@@ -87,7 +89,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             autoCommit: false
         );
 
-        $consumer = new Consumer($config, new JsonDeserializer());
+        $consumer = new Consumer($config, new JsonDeserializer);
         $consumer->consume();
 
         $this->assertTrue($handlerCalled);
@@ -101,7 +103,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_commit_async_with_consumer_message(): void
     {
-        $message = new Message();
+        $message = new Message;
         $message->err = 0;
         $message->key = 'key';
         $message->topic_name = 'test-topic';
@@ -149,7 +151,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             autoCommit: false
         );
 
-        $consumer = new Consumer($config, new JsonDeserializer());
+        $consumer = new Consumer($config, new JsonDeserializer);
         $consumer->consume();
 
         $this->assertTrue($commitAsyncCalled);
@@ -158,7 +160,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_commit_without_parameters(): void
     {
-        $message = new Message();
+        $message = new Message;
         $message->err = 0;
         $message->key = 'key';
         $message->topic_name = 'test-topic';
@@ -206,7 +208,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             autoCommit: false
         );
 
-        $consumer = new Consumer($config, new JsonDeserializer());
+        $consumer = new Consumer($config, new JsonDeserializer);
         $consumer->consume();
 
         $this->assertTrue($commitCalled);
@@ -215,7 +217,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_commit_with_rdkafka_message(): void
     {
-        $message = new Message();
+        $message = new Message;
         $message->err = 0;
         $message->key = 'key';
         $message->topic_name = 'test-topic';
@@ -248,11 +250,11 @@ final class ManualCommitTest extends LaravelKafkaTestCase
 
         $fakeHandler = new CallableConsumer(
             function (ConsumerMessage $message, Consumer $consumer) {
-                $rdkafkaMessage = new Message();
+                $rdkafkaMessage = new Message;
                 $rdkafkaMessage->topic_name = $message->getTopicName();
                 $rdkafkaMessage->partition = $message->getPartition();
                 $rdkafkaMessage->offset = $message->getOffset();
-                
+
                 $consumer->commit($rdkafkaMessage);
             },
             []
@@ -269,7 +271,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             autoCommit: false
         );
 
-        $consumer = new Consumer($config, new JsonDeserializer());
+        $consumer = new Consumer($config, new JsonDeserializer);
         $consumer->consume();
 
         $this->assertTrue($commitCalled);
@@ -279,7 +281,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
     #[Test]
     public function it_does_not_auto_commit_when_manual_commit_is_enabled(): void
     {
-        $message = new Message();
+        $message = new Message;
         $message->err = 0;
         $message->key = 'key';
         $message->topic_name = 'test-topic';
@@ -319,7 +321,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             autoCommit: false
         );
 
-        $consumer = new Consumer($config, new JsonDeserializer());
+        $consumer = new Consumer($config, new JsonDeserializer);
         $consumer->consume();
     }
 
@@ -339,7 +341,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $commitCalled = false;
         $topicPartitionData = [];
 
-        $dummyMessage = new Message();
+        $dummyMessage = new Message;
         $dummyMessage->err = 0;
         $dummyMessage->topic_name = 'test-topic';
         $dummyMessage->partition = 1;
@@ -398,7 +400,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             autoCommit: false
         );
 
-        $consumer = new Consumer($config, new JsonDeserializer());
+        $consumer = new Consumer($config, new JsonDeserializer);
         $consumer->consume();
 
         $this->assertTrue($commitCalled);
@@ -410,7 +412,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
     #[Test]
     public function it_handles_commit_errors_gracefully(): void
     {
-        $message = new Message();
+        $message = new Message;
         $message->err = 0;
         $message->key = 'key';
         $message->topic_name = 'test-topic';
@@ -438,7 +440,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             function (ConsumerMessage $message, Consumer $consumer) use (&$exceptionThrown) {
                 try {
                     $consumer->commit($message);
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     $exceptionThrown = true;
                 }
             },
@@ -456,7 +458,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             autoCommit: false
         );
 
-        $consumer = new Consumer($config, new JsonDeserializer());
+        $consumer = new Consumer($config, new JsonDeserializer);
         $consumer->consume();
 
         $this->assertTrue($exceptionThrown);
@@ -465,7 +467,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
     #[Test]
     public function it_ignores_no_offset_commit_errors(): void
     {
-        $message = new Message();
+        $message = new Message;
         $message->err = 0;
         $message->key = 'key';
         $message->topic_name = 'test-topic';
@@ -511,7 +513,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             autoCommit: false
         );
 
-        $consumer = new Consumer($config, new JsonDeserializer());
+        $consumer = new Consumer($config, new JsonDeserializer);
         $consumer->consume();
 
         // RD_KAFKA_RESP_ERR__NO_OFFSET errors should be ignored
@@ -521,7 +523,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
     #[Test]
     public function it_auto_commits_when_auto_commit_is_enabled(): void
     {
-        $message = new Message();
+        $message = new Message;
         $message->err = 0;
         $message->key = 'key';
         $message->topic_name = 'test-topic';
@@ -571,7 +573,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             autoCommit: true
         );
 
-        $consumer = new Consumer($config, new JsonDeserializer());
+        $consumer = new Consumer($config, new JsonDeserializer);
         $consumer->consume();
 
         $this->assertTrue($handlerCalled);
@@ -581,7 +583,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
     #[Test]
     public function it_allows_manual_commit_to_override_auto_commit_behavior(): void
     {
-        $message = new Message();
+        $message = new Message;
         $message->err = 0;
         $message->key = 'key';
         $message->topic_name = 'test-topic';
@@ -631,7 +633,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             autoCommit: false
         );
 
-        $consumer = new Consumer($config, new JsonDeserializer());
+        $consumer = new Consumer($config, new JsonDeserializer);
         $consumer->consume();
 
         $this->assertTrue($handlerCalled);
@@ -641,7 +643,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
     #[Test]
     public function it_handles_handler_exceptions_differently_in_auto_vs_manual_commit(): void
     {
-        $message = new Message();
+        $message = new Message;
         $message->err = 0;
         $message->key = 'key';
         $message->topic_name = 'test-topic';
@@ -671,7 +673,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             function (ConsumerMessage $message, Consumer $consumer) use (&$manualCommitHandlerCalled) {
                 $manualCommitHandlerCalled = true;
 
-                throw new \Exception('Processing failed');
+                throw new Exception('Processing failed');
             },
             []
         );
@@ -687,11 +689,11 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             autoCommit: false
         );
 
-        $manualCommitConsumer = new Consumer($manualCommitConfig, new JsonDeserializer());
+        $manualCommitConsumer = new Consumer($manualCommitConfig, new JsonDeserializer);
 
         try {
             $manualCommitConsumer->consume();
-        } catch (\Exception) {
+        } catch (Exception) {
         }
 
         $this->assertTrue($manualCommitHandlerCalled);
@@ -700,7 +702,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
     #[Test]
     public function it_uses_same_commit_infrastructure_for_both_modes(): void
     {
-        $message = new Message();
+        $message = new Message;
         $message->err = 0;
         $message->key = 'key';
         $message->topic_name = 'test-topic';
@@ -750,7 +752,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             autoCommit: true
         );
 
-        $autoCommitConsumer = new Consumer($autoCommitConfig, new JsonDeserializer());
+        $autoCommitConsumer = new Consumer($autoCommitConfig, new JsonDeserializer);
         $autoCommitConsumer->consume();
 
         $manualCommitHandler = new CallableConsumer(
@@ -771,7 +773,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             autoCommit: false
         );
 
-        $manualCommitConsumer = new Consumer($manualCommitConfig, new JsonDeserializer());
+        $manualCommitConsumer = new Consumer($manualCommitConfig, new JsonDeserializer);
         $manualCommitConsumer->consume();
 
         $this->assertCount(2, $commitCallsLog);

@@ -100,7 +100,6 @@ final class AvroDeserializerTest extends LaravelKafkaTestCase
         $registry->expects('hasBodySchemaForTopic')->andReturn(false);
         $registry->expects('hasKeySchemaForTopic')->andReturn(true);
 
-
         $recordSerializer = $this->getMockBuilder(RecordSerializer::class)->disableOriginalConstructor()->getMock();
         $recordSerializer->expects($this->once())->method('decodeMessage')->with($message->getKey(), $schemaDefinition)->willReturn('decoded-key');
 
