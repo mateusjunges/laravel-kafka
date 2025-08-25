@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Contracts;
 
+use Exception;
 use Junges\Kafka\Producers\Producer;
 use Junges\Kafka\Support\Testing\Fakes\ProducerFake;
 
@@ -49,7 +50,7 @@ interface MessageProducer extends InteractsWithConfigCallbacks
     public function withSasl(string $username, string $password, string $mechanisms, string $securityProtocol = 'SASL_PLAINTEXT'): self;
 
     public function withFlushRetries(int $retries): self;
-    
+
     public function withFlushTimeout(int $timeoutInMs): self;
 
     /** Specifies which serializer should be used. */
@@ -61,7 +62,7 @@ interface MessageProducer extends InteractsWithConfigCallbacks
     /**
      * Send the given message to Kakfa.
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function send(): bool;
 

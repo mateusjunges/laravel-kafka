@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Tests\Message\Serializers;
 
+use AvroSchema;
 use FlixTech\AvroSerializer\Objects\RecordSerializer;
 use Junges\Kafka\Contracts\AvroSchemaRegistry;
 use Junges\Kafka\Contracts\KafkaAvroSchemaRegistry;
@@ -69,7 +70,7 @@ final class AvroSerializerTest extends LaravelKafkaTestCase
     #[Test]
     public function serialize_success_with_schema(): void
     {
-        $schemaDefinition = $this->getMockBuilder(\AvroSchema::class)->disableOriginalConstructor()->getMock();
+        $schemaDefinition = $this->getMockBuilder(AvroSchema::class)->disableOriginalConstructor()->getMock();
 
         $avroSchema = m::mock(KafkaAvroSchemaRegistry::class);
         $avroSchema->expects('getName')->twice()->andReturn('schemaName');
@@ -102,7 +103,7 @@ final class AvroSerializerTest extends LaravelKafkaTestCase
     #[Test]
     public function serialize_key_mode(): void
     {
-        $schemaDefinition = $this->getMockBuilder(\AvroSchema::class)->disableOriginalConstructor()->getMock();
+        $schemaDefinition = $this->getMockBuilder(AvroSchema::class)->disableOriginalConstructor()->getMock();
 
         $avroSchema = m::mock(KafkaAvroSchemaRegistry::class);
         $avroSchema->expects('getName')->twice()->andReturn('schemaName');
@@ -130,7 +131,7 @@ final class AvroSerializerTest extends LaravelKafkaTestCase
     #[Test]
     public function serialize_body_mode(): void
     {
-        $schemaDefinition = $this->getMockBuilder(\AvroSchema::class)->disableOriginalConstructor()->getMock();
+        $schemaDefinition = $this->getMockBuilder(AvroSchema::class)->disableOriginalConstructor()->getMock();
 
         $avroSchema = m::mock(KafkaAvroSchemaRegistry::class);
         $avroSchema->expects('getName')->twice()->andReturn('schemaName');

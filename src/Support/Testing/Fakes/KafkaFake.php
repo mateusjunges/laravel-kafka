@@ -19,13 +19,25 @@ class KafkaFake
 
     private array $publishedMessages = [];
 
-    /** @var \Junges\Kafka\Contracts\ConsumerMessage[] */
+    /** @var ConsumerMessage[] */
     private array $messagesToConsume = [];
 
     public function __construct(?Manager $manager)
     {
         $this->kafkaManager = $manager?->shouldFake();
         $this->makeProducerBuilderFake();
+    }
+
+    /**
+     * Handle dynamic method calls to the kafka manager.
+     *
+     * @return mixed
+     */
+    public function __call(string $method, array $parameters)
+    {
+        $this->kafkaManager->shouldReceiveMessages($this->messagesToConsume);
+
+        return $this->forwardCallTo($this->kafkaManager, $method, $parameters);
     }
 
     /** Publish a message in the specified broker/topic. */
@@ -63,18 +75,12 @@ class KafkaFake
         }
     }
 
-    /** Add a message to array of messages to be consumed. */
-    private function addConsumerMessage(ConsumerMessage $message): void
-    {
-        $this->messagesToConsume[] = $message;
-    }
-
     /** Assert if a messages was published based on a truth-test callback. */
     public function assertPublished(?ProducerMessage $expectedMessage = null, ?callable $callback = null): void
     {
         PHPUnit::assertTrue(
             condition: $this->published($callback, $expectedMessage)->count() > 0,
-            message: "The expected message was not published."
+            message: 'The expected message was not published.'
         );
     }
 
@@ -94,7 +100,7 @@ class KafkaFake
     {
         PHPUnit::assertTrue(
             condition: $this->published($callback, $expectedMessage, $topic)->count() > 0,
-            message: "The expected message was not published."
+            message: 'The expected message was not published.'
         );
     }
 
@@ -114,6 +120,12 @@ class KafkaFake
     public function assertNothingPublished(): void
     {
         PHPUnit::assertEmpty($this->getPublishedMessages(), 'Messages were published unexpectedly.');
+    }
+
+    /** Add a message to array of messages to be consumed. */
+    private function addConsumerMessage(ConsumerMessage $message): void
+    {
+        $this->messagesToConsume[] = $message;
     }
 
     private function makeProducerBuilderFake(?string $broker = null): ProducerBuilderFake
@@ -161,17 +173,5 @@ class KafkaFake
     private function getPublishedMessages(): array
     {
         return $this->publishedMessages;
-    }
-
-    /**
-     * Handle dynamic method calls to the kafka manager.
-     *
-     * @return mixed
-     */
-    public function __call(string $method, array $parameters)
-    {
-        $this->kafkaManager->shouldReceiveMessages($this->messagesToConsume);
-
-        return $this->forwardCallTo($this->kafkaManager, $method, $parameters);
     }
 }

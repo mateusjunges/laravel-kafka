@@ -10,9 +10,7 @@ use RdKafka\TopicPartition;
 
 class Committer implements CommitterContract
 {
-    public function __construct(private readonly KafkaConsumer $consumer)
-    {
-    }
+    public function __construct(private readonly KafkaConsumer $consumer) {}
 
     /** @throws \RdKafka\Exception  */
     public function commitMessage(Message $message, bool $success): void

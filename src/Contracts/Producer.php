@@ -2,13 +2,16 @@
 
 namespace Junges\Kafka\Contracts;
 
+use Exception;
+
 interface Producer
 {
     /**
      * Produce the specified message in the kafka topic.
      *
      * @return mixed
-     * @throws \Exception
+     *
+     * @throws Exception
      */
     public function produce(ProducerMessage $message): bool;
 

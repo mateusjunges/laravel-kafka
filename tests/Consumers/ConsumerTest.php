@@ -30,36 +30,21 @@ use RdKafka\TopicPartition;
 final class ConsumerTest extends LaravelKafkaTestCase
 {
     private ?MessageConsumer $stoppableConsumer = null;
+
     private bool $stoppableConsumerStopped = false;
-    private string $stoppedConsumerMessage = "";
+
+    private string $stoppedConsumerMessage = '';
+
     private int $countBeforeConsuming = 0;
+
     private int $countAfterConsuming = 0;
-
-    private function mockConsumerWithMessageAndPartitions(Message $message, array $partitions): void
-    {
-        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
-            ->shouldReceive('subscribe')
-            ->andReturn(m::self())
-            ->shouldReceive('consume')
-            ->withAnyArgs()
-            ->andReturn($message)
-            ->shouldReceive('commit')
-            ->andReturn()
-            ->shouldReceive('getAssignment')
-            ->andReturn($partitions)
-            ->getMock();
-
-        $this->app->bind(KafkaConsumer::class, function () use ($mockedKafkaConsumer) {
-            return $mockedKafkaConsumer;
-        });
-    }
 
     #[Test]
     public function it_consumes_a_message_successfully_and_commit(): void
     {
-        $fakeHandler = new FakeHandler();
+        $fakeHandler = new FakeHandler;
 
-        $message = new Message();
+        $message = new Message;
         $message->err = 0;
         $message->key = 'key';
         $message->topic_name = 'test-topic';
@@ -85,7 +70,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
             maxCommitRetries: 1
         );
 
-        $consumer = new Consumer($config, new JsonDeserializer());
+        $consumer = new Consumer($config, new JsonDeserializer);
         $consumer->consume();
 
         $this->assertInstanceOf(ConsumedMessage::class, $fakeHandler->lastMessage());
@@ -96,7 +81,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
     {
         Event::fake();
 
-        $message = new Message();
+        $message = new Message;
         $message->err = 0;
         $message->key = 'key';
         $message->topic_name = 'test';
@@ -110,7 +95,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $this->mockProducer();
 
         $consumer = Kafka::consumer(['test'])
-            ->withHandler($fakeConsumer = new FakeConsumer())
+            ->withHandler($fakeConsumer = new FakeConsumer)
             ->withAutoCommit()
             ->withMaxMessages(1)
             ->build();
@@ -124,7 +109,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
     public function it_can_consume_messages_with_queueable_handlers(): void
     {
         Bus::fake();
-        $message = new Message();
+        $message = new Message;
         $message->err = 0;
         $message->key = 'key';
         $message->topic_name = 'test';
@@ -138,7 +123,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $this->mockProducer();
 
         $consumer = Kafka::consumer(['test'])
-            ->withHandler($fakeConsumer = new SimpleQueueableHandler())
+            ->withHandler($fakeConsumer = new SimpleQueueableHandler)
             ->withAutoCommit()
             ->withMaxMessages(1)
             ->build();
@@ -155,7 +140,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
 
         $this->expectException(ConsumerException::class);
 
-        $fakeHandler = new FakeHandler();
+        $fakeHandler = new FakeHandler;
 
         $config = new Config(
             broker: 'broker',
@@ -170,20 +155,20 @@ final class ConsumerTest extends LaravelKafkaTestCase
             maxCommitRetries: 1
         );
 
-        $message = new Message();
+        $message = new Message;
         $message->err = 1;
         $message->topic_name = 'test-topic';
 
         $this->mockConsumerWithMessageFailingCommit($message);
 
-        $consumer = new Consumer($config, new JsonDeserializer());
+        $consumer = new Consumer($config, new JsonDeserializer);
         $consumer->consume();
     }
 
     #[Test]
     public function can_stop_consume(): void
     {
-        $message = new Message();
+        $message = new Message;
         $message->err = 0;
         $message->key = 'key';
         $message->topic_name = 'test';
@@ -192,7 +177,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $message->partition = 1;
         $message->headers = [];
 
-        $message2 = new Message();
+        $message2 = new Message;
         $message2->err = 0;
         $message2->key = 'key2';
         $message2->topic_name = 'test2';
@@ -222,15 +207,15 @@ final class ConsumerTest extends LaravelKafkaTestCase
 
         $this->assertSame(2, $this->stoppableConsumer->consumedMessagesCount());
         $this->assertTrue($this->stoppableConsumerStopped);
-        $this->assertSame("Consumer stopped.", $this->stoppedConsumerMessage);
+        $this->assertSame('Consumer stopped.', $this->stoppedConsumerMessage);
     }
 
     #[Test]
     public function it_accepts_custom_committer(): void
     {
-        $fakeHandler = new FakeHandler();
+        $fakeHandler = new FakeHandler;
 
-        $message = new Message();
+        $message = new Message;
         $message->err = 0;
         $message->key = 'key';
         $message->topic_name = 'test-topic';
@@ -259,9 +244,9 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $mockedCommitterFactory = $this->createMock(CommitterFactory::class);
         $mockedCommitterFactory->expects($this->once())
             ->method('make')
-            ->willReturn(new VoidCommitter());
+            ->willReturn(new VoidCommitter);
 
-        $consumer = new Consumer($config, new JsonDeserializer(), $mockedCommitterFactory);
+        $consumer = new Consumer($config, new JsonDeserializer, $mockedCommitterFactory);
         $consumer->consume();
 
         $this->assertInstanceOf(ConsumedMessage::class, $fakeHandler->lastMessage());
@@ -273,9 +258,9 @@ final class ConsumerTest extends LaravelKafkaTestCase
     #[Test]
     public function can_consume_tombstone_messages(): void
     {
-        $fakeHandler = new FakeHandler();
+        $fakeHandler = new FakeHandler;
 
-        $message = new Message();
+        $message = new Message;
         $message->err = 0;
         $message->key = 'key';
         $message->topic_name = 'test-topic';
@@ -301,7 +286,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
             maxCommitRetries: 1
         );
 
-        $consumer = new Consumer($config, new JsonDeserializer());
+        $consumer = new Consumer($config, new JsonDeserializer);
         $consumer->consume();
 
         $this->assertInstanceOf(ConsumedMessage::class, $fakeHandler->lastMessage());
@@ -310,7 +295,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_restart_consumer(): void
     {
-        $message = new Message();
+        $message = new Message;
         $message->err = 0;
         $message->key = 'key';
         $message->topic_name = 'test';
@@ -319,7 +304,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $message->partition = 1;
         $message->headers = [];
 
-        $message2 = new Message();
+        $message2 = new Message;
         $message2->err = 0;
         $message2->key = 'key2';
         $message2->topic_name = 'test';
@@ -330,7 +315,6 @@ final class ConsumerTest extends LaravelKafkaTestCase
 
         $this->mockConsumerWithMessage($message, $message2);
         $this->mockProducer();
-        
 
         $fakeHandler = new CallableConsumer(
             function (ConsumerMessage $message) {
@@ -355,17 +339,17 @@ final class ConsumerTest extends LaravelKafkaTestCase
             restartInterval : 100
         );
 
-        $consumer = new Consumer($config, new JsonDeserializer());
+        $consumer = new Consumer($config, new JsonDeserializer);
         $consumer->consume();
 
-        //finally only one message should be consumed
+        // finally only one message should be consumed
         $this->assertEquals(1, $consumer->consumedMessagesCount());
     }
 
     #[Test]
     public function can_stop_consume_if_max_time_reached()
     {
-        $message = new Message();
+        $message = new Message;
         $message->err = 0;
         $message->key = 'key';
         $message->topic_name = 'test';
@@ -374,7 +358,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $message->partition = 1;
         $message->headers = [];
 
-        $message2 = new Message();
+        $message2 = new Message;
         $message2->err = 0;
         $message2->key = 'key2';
         $message2->topic_name = 'test2';
@@ -406,19 +390,19 @@ final class ConsumerTest extends LaravelKafkaTestCase
             maxTime: 1,
         );
 
-        $consumer = new Consumer($config, new JsonDeserializer());
+        $consumer = new Consumer($config, new JsonDeserializer);
         $consumer->consume();
 
-        //finally only one message should be consumed
+        // finally only one message should be consumed
         $this->assertEquals(1, $consumer->consumedMessagesCount());
     }
 
     #[Test]
     public function it_run_callbacks_before_consume(): void
     {
-        $fakeHandler = new FakeHandler();
+        $fakeHandler = new FakeHandler;
 
-        $message = new Message();
+        $message = new Message;
         $message->err = 0;
         $message->key = 'key';
         $message->topic_name = 'test-topic';
@@ -446,13 +430,13 @@ final class ConsumerTest extends LaravelKafkaTestCase
                 fn () => $this->countBeforeConsuming = 1,
                 fn () => $this->countBeforeConsuming++,
             ],
-            afterConsumingCallbacks:[
+            afterConsumingCallbacks: [
                 fn () => $this->countAfterConsuming = 1,
                 fn () => $this->countAfterConsuming++,
             ]
         );
 
-        $consumer = new Consumer($config, new JsonDeserializer());
+        $consumer = new Consumer($config, new JsonDeserializer);
 
         $consumer->consume();
 
@@ -494,7 +478,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
     #[Test]
     public function it_provides_consumer_to_handler_classes(): void
     {
-        $message = new Message();
+        $message = new Message;
         $message->err = 0;
         $message->key = 'key';
         $message->topic_name = 'test-topic';
@@ -518,13 +502,13 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $consumerProvided = false;
         $messageData = null;
 
-        $handler = new class($handlerCalled, $consumerProvided, $messageData) implements Handler {
+        $handler = new class($handlerCalled, $consumerProvided, $messageData) implements Handler
+        {
             public function __construct(
                 private bool &$handlerCalledRef,
                 private bool &$consumerProvidedRef,
                 private mixed &$messageDataRef
-            ) {
-            }
+            ) {}
 
             public function __invoke(ConsumerMessage $message, MessageConsumer $consumer): void
             {
@@ -551,7 +535,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
             autoCommit: false
         );
 
-        $consumer = new Consumer($config, new JsonDeserializer());
+        $consumer = new Consumer($config, new JsonDeserializer);
         $consumer->consume();
 
         $this->assertTrue($handlerCalled);
@@ -566,7 +550,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
     #[Test]
     public function it_allows_handler_classes_to_commit_manually(): void
     {
-        $message = new Message();
+        $message = new Message;
         $message->err = 0;
         $message->key = 'key';
         $message->topic_name = 'test-topic';
@@ -579,17 +563,16 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $commitParams = null;
 
         // Mock the committer to track manual commits
-        $customCommitter = new class($commitCalled, $commitParams) implements \Junges\Kafka\Contracts\Committer {
-            public function __construct(private bool &$commitCalledRef, private mixed &$commitParamsRef)
-            {
-            }
+        $customCommitter = new class($commitCalled, $commitParams) implements \Junges\Kafka\Contracts\Committer
+        {
+            public function __construct(private bool &$commitCalledRef, private mixed &$commitParamsRef) {}
 
-            public function commitMessage(\RdKafka\Message $message, bool $success): void
+            public function commitMessage(Message $message, bool $success): void
             {
                 // Not called for manual commits
             }
 
-            public function commitDlq(\RdKafka\Message $message): void
+            public function commitDlq(Message $message): void
             {
                 // Not relevant for this test
             }
@@ -606,10 +589,9 @@ final class ConsumerTest extends LaravelKafkaTestCase
             }
         };
 
-        $customCommitterFactory = new class($customCommitter) implements \Junges\Kafka\Contracts\CommitterFactory {
-            public function __construct(private \Junges\Kafka\Contracts\Committer $committer)
-            {
-            }
+        $customCommitterFactory = new class($customCommitter) implements CommitterFactory
+        {
+            public function __construct(private \Junges\Kafka\Contracts\Committer $committer) {}
 
             public function make(KafkaConsumer $kafkaConsumer, Config $config): \Junges\Kafka\Contracts\Committer
             {
@@ -630,10 +612,9 @@ final class ConsumerTest extends LaravelKafkaTestCase
 
         $handlerCalled = false;
 
-        $handler = new class($handlerCalled) implements Handler {
-            public function __construct(private bool &$handlerCalledRef)
-            {
-            }
+        $handler = new class($handlerCalled) implements Handler
+        {
+            public function __construct(private bool &$handlerCalledRef) {}
 
             public function __invoke(ConsumerMessage $message, MessageConsumer $consumer): void
             {
@@ -654,7 +635,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
             autoCommit: false
         );
 
-        $consumer = new Consumer($config, new JsonDeserializer(), $customCommitterFactory);
+        $consumer = new Consumer($config, new JsonDeserializer, $customCommitterFactory);
         $consumer->consume();
 
         $this->assertTrue($handlerCalled);
@@ -674,14 +655,14 @@ final class ConsumerTest extends LaravelKafkaTestCase
             securityProtocol: 'security',
             commit: 1,
             groupId: 'group',
-            consumer: new FakeHandler(),
+            consumer: new FakeHandler,
             sasl: null,
             dlq: null,
             maxMessages: 1,
             maxCommitRetries: 1
         );
 
-        $consumer = new Consumer($config, new JsonDeserializer());
+        $consumer = new Consumer($config, new JsonDeserializer);
 
         $partitions = $consumer->getAssignedPartitions();
 
@@ -692,9 +673,9 @@ final class ConsumerTest extends LaravelKafkaTestCase
     #[Test]
     public function it_returns_assigned_partitions_when_consumer_initialized(): void
     {
-        $fakeHandler = new FakeHandler();
+        $fakeHandler = new FakeHandler;
 
-        $message = new Message();
+        $message = new Message;
         $message->err = 0;
         $message->key = 'key';
         $message->topic_name = 'test-topic';
@@ -724,7 +705,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
             maxCommitRetries: 1
         );
 
-        $consumer = new Consumer($config, new JsonDeserializer());
+        $consumer = new Consumer($config, new JsonDeserializer);
 
         $consumer->consume();
 
@@ -734,5 +715,24 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $this->assertCount(2, $partitions);
         $this->assertInstanceOf(TopicPartition::class, $partitions[0]);
         $this->assertInstanceOf(TopicPartition::class, $partitions[1]);
+    }
+
+    private function mockConsumerWithMessageAndPartitions(Message $message, array $partitions): void
+    {
+        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+            ->shouldReceive('subscribe')
+            ->andReturn(m::self())
+            ->shouldReceive('consume')
+            ->withAnyArgs()
+            ->andReturn($message)
+            ->shouldReceive('commit')
+            ->andReturn()
+            ->shouldReceive('getAssignment')
+            ->andReturn($partitions)
+            ->getMock();
+
+        $this->app->bind(KafkaConsumer::class, function () use ($mockedKafkaConsumer) {
+            return $mockedKafkaConsumer;
+        });
     }
 }

@@ -10,9 +10,7 @@ use RdKafka\KafkaConsumer;
 
 class DefaultCommitterFactory implements CommitterFactory
 {
-    public function __construct(private readonly MessageCounter $messageCounter)
-    {
-    }
+    public function __construct(private readonly MessageCounter $messageCounter) {}
 
     public function make(KafkaConsumer $kafkaConsumer, Config $config): CommitterContract
     {
@@ -21,7 +19,7 @@ class DefaultCommitterFactory implements CommitterFactory
                 new Committer(
                     $kafkaConsumer
                 ),
-                new NativeSleeper(),
+                new NativeSleeper,
                 $config->getMaxCommitRetries()
             ),
             $this->messageCounter,

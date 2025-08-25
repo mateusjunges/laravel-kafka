@@ -9,9 +9,7 @@ final class FailingHandler
 {
     private int $timesInvoked = 0;
 
-    public function __construct(private readonly int $timesToFail, private readonly Exception $exception)
-    {
-    }
+    public function __construct(private readonly int $timesToFail, private readonly Exception $exception) {}
 
     public function __invoke(ConsumerMessage $message): void
     {

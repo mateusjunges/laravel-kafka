@@ -23,11 +23,11 @@ interface MessageConsumer
     /**
      * Commit offsets synchronously.
      *
-     * @param mixed $messageOrOffsets Can be:
-     *   - null: Commit offsets for current assignment
-     *   - \RdKafka\Message: Commit offset for a single topic+partition
-     *   - ConsumerMessage: Commit offset for a single topic+partition
-     *   - array of \RdKafka\TopicPartition: Commit offsets for provided partitions
+     * @param  mixed  $messageOrOffsets  Can be:
+     *                                   - null: Commit offsets for current assignment
+     *                                   - \RdKafka\Message: Commit offset for a single topic+partition
+     *                                   - ConsumerMessage: Commit offset for a single topic+partition
+     *                                   - array of \RdKafka\TopicPartition: Commit offsets for provided partitions
      *
      * @throws \RdKafka\Exception
      */
@@ -36,11 +36,11 @@ interface MessageConsumer
     /**
      * Commit offsets asynchronously.
      *
-     * @param mixed $message_or_offsets Can be:
-     *   - null: Commit offsets for current assignment
-     *   - \RdKafka\Message: Commit offset for a single topic+partition
-     *   - ConsumerMessage: Commit offset for a single topic+partition
-     *   - array of \RdKafka\TopicPartition: Commit offsets for provided partitions
+     * @param  mixed  $message_or_offsets  Can be:
+     *                                     - null: Commit offsets for current assignment
+     *                                     - \RdKafka\Message: Commit offset for a single topic+partition
+     *                                     - ConsumerMessage: Commit offset for a single topic+partition
+     *                                     - array of \RdKafka\TopicPartition: Commit offsets for provided partitions
      *
      * @throws \RdKafka\Exception
      */

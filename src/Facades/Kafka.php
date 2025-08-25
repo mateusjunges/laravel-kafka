@@ -17,6 +17,7 @@ use Junges\Kafka\Support\Testing\Fakes\KafkaFake;
  * @method static void assertPublishedOnTimes(string $topic, int $times = 1, ProducerMessage $expectedMessage = null, callable $callback = null)
  * @method static void assertNothingPublished()
  * @method static void shouldReceiveMessages(\Junges\Kafka\Contracts\ConsumerMessage|\Junges\Kafka\Contracts\ConsumerMessage[] $messages)
+ *
  * @mixin \Junges\Kafka\Factory
  *
  * @see \Junges\Kafka\Factory

@@ -18,9 +18,10 @@ use PHPUnit\Framework\ExpectationFailedException;
 final class KafkaFakeTest extends LaravelKafkaTestCase
 {
     private KafkaFake $fake;
+
     private MessageConsumer $consumer;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         $this->fake = new KafkaFake(app(Manager::class));
@@ -128,7 +129,6 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
 
         $this->fake->assertPublished($producer->getMessage());
 
-
         $this->fake->assertPublished($producer->getMessage(), function ($message) use ($uuid) {
             return $message->getKey() === $uuid;
         });
@@ -138,7 +138,7 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         });
 
         try {
-            $this->fake->assertPublished($message = $producer->getMessage(), function () use ($message, $uuid) {
+            $this->fake->assertPublished($message = $producer->getMessage(), function () use ($message) {
                 return $message->getKey() === 'not-published-uuid';
             });
         } catch (ExpectationFailedException $exception) {
@@ -330,11 +330,11 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         $now = Carbon::create(1998, 8, 11, 4, 30);
 
         $posts = [
-             1 => [
+            1 => [
                 'id' => 1,
-                 'published_at' => null,
-                 'title' => 'Hey Jude',
-                 'content' => "Don't make it bad, take a sad song and make it better",
+                'published_at' => null,
+                'title' => 'Hey Jude',
+                'content' => "Don't make it bad, take a sad song and make it better",
             ],
         ];
 
@@ -358,7 +358,7 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
             ->withHandler(function (ConsumerMessage $message) use (&$posts) {
                 $post = $posts[$message->getBody()['post_id']];
 
-                $post['published_at'] = now()->format("Y-m-d H:i:s");
+                $post['published_at'] = now()->format('Y-m-d H:i:s');
 
                 $posts[1] = $post;
 
@@ -401,7 +401,7 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         $stopped = false;
         $this->consumer = Kafka::consumer(['test-topic'])
             ->withHandler(function (ConsumerMessage $message) use (&$stopped) {
-                //stop consumer after first message
+                // stop consumer after first message
                 $this->consumer->stopConsuming();
             })
             ->onStopConsuming(function () use (&$stopped) {
@@ -411,9 +411,9 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
 
         $this->consumer->consume();
 
-        //testing stop callback
+        // testing stop callback
         $this->assertTrue($stopped);
-        //should have consumed only one message
+        // should have consumed only one message
         $this->assertEquals(1, $this->consumer->consumedMessagesCount());
     }
 

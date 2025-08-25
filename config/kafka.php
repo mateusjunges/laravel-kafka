@@ -9,15 +9,15 @@ return [
     /*
      | Default security protocol
      */
-    'securityProtocol' =>  env('KAFKA_SECURITY_PROTOCOL', 'PLAINTEXT'),
+    'securityProtocol' => env('KAFKA_SECURITY_PROTOCOL', 'PLAINTEXT'),
 
     /*
-     | Default sasl configuration 
+     | Default sasl configuration
      */
     'sasl' => [
         'mechanisms' => env('KAFKA_MECHANISMS', 'PLAINTEXT'),
         'username' => env('KAFKA_USERNAME', null),
-        'password' => env('KAFKA_PASSWORD', null)
+        'password' => env('KAFKA_PASSWORD', null),
     ],
 
     /*
@@ -28,7 +28,7 @@ return [
      */
     'consumer_group_id' => env('KAFKA_CONSUMER_GROUP_ID', 'group'),
 
-    'consumer_timeout_ms' => env("KAFKA_CONSUMER_DEFAULT_TIMEOUT", 2000),
+    'consumer_timeout_ms' => env('KAFKA_CONSUMER_DEFAULT_TIMEOUT', 2000),
 
     /*
      | After the consumer receives its assignment from the coordinator,
@@ -58,7 +58,6 @@ return [
      | Choose if debug is enabled or not.
      */
     'debug' => env('KAFKA_DEBUG', false),
-
 
     /*
      | The sleep time in milliseconds that will be used when retrying flush

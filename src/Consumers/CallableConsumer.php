@@ -15,8 +15,8 @@ use Junges\Kafka\Contracts\MessageConsumer;
 
 class CallableConsumer extends Consumer
 {
-    use PrepareMiddlewares;
     use HandleConsumedMessage;
+    use PrepareMiddlewares;
 
     private Dispatcher $dispatcher;
 

@@ -16,9 +16,9 @@ class Logger implements LoggerContract
 
     public function __construct()
     {
-        $handler = new StreamHandler("php://stdout");
+        $handler = new StreamHandler('php://stdout');
 
-        $handler->setFormatter(new JsonFormatter());
+        $handler->setFormatter(new JsonFormatter);
         $handler->pushProcessor(new UidProcessor(32));
 
         $this->logger = new MonologLogger('PHP-KAFKA-CONSUMER-ERROR');

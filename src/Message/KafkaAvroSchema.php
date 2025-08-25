@@ -11,8 +11,7 @@ class KafkaAvroSchema implements KafkaAvroSchemaRegistry
         private readonly string $schemaName,
         private readonly int $version = KafkaAvroSchemaRegistry::LATEST_VERSION,
         private ?AvroSchema $definition = null
-    ) {
-    }
+    ) {}
 
     public function getName(): string
     {

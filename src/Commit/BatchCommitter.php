@@ -14,8 +14,7 @@ class BatchCommitter implements Committer
         private readonly Committer $committer,
         private readonly MessageCounter $messageCounter,
         private readonly int $batchSize
-    ) {
-    }
+    ) {}
 
     public function commitMessage(Message $message, bool $success): void
     {
@@ -25,11 +24,6 @@ class BatchCommitter implements Committer
             $this->committer->commitMessage($message, $success);
             $this->commits = 0;
         }
-    }
-
-    private function maxMessagesLimitReached(): bool
-    {
-        return $this->messageCounter->maxMessagesLimitReached();
     }
 
     public function commitDlq(Message $message): void
@@ -46,5 +40,10 @@ class BatchCommitter implements Committer
     public function commitAsync(mixed $messageOrOffsets = null): void
     {
         $this->committer->commitAsync($messageOrOffsets);
+    }
+
+    private function maxMessagesLimitReached(): bool
+    {
+        return $this->messageCounter->maxMessagesLimitReached();
     }
 }

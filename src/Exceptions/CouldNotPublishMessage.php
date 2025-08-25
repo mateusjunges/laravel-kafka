@@ -9,7 +9,7 @@ class CouldNotPublishMessage extends LaravelKafkaException
     private int $kafkaErrorCode;
 
     #[Pure]
-    public static function flushError(string $message = "Sent messages may not be completed yet."): self
+    public static function flushError(string $message = 'Sent messages may not be completed yet.'): self
     {
         return new static($message);
     }

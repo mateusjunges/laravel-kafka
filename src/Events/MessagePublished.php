@@ -8,8 +8,7 @@ final class MessagePublished
 {
     public function __construct(
         public readonly ProducerMessage $message,
-    ) {
-    }
+    ) {}
 
     public function getMessageIdentifier(): string
     {

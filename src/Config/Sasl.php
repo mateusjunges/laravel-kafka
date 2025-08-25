@@ -9,8 +9,7 @@ class Sasl
         private readonly string $password,
         private readonly string $mechanisms,
         private readonly string $securityProtocol = 'SASL_PLAINTEXT'
-    ) {
-    }
+    ) {}
 
     public function getUsername(): string
     {

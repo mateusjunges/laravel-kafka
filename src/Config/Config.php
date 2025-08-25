@@ -9,9 +9,11 @@ use RdKafka\TopicPartition;
 
 class Config
 {
-    final const SASL_PLAINTEXT = 'SASL_PLAINTEXT';
-    final const SASL_SSL = 'SASL_SSL';
-    final const PRODUCER_ONLY_CONFIG_OPTIONS = [
+    final public const SASL_PLAINTEXT = 'SASL_PLAINTEXT';
+
+    final public const SASL_SSL = 'SASL_SSL';
+
+    final public const PRODUCER_ONLY_CONFIG_OPTIONS = [
         'transactional.id',
         'transaction.timeout.ms',
         'enable.idempotence',
@@ -33,7 +35,8 @@ class Config
         'dr_msg_cb',
         'sticky.partitioning.linger.ms',
     ];
-    final const CONSUMER_ONLY_CONFIG_OPTIONS = [
+
+    final public const CONSUMER_ONLY_CONFIG_OPTIONS = [
         'partition.assignment.strategy',
         'session.timeout.ms',
         'heartbeat.interval.ms',
@@ -85,8 +88,7 @@ class Config
         private readonly ?Closure $whenStopConsuming = null,
         public readonly ?int $flushRetries = null,
         public readonly ?int $flushTimeoutInMs = null,
-    ) {
-    }
+    ) {}
 
     public function getCommit(): int
     {
@@ -175,28 +177,6 @@ class Config
         return $this->callbacks;
     }
 
-    #[Pure]
-    private function getSaslOptions(): array
-    {
-        if ($this->usingSasl() && $this->sasl !== null) {
-            return [
-                'sasl.username' => $this->sasl->getUsername(),
-                'sasl.password' => $this->sasl->getPassword(),
-                'sasl.mechanisms' => $this->sasl->getMechanisms(),
-                'security.protocol' => $this->sasl->getSecurityProtocol(),
-            ];
-        }
-
-        return [];
-    }
-
-    private function usingSasl(): bool
-    {
-        return ! is_null($this->securityProtocol)
-            && (strtoupper($this->securityProtocol) === static::SASL_PLAINTEXT
-                || strtoupper($this->securityProtocol) === static::SASL_SSL);
-    }
-
     public function getBeforeConsumingCallbacks(): array
     {
         return $this->beforeConsumingCallbacks;
@@ -226,5 +206,27 @@ class Config
     public function getWhenStopConsumingCallback(): ?Closure
     {
         return $this->whenStopConsuming;
+    }
+
+    #[Pure]
+    private function getSaslOptions(): array
+    {
+        if ($this->usingSasl() && $this->sasl !== null) {
+            return [
+                'sasl.username' => $this->sasl->getUsername(),
+                'sasl.password' => $this->sasl->getPassword(),
+                'sasl.mechanisms' => $this->sasl->getMechanisms(),
+                'security.protocol' => $this->sasl->getSecurityProtocol(),
+            ];
+        }
+
+        return [];
+    }
+
+    private function usingSasl(): bool
+    {
+        return ! is_null($this->securityProtocol)
+            && (mb_strtoupper($this->securityProtocol) === static::SASL_PLAINTEXT
+                || mb_strtoupper($this->securityProtocol) === static::SASL_SSL);
     }
 }

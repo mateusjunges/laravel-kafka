@@ -51,7 +51,6 @@ interface ConsumerBuilder extends InteractsWithConfigCallbacks
     /**
      * Define the max number seconds that a consumer should run
      *
-     * @param int $maxTime
      * @return \Junges\Kafka\Consumers\Builder
      */
     public function withMaxTime(int $maxTime): self;
@@ -59,7 +58,6 @@ interface ConsumerBuilder extends InteractsWithConfigCallbacks
     /**
      * Specify the max retries attempts.
      *
-     * @param int $maxCommitRetries
      * @return \Junges\Kafka\Consumers\Builder
      */
     public function withMaxCommitRetries(int $maxCommitRetries): self;
@@ -80,7 +78,7 @@ interface ConsumerBuilder extends InteractsWithConfigCallbacks
      * The middleware is a callable in which the first argument is
      * the message itself and the second is the next handler
      *
-     * @param callable(mixed, callable): void $middleware
+     * @param  callable(mixed, callable): void  $middleware
      * @return \Junges\Kafka\Consumers\Builder
      */
     public function withMiddleware(callable $middleware): self;

@@ -14,8 +14,8 @@
         "phpunit/phpunit": "^10.5|^11.5.3",
         "orchestra/testbench": "^7.16|^8.0|^9.0|^10.0",
         "predis/predis": "^1",
-        "friendsofphp/php-cs-fixer": "^3.64",
-        "rector/rector": "^0.19.8"
+        "rector/rector": "^0.19.8",
+        "laravel/pint": "dev-main"
     },
     "minimum-stability": "dev",
     "autoload": {
@@ -38,7 +38,7 @@
     ],
     "scripts": {
         "test": "vendor/bin/phpunit tests",
-        "format": "vendor/bin/php-cs-fixer fix --allow-risky=yes --config=.php_cs.dist.php"
+        "format": "vendor/bin/pint"
     },
     "extra": {
         "laravel": {

@@ -18,9 +18,9 @@ final class KafkaConsumerCommandTest extends LaravelKafkaTestCase
     {
         $this->mockProducer();
 
-        $fakeHandler = new FakeHandler();
+        $fakeHandler = new FakeHandler;
 
-        $message = new Message();
+        $message = new Message;
         $message->err = 0;
         $message->key = 'key';
         $message->topic_name = 'test-topic';
@@ -44,11 +44,11 @@ final class KafkaConsumerCommandTest extends LaravelKafkaTestCase
             maxCommitRetries: 1
         );
 
-        $consumer = new Consumer($config, new JsonDeserializer());
+        $consumer = new Consumer($config, new JsonDeserializer);
 
         $this->app->bind(Consumer::class, fn () => $consumer);
 
-        $this->artisan("kafka:consume --topics=test-topic --consumer=\\\\Junges\\\\Kafka\\\\Tests\\\\Fakes\\\\FakeHandler");
+        $this->artisan('kafka:consume --topics=test-topic --consumer=\\\\Junges\\\\Kafka\\\\Tests\\\\Fakes\\\\FakeHandler');
 
         $this->assertInstanceOf(ConsumedMessage::class, $fakeHandler->lastMessage());
     }

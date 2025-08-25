@@ -13,8 +13,7 @@ abstract class AbstractMessage implements KafkaMessage
         protected ?array $headers = [],
         protected mixed $body = [],
         protected mixed $key = null,
-    ) {
-    }
+    ) {}
 
     public function setTopicName(string $topic): self
     {
@@ -52,7 +51,7 @@ abstract class AbstractMessage implements KafkaMessage
     public function getMessageIdentifier(): string
     {
         if (! is_string($this->getHeaders()[config('kafka.message_id_key')])) {
-            throw new MessageIdNotSet();
+            throw new MessageIdNotSet;
         }
 
         return $this->getHeaders()[config('kafka.message_id_key')];

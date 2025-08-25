@@ -12,10 +12,11 @@ use RdKafka\Conf;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
 use RdKafka\Producer as KafkaProducer;
+use ReflectionClass;
 
 abstract class LaravelKafkaTestCase extends Orchestra
 {
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -67,7 +68,7 @@ abstract class LaravelKafkaTestCase extends Orchestra
     {
         // We have to get a topic object as a valid response for the mock
         // We stub out this code here to achieve that
-        $conf = new Conf();
+        $conf = new Conf;
         $conf->set('log_level', '0');
         $kafka = new KafkaProducer($conf);
         $topic = $kafka->newTopic('test-topic');
@@ -122,20 +123,11 @@ abstract class LaravelKafkaTestCase extends Orchestra
 
     protected function getPropertyWithReflection(string $property, object $object): mixed
     {
-        $reflection = new \ReflectionClass($object);
+        $reflection = new ReflectionClass($object);
         $reflectionProperty = $reflection->getProperty($property);
         $reflectionProperty->setAccessible(true);
 
         return $reflectionProperty->getValue($object);
-    }
-
-    private function getMockedLogger(): m\MockInterface | m\LegacyMockInterface | null
-    {
-        return m::mock(Logger::class)
-            ->shouldReceive('error')
-            ->withAnyArgs()
-            ->andReturn()
-            ->getMock();
     }
 
     protected function getConsumerMessage(Message $message): ConsumerMessage
@@ -149,5 +141,14 @@ abstract class LaravelKafkaTestCase extends Orchestra
             'offset' => $message->offset,
             'timestamp' => $message->timestamp,
         ]);
+    }
+
+    private function getMockedLogger(): m\MockInterface|m\LegacyMockInterface|null
+    {
+        return m::mock(Logger::class)
+            ->shouldReceive('error')
+            ->withAnyArgs()
+            ->andReturn()
+            ->getMock();
     }
 }

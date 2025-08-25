@@ -59,7 +59,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     {
         $consumer = Builder::create('broker');
 
-        $consumer->usingDeserializer(new JsonDeserializer());
+        $consumer->usingDeserializer(new JsonDeserializer);
 
         $deserializer = $this->getPropertyWithReflection('deserializer', $consumer);
 
@@ -118,7 +118,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_uses_the_correct_handler(): void
     {
-        $consumer = Builder::create('broker')->withHandler(new FakeConsumer());
+        $consumer = Builder::create('broker')->withHandler(new FakeConsumer);
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
 
@@ -211,7 +211,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     public function it_can_add_invokable_classes_as_middleware(): void
     {
         $consumer = Builder::create('broker', ['foo'], 'group')
-            ->withMiddleware(new TestMiddleware());
+            ->withMiddleware(new TestMiddleware);
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
 
@@ -251,7 +251,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
 
         $consumerConfig = $this->getPropertyWithReflection('config', $consummerBuilt);
         $securityProtocol = $this->getPropertyWithReflection('securityProtocol', $consumerConfig);
-        
+
         $this->assertEquals('protocol', $securityProtocol);
     }
 
@@ -370,10 +370,11 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_build_with_custom_committer(): void
     {
-        $adhocCommitterFactory = new class implements CommitterFactory {
+        $adhocCommitterFactory = new class implements CommitterFactory
+        {
             public function make(KafkaConsumer $kafkaConsumer, Config $config): Committer
             {
-                return new VoidCommitter();
+                return new VoidCommitter;
             }
         };
         $consumer = Builder::create('broker')
