@@ -5,7 +5,6 @@
 ![Packagist Downloads](https://img.shields.io/packagist/dt/mateusjunges/laravel-kafka?style=flat&label=Total%20Downloads)
 [![MIT Licensed](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](LICENSE)
 [![Continuous Integration](https://github.com/mateusjunges/laravel-kafka/actions/workflows/run-tests.yml/badge.svg)](https://github.com/mateusjunges/laravel-kafka/actions/workflows/run-tests.yml)
-[![Check & fix styling](https://github.com/mateusjunges/laravel-kafka/actions/workflows/php-cs-fixer.yml/badge.svg)](https://github.com/mateusjunges/laravel-kafka/actions/workflows/php-cs-fixer.yml)
 
 Do you use Kafka in your laravel projects? All packages I've seen until today, including some built by myself, does not provide a nice usage syntax or, if it does, the test process with these packages are very painful.
 
