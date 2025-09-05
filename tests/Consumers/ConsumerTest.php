@@ -134,6 +134,29 @@ final class ConsumerTest extends LaravelKafkaTestCase
     }
 
     #[Test]
+    public function it_can_execute_queueable_handlers_without_consumer(): void
+    {
+        $message = new ConsumedMessage(
+            topicName: 'test',
+            partition: 1,
+            headers: [],
+            body: ['body' => 'message payload'],
+            key: 'key',
+            offset: 0,
+            timestamp: 0
+        );
+
+        $handler = new TestQueueableHandler();
+        $dispatchHandler = new DispatchQueuedHandler($handler, $message, []);
+
+        // This should not throw any exceptions
+        $dispatchHandler->handle();
+
+        $this->assertTrue($handler->wasCalled());
+        $this->assertNull($handler->getConsumer());
+    }
+
+    #[Test]
     public function consume_message_with_error(): void
     {
         $this->mockProducer();
@@ -510,7 +533,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
                 private mixed &$messageDataRef
             ) {}
 
-            public function __invoke(ConsumerMessage $message, MessageConsumer $consumer): void
+            public function __invoke(ConsumerMessage $message, ?MessageConsumer $consumer = null): void
             {
                 $this->handlerCalledRef = true;
                 $this->consumerProvidedRef = $consumer !== null;
@@ -616,11 +639,13 @@ final class ConsumerTest extends LaravelKafkaTestCase
         {
             public function __construct(private bool &$handlerCalledRef) {}
 
-            public function __invoke(ConsumerMessage $message, MessageConsumer $consumer): void
+            public function __invoke(ConsumerMessage $message, ?MessageConsumer $consumer = null): void
             {
                 $this->handlerCalledRef = true;
                 // Manually commit using the consumer parameter - just like closures!
-                $consumer->commit($message);
+                if ($consumer !== null) {
+                    $consumer->commit($message);
+                }
             }
         };
 
@@ -734,5 +759,28 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $this->app->bind(KafkaConsumer::class, function () use ($mockedKafkaConsumer) {
             return $mockedKafkaConsumer;
         });
+    }
+}
+
+final class TestQueueableHandler implements \Illuminate\Contracts\Queue\ShouldQueue, Handler
+{
+    private bool $wasCalled = false;
+
+    private ?MessageConsumer $consumer = null;
+
+    public function __invoke(ConsumerMessage $message, ?MessageConsumer $consumer = null): void
+    {
+        $this->wasCalled = true;
+        $this->consumer = $consumer;
+    }
+
+    public function wasCalled(): bool
+    {
+        return $this->wasCalled;
+    }
+
+    public function getConsumer(): ?MessageConsumer
+    {
+        return $this->consumer;
     }
 }
