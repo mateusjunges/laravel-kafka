@@ -16,18 +16,20 @@ This is how a queueable handler looks like:
 ```php
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Junges\Kafka\Contracts\Handler as HandlerContract;
-use Junges\Kafka\Contracts\KafkaConsumerMessage;
+use Junges\Kafka\Contracts\ConsumerMessage;
+use Junges\Kafka\Contracts\MessageConsumer;
 
 class Handler implements HandlerContract, ShouldQueue
 {
-    public function __invoke(KafkaConsumerMessage $message): void
+    public function __invoke(ConsumerMessage $message, ?MessageConsumer $consumer = null): void
     {
         // Handle the consumed message.
+        // Note: $consumer will be null for queued handlers
     }
 }
 ```
 
-As you can see on the `__invoke` method, queued handlers does not have access to a `MessageConsumer` instance when handling the message,
+As you can see on the `__invoke` method, queued handlers receive a `MessageConsumer` parameter, but it will be `null` when the handler is executed in the queue,
 because it's running on a laravel queue and there are no actions that can be performed asynchronously on Kafka message consumer.
 
 You can specify which queue connection and queue name to use for your handler by implementing the `onConnection` and `onQueue` methods:
@@ -35,13 +37,15 @@ You can specify which queue connection and queue name to use for your handler by
 ```php
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Junges\Kafka\Contracts\Handler as HandlerContract;
-use Junges\Kafka\Contracts\KafkaConsumerMessage;
+use Junges\Kafka\Contracts\ConsumerMessage;
+use Junges\Kafka\Contracts\MessageConsumer;
 
 class Handler implements HandlerContract, ShouldQueue
 {
-    public function __invoke(KafkaConsumerMessage $message): void
+    public function __invoke(ConsumerMessage $message, ?MessageConsumer $consumer = null): void
     {
         // Handle the consumed message.
+        // Note: $consumer will be null for queued handlers
     }
 
     public function onConnection(): string

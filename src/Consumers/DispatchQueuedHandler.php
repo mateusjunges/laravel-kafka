@@ -31,6 +31,7 @@ final class DispatchQueuedHandler implements ShouldQueue
         $this->handleConsumedMessage(
             message: $this->message,
             handler: $this->handler,
+            consumer: null, // Explicitly pass null for queued handlers
             middlewares: $this->middlewares
         );
     }

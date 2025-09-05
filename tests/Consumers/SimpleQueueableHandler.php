@@ -9,7 +9,7 @@ use Junges\Kafka\Contracts\MessageConsumer;
 
 final class SimpleQueueableHandler implements Handler, ShouldQueue
 {
-    public function __invoke(ConsumerMessage $message, MessageConsumer $consumer): void
+    public function __invoke(ConsumerMessage $message, ?MessageConsumer $consumer = null): void
     {
         //
     }
