@@ -5,12 +5,14 @@ namespace Junges\Kafka\Tests\Console\Consumers;
 use Junges\Kafka\Console\Commands\KafkaConsumer\Options;
 use Junges\Kafka\Tests\Fakes\FakeHandler;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
+use Override;
 use PHPUnit\Framework\Attributes\Test;
 
 class OptionsTest extends LaravelKafkaTestCase
 {
     private array $config;
 
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();

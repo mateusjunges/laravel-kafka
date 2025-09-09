@@ -7,6 +7,7 @@ use Junges\Kafka\Consumers\Builder;
 use Junges\Kafka\Consumers\CallableConsumer;
 use Junges\Kafka\Contracts\ConsumerBuilder as ConsumerBuilderContract;
 use Junges\Kafka\Contracts\MessageConsumer;
+use Override;
 
 class BuilderFake extends Builder implements ConsumerBuilderContract
 {
@@ -14,6 +15,7 @@ class BuilderFake extends Builder implements ConsumerBuilderContract
     private array $messages = [];
 
     /** {@inheritDoc} */
+    #[Override]
     public static function create(?string $brokers, array $topics = [], ?string $groupId = null): self
     {
         return new self(
@@ -32,6 +34,7 @@ class BuilderFake extends Builder implements ConsumerBuilderContract
     }
 
     /** Build the Kafka consumer. */
+    #[Override]
     public function build(): MessageConsumer
     {
         $config = new Config(
