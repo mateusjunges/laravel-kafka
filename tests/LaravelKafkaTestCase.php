@@ -8,6 +8,7 @@ use Junges\Kafka\Producers\Producer;
 use Junges\Kafka\Providers\LaravelKafkaServiceProvider;
 use Mockery as m;
 use Orchestra\Testbench\TestCase as Orchestra;
+use Override;
 use RdKafka\Conf;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
@@ -16,6 +17,7 @@ use ReflectionClass;
 
 abstract class LaravelKafkaTestCase extends Orchestra
 {
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -57,9 +59,7 @@ abstract class LaravelKafkaTestCase extends Orchestra
             ->shouldReceive('produce')
             ->andReturn();
 
-        $this->app->bind(Producer::class, function () use ($mockedProducer) {
-            return $mockedProducer->getMock();
-        });
+        $this->app->bind(Producer::class, fn () => $mockedProducer->getMock());
 
         $this->mockKafkaProducer();
     }
@@ -82,9 +82,7 @@ abstract class LaravelKafkaTestCase extends Orchestra
             ->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
             ->getMock();
 
-        $this->app->bind(KafkaProducer::class, function () use ($mockedKafkaProducer) {
-            return $mockedKafkaProducer;
-        });
+        $this->app->bind(KafkaProducer::class, fn () => $mockedKafkaProducer);
     }
 
     protected function mockConsumerWithMessageFailingCommit(Message $message): void
@@ -99,9 +97,7 @@ abstract class LaravelKafkaTestCase extends Orchestra
             ->never()
             ->getMock();
 
-        $this->app->bind(KafkaConsumer::class, function () use ($mockedKafkaConsumer) {
-            return $mockedKafkaConsumer;
-        });
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
     }
 
     protected function mockConsumerWithMessage(Message ...$message): void
@@ -125,7 +121,6 @@ abstract class LaravelKafkaTestCase extends Orchestra
     {
         $reflection = new ReflectionClass($object);
         $reflectionProperty = $reflection->getProperty($property);
-        $reflectionProperty->setAccessible(true);
 
         return $reflectionProperty->getValue($object);
     }

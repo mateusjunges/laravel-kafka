@@ -9,11 +9,11 @@ use RdKafka\TopicPartition;
 
 class Config
 {
-    final public const SASL_PLAINTEXT = 'SASL_PLAINTEXT';
+    final public const string SASL_PLAINTEXT = 'SASL_PLAINTEXT';
 
-    final public const SASL_SSL = 'SASL_SSL';
+    final public const string SASL_SSL = 'SASL_SSL';
 
-    final public const PRODUCER_ONLY_CONFIG_OPTIONS = [
+    final public const array PRODUCER_ONLY_CONFIG_OPTIONS = [
         'transactional.id',
         'transaction.timeout.ms',
         'enable.idempotence',
@@ -36,7 +36,7 @@ class Config
         'sticky.partitioning.linger.ms',
     ];
 
-    final public const CONSUMER_ONLY_CONFIG_OPTIONS = [
+    final public const array CONSUMER_ONLY_CONFIG_OPTIONS = [
         'partition.assignment.strategy',
         'session.timeout.ms',
         'heartbeat.interval.ms',

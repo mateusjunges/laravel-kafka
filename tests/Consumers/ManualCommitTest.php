@@ -440,7 +440,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             function (ConsumerMessage $message, Consumer $consumer) use (&$exceptionThrown) {
                 try {
                     $consumer->commit($message);
-                } catch (Throwable $e) {
+                } catch (Throwable) {
                     $exceptionThrown = true;
                 }
             },
@@ -495,7 +495,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             function (ConsumerMessage $message, Consumer $consumer) use (&$noExceptionThrown) {
                 try {
                     $consumer->commit($message);
-                } catch (\RdKafka\Exception $e) {
+                } catch (\RdKafka\Exception) {
                     $noExceptionThrown = false;
                 }
             },

@@ -8,6 +8,7 @@ use JetBrains\PhpStorm\ArrayShape;
 use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\AbstractMessage;
 use Junges\Kafka\Contracts\ProducerMessage;
+use Override;
 
 class Message extends AbstractMessage implements Arrayable, ProducerMessage
 {
@@ -81,6 +82,7 @@ class Message extends AbstractMessage implements Arrayable, ProducerMessage
         return $this;
     }
 
+    #[Override]
     public function getHeaders(): ?array
     {
         // Here we insert an uuid to be used to uniquely identify this message. If the

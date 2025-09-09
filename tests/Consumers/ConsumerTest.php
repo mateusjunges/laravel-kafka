@@ -559,7 +559,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
             }
         };
 
-        $customCommitterFactory = new class($customCommitter) implements CommitterFactory
+        $customCommitterFactory = new readonly class($customCommitter) implements CommitterFactory
         {
             public function __construct(private \Junges\Kafka\Contracts\Committer $committer) {}
 
@@ -701,8 +701,6 @@ final class ConsumerTest extends LaravelKafkaTestCase
             ->andReturn($partitions)
             ->getMock();
 
-        $this->app->bind(KafkaConsumer::class, function () use ($mockedKafkaConsumer) {
-            return $mockedKafkaConsumer;
-        });
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
     }
 }
