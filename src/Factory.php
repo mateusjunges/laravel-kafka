@@ -28,8 +28,26 @@ class Factory implements Manager
             return Kafka::fake()->publish($broker);
         }
 
+        if ($this->builder instanceof ProducerBuilder) {
+            return $this->builder;
+        }
+
         return new ProducerBuilder(
-            broker: $broker ?? config('kafka.brokers')
+            broker: $broker ?? config('kafka.brokers'),
+            asyncProducer: true,
+        );
+    }
+
+    /** Creates a synchronous ProducerBuilder instance for immediate message flushing. */
+    public function publishSync(?string $broker = null): MessageProducer
+    {
+        if ($this->shouldFake) {
+            return Kafka::fake()->publish($broker);
+        }
+
+        return new ProducerBuilder(
+            broker: $broker ?? config('kafka.brokers'),
+            asyncProducer: false
         );
     }
 
@@ -37,35 +55,6 @@ class Factory implements Manager
     public function fresh(): self
     {
         return new self;
-    }
-
-    /**
-     * Creates a new ProducerBuilder instance, optionally setting the brokers.
-     * The producer will be flushed only when the application terminates,
-     * and doing SEND does not mean that the message was flushed!
-     */
-    public function asyncPublish(?string $broker = null): MessageProducer
-    {
-        if ($this->shouldFake) {
-            return Kafka::fake()->publish($broker);
-        }
-
-        if ($this->builder instanceof ProducerBuilder) {
-            return $this->builder;
-        }
-
-        $this->builder = new ProducerBuilder(
-            broker: $broker ?? config('kafka.brokers'),
-            asyncProducer: true
-        );
-
-        return $this->builder;
-    }
-
-    /** This is an alias for the asyncPublish method. */
-    public function publishAsync(?string $broker = null): MessageProducer
-    {
-        return $this->asyncPublish($broker);
     }
 
     /** Return a ConsumerBuilder instance.  */
