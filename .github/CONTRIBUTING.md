@@ -12,6 +12,8 @@ We accept contributions via Pull Requests on [Github](https://github.com/mateusj
 
 - **Add tests** - Your patch won't be accepted if it doesn't have tests.
 
+- **DO NOT use conventional commits** -  Your pull request will be immediatelly closed if you prefix your commits with `feat:`, `chore:`, `fix:` or anything like that.
+
 - **Create feature branches** - Pull requests from your master branch won't be accepted.
 
 - **One pull request per feature** - If you want to do more than one thing, create multiple pull requests.
