@@ -2,7 +2,6 @@
 
 namespace Junges\Kafka\Tests\Consumers;
 
-use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Junges\Kafka\Commit\VoidCommitter;
 use Junges\Kafka\Config\Config;
@@ -103,7 +102,6 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $this->assertInstanceOf(ConsumedMessage::class, $fakeConsumer->getMessage());
         Event::assertDispatched(MessageConsumed::class, fn (MessageConsumed $e) => $e->message === $fakeConsumer->getMessage());
     }
-
 
     #[Test]
     public function consume_message_with_error(): void

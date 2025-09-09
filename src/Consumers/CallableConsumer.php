@@ -16,7 +16,7 @@ class CallableConsumer extends Consumer
     {
         $this->handler = match (true) {
             $handler instanceof Handler => $handler,
-            default =>  $handler(...),
+            default => $handler(...),
         };
     }
 
