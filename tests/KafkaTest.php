@@ -56,7 +56,7 @@ final class KafkaTest extends LaravelKafkaTestCase
         $this->assertTrue($test);
     }
 
-    #[Test] 
+    #[Test]
     public function it_can_publish_messages_synchronously(): void
     {
         Event::fake();
