@@ -37,7 +37,7 @@
         }
     ],
     "scripts": {
-        "test": "vendor/bin/phpunit tests",
+        "test": "vendor/bin/phpunit",
         "format": "vendor/bin/pint"
     },
     "extra": {
