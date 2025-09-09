@@ -7,8 +7,8 @@
         "ext-rdkafka": "^6.0",
         "monolog/monolog": "^3",
         "mateusjunges/avro-serde-php": "^3.0",
-        "illuminate/support": "^10.0|^11.0|^12.0",
-        "illuminate/contracts": "^10.0|^11.0|^12.0"
+        "illuminate/support": "^11.0|^12.0",
+        "illuminate/contracts": "^11.0|^12.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^10.5|^11.5.3",
