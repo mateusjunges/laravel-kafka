@@ -5,12 +5,14 @@ namespace Junges\Kafka\Tests\Message;
 use Illuminate\Support\Str;
 use Junges\Kafka\Message\Message;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
+use Override;
 use PHPUnit\Framework\Attributes\Test;
 
 final class MessageTest extends LaravelKafkaTestCase
 {
     private Message $message;
 
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();

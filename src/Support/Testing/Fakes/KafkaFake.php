@@ -46,7 +46,7 @@ class KafkaFake
         return $this->makeProducerBuilderFake($broker);
     }
 
-    public function asyncPublish(?string $broker = null): ProducerBuilderFake
+    public function publishSync(?string $broker = null): ProducerBuilderFake
     {
         return $this->publish($broker);
     }

@@ -3,6 +3,36 @@ title: Upgrade guide
 weight: 6
 ---
 
+## Upgrade to v3.0 from v2.9
+
+### Breaking Changes
+
+- `publish()` is now asynchronous by default. Messages are queued and flushed when the application terminates for better performance
+-  Removed `asyncPublish()` and `publishAsync()` methods - use `publish()` for async behavior (default) or `publishSync()` for immediate flushing
+-  Minimum PHP version raised to 8.3
+-  Minimum Laravel version raised to 11.0
+- **NEW**: Added `publishSync()` method for synchronous message publishing with immediate flush
+
+### Migration Guide
+
+**Before (v2.9):**
+```php
+// Async publishing
+Kafka::asyncPublish()->onTopic('topic')->withBody(['data' => 'value'])->send();
+
+// Sync publishing  
+Kafka::publish()->onTopic('topic')->withBody(['data' => 'value'])->send();
+```
+
+**After (v3.0):**
+```php
+// Async publishing (default behavior)
+Kafka::publish()->onTopic('topic')->withBody(['data' => 'value'])->send();
+
+// Sync publishing (immediate flush)
+Kafka::publishSync()->onTopic('topic')->withBody(['data' => 'value'])->send();
+```
+
 ## Upgrade to v2.9 from v2.8
 
 - **BREAKING CHANGE**: Deprecated producer batch messages feature has been removed (`MessageBatch`, `sendBatch`, `produceBatch`). Use `Kafka::asyncPublish()` instead for better performance

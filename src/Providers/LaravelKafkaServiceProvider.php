@@ -17,6 +17,7 @@ use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
 use Junges\Kafka\Message\Message;
 use Junges\Kafka\Message\Serializers\JsonSerializer;
+use Override;
 
 class LaravelKafkaServiceProvider extends ServiceProvider
 {
@@ -32,6 +33,7 @@ class LaravelKafkaServiceProvider extends ServiceProvider
         }
     }
 
+    #[Override]
     public function register(): void
     {
         $this->app->bind(MessageSerializer::class, fn () => new JsonSerializer);

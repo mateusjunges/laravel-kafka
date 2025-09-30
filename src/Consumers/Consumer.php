@@ -33,23 +33,23 @@ use Throwable;
 
 class Consumer implements MessageConsumer
 {
-    private const IGNORABLE_CONSUMER_ERRORS = [
+    private const array IGNORABLE_CONSUMER_ERRORS = [
         RD_KAFKA_RESP_ERR__PARTITION_EOF,
         RD_KAFKA_RESP_ERR__TRANSPORT,
         RD_KAFKA_RESP_ERR_REQUEST_TIMED_OUT,
         RD_KAFKA_RESP_ERR__TIMED_OUT,
     ];
 
-    private const CONSUME_STOP_EOF_ERRORS = [
+    private const array CONSUME_STOP_EOF_ERRORS = [
         RD_KAFKA_RESP_ERR__PARTITION_EOF,
         RD_KAFKA_RESP_ERR__TIMED_OUT,
     ];
 
-    private const TIMEOUT_ERRORS = [
+    private const array TIMEOUT_ERRORS = [
         RD_KAFKA_RESP_ERR_REQUEST_TIMED_OUT,
     ];
 
-    private const IGNORABLE_COMMIT_ERRORS = [
+    private const array IGNORABLE_COMMIT_ERRORS = [
         RD_KAFKA_RESP_ERR__NO_OFFSET,
     ];
 
@@ -73,9 +73,9 @@ class Consumer implements MessageConsumer
 
     private bool $stopRequested = false;
 
-    private ?Closure $whenStopConsuming;
+    private readonly ?Closure $whenStopConsuming;
 
-    private Dispatcher $dispatcher;
+    private readonly Dispatcher $dispatcher;
 
     public function __construct(private readonly Config $config, private readonly MessageDeserializer $deserializer, ?CommitterFactory $committerFactory = null)
     {
@@ -390,7 +390,7 @@ class Consumer implements MessageConsumer
 
         $throwableHeaders['kafka_throwable_message'] = $throwable->getMessage();
         $throwableHeaders['kafka_throwable_code'] = $throwable->getCode();
-        $throwableHeaders['kafka_throwable_class_name'] = get_class($throwable);
+        $throwableHeaders['kafka_throwable_class_name'] = $throwable::class;
 
         return array_merge($message->headers ?? [], $throwableHeaders);
     }

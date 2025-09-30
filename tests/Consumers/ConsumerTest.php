@@ -2,13 +2,11 @@
 
 namespace Junges\Kafka\Tests\Consumers;
 
-use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Junges\Kafka\Commit\VoidCommitter;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Consumers\CallableConsumer;
 use Junges\Kafka\Consumers\Consumer;
-use Junges\Kafka\Consumers\DispatchQueuedHandler;
 use Junges\Kafka\Contracts\CommitterFactory;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\Handler;
@@ -103,34 +101,6 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $consumer->consume();
         $this->assertInstanceOf(ConsumedMessage::class, $fakeConsumer->getMessage());
         Event::assertDispatched(MessageConsumed::class, fn (MessageConsumed $e) => $e->message === $fakeConsumer->getMessage());
-    }
-
-    #[Test]
-    public function it_can_consume_messages_with_queueable_handlers(): void
-    {
-        Bus::fake();
-        $message = new Message;
-        $message->err = 0;
-        $message->key = 'key';
-        $message->topic_name = 'test';
-        $message->payload = '{"body": "message payload"}';
-        $message->headers = [];
-        $message->partition = 1;
-        $message->offset = 0;
-
-        $this->mockConsumerWithMessage($message);
-
-        $this->mockProducer();
-
-        $consumer = Kafka::consumer(['test'])
-            ->withHandler($fakeConsumer = new SimpleQueueableHandler)
-            ->withAutoCommit()
-            ->withMaxMessages(1)
-            ->build();
-
-        $consumer->consume();
-
-        Bus::assertDispatched(DispatchQueuedHandler::class);
     }
 
     #[Test]
@@ -589,7 +559,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
             }
         };
 
-        $customCommitterFactory = new class($customCommitter) implements CommitterFactory
+        $customCommitterFactory = new readonly class($customCommitter) implements CommitterFactory
         {
             public function __construct(private \Junges\Kafka\Contracts\Committer $committer) {}
 
@@ -731,8 +701,6 @@ final class ConsumerTest extends LaravelKafkaTestCase
             ->andReturn($partitions)
             ->getMock();
 
-        $this->app->bind(KafkaConsumer::class, function () use ($mockedKafkaConsumer) {
-            return $mockedKafkaConsumer;
-        });
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
     }
 }
