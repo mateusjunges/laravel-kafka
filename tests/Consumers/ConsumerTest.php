@@ -10,11 +10,14 @@ use Junges\Kafka\Consumers\CallableConsumer;
 use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Consumers\DispatchQueuedHandler;
 use Junges\Kafka\Contracts\CommitterFactory;
+use Junges\Kafka\Contracts\Consumer as ContractsConsumer;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\Handler;
 use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Events\MessageConsumed;
+use Junges\Kafka\Events\MessageSentToDLQ;
 use Junges\Kafka\Exceptions\ConsumerException;
+use Junges\Kafka\Exceptions\ContextAwareException;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
@@ -26,6 +29,7 @@ use PHPUnit\Framework\Attributes\Test;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
 use RdKafka\TopicPartition;
+use RuntimeException;
 
 final class ConsumerTest extends LaravelKafkaTestCase
 {
@@ -715,6 +719,113 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $this->assertCount(2, $partitions);
         $this->assertInstanceOf(TopicPartition::class, $partitions[0]);
         $this->assertInstanceOf(TopicPartition::class, $partitions[1]);
+    }
+
+    #[Test]
+    public function it_sends_message_to_dlq_on_handler_exception(): void
+    {
+        Event::fake();
+
+        $fakeHandler = new class extends ContractsConsumer
+        {
+            public function handle(ConsumerMessage $message, MessageConsumer $consumer): void
+            {
+                throw new RuntimeException('fail');
+            }
+        };
+
+        $message = new Message;
+        $message->err = 0;
+        $message->key = 'key';
+        $message->topic_name = 'test-topic';
+        $message->payload = '{"body": "message payload"}';
+        $message->offset = 0;
+        $message->partition = 1;
+        $message->headers = [];
+
+        $expectedHeaders = [
+            'kafka_throwable_message' => 'fail',
+            'kafka_throwable_code' => 0,
+            'kafka_throwable_class_name' => RuntimeException::class,
+        ];
+
+        $this->mockConsumerWithMessage($message);
+        $this->mockKafkaProducerForDlq($expectedHeaders);
+
+        $config = new Config(
+            broker: 'localhost:9092',
+            topics: ['test-topic'],
+            securityProtocol: null,
+            commit: 1,
+            groupId: 'group',
+            consumer: $fakeHandler,
+            sasl: null,
+            dlq: 'dlq-topic',
+            maxMessages: 1,
+        );
+
+        $consumer = new Consumer($config, new JsonDeserializer);
+        $consumer->consume();
+
+        Event::assertDispatched(MessageSentToDLQ::class, function (MessageSentToDLQ $e) {
+            return $e->throwable instanceof RuntimeException;
+        });
+    }
+
+    #[Test]
+    public function it_sends_message_to_dlq_on_handler_exception_append_context(): void
+    {
+        Event::fake();
+
+        $context = ['context_key' => 'context_value'];
+
+        $fakeHandler = new class($context) extends ContractsConsumer
+        {
+            public function __construct(private array $context) {}
+
+            public function handle(ConsumerMessage $message, MessageConsumer $consumer): void
+            {
+                throw new ContextAwareException($this->context, 'fail');
+            }
+        };
+
+        $message = new Message;
+        $message->err = 0;
+        $message->key = 'key';
+        $message->topic_name = 'test-topic';
+        $message->payload = '{"body": "message payload"}';
+        $message->offset = 0;
+        $message->partition = 1;
+        $message->headers = [];
+
+        $expectedHeaders = [
+            'kafka_throwable_message' => 'fail',
+            'kafka_throwable_code' => 0,
+            'kafka_throwable_class_name' => ContextAwareException::class,
+            'context_key' => 'context_value',
+        ];
+
+        $this->mockConsumerWithMessage($message);
+        $this->mockKafkaProducerForDlq($expectedHeaders);
+
+        $config = new Config(
+            broker: 'localhost:9092',
+            topics: ['test-topic'],
+            securityProtocol: null,
+            commit: 1,
+            groupId: 'group',
+            consumer: $fakeHandler,
+            sasl: null,
+            dlq: 'dlq-topic',
+            maxMessages: 1,
+        );
+
+        $consumer = new Consumer($config, new JsonDeserializer);
+        $consumer->consume();
+
+        Event::assertDispatched(MessageSentToDLQ::class, function (MessageSentToDLQ $e) {
+            return $e->throwable instanceof ContextAwareException;
+        });
     }
 
     private function mockConsumerWithMessageAndPartitions(Message $message, array $partitions): void

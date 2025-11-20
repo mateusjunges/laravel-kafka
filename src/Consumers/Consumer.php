@@ -13,6 +13,7 @@ use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\Committer;
 use Junges\Kafka\Contracts\CommitterFactory;
 use Junges\Kafka\Contracts\ConsumerMessage;
+use Junges\Kafka\Contracts\ContextAware;
 use Junges\Kafka\Contracts\Logger;
 use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Contracts\MessageDeserializer;
@@ -392,7 +393,11 @@ class Consumer implements MessageConsumer
         $throwableHeaders['kafka_throwable_code'] = $throwable->getCode();
         $throwableHeaders['kafka_throwable_class_name'] = get_class($throwable);
 
-        return array_merge($message->headers ?? [], $throwableHeaders);
+        if ($throwable instanceof ContextAware) {
+            $contextHeaders = $this->normalizeContext($throwable->getContext());
+        }
+
+        return array_merge($message->headers ?? [], $throwableHeaders, $contextHeaders ?? []);
     }
 
     /** @throws Throwable */
@@ -464,5 +469,28 @@ class Consumer implements MessageConsumer
             'offset' => $message->offset,
             'timestamp' => $message->timestamp,
         ]);
+    }
+
+    /**
+     * Normalizes context array to key => value pairs for headers.
+     * Ignores entries with empty keys and non string keys or values.
+     */
+    private function normalizeContext(array $context): array
+    {
+        $normalizedContext = [];
+
+        foreach ($context as $key => $value) {
+            if (! is_string($key) || $key === '') {
+                continue;
+            }
+
+            if (! is_string($value)) {
+                continue;
+            }
+
+            $normalizedContext[$key] = $value;
+        }
+
+        return $normalizedContext;
     }
 }
