@@ -477,20 +477,10 @@ class Consumer implements MessageConsumer
      */
     private function normalizeContext(array $context): array
     {
-        $normalizedContext = [];
-
-        foreach ($context as $key => $value) {
-            if (! is_string($key) || $key === '') {
-                continue;
-            }
-
-            if (! is_string($value)) {
-                continue;
-            }
-
-            $normalizedContext[$key] = $value;
-        }
-
-        return $normalizedContext;
+        return array_filter(
+            $context,
+            fn (mixed $value, string $key) => $key !== '' && is_string($value),
+            ARRAY_FILTER_USE_BOTH
+        );
     }
 }

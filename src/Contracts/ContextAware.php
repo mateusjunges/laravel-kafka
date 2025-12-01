@@ -9,7 +9,7 @@ interface ContextAware
     /**
      * Return the context as an associative array.
      *
-     * @return array<string,string>
+     * @return array<string, string>
      */
     public function getContext(): array;
 }
