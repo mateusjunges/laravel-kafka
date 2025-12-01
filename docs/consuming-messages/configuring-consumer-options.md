@@ -103,9 +103,7 @@ Resulting DLQ headers (example):
 
 ```+parse
 <x-docs.tip title="Hot tip!">
-- Values must be strings, arrays/objects/numbers are skipped.
-- Empty string keys are ignored.
-- If you already have headers on the original message they will be preserved unless overwritten.
+Header values must be strings. Arrays/objects/numbers as well as empty string keys are ignored. Any headers on the original message are preserved unless overwritten.
 </x-docs.tip>
 ```
 
