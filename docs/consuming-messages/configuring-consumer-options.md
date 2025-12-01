@@ -29,6 +29,86 @@ When your message is sent to the dead letter queue, we will add three header key
 - `kafka_throwable_code`: The exception code
 - `kafka_throwable_class_name`: The exception class name.
 
+#### Adding context metadata to dead letter queue
+
+Sometimes you need additional information (context) in dead letter queue messages. To enrich DLQ message header with custom metadata (e.g. IDs, correlation keys, retry info), throw an exception that implements the `Junges\Kafka\Contracts\ContextAware` interface. 
+
+The consumer will merge into the message headers:
+
+- Original message headers (if any)
+- Throwable headers as defined above:
+  - `kafka_throwable_message`
+  - `kafka_throwable_code`
+  - `kafka_throwable_class_name`
+- Normalized context from any `ContextAware` exceptions.
+
+Example custom exception:
+
+```php
+use Junges\Kafka\Contracts\ContextAware;
+use RuntimeException;
+use Throwable;
+
+class OrderProcessingException extends RuntimeException implements ContextAware
+{
+    public function __construct(
+        private array $context,
+        string $message = 'Order processing failed',
+        int $code = 0,
+        ?Throwable $previous = null,
+    ) {
+        parent::__construct($message, $code, $previous);
+    }
+
+    public function getContext(): array
+    {
+        return $this->context;
+    }
+}
+```
+
+Using it inside a consumer handler:
+
+```php
+$consumer = \Junges\Kafka\Facades\Kafka::consumer()
+    ->subscribe('orders')
+    ->withDlq()          // DLQ topic will default to "orders-dlq"
+    ->withHandler(function($message) {
+        $payload = $message->getBody();
+
+        // Simulate failure
+        throw new OrderProcessingException([
+            'x-order-id' => (string)($payload['order_id'] ?? 'unknown'),
+            'x-user-id' => (string)($payload['user_id'] ?? 'unknown'),
+            'x-retry-count' => '3',
+        ]);
+    })
+    ->build();
+
+$consumer->consume();
+```
+
+Resulting DLQ headers (example):
+
+```php
+[
+  'kafka_throwable_message' => 'Order processing failed',
+  'kafka_throwable_code' => 0,
+  'kafka_throwable_class_name' => OrderProcessingException::class,
+  'x-order-id' => '42',
+  'x-user-id' => '7',
+  'x-retry-count' => '3',
+]
+```
+
+```+parse
+<x-docs.tip title="Hot tip!">
+- Values must be strings, arrays/objects/numbers are skipped.
+- Empty string keys are ignored.
+- If you already have headers on the original message they will be preserved unless overwritten.
+</x-docs.tip>
+```
+
 ### Commit modes: Auto vs Manual
 The package supports two commit modes for controlling when message offsets are committed to Kafka:
 
