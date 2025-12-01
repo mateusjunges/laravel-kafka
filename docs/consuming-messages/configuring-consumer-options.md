@@ -31,14 +31,16 @@ When your message is sent to the dead letter queue, we will add three header key
 
 #### Adding context metadata to dead letter queue
 
-Sometimes you need additional information (context) in dead letter queue message. To enrich DLQ message header with custom metadata (e.g. IDs, correlation keys, retry info), throw an exception that implements the `Junges\Kafka\Contracts\ContextAware` interface. 
-The consumer will merge into header:
+Sometimes you need additional information (context) in dead letter queue messages. To enrich DLQ message header with custom metadata (e.g. IDs, correlation keys, retry info), throw an exception that implements the `Junges\Kafka\Contracts\ContextAware` interface. 
+
+The consumer will merge into the message headers:
+
 - Original message headers (if any)
 - Throwable headers as defined above:
   - `kafka_throwable_message`
   - `kafka_throwable_code`
   - `kafka_throwable_class_name`
-- Normalized context.
+- Normalized context from any `ContextAware` exceptions.
 
 Example custom exception:
 
@@ -99,10 +101,13 @@ Resulting DLQ headers (example):
 ]
 ```
 
-Notes:
+```+parse
+<x-docs.tip title="Hot tip!">
 - Values must be strings, arrays/objects/numbers are skipped.
 - Empty string keys are ignored.
 - If you already have headers on the original message they will be preserved unless overwritten.
+</x-docs.tip>
+```
 
 ### Commit modes: Auto vs Manual
 The package supports two commit modes for controlling when message offsets are committed to Kafka:
