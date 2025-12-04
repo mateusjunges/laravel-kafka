@@ -4,10 +4,10 @@ namespace Junges\Kafka\Events;
 
 use Junges\Kafka\Contracts\ProducerMessage;
 
-final class MessagePublished
+final readonly class MessagePublished
 {
     public function __construct(
-        public readonly ProducerMessage $message,
+        public ProducerMessage $message,
     ) {}
 
     public function getMessageIdentifier(): string

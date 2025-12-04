@@ -10,7 +10,7 @@ use RdKafka\Message;
 
 class RetryableCommitter implements Committer
 {
-    private const RETRYABLE_ERRORS = [
+    private const array RETRYABLE_ERRORS = [
         RD_KAFKA_RESP_ERR_ILLEGAL_GENERATION,
         RD_KAFKA_RESP_ERR_REQUEST_TIMED_OUT,
         RD_KAFKA_RESP_ERR_REBALANCE_IN_PROGRESS,

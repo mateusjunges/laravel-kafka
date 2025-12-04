@@ -18,8 +18,19 @@ $producer = Kafka::publish('broker')
 $producer->send();
 ```
 
-If you want to send multiple messages, consider using the async producer instead. The default `send` method is recommended for low-throughput systems only, as it 
-flushes the producer after every message that is sent.
+The `publish()` method uses asynchronous publishing for better performance, batching messages and flushing them when the application terminates. 
+If you need immediate message flushing, use `publishSync()` instead:
+
+```php
+use Junges\Kafka\Facades\Kafka;
+
+// For immediate flush (synchronous)
+$producer = Kafka::publishSync('broker')
+    ->onTopic('topic')
+    ->withKafkaKey('kafka-key');
+
+$producer->send();
+```
 
 ```+parse
 <x-sponsors.request-sponsor/>

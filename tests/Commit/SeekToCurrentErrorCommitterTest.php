@@ -60,6 +60,6 @@ final class SeekToCurrentErrorCommitterTest extends LaravelKafkaTestCase
 
         $seekToCurrentErrorCommitter = new SeekToCurrentErrorCommitter($mockedKafkaConsumer, $mockedCommitter);
 
-        $seekToCurrentErrorCommitter->commitDlq(new Message, true);
+        $seekToCurrentErrorCommitter->commitDlq(new Message);
     }
 }

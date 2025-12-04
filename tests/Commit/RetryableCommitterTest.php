@@ -68,7 +68,7 @@ final class RetryableCommitterTest extends LaravelKafkaTestCase
 
         try {
             $retryableCommitter->commitMessage(new Message, true);
-        } catch (RdKafkaException $exception) {
+        } catch (RdKafkaException) {
         }
 
         $expectedSleeps = [1e6, 2e6, 4e6, 8e6, 16e6, 32e6];
