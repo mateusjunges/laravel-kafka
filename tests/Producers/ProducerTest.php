@@ -3,6 +3,7 @@
 namespace Junges\Kafka\Tests\Producers;
 
 use Junges\Kafka\Config\Config;
+use Junges\Kafka\Contracts\ProducerMessage;
 use Junges\Kafka\Message\Message;
 use Junges\Kafka\Message\Serializers\JsonSerializer;
 use Junges\Kafka\Producers\Producer;
@@ -26,5 +27,36 @@ final class ProducerTest extends LaravelKafkaTestCase
         $producer->produce($message);
 
         $this->assertSame($payload, $message->getBody());
+    }
+
+    #[Test]
+    public function it_calls_callback_after_flushing_messages(): void
+    {
+        $this->mockKafkaProducer();
+        $callbackCalls = 0;
+        $receivedMessages = [];
+
+        $producer = new Producer(
+            new Config('broker', ['test-topic']),
+            new JsonSerializer,
+            false,
+            function (array $messages) use (&$callbackCalls, &$receivedMessages) {
+                $callbackCalls++;
+                $receivedMessages = $messages;
+            }
+        );
+
+        $message = new Message(
+            body: ['key' => 'value'],
+        );
+        $message->onTopic('test-topic');
+
+        $producer->produce($message);
+
+        $this->assertSame(1, $callbackCalls);
+        $this->assertCount(1, $receivedMessages);
+        $this->assertInstanceOf(ProducerMessage::class, $receivedMessages[0]);
+        $this->assertSame('test-topic', $receivedMessages[0]->getTopicName());
+        $this->assertSame(['key' => 'value'], json_decode((string) $receivedMessages[0]->getBody(), true));
     }
 }
