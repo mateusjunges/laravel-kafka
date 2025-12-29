@@ -2,6 +2,12 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+##[2025-08-24 v2.10.1](https://github.com/mateusjunges/laravel-kafka/compare/v2.10.0...v2.10.1)
+- Remove `@internal` PHP annotations from interfaces and traits by [@mateusjunges](https://github.com/mateusjunges) in [#379](https://github.com/mateusjunges/laravel-kafka/pull/379)
+
+- ##[2025-08-24 v2.10.0](https://github.com/mateusjunges/laravel-kafka/compare/v2.9.0...v2.10.0)
+- Introduce ContextAware exceptions by [@mwazovzky](https://github.com/mwazovzky) in [#375](https://github.com/mateusjunges/laravel-kafka/pull/375)
+
 ##[2025-08-24 v2.9.0](https://github.com/mateusjunges/laravel-kafka/compare/v2.8.1...v2.9.0)
 - Remove support for batch messages by [@mateusjunges](https://github.com/mateusjunges) in [#357](https://github.com/mateusjunges/laravel-kafka/pull/357)
 
