@@ -6,7 +6,6 @@ use Exception;
 use Junges\Kafka\Producers\Producer;
 use Junges\Kafka\Support\Testing\Fakes\ProducerFake;
 
-/** @internal */
 interface MessageProducer extends InteractsWithConfigCallbacks
 {
     /** Return a new Junges\Commit\ProducerBuilder instance. */
