@@ -6,7 +6,6 @@ use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Contracts\Middleware;
 use LogicException;
 
-/** @internal */
 trait PrepareMiddlewares
 {
     /** Wrap the message with a given middleware. */

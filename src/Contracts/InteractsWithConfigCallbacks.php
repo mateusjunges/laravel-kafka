@@ -2,7 +2,6 @@
 
 namespace Junges\Kafka\Contracts;
 
-/** @internal */
 interface InteractsWithConfigCallbacks
 {
     /** Set the configuration error callback.  */

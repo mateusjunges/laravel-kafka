@@ -3,9 +3,7 @@
 namespace Junges\Kafka\Contracts;
 
 use Junges\Kafka\Config\RebalanceStrategy;
-use Junges\Kafka\Config\Sasl;
 
-/** @internal */
 interface ConsumerBuilder extends InteractsWithConfigCallbacks
 {
     /** Creates a new ConsumerBuilder instance. */

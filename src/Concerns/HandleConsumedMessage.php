@@ -8,8 +8,6 @@ use Junges\Kafka\Contracts\Handler;
 use Junges\Kafka\Contracts\MessageConsumer;
 
 /**
- * @internal
- *
  * @mixin \Junges\Kafka\Concerns\PrepareMiddlewares
  */
 trait HandleConsumedMessage
