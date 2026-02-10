@@ -2,8 +2,8 @@
 
 namespace Junges\Kafka\Producers;
 
-use Exception;
 use Closure;
+use Exception;
 use Illuminate\Support\Traits\Conditionable;
 use Junges\Kafka\Concerns\InteractsWithConfigCallbacks;
 use Junges\Kafka\Config\Config;
