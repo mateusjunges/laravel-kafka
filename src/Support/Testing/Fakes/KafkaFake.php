@@ -131,8 +131,12 @@ class KafkaFake
     private function makeProducerBuilderFake(?string $broker = null): ProducerBuilderFake
     {
         return (new ProducerBuilderFake(broker: $broker))
-            ->withProducerCallback(
-                fn (Message $message) => $this->publishedMessages[] = $message
+            ->withFlushCallback(
+                function (array $messages): void {
+                    foreach ($messages as $message) {
+                        $this->publishedMessages[] = $message;
+                    }
+                }
             );
     }
 

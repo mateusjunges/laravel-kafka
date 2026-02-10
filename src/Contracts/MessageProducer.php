@@ -45,6 +45,9 @@ interface MessageProducer extends InteractsWithConfigCallbacks
     /** Set the message to be published. */
     public function withMessage(ProducerMessage $message): self;
 
+    /** Set a callback to be executed after flushing produced messages. */
+    public function withFlushCallback(callable $callback): self;
+
     /** Set Sasl configuration. */
     public function withSasl(string $username, string $password, string $mechanisms, string $securityProtocol = 'SASL_PLAINTEXT'): self;
 
