@@ -2,6 +2,9 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+##[2026-02-10 v2.10.2](https://github.com/mateusjunges/laravel-kafka/compare/v2.10.1...v2.10.2)
+- Add flush callback for async producers by [@yeknava](https://github.com/yeknava) in [#378](https://github.com/mateusjunges/laravel-kafka/pull/378)
+
 ##[2025-08-24 v2.10.1](https://github.com/mateusjunges/laravel-kafka/compare/v2.10.0...v2.10.1)
 - Remove `@internal` PHP annotations from interfaces and traits by [@mateusjunges](https://github.com/mateusjunges) in [#379](https://github.com/mateusjunges/laravel-kafka/pull/379)
 
