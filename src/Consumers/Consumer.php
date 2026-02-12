@@ -39,6 +39,7 @@ class Consumer implements MessageConsumer
         RD_KAFKA_RESP_ERR__TRANSPORT,
         RD_KAFKA_RESP_ERR_REQUEST_TIMED_OUT,
         RD_KAFKA_RESP_ERR__TIMED_OUT,
+        RD_KAFKA_RESP_ERR_UNKNOWN_TOPIC_OR_PART,
     ];
 
     private const CONSUME_STOP_EOF_ERRORS = [
