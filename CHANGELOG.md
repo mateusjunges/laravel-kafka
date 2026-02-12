@@ -2,6 +2,9 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+##[2026-02-12 v2.10.3](https://github.com/mateusjunges/laravel-kafka/compare/v2.10.2...v2.10.3)
+- Fix consumer crash when using `allow.auto.create.topics` by treating `RD_KAFKA_RESP_ERR_UNKNOWN_TOPIC_OR_PART` as an ignorable consumer error [@mateusjunges](https://github.com/mateusjunges) in [#380](https://github.com/mateusjunges/laravel-kafka/pull/380)
+
 ##[2026-02-10 v2.10.2](https://github.com/mateusjunges/laravel-kafka/compare/v2.10.1...v2.10.2)
 - Add flush callback for async producers by [@yeknava](https://github.com/yeknava) in [#378](https://github.com/mateusjunges/laravel-kafka/pull/378)
 
