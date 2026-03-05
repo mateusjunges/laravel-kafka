@@ -16,9 +16,9 @@ final class AvroSchemaRegistryTest extends LaravelKafkaTestCase
     #[Test]
     public function add_body_schema_mapping_for_topic(): void
     {
-        $flixRegistry = $this->getMockForAbstractClass(Registry::class);
+        $flixRegistry = $this->createMock(Registry::class);
 
-        $schema = $this->getMockForAbstractClass(KafkaAvroSchemaRegistry::class);
+        $schema = $this->createMock(KafkaAvroSchemaRegistry::class);
 
         $registry = new AvroSchemaRegistry($flixRegistry);
 
@@ -37,9 +37,9 @@ final class AvroSchemaRegistryTest extends LaravelKafkaTestCase
     #[Test]
     public function add_key_schema_mapping_for_topic(): void
     {
-        $flixRegistry = $this->getMockForAbstractClass(Registry::class);
+        $flixRegistry = $this->createMock(Registry::class);
 
-        $schema = $this->getMockForAbstractClass(KafkaAvroSchemaRegistry::class);
+        $schema = $this->createMock(KafkaAvroSchemaRegistry::class);
 
         $registry = new AvroSchemaRegistry($flixRegistry);
 
@@ -58,8 +58,8 @@ final class AvroSchemaRegistryTest extends LaravelKafkaTestCase
     #[Test]
     public function has_body_schema_mapping_for_topic(): void
     {
-        $flixRegistry = $this->getMockForAbstractClass(Registry::class);
-        $schema = $this->getMockForAbstractClass(KafkaAvroSchemaRegistry::class);
+        $flixRegistry = $this->createMock(Registry::class);
+        $schema = $this->createMock(KafkaAvroSchemaRegistry::class);
 
         $registry = new AvroSchemaRegistry($flixRegistry);
         $registry->addBodySchemaMappingForTopic('test', $schema);
@@ -71,8 +71,8 @@ final class AvroSchemaRegistryTest extends LaravelKafkaTestCase
     #[Test]
     public function has_key_schema_mapping_for_topic(): void
     {
-        $flixRegistry = $this->getMockForAbstractClass(Registry::class);
-        $schema = $this->getMockForAbstractClass(KafkaAvroSchemaRegistry::class);
+        $flixRegistry = $this->createMock(Registry::class);
+        $schema = $this->createMock(KafkaAvroSchemaRegistry::class);
 
         $registry = new AvroSchemaRegistry($flixRegistry);
         $registry->addKeySchemaMappingForTopic('test', $schema);
@@ -93,7 +93,7 @@ final class AvroSchemaRegistryTest extends LaravelKafkaTestCase
             )
         );
 
-        $flixRegistry = $this->getMockForAbstractClass(Registry::class);
+        $flixRegistry = $this->createMock(Registry::class);
 
         $registry = new AvroSchemaRegistry($flixRegistry);
 
@@ -105,9 +105,9 @@ final class AvroSchemaRegistryTest extends LaravelKafkaTestCase
     {
         $definition = $this->getMockBuilder(AvroSchema::class)->disableOriginalConstructor()->getMock();
 
-        $flixRegistry = $this->getMockForAbstractClass(Registry::class);
+        $flixRegistry = $this->createMock(Registry::class);
 
-        $schema = $this->getMockForAbstractClass(KafkaAvroSchemaRegistry::class);
+        $schema = $this->createMock(KafkaAvroSchemaRegistry::class);
         $schema->expects($this->once())->method('getDefinition')->willReturn($definition);
 
         $registry = new AvroSchemaRegistry($flixRegistry);
@@ -122,9 +122,9 @@ final class AvroSchemaRegistryTest extends LaravelKafkaTestCase
     {
         $definition = $this->getMockBuilder(AvroSchema::class)->disableOriginalConstructor()->getMock();
 
-        $flixRegistry = $this->getMockForAbstractClass(Registry::class);
+        $flixRegistry = $this->createMock(Registry::class);
 
-        $schema = $this->getMockForAbstractClass(KafkaAvroSchemaRegistry::class);
+        $schema = $this->createMock(KafkaAvroSchemaRegistry::class);
         $schema->expects($this->once())->method('getDefinition')->willReturn($definition);
 
         $registry = new AvroSchemaRegistry($flixRegistry);
@@ -139,10 +139,10 @@ final class AvroSchemaRegistryTest extends LaravelKafkaTestCase
     {
         $definition = $this->getMockBuilder(AvroSchema::class)->disableOriginalConstructor()->getMock();
 
-        $flixRegistry = $this->getMockForAbstractClass(Registry::class);
+        $flixRegistry = $this->createMock(Registry::class);
         $flixRegistry->expects($this->once())->method('latestVersion')->with('test-schema')->willReturn($definition);
 
-        $schema = $this->getMockForAbstractClass(KafkaAvroSchemaRegistry::class);
+        $schema = $this->createMock(KafkaAvroSchemaRegistry::class);
         $schema->expects($this->once())->method('getDefinition')->willReturn(null);
         $schema->expects($this->once())->method('getVersion')->willReturn(KafkaAvroSchemaRegistry::LATEST_VERSION);
         $schema->expects($this->once())->method('getName')->willReturn('test-schema');
@@ -160,10 +160,10 @@ final class AvroSchemaRegistryTest extends LaravelKafkaTestCase
     {
         $definition = $this->getMockBuilder(AvroSchema::class)->disableOriginalConstructor()->getMock();
 
-        $flixRegistry = $this->getMockForAbstractClass(Registry::class);
+        $flixRegistry = $this->createMock(Registry::class);
         $flixRegistry->expects($this->once())->method('schemaForSubjectAndVersion')->with('test-schema', 1)->willReturn($definition);
 
-        $schema = $this->getMockForAbstractClass(KafkaAvroSchemaRegistry::class);
+        $schema = $this->createMock(KafkaAvroSchemaRegistry::class);
         $schema->expects($this->once())->method('getDefinition')->willReturn(null);
         $schema->expects($this->exactly(2))->method('getVersion')->willReturn(1);
         $schema->expects($this->once())->method('getName')->willReturn('test-schema');
@@ -179,7 +179,7 @@ final class AvroSchemaRegistryTest extends LaravelKafkaTestCase
     #[Test]
     public function get_topic_schema_mapping(): void
     {
-        $flixRegistry = $this->getMockForAbstractClass(Registry::class);
+        $flixRegistry = $this->createMock(Registry::class);
 
         $registry = new AvroSchemaRegistry($flixRegistry);
 
