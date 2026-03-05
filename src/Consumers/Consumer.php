@@ -252,8 +252,6 @@ class Consumer implements MessageConsumer
 
     private function listenForSignals(): void
     {
-        assert(extension_loaded('pcntl'));
-
         pcntl_async_signals(true);
 
         pcntl_signal(SIGQUIT, fn () => $this->stopRequested = true);
@@ -457,7 +455,7 @@ class Consumer implements MessageConsumer
         // First, we set a new unique id that allows us to identify this message. Then
         // we create a new consumer message instance that will be passed as an arg
         // to the consumer class/closure responsible for consuming this message.
-        if (! array_key_exists(config('kafka.message_id_key'), $message->headers)) {
+        if (! array_key_exists(config('kafka.message_id_key'), $message->headers ?? [])) {
             $message->headers[config('kafka.message_id_key')] = Str::uuid()->toString();
         }
 
