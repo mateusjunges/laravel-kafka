@@ -3,6 +3,10 @@ title: Upgrade guide
 weight: 6
 ---
 
+## Upgrade to v2.11 from v2.10
+
+- **BREAKING CHANGE**: Dropped support for Laravel 10 and Laravel 11. The minimum supported Laravel version is now 12.0
+
 ## Upgrade to v2.9 from v2.8
 
 - **BREAKING CHANGE**: Deprecated producer batch messages feature has been removed (`MessageBatch`, `sendBatch`, `produceBatch`). Use `Kafka::asyncPublish()` instead for better performance
