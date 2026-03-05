@@ -3,17 +3,17 @@
     "description": "A kafka driver for laravel",
     "type": "library",
     "require": {
-        "php": "^8.2|^8.3|^8.4",
+        "php": "^8.2|^8.3|^8.4|^8.5",
         "ext-rdkafka": "^6.0",
         "monolog/monolog": "^3",
         "mateusjunges/avro-serde-php": "^3.0",
-        "illuminate/support": "^10.0|^11.0|^12.0|^13.0",
-        "illuminate/contracts": "^10.0|^11.0|^12.0|^13.0"
+        "illuminate/support": "^12.0|^13.0",
+        "illuminate/contracts": "^12.0|^13.0"
     },
     "require-dev": {
         "mockery/mockery": "^1.6.12",
         "phpunit/phpunit": "^10.5|^11.5.3|^12.5.12",
-        "orchestra/testbench": "^7.16|^8.0|^9.0|^10.0|^11.0",
+        "orchestra/testbench": "^10.0|^11.0",
         "predis/predis": "^1|^3.4",
         "rector/rector": "^0.19.8|^2.3",
         "laravel/pint": "dev-main"
