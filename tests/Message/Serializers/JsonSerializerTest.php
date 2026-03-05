@@ -13,11 +13,11 @@ final class JsonSerializerTest extends TestCase
     #[Test]
     public function serialize(): void
     {
-        $message = $this->getMockForAbstractClass(ProducerMessage::class);
+        $message = $this->createMock(ProducerMessage::class);
         $message->expects($this->once())->method('getBody')->willReturn(['name' => 'foo']);
         $message->expects($this->once())->method('withBody')->with('{"name":"foo"}')->willReturn($message);
 
-        $serializer = $this->getMockForAbstractClass(JsonSerializer::class);
+        $serializer = new JsonSerializer;
 
         $this->assertSame($message, $serializer->serialize($message));
     }
@@ -25,10 +25,10 @@ final class JsonSerializerTest extends TestCase
     #[Test]
     public function serialize_throws_exception(): void
     {
-        $message = $this->getMockForAbstractClass(ProducerMessage::class);
+        $message = $this->createMock(ProducerMessage::class);
         $message->expects($this->once())->method('getBody')->willReturn(chr(255));
 
-        $serializer = $this->getMockForAbstractClass(JsonSerializer::class);
+        $serializer = new JsonSerializer;
 
         $this->expectException(JsonException::class);
 
