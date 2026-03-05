@@ -2,6 +2,14 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+##[2026-03-05 v2.11.0](https://github.com/mateusjunges/laravel-kafka/compare/v2.10.3...v2.11.0)
+- Add Laravel 13.x compatibility by [@laravelshift](https://github.com/laravelshift) in [#381](https://github.com/mateusjunges/laravel-kafka/pull/381)
+- Drop Laravel 10/11 support, add PHP 8.5 to test matrix by [@mateusjunges](https://github.com/mateusjunges) in [#382](https://github.com/mateusjunges/laravel-kafka/pull/382)
+- Remove redundant `pcntl` assert in consumer signal handler by [@mateusjunges](https://github.com/mateusjunges)
+- Fix potential null headers crash in `getConsumerMessage()` by [@mateusjunges](https://github.com/mateusjunges)
+- Remove dead code (`getRdKafkaMessage`/`getConsumerMessage`) from `ConsumerFake` by [@mateusjunges](https://github.com/mateusjunges)
+
+
 ##[2026-02-12 v2.10.3](https://github.com/mateusjunges/laravel-kafka/compare/v2.10.2...v2.10.3)
 - Fix consumer crash when using `allow.auto.create.topics` by treating `RD_KAFKA_RESP_ERR_UNKNOWN_TOPIC_OR_PART` as an ignorable consumer error [@mateusjunges](https://github.com/mateusjunges) in [#380](https://github.com/mateusjunges/laravel-kafka/pull/380)
 
