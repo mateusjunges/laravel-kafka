@@ -7,6 +7,14 @@ weight: 6
 
 - **BREAKING CHANGE**: Dropped support for Laravel 10 and Laravel 11. The minimum supported Laravel version is now 12.0
 
+## Upgrade to v2.10 from v2.9
+
+No breaking changes. Notable additions:
+
+- **ContextAware exceptions**: Exceptions implementing `Junges\Kafka\Contracts\ContextAware` will now have their context forwarded as headers when messages are sent to the DLQ. See the [configuring consumer options](/consuming-messages/configuring-consumer-options) docs for details.
+- **Async producer flush callback**: You can now pass a callback via `withFlushCallback()` on the producer builder to be notified when async messages are flushed.
+- **Removed `@internal` annotations** from public interfaces and traits, making them safe to implement/use in userland code.
+
 ## Upgrade to v2.9 from v2.8
 
 - **BREAKING CHANGE**: Deprecated producer batch messages feature has been removed (`MessageBatch`, `sendBatch`, `produceBatch`). Use `Kafka::asyncPublish()` instead for better performance
