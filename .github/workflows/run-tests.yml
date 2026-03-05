@@ -1,6 +1,8 @@
 name: Continuous Integration
 
-on: ['push', 'pull_request']
+on:
+  - push
+  - pull_request
 
 jobs:
   ci:
@@ -9,7 +11,7 @@ jobs:
     strategy:
       matrix:
         php: [8.4, 8.3, 8.2]
-        laravel: [12.*, 11.*, 10.*]
+        laravel: ['10.*', '11.*', '12.*', '13.*']
         dependency-version: [prefer-stable]
         include:
           - laravel: 10.*
@@ -18,11 +20,15 @@ jobs:
             testbench: 9.*
           - laravel: 12.*
             testbench: 10.*
+          - laravel: 13.*
+            testbench: 11.*
+        exclude:
+          - laravel: 13.*
+            php: 8.2
 
     name: CI - PHP ${{ matrix.php }}  - Laravel ${{ matrix.laravel }} - Testbench ${{ matrix.testbench }} (${{ matrix.dependency-version }})
 
     steps:
-
       - name: Checkout
         uses: actions/checkout@v2
 
