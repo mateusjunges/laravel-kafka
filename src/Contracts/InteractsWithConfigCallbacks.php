@@ -15,4 +15,7 @@ interface InteractsWithConfigCallbacks
 
     /** Set the log callback. */
     public function withLogCb(callable $callback): self;
+
+    /** Set the OAUTHBEARER token refresh callback. */
+    public function withOAuthBearerTokenRefreshCallback(callable $callback): self;
 }

@@ -438,6 +438,21 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertArrayHasKey('setRebalanceCb', $callbacks);
         $this->assertIsCallable($callbacks['setRebalanceCb']);
     }
+
+    #[Test]
+    public function it_can_set_oauth_bearer_token_refresh_callback(): void
+    {
+        $consumer = Builder::create('broker', ['test-topic'], 'group')
+            ->withOAuthBearerTokenRefreshCallback(function ($consumer, string $oauthConfig): void {
+                // Token refresh logic
+            });
+
+        $this->assertInstanceOf(Consumer::class, $consumer->build());
+
+        $callbacks = $this->getPropertyWithReflection('callbacks', $consumer);
+        $this->assertArrayHasKey('setOauthbearerTokenRefreshCb', $callbacks);
+        $this->assertIsCallable($callbacks['setOauthbearerTokenRefreshCb']);
+    }
 }
 
 final class TestMiddleware
