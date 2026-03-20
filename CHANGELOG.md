@@ -2,6 +2,10 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+##[2026-03-20 v2.11.1](https://github.com/mateusjunges/laravel-kafka/compare/v2.11.0...v2.11.1)
+* Add support for OAUTHBEARER token refresh callback by [@mateusjunges](https://github.com/mateusjunges) in [#384](https://github.com/mateusjunges/laravel-kafka/pull/384)
+
+
 ##[2026-03-05 v2.11.0](https://github.com/mateusjunges/laravel-kafka/compare/v2.10.3...v2.11.0)
 - Add Laravel 13.x compatibility by [@laravelshift](https://github.com/laravelshift) in [#381](https://github.com/mateusjunges/laravel-kafka/pull/381)
 - Drop Laravel 10/11 support, add PHP 8.5 to test matrix by [@mateusjunges](https://github.com/mateusjunges) in [#382](https://github.com/mateusjunges/laravel-kafka/pull/382)
