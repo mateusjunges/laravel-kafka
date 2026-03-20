@@ -61,4 +61,12 @@ trait InteractsWithConfigCallbacks
 
         return $this;
     }
+
+    /** Set the OAUTHBEARER token refresh callback. */
+    public function withOAuthBearerTokenRefreshCallback(callable $callback): self
+    {
+        $this->callbacks['setOauthbearerTokenRefreshCb'] = $callback;
+
+        return $this;
+    }
 }
