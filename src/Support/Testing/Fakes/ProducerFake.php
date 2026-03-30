@@ -13,6 +13,8 @@ class ProducerFake implements Producer
 {
     use ManagesTransactions;
 
+    private ?Closure $producerCallback = null;
+
     private ?Closure $flushCallback = null;
 
     private array $pendingMessages = [];
@@ -26,6 +28,13 @@ class ProducerFake implements Producer
         return new Conf;
     }
 
+    public function withProduceCallback(Closure $callback): self
+    {
+        $this->producerCallback = $callback;
+
+        return $this;
+    }
+
     public function withFlushCallback(callable $callback): self
     {
         $this->flushCallback = Closure::fromCallable($callback);
@@ -35,6 +44,11 @@ class ProducerFake implements Producer
 
     public function produce(ProducerMessage $message): bool
     {
+        if ($this->producerCallback !== null) {
+            $callback = $this->producerCallback;
+            $callback($message);
+        }
+
         $this->pendingMessages[] = $message;
 
         $this->flush();

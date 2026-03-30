@@ -231,6 +231,10 @@ class ProducerBuilderFake implements MessageProducer
             'config' => $config,
         ]);
 
+        if ($this->producerCallback) {
+            $producerFake->withProduceCallback($this->producerCallback);
+        }
+
         if ($this->flushCallback) {
             $producerFake->withFlushCallback($this->flushCallback);
         }
