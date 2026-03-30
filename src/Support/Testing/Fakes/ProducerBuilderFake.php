@@ -25,6 +25,8 @@ class ProducerBuilderFake implements MessageProducer
 
     private string $topic = '';
 
+    private ?Closure $producerCallback = null;
+
     private ?Closure $flushCallback = null;
 
     private ?int $flushRetries = null;
@@ -55,6 +57,13 @@ class ProducerBuilderFake implements MessageProducer
     {
         $this->topic = $topic;
         $this->message->onTopic($topic);
+
+        return $this;
+    }
+
+    public function withProducerCallback(callable $callback): self
+    {
+        $this->producerCallback = $callback;
 
         return $this;
     }
