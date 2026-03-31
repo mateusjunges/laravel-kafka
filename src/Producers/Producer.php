@@ -63,7 +63,9 @@ class Producer implements ProducerContract
 
         $this->produceMessage($topic, $message);
 
-        $this->pendingMessages[] = $message;
+        if ($this->flushCallback) {
+            $this->pendingMessages[] = $message;
+        }
 
         $this->producer->poll(0);
 
