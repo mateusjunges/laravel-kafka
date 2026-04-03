@@ -2,6 +2,9 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+##[2026-04-02 v2.11.2](https://github.com/mateusjunges/laravel-kafka/compare/v2.11.1...v2.11.2)
+* Fix memory leak in async producer when no flush callback is defined by [@hauke-d](https://github.com/hauke-d) in [#385](https://github.com/mateusjunges/laravel-kafka/pull/385)
+
 ##[2026-03-20 v2.11.1](https://github.com/mateusjunges/laravel-kafka/compare/v2.11.0...v2.11.1)
 * Add support for OAUTHBEARER token refresh callback by [@mateusjunges](https://github.com/mateusjunges) in [#384](https://github.com/mateusjunges/laravel-kafka/pull/384)
 
