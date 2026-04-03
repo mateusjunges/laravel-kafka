@@ -63,7 +63,9 @@ class Producer implements ProducerContract
 
         $this->produceMessage($topic, $message);
 
-        $this->pendingMessages[] = $message;
+        if ($this->flushCallback) {
+            $this->pendingMessages[] = $message;
+        }
 
         $this->producer->poll(0);
 
@@ -146,11 +148,14 @@ class Producer implements ProducerContract
 
     private function runFlushCallback(): void
     {
-        if ($this->flushCallback === null || $this->pendingMessages === []) {
+        if ($this->pendingMessages === []) {
             return;
         }
 
-        ($this->flushCallback)($this->pendingMessages);
+        if ($this->flushCallback !== null) {
+            ($this->flushCallback)($this->pendingMessages);
+        }
+
         $this->pendingMessages = [];
     }
 }

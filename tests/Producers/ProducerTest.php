@@ -30,6 +30,30 @@ final class ProducerTest extends LaravelKafkaTestCase
     }
 
     #[Test]
+    public function it_does_not_leak_pending_messages_when_no_flush_callback_is_defined(): void
+    {
+        $this->mockKafkaProducer();
+
+        $producer = new Producer(
+            new Config('broker', ['test-topic']),
+            new JsonSerializer,
+        );
+
+        $message = new Message(body: ['key' => 'value']);
+        $message->onTopic('test-topic');
+
+        $producer->produce($message);
+        $producer->produce($message);
+        $producer->produce($message);
+
+        // Reflect on pendingMessages to assert it has been cleared after each flush
+        $reflection = new \ReflectionProperty(Producer::class, 'pendingMessages');
+        $reflection->setAccessible(true);
+
+        $this->assertSame([], $reflection->getValue($producer));
+    }
+
+    #[Test]
     public function it_calls_callback_after_flushing_messages(): void
     {
         $this->mockKafkaProducer();
