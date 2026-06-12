@@ -30,6 +30,7 @@ use RdKafka\Exception;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
 use RdKafka\Producer as KafkaProducer;
+use RdKafka\TopicPartition;
 use Throwable;
 
 class Consumer implements MessageConsumer
@@ -74,6 +75,9 @@ class Consumer implements MessageConsumer
     private readonly CommitterFactory $committerFactory;
 
     private bool $stopRequested = false;
+
+    /** @var array<string, true> Partitions that have reached EOF, keyed by "topic-partition". */
+    private array $partitionsAtEof = [];
 
     private ?Closure $whenStopConsuming;
 
@@ -432,6 +436,10 @@ class Consumer implements MessageConsumer
     private function handleMessage(Message $message): void
     {
         if ($message->err === RD_KAFKA_RESP_ERR_NO_ERROR) {
+            // Receiving a message from a partition that previously reached
+            // EOF means the partition is no longer drained.
+            unset($this->partitionsAtEof[$this->partitionKey($message->topic_name, $message->partition)]);
+
             $this->messageCounter->add();
 
             $this->executeMessage($message);
@@ -440,7 +448,9 @@ class Consumer implements MessageConsumer
         }
 
         if ($this->config->shouldStopAfterLastMessage() && in_array($message->err, self::CONSUME_STOP_EOF_ERRORS, true)) {
-            $this->stopConsuming();
+            if ($message->err !== RD_KAFKA_RESP_ERR__PARTITION_EOF || $this->allAssignedPartitionsReachedEof($message)) {
+                $this->stopConsuming();
+            }
         }
 
         if (! in_array($message->err, self::IGNORABLE_CONSUMER_ERRORS, true)) {
@@ -448,6 +458,25 @@ class Consumer implements MessageConsumer
 
             throw new ConsumerException($message->errstr(), $message->err);
         }
+    }
+
+    /**
+     * Marks the partition which emitted the given EOF message as drained and
+     * checks whether all partitions currently assigned to this consumer
+     * have reached EOF, meaning there are no more messages to read.
+     */
+    private function allAssignedPartitionsReachedEof(Message $message): bool
+    {
+        $this->partitionsAtEof[$this->partitionKey($message->topic_name, $message->partition)] = true;
+
+        return collect($this->consumer->getAssignment())->every(
+            fn (TopicPartition $partition) => isset($this->partitionsAtEof[$this->partitionKey($partition->getTopic(), $partition->getPartition())])
+        );
+    }
+
+    private function partitionKey(string $topic, int $partition): string
+    {
+        return $topic.'-'.$partition;
     }
 
     private function getConsumerMessage(Message $message): ConsumerMessage
