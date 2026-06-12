@@ -2,6 +2,9 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+##[2026-06-12 v2.11.4](https://github.com/mateusjunges/laravel-kafka/compare/v2.11.3...v2.11.4)
+* Stop consuming only after all assigned partitions reach EOF when using `stopAfterLastMessage()` by [@mateusjunges](https://github.com/mateusjunges) in [#387](https://github.com/mateusjunges/laravel-kafka/pull/387)
+
 ##[2026-05-22 v2.11.3](https://github.com/mateusjunges/laravel-kafka/compare/v2.11.2...v2.11.3)
 * Stop exporting dev files in the distributed package by [@cosmastech](https://github.com/cosmastech) in [#386](https://github.com/mateusjunges/laravel-kafka/pull/386)
 
