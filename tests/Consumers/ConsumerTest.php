@@ -828,6 +828,194 @@ final class ConsumerTest extends LaravelKafkaTestCase
         });
     }
 
+    #[Test]
+    public function it_stops_consuming_only_after_all_assigned_partitions_reach_eof(): void
+    {
+        $fakeHandler = new FakeHandler;
+
+        $eofPartitionZero = new Message;
+        $eofPartitionZero->err = RD_KAFKA_RESP_ERR__PARTITION_EOF;
+        $eofPartitionZero->topic_name = 'test-topic';
+        $eofPartitionZero->partition = 0;
+
+        $message = new Message;
+        $message->err = RD_KAFKA_RESP_ERR_NO_ERROR;
+        $message->key = 'key';
+        $message->topic_name = 'test-topic';
+        $message->payload = '{"body": "message payload"}';
+        $message->offset = 0;
+        $message->partition = 1;
+        $message->headers = [];
+
+        $eofPartitionOne = new Message;
+        $eofPartitionOne->err = RD_KAFKA_RESP_ERR__PARTITION_EOF;
+        $eofPartitionOne->topic_name = 'test-topic';
+        $eofPartitionOne->partition = 1;
+
+        $this->mockConsumerWithMessagesAndPartitions(
+            [new TopicPartition('test-topic', 0), new TopicPartition('test-topic', 1)],
+            $eofPartitionZero,
+            $message,
+            $eofPartitionOne,
+        );
+
+        $this->mockProducer();
+
+        $config = new Config(
+            broker: 'broker',
+            topics: ['test-topic'],
+            securityProtocol: 'security',
+            commit: 1,
+            groupId: 'group',
+            consumer: $fakeHandler,
+            sasl: null,
+            dlq: null,
+            maxMessages: -1,
+            maxCommitRetries: 1,
+            stopAfterLastMessage: true,
+        );
+
+        $consumer = new Consumer($config, new JsonDeserializer);
+        $consumer->consume();
+
+        // The EOF on partition 0 must not stop the consumer, since partition 1
+        // still had a message to be consumed at that point.
+        $this->assertSame(1, $consumer->consumedMessagesCount());
+        $this->assertInstanceOf(ConsumedMessage::class, $fakeHandler->lastMessage());
+    }
+
+    #[Test]
+    public function it_marks_a_partition_as_not_drained_when_a_new_message_arrives_after_eof(): void
+    {
+        $fakeHandler = new FakeHandler;
+
+        $eofPartitionZero = new Message;
+        $eofPartitionZero->err = RD_KAFKA_RESP_ERR__PARTITION_EOF;
+        $eofPartitionZero->topic_name = 'test-topic';
+        $eofPartitionZero->partition = 0;
+
+        $messagePartitionZero = new Message;
+        $messagePartitionZero->err = RD_KAFKA_RESP_ERR_NO_ERROR;
+        $messagePartitionZero->key = 'key';
+        $messagePartitionZero->topic_name = 'test-topic';
+        $messagePartitionZero->payload = '{"body": "message payload"}';
+        $messagePartitionZero->offset = 1;
+        $messagePartitionZero->partition = 0;
+        $messagePartitionZero->headers = [];
+
+        $eofPartitionOne = new Message;
+        $eofPartitionOne->err = RD_KAFKA_RESP_ERR__PARTITION_EOF;
+        $eofPartitionOne->topic_name = 'test-topic';
+        $eofPartitionOne->partition = 1;
+
+        $messagePartitionOne = new Message;
+        $messagePartitionOne->err = RD_KAFKA_RESP_ERR_NO_ERROR;
+        $messagePartitionOne->key = 'key';
+        $messagePartitionOne->topic_name = 'test-topic';
+        $messagePartitionOne->payload = '{"body": "message payload"}';
+        $messagePartitionOne->offset = 1;
+        $messagePartitionOne->partition = 1;
+        $messagePartitionOne->headers = [];
+
+        $finalEofPartitionZero = new Message;
+        $finalEofPartitionZero->err = RD_KAFKA_RESP_ERR__PARTITION_EOF;
+        $finalEofPartitionZero->topic_name = 'test-topic';
+        $finalEofPartitionZero->partition = 0;
+
+        $finalEofPartitionOne = new Message;
+        $finalEofPartitionOne->err = RD_KAFKA_RESP_ERR__PARTITION_EOF;
+        $finalEofPartitionOne->topic_name = 'test-topic';
+        $finalEofPartitionOne->partition = 1;
+
+        // Partition 0 reaches EOF but receives a new message afterwards, so the
+        // EOF received for partition 1 alone must not stop the consumer.
+        $this->mockConsumerWithMessagesAndPartitions(
+            [new TopicPartition('test-topic', 0), new TopicPartition('test-topic', 1)],
+            $eofPartitionZero,
+            $messagePartitionZero,
+            $eofPartitionOne,
+            $messagePartitionOne,
+            $finalEofPartitionZero,
+            $finalEofPartitionOne,
+        );
+
+        $this->mockProducer();
+
+        $config = new Config(
+            broker: 'broker',
+            topics: ['test-topic'],
+            securityProtocol: 'security',
+            commit: 1,
+            groupId: 'group',
+            consumer: $fakeHandler,
+            sasl: null,
+            dlq: null,
+            maxMessages: -1,
+            maxCommitRetries: 1,
+            stopAfterLastMessage: true,
+        );
+
+        $consumer = new Consumer($config, new JsonDeserializer);
+        $consumer->consume();
+
+        $this->assertSame(2, $consumer->consumedMessagesCount());
+    }
+
+    #[Test]
+    public function it_stops_consuming_on_timeout_when_stop_after_last_message_is_enabled(): void
+    {
+        $fakeHandler = new FakeHandler;
+
+        $timedOut = new Message;
+        $timedOut->err = RD_KAFKA_RESP_ERR__TIMED_OUT;
+
+        $this->mockConsumerWithMessagesAndPartitions(
+            [new TopicPartition('test-topic', 0), new TopicPartition('test-topic', 1)],
+            $timedOut,
+        );
+
+        $this->mockProducer();
+
+        $config = new Config(
+            broker: 'broker',
+            topics: ['test-topic'],
+            securityProtocol: 'security',
+            commit: 1,
+            groupId: 'group',
+            consumer: $fakeHandler,
+            sasl: null,
+            dlq: null,
+            maxMessages: -1,
+            maxCommitRetries: 1,
+            stopAfterLastMessage: true,
+        );
+
+        $consumer = new Consumer($config, new JsonDeserializer);
+        $consumer->consume();
+
+        $this->assertSame(0, $consumer->consumedMessagesCount());
+        $this->assertNull($fakeHandler->lastMessage());
+    }
+
+    private function mockConsumerWithMessagesAndPartitions(array $partitions, Message ...$messages): void
+    {
+        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+            ->shouldReceive('subscribe')
+            ->andReturn(m::self())
+            ->shouldReceive('consume')
+            ->withAnyArgs()
+            ->andReturnUsing(function () use (&$messages) {
+                return array_splice($messages, 0, 1)[0] ?? null;
+            })
+            ->shouldReceive('commit')
+            ->andReturn()
+            ->shouldReceive('getAssignment')
+            ->andReturn($partitions)
+            ->getMock();
+
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
+    }
+
     private function mockConsumerWithMessageAndPartitions(Message $message, array $partitions): void
     {
         $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
