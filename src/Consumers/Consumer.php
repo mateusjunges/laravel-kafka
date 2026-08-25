@@ -112,9 +112,15 @@ class Consumer implements MessageConsumer
         $this->consumer = app(KafkaConsumer::class, [
             'conf' => $this->setConf($this->config->getConsumerOptions()),
         ]);
-        $this->producer = app(KafkaProducer::class, [
-            'conf' => $this->setConf($this->config->getProducerOptions()),
-        ]);
+
+        // The producer is only needed to forward failed messages to the dead letter
+        // queue, and creating one opens broker connections and background threads
+        // of its own, so it is created only when a dead letter queue is configured.
+        if ($this->config->shouldSendToDlq()) {
+            $this->producer = app(KafkaProducer::class, [
+                'conf' => $this->setConf($this->config->getProducerOptions()),
+            ]);
+        }
 
         $this->committer = $this->committerFactory->make($this->consumer, $this->config);
 
