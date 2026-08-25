@@ -79,6 +79,9 @@ class Consumer implements MessageConsumer
     /** @var array<int, callable|int> Signal handlers of the host process, captured before consuming and restored afterwards. */
     private array $previousSignalHandlers = [];
 
+    /** Whether the host process had async signals enabled, captured before consuming and restored afterwards. */
+    private bool $previousAsyncSignals = false;
+
     /** @var array<string, true> Partitions that have reached EOF, keyed by "topic-partition". */
     private array $partitionsAtEof = [];
 
@@ -270,7 +273,7 @@ class Consumer implements MessageConsumer
      */
     private function listenForSignals(): void
     {
-        pcntl_async_signals(true);
+        $this->previousAsyncSignals = pcntl_async_signals(true);
 
         foreach ([SIGQUIT, SIGTERM, SIGINT] as $signal) {
             $previousHandler = pcntl_signal_get_handler($signal);
@@ -291,6 +294,8 @@ class Consumer implements MessageConsumer
         foreach ($this->previousSignalHandlers as $signal => $previousHandler) {
             pcntl_signal($signal, $previousHandler);
         }
+
+        pcntl_async_signals($this->previousAsyncSignals);
 
         $this->previousSignalHandlers = [];
     }

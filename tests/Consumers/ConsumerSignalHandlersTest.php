@@ -129,6 +129,19 @@ final class ConsumerSignalHandlersTest extends LaravelKafkaTestCase
     }
 
     #[Test]
+    public function it_restores_the_async_signals_setting_of_the_host_process_after_consuming(): void
+    {
+        pcntl_async_signals(false);
+
+        $this->mockConsumerRaisingSignalWhileConsuming(SIGTERM);
+        $this->mockProducer();
+
+        $this->buildConsumer()->consume();
+
+        $this->assertFalse(pcntl_async_signals());
+    }
+
+    #[Test]
     public function it_does_not_keep_the_consumer_alive_through_its_signal_handlers_after_consuming(): void
     {
         $this->mockConsumerRaisingSignalWhileConsuming(SIGTERM);
