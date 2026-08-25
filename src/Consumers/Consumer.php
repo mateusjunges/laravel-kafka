@@ -76,6 +76,9 @@ class Consumer implements MessageConsumer
 
     private bool $stopRequested = false;
 
+    /** @var array<int, callable|int> Signal handlers of the host process, captured before consuming and restored afterwards. */
+    private array $previousSignalHandlers = [];
+
     /** @var array<string, true> Partitions that have reached EOF, keyed by "topic-partition". */
     private array $partitionsAtEof = [];
 
@@ -109,35 +112,41 @@ class Consumer implements MessageConsumer
             $this->listenForSignals();
         }
 
-        $this->consumer = app(KafkaConsumer::class, [
-            'conf' => $this->setConf($this->config->getConsumerOptions()),
-        ]);
-        $this->producer = app(KafkaProducer::class, [
-            'conf' => $this->setConf($this->config->getProducerOptions()),
-        ]);
+        try {
+            $this->consumer = app(KafkaConsumer::class, [
+                'conf' => $this->setConf($this->config->getConsumerOptions()),
+            ]);
+            $this->producer = app(KafkaProducer::class, [
+                'conf' => $this->setConf($this->config->getProducerOptions()),
+            ]);
 
-        $this->committer = $this->committerFactory->make($this->consumer, $this->config);
+            $this->committer = $this->committerFactory->make($this->consumer, $this->config);
 
-        // Calling `subscribe` overrides the assigned topic partitions, so we
-        // should check if there are any assignment defined before calling
-        // the subscribe method on the consumer. Partition assignment
-        // have precedence over topic subscriptions.
-        if ($this->config->shouldAssignTopicPartitions()) {
-            $this->consumer->assign($this->config->getPartitionAssigment());
-        } else {
-            $this->consumer->subscribe($this->config->getTopics());
-        }
+            // Calling `subscribe` overrides the assigned topic partitions, so we
+            // should check if there are any assignment defined before calling
+            // the subscribe method on the consumer. Partition assignment
+            // have precedence over topic subscriptions.
+            if ($this->config->shouldAssignTopicPartitions()) {
+                $this->consumer->assign($this->config->getPartitionAssigment());
+            } else {
+                $this->consumer->subscribe($this->config->getTopics());
+            }
 
-        do {
-            $this->runBeforeCallbacks();
-            $this->retryable->retry(fn () => $this->doConsume());
-            $this->runAfterConsumingCallbacks();
-            $this->checkForRestart();
-        } while (! $this->maxMessagesLimitReached() && ! $stopTimer->isTimedOut() && ! $this->stopRequested);
+            do {
+                $this->runBeforeCallbacks();
+                $this->retryable->retry(fn () => $this->doConsume());
+                $this->runAfterConsumingCallbacks();
+                $this->checkForRestart();
+            } while (! $this->maxMessagesLimitReached() && ! $stopTimer->isTimedOut() && ! $this->stopRequested);
 
-        if ($this->shouldRunStopConsumingCallback()) {
-            $callback = $this->whenStopConsuming;
-            $callback(...)();
+            if ($this->shouldRunStopConsumingCallback()) {
+                $callback = $this->whenStopConsuming;
+                $callback(...)();
+            }
+        } finally {
+            if ($this->supportAsyncSignals()) {
+                $this->restoreSignalHandlers();
+            }
         }
     }
 
@@ -254,13 +263,36 @@ class Consumer implements MessageConsumer
         return $this->whenStopConsuming !== null;
     }
 
+    /**
+     * Stop consuming on termination signals without taking the signals away from the host
+     * process: a handler that was registered before (e.g. by a Laravel queue worker running
+     * this consumer inside a job) is still invoked, and it is restored once consuming ends.
+     */
     private function listenForSignals(): void
     {
         pcntl_async_signals(true);
 
-        pcntl_signal(SIGQUIT, fn () => $this->stopRequested = true);
-        pcntl_signal(SIGTERM, fn () => $this->stopRequested = true);
-        pcntl_signal(SIGINT, fn () => $this->stopRequested = true);
+        foreach ([SIGQUIT, SIGTERM, SIGINT] as $signal) {
+            $previousHandler = pcntl_signal_get_handler($signal);
+            $this->previousSignalHandlers[$signal] = $previousHandler;
+
+            pcntl_signal($signal, function (int $signal, mixed $signalInfo = null) use ($previousHandler): void {
+                $this->stopRequested = true;
+
+                if (is_callable($previousHandler)) {
+                    $previousHandler($signal, $signalInfo);
+                }
+            });
+        }
+    }
+
+    private function restoreSignalHandlers(): void
+    {
+        foreach ($this->previousSignalHandlers as $signal => $previousHandler) {
+            pcntl_signal($signal, $previousHandler);
+        }
+
+        $this->previousSignalHandlers = [];
     }
 
     private function supportAsyncSignals(): bool
