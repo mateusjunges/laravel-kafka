@@ -53,7 +53,9 @@ When handlers call `$consumer->commit()` or `$consumer->commitAsync()`, these ca
 
 ### Usage example
 If you want to define a new committer for you consumer, you must start by creating a new class that implements the `Committer` interface. 
-The `commitMessage` function has a `$success` param, which is true for all messages that were consumed without throwing exceptions or messages which exceptions were handled successfully by the consumer class. So, the following committer will commit only messages that were consumed without throwing an exception:
+The `commitMessage` function has a `$success` param, which is true for all messages that were consumed without throwing exceptions or messages which exceptions were handled successfully by the consumer class. So, the following committer will commit only messages that were consumed without throwing an exception.
+
+Note that skipping the commit of a failed message does not make it be consumed again. The next successful message of the same partition commits an offset past the failed one, and with auto commit enabled librdkafka also commits the offsets of fetched messages in the background. To consume failed messages again, see [handling failed messages](../consuming-messages/handling-failed-messages.md).
 
 ```php
 use Junges\Kafka\Contracts\ConsumerMessage;

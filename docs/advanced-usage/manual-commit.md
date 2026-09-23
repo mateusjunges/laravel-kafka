@@ -11,7 +11,7 @@ Manual commit gives you complete control over when message offsets are committed
 
 ## Overview
 
-By default, the package uses auto-commit mode where messages are automatically committed after your handler successfully processes them. With manual commit, you decide exactly when to commit messages, allowing for:
+By default, the package uses auto-commit mode where the offset of each message is committed after your handler runs, even when it fails (see [handling failed messages](../consuming-messages/handling-failed-messages.md)). With manual commit, you decide exactly when to commit messages, allowing for:
 
 - **At-least-once delivery**: Ensure messages are only committed after successful processing
 - **Better error handling**: Don't commit messages that failed to process
@@ -112,6 +112,24 @@ $consumer->withHandler(function($message, $consumer) {
 ```
 
 ## Error Handling
+
+Not committing a failed message is not enough to consume it again. Offsets are committed per partition, so committing any later message of the same partition also moves past the failed one. If the consumer moves on after a failure, the failed message is lost unless it is sent to a dead letter queue.
+
+To consume a failed message again, rethrow the exception and use `stopOnFailure`. The consumer stops without committing the offset of the failed message, and the next consumer of its partition starts from it:
+
+```php
+$consumer = Kafka::consumer(['orders'])
+    ->withManualCommit()
+    ->stopOnFailure()
+    ->withHandler(function($message, $consumer) {
+        processOrder($message);
+
+        // Not reached when processing fails, so the offset is not committed
+        $consumer->commit($message);
+    });
+```
+
+See [handling failed messages](../consuming-messages/handling-failed-messages.md) for details.
 
 ### Retry Logic with Manual Commit
 
@@ -238,7 +256,7 @@ $consumer = Kafka::consumer(['topic'])
 
 1. **Always commit after successful processing**: Only commit messages that were fully processed
 2. **Use async commits for performance**: Unless you need commit guarantees, use `commitAsync()`
-3. **Implement proper error handling**: Don't commit messages that failed to process
+3. **Implement proper error handling**: Rethrow exceptions of messages that failed to process, and use a dead letter queue or `stopOnFailure` so they are not skipped
 4. **Handle duplicate processing**: Manual commit provides at-least-once delivery, so implement idempotent processing
 
 ## Troubleshooting
