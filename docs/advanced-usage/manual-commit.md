@@ -115,11 +115,12 @@ $consumer->withHandler(function($message, $consumer) {
 
 Not committing a failed message is not enough to consume it again. Offsets are committed per partition, so committing any later message of the same partition also moves past the failed one. If the consumer moves on after a failure, the failed message is lost unless it is sent to a dead letter queue.
 
-To consume a failed message again, rethrow the exception and use `stopOnFailure`. The consumer stops without committing the offset of the failed message, and the next consumer of its partition starts from it:
+To process a failed message again, rethrow the exception. With `retryFailedMessages`, the handler is called again right away. With `stopOnFailure`, the consumer stops without committing the offset of the failed message, and the next consumer of its partition starts from it:
 
 ```php
 $consumer = Kafka::consumer(['orders'])
     ->withManualCommit()
+    ->retryFailedMessages(3, backoffInMs: 1000)
     ->stopOnFailure()
     ->withHandler(function($message, $consumer) {
         processOrder($message);

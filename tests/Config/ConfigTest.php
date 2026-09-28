@@ -60,6 +60,26 @@ final class ConfigTest extends LaravelKafkaTestCase
     }
 
     #[Test]
+    public function it_disables_automatic_offset_store_when_retrying_failed_messages_with_auto_commit(): void
+    {
+        $config = new Config(
+            broker: 'broker',
+            topics: ['topic'],
+            securityProtocol: 'security',
+            commit: 1,
+            groupId: 'group',
+            consumer: $this->createStub(Consumer::class),
+            sasl: null,
+            dlq: null,
+            autoCommit: true,
+            failedMessageRetries: 3,
+        );
+
+        $this->assertTrue($config->shouldStoreOffsetsAfterProcessing());
+        $this->assertSame('false', $config->getConsumerOptions()['enable.auto.offset.store']);
+    }
+
+    #[Test]
     public function it_keeps_automatic_offset_store_when_stopping_on_failure_with_manual_commit(): void
     {
         $config = new Config(

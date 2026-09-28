@@ -89,6 +89,8 @@ class Config
         public readonly ?int $flushRetries = null,
         public readonly ?int $flushTimeoutInMs = null,
         private readonly bool $stopOnFailure = false,
+        private readonly int $failedMessageRetries = 0,
+        private readonly int $failedMessageRetryBackoff = 0,
     ) {}
 
     public function getCommit(): int
@@ -141,13 +143,24 @@ class Config
         return $this->stopOnFailure;
     }
 
+    public function getFailedMessageRetries(): int
+    {
+        return $this->failedMessageRetries;
+    }
+
+    /** Get the time to wait before retrying a failed message, in milliseconds. */
+    public function getFailedMessageRetryBackoff(): int
+    {
+        return $this->failedMessageRetryBackoff;
+    }
+
     /**
      * Determine if offsets must be stored by the consumer after each message is processed,
      * instead of being stored by librdkafka as soon as each message is fetched.
      */
     public function shouldStoreOffsetsAfterProcessing(): bool
     {
-        return $this->stopOnFailure && $this->autoCommit;
+        return $this->autoCommit && ($this->stopOnFailure || $this->failedMessageRetries > 0);
     }
 
     public function getConsumerOptions(): array
@@ -165,8 +178,8 @@ class Config
         }
 
         // With auto commit enabled, librdkafka stores the offset of each message as soon as it is
-        // fetched and commits it in the background, even when the handler fails. When stopping on
-        // failure, offsets are stored by the consumer only after the message is processed instead.
+        // fetched and commits it in the background, even when the handler fails. When failed messages
+        // are retried or stop the consumer, offsets are stored only after the message is processed.
         $overrides = $this->shouldStoreOffsetsAfterProcessing()
             ? ['enable.auto.offset.store' => 'false']
             : [];
