@@ -22,7 +22,7 @@ To create a custom serializer, you need to create a class that implements the `\
 You can inform your producer which serializer should be used with the `usingSerializer` method:
 
 ```php
-$producer = \Junges\Kafka\Facades\Kafka::publish('broker')->onTopic('topic')->usingSerializer(new MyCustomSerializer());
+\Junges\Kafka\Facades\Kafka::publish('topic')->usingSerializer(new MyCustomSerializer());
 ```
 
 To create a custom serializer, you need to create a class that implements the `\Junges\Kafka\Contracts\MessageSerializer` contract.
@@ -64,5 +64,5 @@ $registry->addKeySchemaMappingForTopic(
 
 $serializer = new \Junges\Kafka\Message\Serializers\AvroSerializer($registry, $recordSerializer /*, AvroEncoderInterface::ENCODE_BODY */);
 
-$producer = \Junges\Kafka\Facades\Kafka::publish('broker')->onTopic('topic')->usingSerializer($serializer);
+\Junges\Kafka\Facades\Kafka::publish('topic')->usingSerializer($serializer);
 ```

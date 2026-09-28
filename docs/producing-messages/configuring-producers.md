@@ -3,7 +3,7 @@ title: Configuring your kafka producer
 weight: 2
 ---
 
-The producer builder, returned by the `publish` call, gives you a series of methods which you can use to configure your kafka producer options.
+Each connection has a single producer, shared by every message published through that connection. The producer is configured in the connection configuration, in your `config/kafka.php` file.
 
 ```+parse
 <x-sponsors.request-sponsor/>
@@ -11,36 +11,84 @@ The producer builder, returned by the `publish` call, gives you a series of meth
 
 ### Defining configuration options
 
-The `withConfigOption` method sets a `\RdKafka\Conf::class` option. You can check all available options [here][rdkafka_config].
-This method sets one config per call, and you can use `withConfigOptions` passing an array of config name and config value
-as argument. Here's an example:
+The `producer.options` key of a connection accepts any librdkafka option. You can check all available options [here][rdkafka_config]. Options defined in the `options` key of the connection are applied to both producers and consumers.
 
 ```php
-use Junges\Kafka\Facades\Kafka;
+'connections' => [
+    'default' => [
+        'brokers' => env('KAFKA_BROKERS', 'localhost:9092'),
 
-Kafka::publish('broker')
-    ->onTopic('topic')
-    ->withConfigOption('property-name', 'property-value')
-    ->withConfigOptions([
-        'property-name' => 'property-value'
-    ]);
+        'options' => [
+            'client.id' => 'my-application',
+        ],
+
+        'producer' => [
+            'options' => [
+                'compression.codec' => 'snappy',
+                'enable.idempotence' => true,
+                'linger.ms' => 5,
+            ],
+        ],
+    ],
+],
 ```
 
-While you are developing your application, you can enable debug with the `withDebugEnabled` method.
-To disable debug mode, you can use `->withDebugEnabled(false)`, or `withDebugDisabled` methods.
+To enable debug mode while developing your application, set the `debug` option:
+
+```php
+'options' => [
+    'debug' => 'all',
+],
+```
+
+### Flushing
+
+The `flush_timeout_ms`, `flush_retries` and `flush_retry_sleep_ms` keys of the `producer` configuration define how long to wait for queued messages to be delivered when flushing the producer, and how many times to retry before giving up.
+
+If you need to know which messages were delivered by each flush, register a flush callback on the connection producer. The callback receives the delivered messages:
 
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-Kafka::publish('broker')
-    ->onTopic('topic')
-    ->withConfigOption('property-name', 'property-value')
-    ->withConfigOptions([
-        'property-name' => 'property-value'
-    ])
-    ->withDebugEnabled() // To enable debug mode
-    ->withDebugDisabled() // To disable debug mode
-    ->withDebugEnabled(false) // Also to disable debug mode
+Kafka::connection()->producer()->withFlushCallback(function (array $messages) {
+    // ...
+});
+```
+
+### Configuration callbacks
+
+librdkafka configuration callbacks, such as the error, log and OAUTHBEARER token refresh callbacks, are registered on the connection. Because the producer is created the first time a message is published, register them before publishing any message, for example in the `boot` method of a service provider:
+
+```php
+use Junges\Kafka\Facades\Kafka;
+
+Kafka::connection()
+    ->withErrorCb(function ($kafka, int $err, string $reason) {
+        logger()->error($reason);
+    })
+    ->withLogCb(function ($kafka, int $level, string $facility, string $message) {
+        logger()->debug($message);
+    });
+```
+
+Callbacks registered on a connection are applied to its producer and to the consumers created using it.
+
+### Transactions
+
+To use transactions, set a `transactional.id` in the producer options of a dedicated connection, and use its producer directly:
+
+```php
+use Junges\Kafka\Facades\Kafka;
+use Junges\Kafka\Message\Message;
+
+$producer = Kafka::connection('transactional')->producer();
+
+$producer->beginTransaction();
+
+$producer->produce(Message::create('orders')->withBody(['order_id' => 1]));
+$producer->produce(Message::create('invoices')->withBody(['order_id' => 1]));
+
+$producer->commitTransaction();
 ```
 
 [rdkafka_config]:https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md

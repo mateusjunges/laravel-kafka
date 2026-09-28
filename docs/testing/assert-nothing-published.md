@@ -17,8 +17,7 @@ class MyTest extends TestCase
         Kafka::fake();
         
         if (false) {
-            $producer = Kafka::publish('broker')
-                ->onTopic('some-kafka-topic')
+            $producer = Kafka::publish('some-kafka-topic')
                 ->withHeaders(['key' => 'value'])
                 ->withBodyKey('key', 'value');
                 

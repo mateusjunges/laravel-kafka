@@ -15,13 +15,11 @@ class MyTest extends TestCase
     {
         Kafka::fake();
 
-        Kafka::publish('broker')
-            ->onTopic('topic')
+        Kafka::publish('topic')
             ->withHeaders(['key' => 'value'])
             ->withBodyKey('key', 'value');
 
-        Kafka::publish('broker')
-            ->onTopic('topic')
+        Kafka::publish('topic')
             ->withHeaders(['key' => 'value'])
             ->withBodyKey('key', 'value');
 

@@ -5,32 +5,85 @@ weight: 6
 
 ## Upgrade to v3.0 from v2.11
 
-### Breaking Changes
+### Requirements
 
-- `publish()` is now asynchronous by default. Messages are queued and flushed when the application terminates for better performance
--  Removed `asyncPublish()` and `publishAsync()` methods - use `publish()` for async behavior (default) or `publishSync()` for immediate flushing
--  Minimum PHP version raised to 8.3
-- **NEW**: Added `publishSync()` method for synchronous message publishing with immediate flush
+The minimum PHP version is now 8.3.
 
-### Migration Guide
+### Connections
 
-**Before (v2.11):**
-```php
-// Async publishing
-Kafka::asyncPublish()->onTopic('topic')->withBody(['data' => 'value'])->send();
+The configuration file now defines named connections, each one pointing to a Kafka cluster. Publish the new configuration file and move your settings into the `default` connection:
 
-// Sync publishing  
-Kafka::publish()->onTopic('topic')->withBody(['data' => 'value'])->send();
+```bash
+php artisan vendor:publish --tag=laravel-kafka-config --force
 ```
 
-**After (v3.0):**
-```php
-// Async publishing (default behavior)
-Kafka::publish()->onTopic('topic')->withBody(['data' => 'value'])->send();
+| v2.11 | v3.0 |
+| --- | --- |
+| `brokers` | `connections.default.brokers` |
+| `securityProtocol` | `connections.default.security_protocol` |
+| `sasl` | `connections.default.sasl` |
+| `consumer_group_id` | `connections.default.consumer.group_id` |
+| `consumer_timeout_ms` | `connections.default.consumer.timeout_ms` |
+| `offset_reset` | `connections.default.consumer.options.auto.offset.reset` |
+| `auto_commit` | `connections.default.consumer.auto_commit` |
+| `compression` | `connections.default.producer.options.compression.codec` |
+| `flush_timeout_in_ms` | `connections.default.producer.flush_timeout_ms` |
+| `flush_retries` | `connections.default.producer.flush_retries` |
+| `flush_retry_sleep_in_ms` | `connections.default.producer.flush_retry_sleep_ms` |
+| `debug` | `connections.default.options.debug`, set to `all` to enable it |
+| `partition`, `sleep_on_error` | Removed, they were not used. |
 
-// Sync publishing (immediate flush)
-Kafka::publishSync()->onTopic('topic')->withBody(['data' => 'value'])->send();
+The environment variables did not change. The SASL configuration of the connection is now used by producers and by consumers created with `Kafka::consumer()`, not only by the `kafka:consume` command. The `security_protocol` is also used when it is not a SASL protocol, so you no longer need to set the `security.protocol` option to use `SSL`.
+
+See the [connections](/advanced-usage/connections) documentation for details.
+
+### Publishing messages
+
+`Kafka::publish()` and `Kafka::publishSync()` now accept the topic instead of the broker, and return a `Junges\Kafka\Producers\PendingMessage`. The brokers come from the connection, use `Kafka::connection('name')->publish()` to publish to another cluster.
+
+```php
+// v2.11
+Kafka::publish('broker')->onTopic('orders')->withKafkaKey('key')->withBody($body)->send();
+
+// v3.0
+Kafka::publish('orders')->withKey('key')->withBody($body)->send();
 ```
+
+`publish()` is now asynchronous. Every connection has a single producer, shared by every message published through it, and queued messages are flushed when the application terminates, after each queued job and when calling `Kafka::flush()`. Flush failures at these moments are reported to your exception handler instead of thrown. Use `publishSync()` to flush each message as soon as it is sent.
+
+The following methods were removed:
+
+| Removed | Replacement |
+| --- | --- |
+| `Kafka::asyncPublish()`, `Kafka::publishAsync()` | `Kafka::publish()` |
+| `Kafka::fresh()` | Not needed anymore. |
+| `withKafkaKey()` | `withKey()` |
+| `withConfigOption()`, `withConfigOptions()`, `withTransactionalId()` | The `producer.options` key of the connection. |
+| `withDebugEnabled()`, `withDebugDisabled()` | The `debug` option of the connection. |
+| `withSasl()` on the producer | The `sasl` key of the connection. |
+| `withFlushRetries()`, `withFlushTimeout()` | The `producer.flush_retries` and `producer.flush_timeout_ms` keys of the connection. |
+| `withFlushCallback()` on the producer builder | `Kafka::connection()->producer()->withFlushCallback()` |
+| `withErrorCb()`, `withLogCb()` and the other configuration callbacks on the producer builder | The same methods on the connection: `Kafka::connection()->withErrorCb()`. |
+| `transactional()` | It had no effect. Use the producer of a connection with a `transactional.id`. |
+| `build()` on the producer builder | `Kafka::connection()->producer()` |
+
+`send()` now returns `void`. It used to return `true` even when the message was only queued.
+
+The `Junges\Kafka\Producers\Builder` class and the `Junges\Kafka\Contracts\MessageProducer` contract were removed. The `Junges\Kafka\Contracts\Producer` contract methods changed: `produce()` returns `void` and accepts an optional serializer, `flush()` returns `void`, and `withFlushCallback()` was added. The `Junges\Kafka\Contracts\ProducerMessage` contract now requires a `withBodyKey()` method.
+
+### Consuming messages
+
+`Kafka::consumer()` no longer accepts the brokers as its third argument. The consumer uses the brokers, SASL configuration, options and group id of the connection, use `Kafka::connection('name')->consumer()` to consume from another cluster, or `withBrokers()` to override the brokers of a single consumer.
+
+`Junges\Kafka\Consumers\Builder::create()` now receives a `Junges\Kafka\Config\ConnectionConfig` instead of the brokers. You can get one from `Kafka::connection()->getConfig()`.
+
+### Manager
+
+The `Junges\Kafka\Factory` is now a singleton, also bound to the `Junges\Kafka\Contracts\Manager` contract. The contract no longer contains the `fresh()`, `shouldFake()` and `shouldReceiveMessages()` methods, and has new `connection()`, `flush()` and `getDefaultConnection()` methods.
+
+### Testing
+
+`Kafka::fake()` now replaces the manager with a `Junges\Kafka\Support\Testing\Fakes\KafkaFake`, which extends the `Factory`, so every connection publishes to the fake. The `ProducerBuilderFake` class was removed, and `KafkaFake` no longer receives the manager in its constructor.
 
 ## Upgrade to v2.11 from v2.10
 

@@ -3,7 +3,7 @@ title: Configuring message payload
 weight: 3
 ---
 
-In kafka, you can configure your payload with a message, message headers and message key. All these configurations are available within ProducerBuilder class.
+In kafka, you can configure your payload with a message, message headers and message key. All these configurations are available on the pending message returned by the `publish` method.
 
 ```+parse
 <x-sponsors.request-sponsor/>
@@ -15,8 +15,7 @@ To configure the message headers, use the `withHeaders` method:
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-Kafka::publish('broker')
-    ->onTopic('topic')
+Kafka::publish('topic')
     ->withHeaders([
         'header-key' => 'header-value'
     ])
@@ -39,7 +38,7 @@ $message = new Message(
     key: 'kafka key here'  
 )
 
-Kafka::publish('broker')->onTopic('topic')->withMessage($message);
+Kafka::publish('topic')->withMessage($message);
 ```
 
 The `withBodyKey` method sets only a key in your message.
@@ -47,15 +46,15 @@ The `withBodyKey` method sets only a key in your message.
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-Kafka::publish('broker')->onTopic('topic')->withBodyKey('key', 'value');
+Kafka::publish('topic')->withBodyKey('key', 'value');
 ```
 
 ### Using Kafka Keys
 In Kafka, keys are used to determine the partition within a log to which a message get's appended to.
-If you want to use a key in your message, you should use the `withKafkaKey` method:
+If you want to use a key in your message, you should use the `withKey` method:
 
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-Kafka::publish('broker')->onTopic('topic')->withKafkaKey('your-kafka-key');
+Kafka::publish('topic')->withKey('your-kafka-key');
 ```
