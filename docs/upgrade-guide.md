@@ -20,6 +20,10 @@ Changes that affect fewer applications:
 - Middleware classes must declare a return type, see [middlewares](#middlewares).
 - Faked consumers handle failed messages like real ones, see [testing](#testing).
 
+### Upgrading with an AI agent
+
+The package ships a `laravel-kafka-v3-upgrade` skill, which guides AI agents through this upgrade. It finds the code affected by each change, asks you about the changes that alter runtime behavior, and migrates the configuration, the code and the deployment files. After requiring version 3.0, install it with [Laravel Boost](https://github.com/laravel/boost) by running `php artisan boost:install`, or `php artisan boost:update --discover` if Boost is already installed. Without Boost, copy the `vendor/mateusjunges/laravel-kafka/resources/boost/skills/laravel-kafka-v3-upgrade` directory into the skills directory of your agent, for example `.claude/skills`. Then ask your agent to upgrade laravel-kafka to v3.
+
 ### Requirements
 
 The minimum PHP version is now 8.3.
