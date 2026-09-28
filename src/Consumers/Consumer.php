@@ -22,6 +22,7 @@ use Junges\Kafka\Events\MessageSentToDLQ;
 use Junges\Kafka\Events\MessageSkipped;
 use Junges\Kafka\Events\StartedConsumingMessage;
 use Junges\Kafka\Exceptions\ConsumerException;
+use Junges\Kafka\Factory;
 use Junges\Kafka\MessageCounter;
 use Junges\Kafka\Retryable;
 use Junges\Kafka\Support\InfiniteTimer;
@@ -189,6 +190,8 @@ class Consumer implements ConsumerContract
     /** {@inheritdoc} */
     public function commit(mixed $messageOrOffsets = null): void
     {
+        $this->flushProducers();
+
         try {
             $this->committer->commit($messageOrOffsets);
         } catch (Throwable $throwable) {
@@ -203,6 +206,8 @@ class Consumer implements ConsumerContract
     /** {@inheritdoc} */
     public function commitAsync(mixed $message_or_offsets = null): void
     {
+        $this->flushProducers();
+
         try {
             $this->committer->commitAsync($message_or_offsets);
         } catch (Throwable $throwable) {
@@ -440,7 +445,21 @@ class Consumer implements ConsumerContract
             }
         }
 
+        $this->flushProducers();
         $this->storeOffsetIfRequired($message);
+    }
+
+    /**
+     * Messages published while handling a message are only queued. Flushing them before the offset
+     * is stored, or committed by the handler, makes sure they are delivered before the consumed
+     * message is committed, so they are not lost if the consumer crashes in between. Producers
+     * with nothing queued return right away, so consumers that don't publish pay nothing.
+     */
+    private function flushProducers(): void
+    {
+        if (app()->resolved(Factory::class)) {
+            app(Factory::class)->flush();
+        }
     }
 
     /**

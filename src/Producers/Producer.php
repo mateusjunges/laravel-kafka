@@ -34,6 +34,9 @@ class Producer implements ProducerContract
 
     private ?Closure $flushCallback = null;
 
+    /** Whether messages were queued since the last flush. */
+    private bool $hasQueuedMessages = false;
+
     public function __construct(
         private readonly Config $config,
         private readonly MessageSerializer $serializer,
@@ -68,6 +71,7 @@ class Producer implements ProducerContract
         $message = ($serializer ?? $this->serializer)->serialize(clone $message);
 
         $this->produceMessage($topic, $message);
+        $this->hasQueuedMessages = true;
 
         if ($this->flushCallback instanceof Closure) {
             $this->pendingMessages[] = $message;
@@ -79,6 +83,10 @@ class Producer implements ProducerContract
     /** {@inheritDoc} */
     public function flush(): void
     {
+        if (! $this->hasQueuedMessages) {
+            return;
+        }
+
         try {
             retry($this->config->flushRetries, function () {
                 $result = $this->producer->flush($this->config->flushTimeoutInMs);
@@ -96,6 +104,8 @@ class Producer implements ProducerContract
 
             throw $exception;
         }
+
+        $this->hasQueuedMessages = false;
 
         $this->runFlushCallback();
     }

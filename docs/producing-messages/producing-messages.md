@@ -27,6 +27,7 @@ Every connection has a single producer, created the first time you publish a mes
 
 - When the application terminates, after the response is sent or the artisan command finishes.
 - After each queued job is processed, so messages published by a job are delivered before the queue worker picks the next one.
+- Before a consumer stores or commits the offset of a message, so messages published while handling it are delivered before it is committed, and are not lost if the consumer crashes in between.
 - When you call `Kafka::flush()`.
 
 Because there is nothing left to handle an exception when the application terminates, delivery failures at that point are reported to your exception handler instead of being thrown. The `Junges\Kafka\Events\CouldNotPublishMessage` event is dispatched as well.

@@ -49,7 +49,7 @@ Kafka::publish('broker')->onTopic('orders')->withKafkaKey('key')->withBody($body
 Kafka::publish('orders')->withKey('key')->withBody($body)->send();
 ```
 
-`publish()` is now asynchronous. Every connection has a single producer, shared by every message published through it, and queued messages are flushed when the application terminates, after each queued job and when calling `Kafka::flush()`. Flush failures at these moments are reported to your exception handler instead of thrown. Use `publishSync()` to flush each message as soon as it is sent.
+`publish()` is now asynchronous. Every connection has a single producer, shared by every message published through it, and queued messages are flushed when the application terminates, after each queued job, before a consumer stores or commits the offset of a message, and when calling `Kafka::flush()`. Flush failures at these moments are reported to your exception handler instead of thrown. Use `publishSync()` to flush each message as soon as it is sent.
 
 The following methods were removed:
 
