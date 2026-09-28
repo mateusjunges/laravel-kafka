@@ -5,6 +5,7 @@ namespace Junges\Kafka\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\InteractsWithTime;
+use Junges\Kafka\Consumers\Consumer;
 
 class RestartConsumersCommand extends Command
 {
@@ -18,7 +19,7 @@ class RestartConsumersCommand extends Command
 
     public function handle()
     {
-        Cache::driver(config('kafka.cache_driver'))->forever('laravel-kafka:consumer:restart', $this->currentTime());
+        Cache::driver(config('kafka.cache_driver'))->forever(Consumer::RESTART_CACHE_KEY, $this->currentTime());
         $this->info('Kafka consumers restart signal sent.');
     }
 }

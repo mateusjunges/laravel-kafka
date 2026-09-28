@@ -36,6 +36,9 @@ use Throwable;
 
 class Consumer implements ConsumerContract
 {
+    /** The cache key where the "kafka:restart-consumers" command stores the time consumers were asked to restart. */
+    public const string RESTART_CACHE_KEY = 'laravel-kafka:consumer:restart';
+
     private const array IGNORABLE_CONSUMER_ERRORS = [
         RD_KAFKA_RESP_ERR__PARTITION_EOF,
         RD_KAFKA_RESP_ERR__TRANSPORT,
@@ -91,8 +94,6 @@ class Consumer implements ConsumerContract
      */
     private array $offsetStoreTopics = [];
 
-    private readonly ?Closure $whenStopConsuming;
-
     private readonly Dispatcher $dispatcher;
 
     public function __construct(private readonly Config $config, private readonly MessageDeserializer $deserializer, ?CommitterFactory $committerFactory = null)
@@ -102,7 +103,6 @@ class Consumer implements ConsumerContract
 
         $this->committerFactory = $committerFactory ?? new DefaultCommitterFactory;
         $this->dispatcher = App::make(Dispatcher::class);
-        $this->whenStopConsuming = $this->config->getWhenStopConsumingCallback();
     }
 
     /**
@@ -154,10 +154,7 @@ class Consumer implements ConsumerContract
                 $this->checkForRestart();
             } while (! $this->maxMessagesLimitReached() && ! $stopTimer->isTimedOut() && ! $this->stopRequested);
 
-            if ($this->shouldRunStopConsumingCallback()) {
-                $callback = $this->whenStopConsuming;
-                $callback(...)();
-            }
+            $this->config->getWhenStopConsumingCallback()?->__invoke();
         } finally {
             $this->closeConsumer();
 
@@ -188,33 +185,13 @@ class Consumer implements ConsumerContract
     /** {@inheritdoc} */
     public function commit(ConsumerMessage|Message|array|null $messageOrOffsets = null): void
     {
-        $this->flushProducers();
-
-        try {
-            $this->committer->commit($messageOrOffsets);
-        } catch (Throwable $throwable) {
-            if ($throwable->getCode() !== RD_KAFKA_RESP_ERR__NO_OFFSET) {
-                $this->logCommitError($messageOrOffsets, $throwable);
-
-                throw $throwable;
-            }
-        }
+        $this->runCommit(fn () => $this->committer->commit($messageOrOffsets), $messageOrOffsets);
     }
 
     /** {@inheritdoc} */
     public function commitAsync(ConsumerMessage|Message|array|null $messageOrOffsets = null): void
     {
-        $this->flushProducers();
-
-        try {
-            $this->committer->commitAsync($messageOrOffsets);
-        } catch (Throwable $throwable) {
-            if ($throwable->getCode() !== RD_KAFKA_RESP_ERR__NO_OFFSET) {
-                $this->logCommitError($messageOrOffsets, $throwable);
-
-                throw $throwable;
-            }
-        }
+        $this->runCommit(fn () => $this->committer->commitAsync($messageOrOffsets), $messageOrOffsets);
     }
 
     /** Get the current partition assignment for this consumer */
@@ -225,19 +202,6 @@ class Consumer implements ConsumerContract
         }
 
         return $this->consumer->getAssignment();
-    }
-
-    public function configureStopTimer(): Timer
-    {
-        $stopTimer = new Timer;
-
-        if ($this->config->getMaxTime() === 0) {
-            $stopTimer = new InfiniteTimer;
-        }
-
-        $stopTimer->start($this->config->getMaxTime() * 1000);
-
-        return $stopTimer;
     }
 
     protected function configureRestartTimer(): void
@@ -262,15 +226,39 @@ class Consumer implements ConsumerContract
 
     protected function getLastRestart(): int
     {
-        return (int) Cache::driver(config('kafka.cache_driver'))->get('laravel-kafka:consumer:restart', 0);
+        return (int) Cache::driver(config('kafka.cache_driver'))->get(self::RESTART_CACHE_KEY, 0);
     }
 
-    /** The logger only logs Kafka messages, so errors committing other offsets are only thrown. */
-    private function logCommitError(ConsumerMessage|Message|array|null $messageOrOffsets, Throwable $throwable): void
+    /**
+     * Messages published by the handler are flushed before committing, and a commit without any
+     * offset to commit is not an error. The logger only logs Kafka messages, so errors committing
+     * other offsets are only thrown.
+     */
+    private function runCommit(Closure $commit, ConsumerMessage|Message|array|null $messageOrOffsets): void
     {
-        if ($messageOrOffsets instanceof Message) {
-            $this->logger->error($messageOrOffsets, $throwable, 'COMMIT_ERROR');
+        $this->flushProducers();
+
+        try {
+            $commit();
+        } catch (Throwable $throwable) {
+            if ($throwable->getCode() === RD_KAFKA_RESP_ERR__NO_OFFSET) {
+                return;
+            }
+
+            if ($messageOrOffsets instanceof Message) {
+                $this->logger->error($messageOrOffsets, $throwable, 'COMMIT_ERROR');
+            }
+
+            throw $throwable;
         }
+    }
+
+    private function configureStopTimer(): Timer
+    {
+        $stopTimer = $this->config->getMaxTime() === 0 ? new InfiniteTimer : new Timer;
+        $stopTimer->start($this->config->getMaxTime() * 1000);
+
+        return $stopTimer;
     }
 
     /**
@@ -308,11 +296,6 @@ class Consumer implements ConsumerContract
         foreach ($this->config->getAfterConsumingCallbacks() as $afterConsumingCallback) {
             $afterConsumingCallback($this);
         }
-    }
-
-    private function shouldRunStopConsumingCallback(): bool
-    {
-        return $this->whenStopConsuming !== null;
     }
 
     /**
