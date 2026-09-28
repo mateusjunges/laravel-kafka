@@ -50,7 +50,7 @@ final class ConsumerDlqProducerTest extends LaravelKafkaTestCase
     {
         $builder = Kafka::consumer(['test'])
             ->withHandler(static function (ConsumerMessage $message): void {})
-            ->withMaxMessages(1);
+            ->stopAfterMessages(1);
 
         if ($dlq !== null) {
             $builder->withDlq($dlq);

@@ -129,6 +129,16 @@ The `__invoke` method of the `Junges\Kafka\Contracts\Middleware` interface now d
 
 Middleware classes given by name, such as `withMiddleware(LogMessages::class)`, are now resolved from the service container instead of being created with `new`, so their constructor can receive dependencies. Middlewares can also be registered for every consumer with `Kafka::consumerMiddleware()`, see [middlewares](/advanced-usage/middlewares).
 
+### Stopping consumers
+
+The consumer builder methods that stop the consumer were renamed, to read as a family and to make the units explicit. They match the options of the `kafka:consume` command:
+
+| v2.11 | v3.0 |
+| --- | --- |
+| `withMaxMessages()` | `stopAfterMessages()` |
+| `withMaxTime()` | `stopAfterSeconds()` |
+| `stopAfterLastMessage()` | `stopWhenEmpty()` |
+
 ### Configuration callbacks
 
 The methods setting librdkafka configuration callbacks were renamed, on both the consumer builder and connections:

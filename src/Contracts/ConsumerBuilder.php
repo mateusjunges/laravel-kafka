@@ -46,11 +46,11 @@ interface ConsumerBuilder extends InteractsWithConfigCallbacks
     /** Specify the factory that should be used to build the committer. */
     public function usingCommitterFactory(CommitterFactory $committerFactory): self;
 
-    /** Define the max number of messages that should be consumed. */
-    public function withMaxMessages(int $maxMessages): self;
+    /** Stop consuming after handling the given number of messages. */
+    public function stopAfterMessages(int $messages): self;
 
-    /** Define the max number seconds that a consumer should run. */
-    public function withMaxTime(int $maxTime): self;
+    /** Stop consuming after the given number of seconds. */
+    public function stopAfterSeconds(int $seconds): self;
 
     /**
      * Set the Dead Letter Queue to be used. When no topic is given, it is named after the first
@@ -96,8 +96,8 @@ interface ConsumerBuilder extends InteractsWithConfigCallbacks
     /** Set a specific configuration option. */
     public function withOption(string $name, mixed $value): self;
 
-    /** Enable or disable the read to end option. */
-    public function stopAfterLastMessage(bool $stopAfterLastMessage = true): self;
+    /** Stop consuming once there are no messages left in the assigned partitions. */
+    public function stopWhenEmpty(bool $stopWhenEmpty = true): self;
 
     /**
      * Skip messages that fail when there is no dead letter queue, committing their offsets.

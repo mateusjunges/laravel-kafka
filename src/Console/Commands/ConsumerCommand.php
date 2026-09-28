@@ -31,9 +31,9 @@ class ConsumerCommand extends Command
         }
 
         $kafka->consumerFor($consumer)
-            ->when($this->option('max-messages'), fn (Builder $builder, string $maxMessages) => $builder->withMaxMessages((int) $maxMessages))
-            ->when($this->option('max-time'), fn (Builder $builder, string $maxTime) => $builder->withMaxTime((int) $maxTime))
-            ->when($this->option('stop-when-empty'), fn (Builder $builder) => $builder->stopAfterLastMessage())
+            ->when($this->option('max-messages'), fn (Builder $builder, string $maxMessages) => $builder->stopAfterMessages((int) $maxMessages))
+            ->when($this->option('max-time'), fn (Builder $builder, string $maxTime) => $builder->stopAfterSeconds((int) $maxTime))
+            ->when($this->option('stop-when-empty'), fn (Builder $builder) => $builder->stopWhenEmpty())
             ->build()
             ->consume();
 

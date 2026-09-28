@@ -159,21 +159,16 @@ When using manual commit mode, your handlers can use these methods on the `$cons
 
 For more detailed information about manual commit patterns, see the [Manual Commit guide](../advanced-usage/manual-commit.md).
 
-### Configuring max messages to be consumed
-If you want to consume a limited amount of messages, you can use the `withMaxMessages` method to set the max number of messages to be consumed by a
-kafka consumer:
+### Stopping after a number of messages or seconds
+If you want to consume a limited amount of messages, use the `stopAfterMessages` method, and to consume for a limited amount of time, use the `stopAfterSeconds` method:
 
 ```php
-$consumer = \Junges\Kafka\Facades\Kafka::consumer()->withMaxMessages(2);
+$consumer = \Junges\Kafka\Facades\Kafka::consumer()->stopAfterMessages(100);
+
+$consumer = \Junges\Kafka\Facades\Kafka::consumer()->stopAfterSeconds(3600);
 ```
 
-### Configuring the max time when a consumer can process messages
-If you want to consume a limited amount of time, you can use the `withMaxTime` method to set the max number of seconds for
-kafka consumer to process messages:
-
-```php
-$consumer = \Junges\Kafka\Facades\Kafka::consumer()->withMaxTime(3600);
-```
+To stop once there are no messages left, see [stopping the consumer when there are no messages left](../advanced-usage/stop-consumer-after-last-message.md).
 
 ### Setting Kafka configuration options
 To set configuration options, you can use two methods: `withOptions`, passing an array of option and option value or, using the `withOption method and

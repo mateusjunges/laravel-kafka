@@ -11,7 +11,7 @@ second argument of your message handler:
 ```php
 $consumer = \Junges\Kafka\Facades\Kafka::consumer(['topic'])
     ->withConsumerGroupId('group')
-    ->stopAfterLastMessage()
+    ->stopWhenEmpty()
     ->withHandler(static function (\Junges\Kafka\Contracts\ConsumerMessage $message, \Junges\Kafka\Contracts\Consumer $consumer) {
         if ($someCondition) {
             $consumer->stopConsuming();

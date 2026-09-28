@@ -107,7 +107,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $consumer = Kafka::consumer(['test'])
             ->withHandler($fakeConsumer = new FakeConsumer)
             ->withAutoCommit()
-            ->withMaxMessages(1)
+            ->stopAfterMessages(1)
             ->build();
 
         $consumer->consume();

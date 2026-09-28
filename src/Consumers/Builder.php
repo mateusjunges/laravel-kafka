@@ -51,7 +51,7 @@ class Builder implements ConsumerBuilderContract
 
     protected ?CommitterFactory $committerFactory = null;
 
-    protected bool $stopAfterLastMessage = false;
+    protected bool $stopWhenEmpty = false;
 
     protected bool $skipFailedMessages = false;
 
@@ -179,19 +179,17 @@ class Builder implements ConsumerBuilderContract
     }
 
     /** {@inheritDoc} */
-    public function withMaxMessages(int $maxMessages): self
+    public function stopAfterMessages(int $messages): self
     {
-        $this->maxMessages = $maxMessages;
+        $this->maxMessages = $messages;
 
         return $this;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function withMaxTime(int $maxTime): self
+    /** {@inheritDoc} */
+    public function stopAfterSeconds(int $seconds): self
     {
-        $this->maxTime = $maxTime;
+        $this->maxTime = $seconds;
 
         return $this;
     }
@@ -286,9 +284,9 @@ class Builder implements ConsumerBuilderContract
     }
 
     /** {@inheritDoc} */
-    public function stopAfterLastMessage(bool $stopAfterLastMessage = true): self
+    public function stopWhenEmpty(bool $stopWhenEmpty = true): self
     {
-        $this->stopAfterLastMessage = $stopAfterLastMessage;
+        $this->stopWhenEmpty = $stopWhenEmpty;
 
         return $this;
     }
@@ -384,7 +382,7 @@ class Builder implements ConsumerBuilderContract
             maxMessages: $this->maxMessages,
             autoCommit: $this->autoCommit,
             customOptions: $this->options,
-            stopAfterLastMessage: $this->stopAfterLastMessage,
+            stopAfterLastMessage: $this->stopWhenEmpty,
             callbacks: $this->resolveCallbacks(),
             beforeConsumingCallbacks: $this->beforeConsumingCallbacks,
             afterConsumingCallbacks: $this->afterConsumingCallbacks,

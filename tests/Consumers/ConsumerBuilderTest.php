@@ -123,7 +123,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_set_max_messages(): void
     {
-        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->withMaxMessages(2);
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->stopAfterMessages(2);
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
 
@@ -334,19 +334,19 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_set_stop_after_last_message(): void
     {
-        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->stopAfterLastMessage();
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->stopWhenEmpty();
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
 
-        $autoCommit = $this->getPropertyWithReflection('stopAfterLastMessage', $consumer);
+        $autoCommit = $this->getPropertyWithReflection('stopWhenEmpty', $consumer);
 
         $this->assertTrue($autoCommit);
 
-        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->stopAfterLastMessage(false);
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->stopWhenEmpty(false);
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
 
-        $autoCommit = $this->getPropertyWithReflection('stopAfterLastMessage', $consumer);
+        $autoCommit = $this->getPropertyWithReflection('stopWhenEmpty', $consumer);
 
         $this->assertFalse($autoCommit);
     }

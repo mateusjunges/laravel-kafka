@@ -167,8 +167,8 @@ final class ConsumerSignalHandlersTest extends LaravelKafkaTestCase
     {
         return Kafka::consumer(['test'])
             ->withHandler(static function (): void {})
-            ->stopAfterLastMessage()
-            ->withMaxTime(5)
+            ->stopWhenEmpty()
+            ->stopAfterSeconds(5)
             ->build();
     }
 
