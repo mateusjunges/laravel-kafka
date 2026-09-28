@@ -3,12 +3,19 @@
 namespace Junges\Kafka\Support\Testing\Fakes;
 
 use Closure;
+use Illuminate\Contracts\Events\Dispatcher;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\Consumer;
 use Junges\Kafka\Contracts\ConsumerMessage;
+use Junges\Kafka\Events\MessageConsumed;
+use Junges\Kafka\Events\MessageSentToDLQ;
+use Junges\Kafka\Events\MessageSkipped;
+use Junges\Kafka\Events\StartedConsumingMessage;
+use Junges\Kafka\Exceptions\ConsumerException;
 use Junges\Kafka\MessageCounter;
 use RdKafka\Conf;
 use RdKafka\Message;
+use Throwable;
 
 class ConsumerFake implements Consumer
 {
@@ -110,11 +117,71 @@ class ConsumerFake implements Consumer
         return $this->maxMessagesLimitReached() || $this->stopRequested;
     }
 
-    /** Handle the message. */
+    /**
+     * Handle the message like the real consumer does: failed messages are retried, and then
+     * sent to the dead letter queue, skipped, or stop the consumer, dispatching the same events.
+     */
     private function handleMessage(ConsumerMessage $message): void
     {
-        $this->config->getHandler()->handle($message, $this);
+        foreach ($this->config->getBeforeConsumingCallbacks() as $callback) {
+            $callback($this);
+        }
+
         $this->messageCounter->add();
+
+        $dispatcher = app(Dispatcher::class);
+        $dispatcher->dispatch(new StartedConsumingMessage($message));
+
+        $handledMessage = null;
+
+        try {
+            retry(
+                $this->config->getFailedMessageRetries() + 1,
+                function (int $attempt) use ($message, &$handledMessage): void {
+                    $handledMessage = $message->withAttempts($attempt);
+
+                    $this->config->getHandler()->handle($handledMessage, $this);
+                },
+                $this->config->getFailedMessageRetryBackoff(),
+                fn () => ! $this->stopRequested,
+            );
+
+            $dispatcher->dispatch(new MessageConsumed($handledMessage));
+        } catch (Throwable $throwable) {
+            $this->handleFailure($handledMessage ?? $message, $throwable, $dispatcher);
+        }
+
+        foreach ($this->config->getAfterConsumingCallbacks() as $callback) {
+            $callback($this);
+        }
+    }
+
+    /** @throws ConsumerException */
+    private function handleFailure(ConsumerMessage $message, Throwable $throwable, Dispatcher $dispatcher): void
+    {
+        report($throwable);
+
+        try {
+            $this->config->getHandler()->failed($message, $throwable);
+        } catch (Throwable $callbackException) {
+            report($callbackException);
+        }
+
+        if ($this->config->shouldSendToDlq()) {
+            $body = $message->getBody();
+
+            $dispatcher->dispatch(new MessageSentToDLQ(
+                is_string($body) || $body === null ? $body : json_encode($body),
+                $message->getKey(),
+                $message->getHeaders() ?? [],
+                $throwable,
+                $message->getHeaders()[config('kafka.message_id_key')] ?? null,
+            ));
+        } elseif ($this->config->shouldSkipFailedMessages()) {
+            $dispatcher->dispatch(new MessageSkipped($message, $throwable));
+        } else {
+            throw ConsumerException::stoppedOnFailure($message, $throwable);
+        }
     }
 
     private function getConsumerMessage(Message $message): ConsumerMessage

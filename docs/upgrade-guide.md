@@ -200,6 +200,8 @@ The `Junges\Kafka\Factory` is now a singleton, also bound to the `Junges\Kafka\C
 
 ### Testing
 
+Faked consumers now handle failed messages like real ones: they retry them, call the failure callback, and send them to the dead letter queue, which only dispatches the `MessageSentToDLQ` event, skip them, or stop. A test with a failing handler and no dead letter queue now gets a `Junges\Kafka\Exceptions\ConsumerException`, with the exception thrown by the handler available through `getPrevious()`, instead of that exception itself. Faked consumers also dispatch the `StartedConsumingMessage` and `MessageConsumed` events, and run the `beforeConsuming()` and `afterConsuming()` callbacks.
+
 `Kafka::fake()` now replaces the manager with a `Junges\Kafka\Support\Testing\Fakes\KafkaFake`, which extends the `Factory`, so every connection publishes to the fake. The `ProducerBuilderFake` class was removed, and `KafkaFake` no longer receives the manager in its constructor.
 
 ## Upgrade to v2.11 from v2.10

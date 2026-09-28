@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Exceptions;
 
+use Junges\Kafka\Contracts\ConsumerMessage;
 use RdKafka\Message;
 use Throwable;
 
@@ -12,10 +13,14 @@ class ConsumerException extends LaravelKafkaException
         return new static('The dead letter queue can only be named after the consumed topic when the consumer subscribes to a topic or is assigned partitions. Pass the dead letter queue topic to withDlq() instead.');
     }
 
-    public static function stoppedOnFailure(Message $message, Throwable $throwable): self
+    public static function stoppedOnFailure(Message|ConsumerMessage $message, Throwable $throwable): self
     {
+        [$topic, $partition, $offset] = $message instanceof Message
+            ? [$message->topic_name, $message->partition, $message->offset]
+            : [$message->getTopicName(), $message->getPartition(), $message->getOffset()];
+
         return new static(
-            "Stopped consuming after the message at offset [{$message->offset}] of topic [{$message->topic_name}] partition [{$message->partition}] failed. Its offset was not committed.",
+            "Stopped consuming after the message at offset [{$offset}] of topic [{$topic}] partition [{$partition}] failed. Its offset was not committed.",
             previous: $throwable
         );
     }
