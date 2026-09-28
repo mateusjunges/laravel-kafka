@@ -10,6 +10,8 @@ use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\ConnectionConfig;
 use Junges\Kafka\Config\RebalanceStrategy;
 use Junges\Kafka\Config\Sasl;
+use Junges\Kafka\Config\SaslMechanism;
+use Junges\Kafka\Config\SecurityProtocol;
 use Junges\Kafka\Contracts\CommitterFactory;
 use Junges\Kafka\Contracts\Consumer as ConsumerContract;
 use Junges\Kafka\Contracts\ConsumerBuilder as ConsumerBuilderContract;
@@ -204,14 +206,18 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** Set Sasl configuration. */
-    public function withSasl(string $username, string $password, string $mechanisms, string $securityProtocol = 'SASL_PLAINTEXT'): self
-    {
+    /** {@inheritDoc} */
+    public function withSasl(
+        string $username,
+        string $password,
+        SaslMechanism|string $mechanism,
+        SecurityProtocol|string $securityProtocol = SecurityProtocol::SASL_PLAINTEXT,
+    ): self {
         $this->saslConfig = new Sasl(
             username: $username,
             password: $password,
-            mechanisms: $mechanisms,
-            securityProtocol: $securityProtocol
+            mechanism: $mechanism instanceof SaslMechanism ? $mechanism->value : $mechanism,
+            securityProtocol: $securityProtocol instanceof SecurityProtocol ? $securityProtocol->value : $securityProtocol,
         );
 
         return $this;
@@ -226,9 +232,9 @@ class Builder implements ConsumerBuilderContract
     }
 
     /** {@inheritDoc} */
-    public function withSecurityProtocol(string $securityProtocol): self
+    public function withSecurityProtocol(SecurityProtocol|string $securityProtocol): self
     {
-        $this->securityProtocol = $securityProtocol;
+        $this->securityProtocol = $securityProtocol instanceof SecurityProtocol ? $securityProtocol->value : $securityProtocol;
 
         return $this;
     }

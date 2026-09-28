@@ -19,7 +19,7 @@ A connection holds everything needed to talk to a Kafka cluster: the brokers, th
         'brokers' => env('KAFKA_ANALYTICS_BROKERS'),
         'security_protocol' => 'SASL_SSL',
         'sasl' => [
-            'mechanisms' => 'SCRAM-SHA-512',
+            'mechanism' => 'SCRAM-SHA-512',
             'username' => env('KAFKA_ANALYTICS_USERNAME'),
             'password' => env('KAFKA_ANALYTICS_PASSWORD'),
         ],
@@ -60,7 +60,7 @@ Kafka::connection('analytics')->consumer(['page-views'])
 | --- | --- |
 | `brokers` | A comma separated list of brokers. |
 | `security_protocol` | The security protocol: `PLAINTEXT`, `SSL`, `SASL_PLAINTEXT` or `SASL_SSL`. |
-| `sasl` | The SASL `mechanisms`, `username` and `password`. SASL is used when a username is set and the security protocol is `SASL_PLAINTEXT` or `SASL_SSL`. |
+| `sasl` | The SASL `mechanism`, `username` and `password`. SASL is used when a username is set and the security protocol is `SASL_PLAINTEXT` or `SASL_SSL`. |
 | `options` | librdkafka options applied to both producers and consumers. |
 | `producer.options` | librdkafka options applied only to the producer. |
 | `producer.serializer` | The class serializing the published messages, resolved from the service container. Defaults to the `MessageSerializer` binding, the JSON serializer. |

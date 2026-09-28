@@ -18,7 +18,7 @@ SASL is configured per connection, in your `config/kafka.php` file. It is used b
         'brokers' => env('KAFKA_BROKERS'),
         'security_protocol' => 'SASL_SSL',
         'sasl' => [
-            'mechanisms' => 'SCRAM-SHA-512',
+            'mechanism' => 'SCRAM-SHA-512',
             'username' => env('KAFKA_USERNAME'),
             'password' => env('KAFKA_PASSWORD'),
         ],
@@ -26,32 +26,26 @@ SASL is configured per connection, in your `config/kafka.php` file. It is used b
 ],
 ```
 
-To use different credentials for a single consumer, you can use the `withSasl` method of the consumer builder:
+To use different credentials for a single consumer, you can use the `withSasl` method of the consumer builder. The mechanism and the security protocol accept the `Junges\Kafka\Config\SaslMechanism` and `Junges\Kafka\Config\SecurityProtocol` enums, or their string values. The security protocol is optional, and `SASL_PLAINTEXT` is used by default:
 
 ```php
-$consumer = \Junges\Kafka\Facades\Kafka::consumer()
+use Junges\Kafka\Config\SaslMechanism;
+use Junges\Kafka\Config\SecurityProtocol;
+
+$consumer = \Junges\Kafka\Facades\Kafka::consumer(['orders'])
     ->withSasl(
-        password: 'password',
         username: 'username',
-        mechanisms: 'authentication mechanism'
+        password: 'password',
+        mechanism: SaslMechanism::SCRAM_SHA_512,
+        securityProtocol: SecurityProtocol::SASL_SSL,
     );
 ```
 
-You can also set the security protocol used with sasl. It's optional and by default `SASL_PLAINTEXT` is used, but you can set it to `SASL_SSL`:
-
-```php
-$consumer = \Junges\Kafka\Facades\Kafka::consumer()
-    ->withSasl(
-        password: 'password',
-        username: 'username',
-        mechanisms: 'authentication mechanism',
-        securityProtocol: 'SASL_SSL',
-    );
-```
+The available mechanisms are `PLAIN`, `SCRAM_SHA_256`, `SCRAM_SHA_512`, `GSSAPI` and `OAUTHBEARER`.
 
 ```+parse
 <x-docs.tip title="Hot tip!">
-    When using the `withSasl` method, the securityProtocol set in this method takes priority over `withSecurityProtocol` method.
+    When using the `withSasl` method, its security protocol takes priority over the one set with the `withSecurityProtocol` method, whatever the order they are called in.
 </x-docs.tip>
 ```
 

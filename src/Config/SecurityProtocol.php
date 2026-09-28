@@ -1,0 +1,18 @@
+<?php declare(strict_types=1);
+
+namespace Junges\Kafka\Config;
+
+enum SecurityProtocol: string
+{
+    /** No encryption and no authentication. */
+    case PLAINTEXT = 'PLAINTEXT';
+
+    /** TLS encryption, with optional TLS client authentication. */
+    case SSL = 'SSL';
+
+    /** SASL authentication, without encryption. */
+    case SASL_PLAINTEXT = 'SASL_PLAINTEXT';
+
+    /** SASL authentication over TLS encryption. */
+    case SASL_SSL = 'SASL_SSL';
+}

@@ -142,7 +142,7 @@ final class ConfigTest extends LaravelKafkaTestCase
         $sasl = new Sasl(
             username: 'user',
             password: 'pass',
-            mechanisms: 'mec'
+            mechanism: 'mec'
         );
 
         $config = new Config(
@@ -216,7 +216,7 @@ final class ConfigTest extends LaravelKafkaTestCase
             sasl: new Sasl(
                 username: 'username',
                 password: 'password',
-                mechanisms: 'mechanisms',
+                mechanism: 'mechanisms',
                 securityProtocol: 'ssl_plaintext',
             ),
             dlq: null

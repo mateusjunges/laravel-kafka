@@ -36,7 +36,7 @@ php artisan vendor:publish --tag=laravel-kafka-config --force
 | --- | --- |
 | `brokers` | `connections.default.brokers` |
 | `securityProtocol` | `connections.default.security_protocol` |
-| `sasl` | `connections.default.sasl` |
+| `sasl` | `connections.default.sasl`, where the `mechanisms` key was renamed to `mechanism`. The old key is still read. |
 | `consumer_group_id` | `connections.default.consumer.group_id` |
 | `consumer_timeout_ms` | `connections.default.consumer.timeout_ms` |
 | `offset_reset` | `connections.default.consumer.options.auto.offset.reset` |
@@ -162,6 +162,8 @@ The consumer builder methods that stop the consumer were renamed, to read as a f
 ### Consumer builder
 
 The `withConsumerGroupId()` method of the consumer builder was renamed to `withGroupId()`, and it no longer accepts `null`. The group of the connection is used when it is not called.
+
+The `$mechanisms` parameter of `withSasl()` was renamed to `$mechanism`, as it receives a single mechanism, which affects calls using named arguments. `withSasl()` and `withSecurityProtocol()` now also accept the new `Junges\Kafka\Config\SaslMechanism` and `Junges\Kafka\Config\SecurityProtocol` enums. The `mechanisms` argument of the `Junges\Kafka\Config\Sasl` constructor and its `getMechanisms()` method were renamed to `mechanism` and `getMechanism()`.
 
 ### Configuration callbacks
 

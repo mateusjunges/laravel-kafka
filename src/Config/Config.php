@@ -266,7 +266,7 @@ class Config
             return [
                 'sasl.username' => $this->sasl->getUsername(),
                 'sasl.password' => $this->sasl->getPassword(),
-                'sasl.mechanisms' => $this->sasl->getMechanisms(),
+                'sasl.mechanisms' => $this->sasl->getMechanism(),
                 'security.protocol' => $this->sasl->getSecurityProtocol(),
             ];
         }

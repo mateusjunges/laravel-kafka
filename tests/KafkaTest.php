@@ -406,7 +406,7 @@ final class KafkaTest extends LaravelKafkaTestCase
         config(['kafka.connections.analytics' => [
             'brokers' => 'analytics:9092',
             'security_protocol' => 'SASL_SSL',
-            'sasl' => ['username' => 'user', 'password' => 'secret', 'mechanisms' => 'SCRAM-SHA-512'],
+            'sasl' => ['username' => 'user', 'password' => 'secret', 'mechanism' => 'SCRAM-SHA-512'],
             'options' => ['client.id' => 'analytics-client'],
             'consumer' => [
                 'group_id' => 'analytics-group',

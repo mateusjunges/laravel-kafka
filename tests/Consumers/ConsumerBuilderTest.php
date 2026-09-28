@@ -9,6 +9,8 @@ use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\ConnectionConfig;
 use Junges\Kafka\Config\RebalanceStrategy;
 use Junges\Kafka\Config\Sasl;
+use Junges\Kafka\Config\SaslMechanism;
+use Junges\Kafka\Config\SecurityProtocol;
 use Junges\Kafka\Consumers\Builder;
 use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Contracts\Committer;
@@ -309,6 +311,32 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
         $securityProtocol = $this->getPropertyWithReflection('securityProtocol', $consumerConfig);
 
         $this->assertEquals('protocol', $securityProtocol);
+    }
+
+    #[Test]
+    public function it_accepts_enums_for_the_sasl_mechanism_and_the_security_protocol(): void
+    {
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'), ['foo'], 'group')
+            ->withSasl(
+                username: 'username',
+                password: 'password',
+                mechanism: SaslMechanism::SCRAM_SHA_512,
+                securityProtocol: SecurityProtocol::SASL_SSL,
+            );
+
+        $options = $this->getPropertyWithReflection('config', $consumer->build())->getConsumerOptions();
+
+        $this->assertSame('SCRAM-SHA-512', $options['sasl.mechanisms']);
+        $this->assertSame('SASL_SSL', $options['security.protocol']);
+        $this->assertSame('username', $options['sasl.username']);
+    }
+
+    #[Test]
+    public function it_accepts_an_enum_for_the_security_protocol(): void
+    {
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->withSecurityProtocol(SecurityProtocol::SSL);
+
+        $this->assertSame('SSL', $this->getPropertyWithReflection('config', $consumer->build())->getConsumerOptions()['security.protocol']);
     }
 
     #[Test]

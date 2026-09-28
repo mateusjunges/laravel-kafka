@@ -7,7 +7,7 @@ class Sasl
     public function __construct(
         private readonly string $username,
         private readonly string $password,
-        private readonly string $mechanisms,
+        private readonly string $mechanism,
         private readonly string $securityProtocol = 'SASL_PLAINTEXT'
     ) {}
 
@@ -21,9 +21,9 @@ class Sasl
         return $this->password;
     }
 
-    public function getMechanisms(): string
+    public function getMechanism(): string
     {
-        return $this->mechanisms;
+        return $this->mechanism;
     }
 
     public function getSecurityProtocol(): string

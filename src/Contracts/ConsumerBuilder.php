@@ -4,6 +4,8 @@ namespace Junges\Kafka\Contracts;
 
 use Junges\Kafka\Config\ConnectionConfig;
 use Junges\Kafka\Config\RebalanceStrategy;
+use Junges\Kafka\Config\SaslMechanism;
+use Junges\Kafka\Config\SecurityProtocol;
 
 interface ConsumerBuilder extends InteractsWithConfigCallbacks
 {
@@ -61,8 +63,16 @@ interface ConsumerBuilder extends InteractsWithConfigCallbacks
      */
     public function withDlq(?string $dlqTopic = null): self;
 
-    /** Set the Sasl configuration. */
-    public function withSasl(string $username, string $password, string $mechanisms, string $securityProtocol = 'SASL_PLAINTEXT'): self;
+    /**
+     * Authenticate this consumer with SASL, using the given credentials instead of the ones of the connection.
+     * The security protocol must be SASL_PLAINTEXT or SASL_SSL.
+     */
+    public function withSasl(
+        string $username,
+        string $password,
+        SaslMechanism|string $mechanism,
+        SecurityProtocol|string $securityProtocol = SecurityProtocol::SASL_PLAINTEXT,
+    ): self;
 
     /**
      * Add a middleware the messages go through before being handled. Middlewares run in the order they are added,
@@ -80,7 +90,7 @@ interface ConsumerBuilder extends InteractsWithConfigCallbacks
     public function afterConsuming(callable $callable): self;
 
     /** Specify the security protocol that should be used. */
-    public function withSecurityProtocol(string $securityProtocol): self;
+    public function withSecurityProtocol(SecurityProtocol|string $securityProtocol): self;
 
     /** Enable or disable consumer auto commit option. */
     public function withAutoCommit(bool $autoCommit = true): self;

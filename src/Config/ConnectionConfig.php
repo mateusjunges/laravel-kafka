@@ -78,7 +78,7 @@ final readonly class ConnectionConfig
         return new Sasl(
             username: (string) $sasl['username'],
             password: (string) ($sasl['password'] ?? ''),
-            mechanisms: (string) ($sasl['mechanisms'] ?? 'PLAIN'),
+            mechanism: (string) ($sasl['mechanism'] ?? $sasl['mechanisms'] ?? 'PLAIN'),
             securityProtocol: $securityProtocol ?? 'SASL_PLAINTEXT',
         );
     }
