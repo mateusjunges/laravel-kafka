@@ -17,11 +17,12 @@ class FakeConnection extends Connection
         ConnectionConfig $config,
         private readonly Closure $recordPublishedMessage,
         private readonly Closure $messagesToConsume,
+        ?Closure $consumerMiddleware = null,
     ) {
-        parent::__construct($config);
+        parent::__construct($config, $consumerMiddleware);
     }
 
-    public function consumer(array $topics = [], ?string $groupId = null): BuilderFake
+    protected function newConsumerBuilder(array $topics, ?string $groupId): BuilderFake
     {
         return BuilderFake::create($this->getConfig(), $topics, $groupId)
             ->setMessages(($this->messagesToConsume)());

@@ -2,11 +2,13 @@
 
 namespace Junges\Kafka;
 
+use Closure;
 use Illuminate\Support\Traits\Macroable;
 use InvalidArgumentException;
 use Junges\Kafka\Config\ConnectionConfig;
 use Junges\Kafka\Consumers\Builder as ConsumerBuilder;
 use Junges\Kafka\Contracts\Manager;
+use Junges\Kafka\Contracts\Middleware;
 use Junges\Kafka\Producers\PendingMessage;
 
 class Factory implements Manager
@@ -15,6 +17,9 @@ class Factory implements Manager
 
     /** @var array<string, Connection> */
     protected array $connections = [];
+
+    /** @var list<Middleware|callable|class-string<Middleware>> */
+    protected array $consumerMiddleware = [];
 
     /** {@inheritDoc} */
     public function connection(?string $name = null): Connection
@@ -57,6 +62,22 @@ class Factory implements Manager
     }
 
     /** {@inheritDoc} */
+    public function consumerMiddleware(array|Middleware|Closure|string $middleware): void
+    {
+        array_push($this->consumerMiddleware, ...(is_array($middleware) ? $middleware : [$middleware]));
+    }
+
+    /**
+     * Get the middlewares every consumer goes through.
+     *
+     * @return list<Middleware|callable|class-string<Middleware>>
+     */
+    public function getConsumerMiddleware(): array
+    {
+        return $this->consumerMiddleware;
+    }
+
+    /** {@inheritDoc} */
     public function flush(): void
     {
         foreach ($this->connections as $connection) {
@@ -83,6 +104,8 @@ class Factory implements Manager
 
     protected function makeConnection(ConnectionConfig $config): Connection
     {
-        return new Connection($config);
+        // The middlewares are resolved when each consumer is created, so the ones
+        // registered after a connection is resolved are applied as well.
+        return new Connection($config, fn () => $this->consumerMiddleware);
     }
 }

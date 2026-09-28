@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Contracts;
 
+use Closure;
 use Junges\Kafka\Connection;
 use Junges\Kafka\Consumers\Builder;
 use Junges\Kafka\KafkaConsumer;
@@ -27,6 +28,13 @@ interface Manager
      * @param  KafkaConsumer|class-string<KafkaConsumer>  $consumer
      */
     public function consumerFor(KafkaConsumer|string $consumer): Builder;
+
+    /**
+     * Register middlewares every consumer goes through, before the middlewares of each consumer.
+     *
+     * @param  list<Middleware|callable|class-string<Middleware>>|Middleware|Closure|class-string<Middleware>  $middleware
+     */
+    public function consumerMiddleware(array|Middleware|Closure|string $middleware): void;
 
     /** Wait until every message queued on the resolved connections is delivered. */
     public function flush(): void;

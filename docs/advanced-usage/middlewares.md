@@ -74,3 +74,21 @@ $consumer = \Junges\Kafka\Facades\Kafka::consumer(['orders'])
 ```
 
 Middlewares run in the order they are registered, so the first one wraps all the others. When failed messages are [retried](../consuming-messages/handling-failed-messages.md), the middlewares run again on every attempt, and an exception thrown by a middleware makes the message fail like one thrown by the handler.
+
+### Global middlewares
+
+To run middlewares for every consumer, register them with the `consumerMiddleware` method of the `Kafka` facade, usually in the `boot` method of a service provider:
+
+```php
+use Junges\Kafka\Facades\Kafka;
+
+public function boot(): void
+{
+    Kafka::consumerMiddleware([
+        LogMessages::class,
+        SetTenantFromHeaders::class,
+    ]);
+}
+```
+
+Global middlewares apply to every consumer created through the `Kafka` facade, including [consumer classes](../consuming-messages/class-structure.md), on any connection. They run before the middlewares of each consumer. They are kept when using `Kafka::fake()`, so your tests go through them as well.

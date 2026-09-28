@@ -12,6 +12,8 @@ use Junges\Kafka\Support\Testing\Fakes\KafkaFake;
  * @method static \Junges\Kafka\Producers\PendingMessage publishSync(string|null $topic = null)
  * @method static \Junges\Kafka\Consumers\Builder consumer(array $topics = [], string|null $groupId = null)
  * @method static \Junges\Kafka\Consumers\Builder consumerFor(\Junges\Kafka\KafkaConsumer|string $consumer)
+ * @method static void consumerMiddleware(array|\Junges\Kafka\Contracts\Middleware|\Closure|string $middleware)
+ * @method static array getConsumerMiddleware()
  * @method static void flush()
  * @method static string getDefaultConnection()
  * @method static void assertPublished(\Junges\Kafka\Contracts\ProducerMessage|null $expectedMessage = null, callable|null $callback = null)
@@ -29,7 +31,14 @@ class Kafka extends Facade
     /** Replace the bound instance with a fake. */
     public static function fake(): KafkaFake
     {
+        $manager = static::getFacadeRoot();
+
         static::swap($fake = new KafkaFake);
+
+        // Global middlewares are usually registered by a service provider, so the fake keeps them.
+        if ($manager instanceof Factory) {
+            $fake->consumerMiddleware($manager->getConsumerMiddleware());
+        }
 
         return $fake;
     }

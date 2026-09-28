@@ -2,12 +2,14 @@
 
 namespace Junges\Kafka;
 
+use Closure;
 use Junges\Kafka\Concerns\InteractsWithConfigCallbacks;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\ConnectionConfig;
 use Junges\Kafka\Consumers\Builder as ConsumerBuilder;
 use Junges\Kafka\Contracts\InteractsWithConfigCallbacks as InteractsWithConfigCallbacksContract;
 use Junges\Kafka\Contracts\MessageSerializer;
+use Junges\Kafka\Contracts\Middleware;
 use Junges\Kafka\Contracts\Producer as ProducerContract;
 use Junges\Kafka\Producers\PendingMessage;
 use Junges\Kafka\Producers\Producer;
@@ -18,7 +20,15 @@ class Connection implements InteractsWithConfigCallbacksContract
 
     private ?ProducerContract $producer = null;
 
-    public function __construct(private readonly ConnectionConfig $config) {}
+    /**
+     * The consumer middleware closure resolves the middlewares every consumer of this connection goes through.
+     *
+     * @param  (Closure(): list<Middleware|callable|class-string<Middleware>>)|null  $consumerMiddleware
+     */
+    public function __construct(
+        private readonly ConnectionConfig $config,
+        private readonly ?Closure $consumerMiddleware = null,
+    ) {}
 
     public function getName(): string
     {
@@ -49,7 +59,14 @@ class Connection implements InteractsWithConfigCallbacksContract
     /** Start building a consumer using this connection. */
     public function consumer(array $topics = [], ?string $groupId = null): ConsumerBuilder
     {
-        return ConsumerBuilder::create($this->getConfig(), $topics, $groupId);
+        $builder = $this->newConsumerBuilder($topics, $groupId);
+
+        // The global middlewares are added first, so they run before the middlewares of each consumer.
+        foreach ($this->consumerMiddleware instanceof Closure ? ($this->consumerMiddleware)() : [] as $middleware) {
+            $builder->withMiddleware($middleware);
+        }
+
+        return $builder;
     }
 
     /**
@@ -66,6 +83,11 @@ class Connection implements InteractsWithConfigCallbacksContract
     public function flush(): void
     {
         $this->producer?->flush();
+    }
+
+    protected function newConsumerBuilder(array $topics, ?string $groupId): ConsumerBuilder
+    {
+        return ConsumerBuilder::create($this->getConfig(), $topics, $groupId);
     }
 
     protected function makeProducer(): ProducerContract
