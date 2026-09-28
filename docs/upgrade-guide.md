@@ -159,6 +159,10 @@ The consumer builder methods that stop the consumer were renamed, to read as a f
 | `withMaxTime()` | `stopAfterSeconds()` |
 | `stopAfterLastMessage()` | `stopWhenEmpty()` |
 
+### Consumer builder
+
+The `withConsumerGroupId()` method of the consumer builder was renamed to `withGroupId()`, and it no longer accepts `null`. The group of the connection is used when it is not called.
+
 ### Configuration callbacks
 
 The methods setting librdkafka configuration callbacks were renamed, on both the consumer builder and connections:

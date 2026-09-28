@@ -37,8 +37,8 @@ interface ConsumerBuilder extends InteractsWithConfigCallbacks
     /** Set the brokers the kafka consumer should use, instead of the connection brokers. */
     public function withBrokers(string $brokers): self;
 
-    /** Specify the consumer group id. */
-    public function withConsumerGroupId(?string $groupId): self;
+    /** Set the consumer group, instead of the group of the connection. */
+    public function withGroupId(string $groupId): self;
 
     /** Specify the handler of the consumed messages, a callable receiving the message and the consumer. */
     public function withHandler(callable|Handler $handler): self;

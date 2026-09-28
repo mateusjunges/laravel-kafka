@@ -146,7 +146,7 @@ class Builder implements ConsumerBuilderContract
     }
 
     /** {@inheritDoc} */
-    public function withConsumerGroupId(?string $groupId): self
+    public function withGroupId(string $groupId): self
     {
         $this->groupId = $groupId;
 

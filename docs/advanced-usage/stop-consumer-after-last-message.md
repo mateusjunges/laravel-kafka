@@ -10,7 +10,7 @@ You can do it by adding a call to the `stopWhenEmpty` method when creating your 
 
 ```php
 $consumer = \Junges\Kafka\Facades\Kafka::consumer(['topic'])
-    ->withConsumerGroupId('group')
+    ->withGroupId('group')
     ->stopWhenEmpty()
     ->withHandler(new Handler)
     ->build();
@@ -24,7 +24,7 @@ For the consumer to detect the end of a partition as soon as it is reached, the 
 
 ```php
 $consumer = \Junges\Kafka\Facades\Kafka::consumer(['topic'])
-    ->withConsumerGroupId('group')
+    ->withGroupId('group')
     ->withOptions(['enable.partition.eof' => 'true'])
     ->stopWhenEmpty()
     ->withHandler(new Handler)

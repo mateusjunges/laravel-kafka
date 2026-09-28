@@ -17,7 +17,7 @@ Without a dead letter queue, the consumer stops when a message fails, and **the 
 use Junges\Kafka\Exceptions\ConsumerException;
 
 $consumer = \Junges\Kafka\Facades\Kafka::consumer(['orders'])
-    ->withConsumerGroupId('orders-group')
+    ->withGroupId('orders-group')
     ->withHandler(new OrderHandler)
     ->build();
 
@@ -40,7 +40,7 @@ Failures caused by a temporary problem, such as a dependency that is briefly una
 
 ```php
 $consumer = \Junges\Kafka\Facades\Kafka::consumer(['orders'])
-    ->withConsumerGroupId('orders-group')
+    ->withGroupId('orders-group')
     ->retryFailedMessages(3, backoffInMs: 1000)
     ->withDlq()
     ->withHandler(new OrderHandler)
@@ -84,7 +84,7 @@ If losing a failed message is acceptable, use the `skipFailedMessages` method. T
 
 ```php
 $consumer = \Junges\Kafka\Facades\Kafka::consumer(['page-views'])
-    ->withConsumerGroupId('analytics')
+    ->withGroupId('analytics')
     ->skipFailedMessages()
     ->withHandler(new PageViewHandler)
     ->build();

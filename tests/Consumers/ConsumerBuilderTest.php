@@ -93,7 +93,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_set_consumer_group_id(): void
     {
-        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->withConsumerGroupId('foo');
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->withGroupId('foo');
 
         $groupId = $this->getPropertyWithReflection('groupId', $consumer);
 
