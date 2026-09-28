@@ -9,11 +9,14 @@ use Junges\Kafka\KafkaConsumer;
 class {{ class }} extends KafkaConsumer
 {
     /**
-     * The topics to consume.
+     * Get the topics to consume.
      *
-     * @var list<string>
+     * @return list<string>
      */
-    public array $topics = [];
+    public function topics(): array
+    {
+        return [];
+    }
 
     /**
      * Handle a consumed message.

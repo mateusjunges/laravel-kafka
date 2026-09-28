@@ -9,7 +9,7 @@ Consumers can be defined as classes, which are run by the `kafka:consume` artisa
 php artisan make:kafka-consumer OrdersConsumer
 ```
 
-A consumer class extends `Junges\Kafka\KafkaConsumer`. Its properties configure the consumer, and its `handle` method receives each consumed message:
+A consumer class extends `Junges\Kafka\KafkaConsumer`. Its methods configure the consumer, and its `handle` method receives each consumed message:
 
 ```php
 <?php
@@ -22,15 +22,30 @@ use Junges\Kafka\KafkaConsumer;
 
 class OrdersConsumer extends KafkaConsumer
 {
-    public array $topics = ['orders'];
+    public function topics(): array
+    {
+        return [config('kafka.topics.orders')];
+    }
 
-    public ?string $group = 'orders';
+    public function group(): ?string
+    {
+        return 'orders';
+    }
 
-    public int $retries = 3;
+    public function retries(): int
+    {
+        return 3;
+    }
 
-    public int $backoff = 1000;
+    public function backoff(): int
+    {
+        return 1000;
+    }
 
-    public string|true|null $dlq = true;
+    public function dlq(): string|true|null
+    {
+        return true;
+    }
 
     public function handle(ConsumerMessage $message, MessageConsumer $consumer): void
     {
@@ -45,17 +60,19 @@ class OrdersConsumer extends KafkaConsumer
 
 The consumer class is resolved from the service container, so its constructor can receive any dependency it needs.
 
-### Available properties
+### Available methods
 
-| Property | Description |
+Only `topics` and `handle` are required. The other methods have defaults, and can be overridden when needed:
+
+| Method | Description |
 | --- | --- |
-| `$topics` | The topics to consume. |
-| `$connection` | The [connection](../advanced-usage/connections.md) to consume from. The default connection is used when it is `null`. |
-| `$group` | The consumer group. The group of the connection is used when it is `null`. |
-| `$retries` | How many times a failed message is retried before it is handled as failed. See [handling failed messages](handling-failed-messages.md). |
-| `$backoff` | How long to wait before each retry, in milliseconds. |
-| `$dlq` | The dead letter queue topic. When it is `true`, the name of the first topic followed by `-dlq` is used. |
-| `$skipFailedMessages` | Whether failed messages are skipped when there is no dead letter queue, instead of stopping the consumer. |
+| `topics()` | The topics to consume. |
+| `connection()` | The [connection](../advanced-usage/connections.md) to consume from. Defaults to `null`, which uses the default connection. |
+| `group()` | The consumer group. Defaults to `null`, which uses the group of the connection. |
+| `retries()` | How many times a failed message is retried before it is handled as failed. Defaults to `0`. See [handling failed messages](handling-failed-messages.md). |
+| `backoff()` | How long to wait before each retry, in milliseconds. Defaults to `0`. |
+| `dlq()` | The dead letter queue topic. When it returns `true`, the name of the first topic followed by `-dlq` is used. Defaults to `null`, which disables the dead letter queue. |
+| `skipFailedMessages()` | Whether failed messages are skipped when there is no dead letter queue, instead of stopping the consumer. Defaults to `false`. |
 
 ### Middlewares
 
@@ -75,7 +92,7 @@ public function middleware(): array
 
 ### Configuring the consumer builder
 
-For any option not covered by the properties, override the `configure` method. It receives the consumer builder, with every method described in these docs:
+For any option not covered by the other methods, override the `configure` method. It receives the consumer builder, with every method described in these docs:
 
 ```php
 use Junges\Kafka\Consumers\Builder;

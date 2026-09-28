@@ -52,7 +52,7 @@ Kafka::connection('analytics')->consumer(['page-views'])
     ->consume();
 ```
 
-[Consumer classes](/consuming-messages/class-structure) use the connection defined in their `$connection` property.
+[Consumer classes](/consuming-messages/class-structure) use the connection returned by their `connection` method.
 
 ### Configuration reference
 

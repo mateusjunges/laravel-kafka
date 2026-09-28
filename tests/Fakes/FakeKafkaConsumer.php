@@ -9,8 +9,6 @@ use Junges\Kafka\KafkaConsumer;
 
 final class FakeKafkaConsumer extends KafkaConsumer
 {
-    public array $topics = ['orders'];
-
     /** @var list<ConsumerMessage> */
     public array $handled = [];
 
@@ -18,6 +16,44 @@ final class FakeKafkaConsumer extends KafkaConsumer
     public array $middlewareCalls = [];
 
     public bool $configured = false;
+
+    /** @param array<string, mixed> $options Overrides the values returned by the configuration methods. */
+    public function __construct(private readonly array $options = []) {}
+
+    public function topics(): array
+    {
+        return ['orders'];
+    }
+
+    public function connection(): ?string
+    {
+        return $this->options['connection'] ?? null;
+    }
+
+    public function group(): ?string
+    {
+        return $this->options['group'] ?? null;
+    }
+
+    public function retries(): int
+    {
+        return $this->options['retries'] ?? 0;
+    }
+
+    public function backoff(): int
+    {
+        return $this->options['backoff'] ?? 0;
+    }
+
+    public function dlq(): string|true|null
+    {
+        return $this->options['dlq'] ?? null;
+    }
+
+    public function skipFailedMessages(): bool
+    {
+        return $this->options['skipFailedMessages'] ?? false;
+    }
 
     public function handle(ConsumerMessage $message, MessageConsumer $consumer): void
     {

@@ -13,20 +13,21 @@ use stdClass;
 final class KafkaConsumerTest extends LaravelKafkaTestCase
 {
     #[Test]
-    public function it_builds_a_consumer_from_the_class_properties(): void
+    public function it_builds_a_consumer_from_the_class_methods(): void
     {
         config(['kafka.connections.analytics' => [
             'brokers' => 'analytics:9092',
             'consumer' => ['group_id' => 'analytics-group'],
         ]]);
 
-        $consumer = new FakeKafkaConsumer;
-        $consumer->connection = 'analytics';
-        $consumer->group = 'orders-group';
-        $consumer->retries = 3;
-        $consumer->backoff = 500;
-        $consumer->dlq = 'orders-failed';
-        $consumer->skipFailedMessages = true;
+        $consumer = new FakeKafkaConsumer([
+            'connection' => 'analytics',
+            'group' => 'orders-group',
+            'retries' => 3,
+            'backoff' => 500,
+            'dlq' => 'orders-failed',
+            'skipFailedMessages' => true,
+        ]);
 
         $builder = Kafka::consumerFor($consumer);
 
@@ -43,7 +44,7 @@ final class KafkaConsumerTest extends LaravelKafkaTestCase
     }
 
     #[Test]
-    public function it_uses_the_connection_defaults_when_properties_are_not_set(): void
+    public function it_uses_the_connection_defaults_when_methods_are_not_overridden(): void
     {
         $builder = Kafka::consumerFor(new FakeKafkaConsumer);
 
@@ -56,8 +57,7 @@ final class KafkaConsumerTest extends LaravelKafkaTestCase
     #[Test]
     public function it_uses_the_default_dead_letter_queue_name_when_dlq_is_true(): void
     {
-        $consumer = new FakeKafkaConsumer;
-        $consumer->dlq = true;
+        $consumer = new FakeKafkaConsumer(['dlq' => true]);
 
         $this->assertSame('orders-dlq', $this->getPropertyWithReflection('dlq', Kafka::consumerFor($consumer)));
     }
