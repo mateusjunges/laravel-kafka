@@ -10,7 +10,7 @@ weight: 3
 SASL allows your producers and your consumers to authenticate to your Kafka cluster, which verifies their identity.
 It's also a secure way to enable your clients to endorse an identity.
 
-SASL is configured per connection, in your `config/kafka.php` file. It is used by the producer and by every consumer of the connection when a username is set and the security protocol is `SASL_PLAINTEXT` or `SASL_SSL`:
+SASL is configured per connection, in your `config/kafka.php` file. It is used by the producer and by every consumer of the connection when a username is set. The security protocol then becomes `SASL_SSL` when it is `SSL` or `SASL_SSL`, and `SASL_PLAINTEXT` otherwise, so setting credentials never removes the encryption of a connection:
 
 ```php
 'connections' => [

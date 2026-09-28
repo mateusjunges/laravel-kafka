@@ -2,13 +2,13 @@
 
 namespace Junges\Kafka\Config;
 
+/** SASL credentials. The security protocol is part of the connection and consumer configuration. */
 class Sasl
 {
     public function __construct(
         private readonly string $username,
         private readonly string $password,
         private readonly string $mechanism,
-        private readonly string $securityProtocol = 'SASL_PLAINTEXT'
     ) {}
 
     public function getUsername(): string
@@ -24,10 +24,5 @@ class Sasl
     public function getMechanism(): string
     {
         return $this->mechanism;
-    }
-
-    public function getSecurityProtocol(): string
-    {
-        return $this->securityProtocol;
     }
 }

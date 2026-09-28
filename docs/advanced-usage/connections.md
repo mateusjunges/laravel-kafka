@@ -60,7 +60,7 @@ Kafka::connection('analytics')->consumer(['page-views'])
 | --- | --- |
 | `brokers` | A comma separated list of brokers. |
 | `security_protocol` | The security protocol: `PLAINTEXT`, `SSL`, `SASL_PLAINTEXT` or `SASL_SSL`. |
-| `sasl` | The SASL `mechanism`, `username` and `password`. SASL is used when a username is set and the security protocol is `SASL_PLAINTEXT` or `SASL_SSL`. |
+| `sasl` | The SASL `mechanism`, `username` and `password`. SASL is used when a username is set, with the `SASL_SSL` protocol when `security_protocol` is `SSL` or `SASL_SSL`, and `SASL_PLAINTEXT` otherwise. |
 | `options` | librdkafka options applied to both producers and consumers. |
 | `producer.options` | librdkafka options applied only to the producer. |
 | `producer.serializer` | The class serializing the published messages, resolved from the service container. Defaults to the `MessageSerializer` binding, the JSON serializer. |

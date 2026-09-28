@@ -18,7 +18,8 @@ return [
             'security_protocol' => env('KAFKA_SECURITY_PROTOCOL', 'PLAINTEXT'),
 
             /*
-             | SASL is used when a username is set and the security protocol is SASL_PLAINTEXT or SASL_SSL.
+             | SASL is used when a username is set, with SASL_SSL when the security protocol is SSL or SASL_SSL,
+             | and SASL_PLAINTEXT otherwise.
              */
             'sasl' => [
                 'mechanism' => env('KAFKA_MECHANISMS', 'PLAIN'),

@@ -40,7 +40,12 @@ final readonly class ConnectionConfig
             throw new InvalidArgumentException("The Kafka connection [{$name}] does not have any brokers configured.");
         }
 
-        $securityProtocol = $config['security_protocol'] ?? null;
+        $sasl = self::makeSasl($config['sasl'] ?? []);
+
+        // With SASL credentials, the SASL protocol matching the configured encryption is used.
+        $securityProtocol = $sasl instanceof Sasl
+            ? SecurityProtocol::forSasl($config['security_protocol'] ?? null)->value
+            : $config['security_protocol'] ?? null;
         $producer = $config['producer'] ?? [];
         $consumer = $config['consumer'] ?? [];
 
@@ -48,7 +53,7 @@ final readonly class ConnectionConfig
             name: $name,
             brokers: (string) $config['brokers'],
             securityProtocol: $securityProtocol,
-            sasl: self::makeSasl($config['sasl'] ?? [], $securityProtocol),
+            sasl: $sasl,
             options: $config['options'] ?? [],
             producerOptions: $producer['options'] ?? [],
             consumerOptions: $consumer['options'] ?? [],
@@ -69,7 +74,7 @@ final readonly class ConnectionConfig
         return new self(...[...get_object_vars($this), 'callbacks' => $callbacks]);
     }
 
-    private static function makeSasl(array $sasl, ?string $securityProtocol): ?Sasl
+    private static function makeSasl(array $sasl): ?Sasl
     {
         if (blank($sasl['username'] ?? null)) {
             return null;
@@ -79,7 +84,6 @@ final readonly class ConnectionConfig
             username: (string) $sasl['username'],
             password: (string) ($sasl['password'] ?? ''),
             mechanism: (string) ($sasl['mechanism'] ?? $sasl['mechanisms'] ?? 'PLAIN'),
-            securityProtocol: $securityProtocol ?? 'SASL_PLAINTEXT',
         );
     }
 }

@@ -9,10 +9,6 @@ use RdKafka\TopicPartition;
 
 class Config
 {
-    final public const string SASL_PLAINTEXT = 'SASL_PLAINTEXT';
-
-    final public const string SASL_SSL = 'SASL_SSL';
-
     final public const array PRODUCER_ONLY_CONFIG_OPTIONS = [
         'transactional.id',
         'transaction.timeout.ms',
@@ -271,22 +267,14 @@ class Config
 
     private function getSaslOptions(): array
     {
-        if ($this->usingSasl() && $this->sasl !== null) {
-            return [
-                'sasl.username' => $this->sasl->getUsername(),
-                'sasl.password' => $this->sasl->getPassword(),
-                'sasl.mechanisms' => $this->sasl->getMechanism(),
-                'security.protocol' => $this->sasl->getSecurityProtocol(),
-            ];
+        if (! $this->sasl instanceof Sasl) {
+            return [];
         }
 
-        return [];
-    }
-
-    private function usingSasl(): bool
-    {
-        return ! is_null($this->securityProtocol)
-            && (mb_strtoupper($this->securityProtocol) === static::SASL_PLAINTEXT
-                || mb_strtoupper($this->securityProtocol) === static::SASL_SSL);
+        return [
+            'sasl.username' => $this->sasl->getUsername(),
+            'sasl.password' => $this->sasl->getPassword(),
+            'sasl.mechanisms' => $this->sasl->getMechanism(),
+        ];
     }
 }

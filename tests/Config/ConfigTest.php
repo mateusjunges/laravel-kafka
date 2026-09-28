@@ -110,7 +110,7 @@ final class ConfigTest extends LaravelKafkaTestCase
             topics: ['topic'],
             securityProtocol: 'SASL_SSL',
             groupId: 'group',
-            sasl: new Sasl('foo', 'bar', 'SCRAM-SHA-512', 'SASL_SSL'),
+            sasl: new Sasl('foo', 'bar', 'SCRAM-SHA-512'),
             dlq: null,
             maxMessages: -1,
             autoCommit: true,
@@ -206,18 +206,17 @@ final class ConfigTest extends LaravelKafkaTestCase
     }
 
     #[Test]
-    public function sasl_can_be_used_with_lowercase_config_keys(): void
+    public function it_adds_the_sasl_credentials_to_the_options(): void
     {
         $config = new Config(
             broker: 'broker',
             topics: ['topic'],
-            securityProtocol: 'sasl_plaintext',
+            securityProtocol: 'SASL_SSL',
             groupId: 'group',
             sasl: new Sasl(
                 username: 'username',
                 password: 'password',
                 mechanism: 'mechanisms',
-                securityProtocol: 'ssl_plaintext',
             ),
             dlq: null
         );
@@ -225,7 +224,7 @@ final class ConfigTest extends LaravelKafkaTestCase
         $expectedOptions = [
             'bootstrap.servers' => 'broker',
             'metadata.broker.list' => 'broker',
-            'security.protocol' => 'ssl_plaintext',
+            'security.protocol' => 'SASL_SSL',
             'sasl.mechanisms' => 'mechanisms',
             'sasl.username' => 'username',
             'sasl.password' => 'password',

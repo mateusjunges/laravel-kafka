@@ -52,6 +52,8 @@ The default consumer group is now named after your application, the slug of `APP
 
 The environment variables did not change. The SASL configuration of the connection is now used by producers and by consumers created with `Kafka::consumer()`, not only by the `kafka:consume` command. The `security_protocol` is also used when it is not a SASL protocol, so you no longer need to set the `security.protocol` option to use `SSL`.
 
+SASL credentials are now used whenever a username is set. With `security_protocol` set to `PLAINTEXT` or not set, `SASL_PLAINTEXT` is used, and with `SSL`, `SASL_SSL` is used. Previously, the credentials were silently ignored unless the security protocol was already a SASL one. The `securityProtocol` argument and the `getSecurityProtocol()` method of `Junges\Kafka\Config\Sasl` were removed, as the security protocol is part of the connection and consumer configuration.
+
 See the [connections](/advanced-usage/connections) documentation for details.
 
 ### Publishing messages

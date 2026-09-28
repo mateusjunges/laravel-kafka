@@ -223,8 +223,12 @@ class Builder
             username: $username,
             password: $password,
             mechanism: $mechanism instanceof SaslMechanism ? $mechanism->value : $mechanism,
-            securityProtocol: $this->resolveSaslSecurityProtocol($securityProtocol),
         );
+
+        // Without a given protocol, the encryption of the connection is kept.
+        $this->securityProtocol = $securityProtocol === null
+            ? SecurityProtocol::forSasl($this->securityProtocol)->value
+            : ($securityProtocol instanceof SecurityProtocol ? $securityProtocol->value : $securityProtocol);
 
         return $this;
     }
@@ -415,7 +419,7 @@ class Builder
         return new Config(
             broker: $this->brokers,
             topics: $this->topics,
-            securityProtocol: $this->getSecurityProtocol(),
+            securityProtocol: $this->securityProtocol,
             groupId: $this->groupId,
             handler: new MessageHandler($this->handler, $this->middlewares, $this->onMessageFailed),
             sasl: $this->saslConfig,
@@ -500,28 +504,5 @@ class Builder
 
             throw new InvalidArgumentException("The topic name should be a string value. [{$type}] given.");
         }
-    }
-
-    /** Get security protocol depending on whether sasl is set or not. */
-    protected function getSecurityProtocol(): string
-    {
-        return $this->saslConfig !== null
-            ? $this->saslConfig->getSecurityProtocol()
-            : $this->securityProtocol;
-    }
-
-    /**
-     * Without a given security protocol, the encryption of the connection is kept, so adding SASL
-     * credentials to a consumer of an encrypted connection doesn't make it connect unencrypted.
-     */
-    private function resolveSaslSecurityProtocol(SecurityProtocol|string|null $securityProtocol): string
-    {
-        if ($securityProtocol !== null) {
-            return $securityProtocol instanceof SecurityProtocol ? $securityProtocol->value : $securityProtocol;
-        }
-
-        return in_array(mb_strtoupper($this->securityProtocol), [SecurityProtocol::SSL->value, SecurityProtocol::SASL_SSL->value], true)
-            ? SecurityProtocol::SASL_SSL->value
-            : SecurityProtocol::SASL_PLAINTEXT->value;
     }
 }

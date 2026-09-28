@@ -281,6 +281,29 @@ final class KafkaTest extends LaravelKafkaTestCase
     }
 
     #[Test]
+    public function the_producer_authenticates_with_the_sasl_credentials_of_the_connection(): void
+    {
+        config(['kafka.connections.default' => [
+            'brokers' => 'broker',
+            'sasl' => ['username' => 'user', 'password' => 'secret', 'mechanism' => 'SCRAM-SHA-512'],
+        ]]);
+
+        $mockedProducerTopic = m::mock(ProducerTopic::class)
+            ->shouldReceive('producev')->once()
+            ->andReturn(m::self())
+            ->getMock();
+
+        $conf = $this->mockRdKafkaProducer($mockedProducerTopic);
+
+        Kafka::publishSync('test')->withBody('foo')->send();
+
+        $options = $conf()->dump();
+
+        $this->assertSame('sasl_plaintext', mb_strtolower($options['security.protocol']));
+        $this->assertSame('user', $options['sasl.username']);
+    }
+
+    #[Test]
     public function it_throws_an_exception_when_the_connection_is_not_configured(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -427,7 +450,7 @@ final class KafkaTest extends LaravelKafkaTestCase
             $this->getPropertyWithReflection('options', $consumer)
         );
         $this->assertEquals(
-            new Sasl('user', 'secret', 'SCRAM-SHA-512', 'SASL_SSL'),
+            new Sasl('user', 'secret', 'SCRAM-SHA-512'),
             $this->getPropertyWithReflection('saslConfig', $consumer)
         );
 
