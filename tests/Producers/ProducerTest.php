@@ -5,6 +5,7 @@ namespace Junges\Kafka\Tests\Producers;
 use Illuminate\Support\Facades\Event;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\ProducerMessage;
+use Junges\Kafka\Events\MessageDeliveryFailed;
 use Junges\Kafka\Events\MessagePublished;
 use Junges\Kafka\Events\PublishingMessage;
 use Junges\Kafka\Message\Message;
@@ -13,8 +14,10 @@ use Junges\Kafka\Producers\Producer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use Mockery as m;
 use PHPUnit\Framework\Attributes\Test;
+use RdKafka\Message as RdKafkaMessage;
 use RdKafka\Producer as KafkaProducer;
 use RdKafka\ProducerTopic;
+use ReflectionMethod;
 use ReflectionProperty;
 
 final class ProducerTest extends LaravelKafkaTestCase
@@ -121,5 +124,50 @@ final class ProducerTest extends LaravelKafkaTestCase
         $this->assertSame($message->getMessageIdentifier(), $id);
         Event::assertDispatched(MessagePublished::class, fn (MessagePublished $event) => $event->message->getMessageIdentifier() === $id);
         Event::assertDispatched(PublishingMessage::class, fn (PublishingMessage $event) => $event->message->getMessageIdentifier() === $id);
+    }
+
+    #[Test]
+    public function it_dispatches_an_event_when_a_message_could_not_be_delivered(): void
+    {
+        Event::fake();
+        $this->mockKafkaProducer();
+
+        $failed = new RdKafkaMessage;
+        $failed->err = RD_KAFKA_RESP_ERR__MSG_TIMED_OUT;
+        $failed->topic_name = 'orders';
+        $failed->partition = 2;
+        $failed->key = 'order-1';
+        $failed->payload = '{"id":1}';
+        $failed->headers = [];
+        $failed->opaque = 'message-id';
+
+        $this->reportDelivery(new Producer(new Config('broker', ['orders']), new JsonSerializer), $failed);
+
+        Event::assertDispatched(MessageDeliveryFailed::class, fn (MessageDeliveryFailed $event) => $event->topic === 'orders'
+            && $event->partition === 2
+            && $event->key === 'order-1'
+            && $event->payload === '{"id":1}'
+            && $event->errorCode === RD_KAFKA_RESP_ERR__MSG_TIMED_OUT
+            && $event->error === rd_kafka_err2str(RD_KAFKA_RESP_ERR__MSG_TIMED_OUT)
+            && $event->getMessageIdentifier() === 'message-id');
+    }
+
+    #[Test]
+    public function it_does_not_dispatch_an_event_for_delivered_messages(): void
+    {
+        Event::fake();
+        $this->mockKafkaProducer();
+
+        $delivered = new RdKafkaMessage;
+        $delivered->err = RD_KAFKA_RESP_ERR_NO_ERROR;
+
+        $this->reportDelivery(new Producer(new Config('broker', ['orders']), new JsonSerializer), $delivered);
+
+        Event::assertNotDispatched(MessageDeliveryFailed::class);
+    }
+
+    private function reportDelivery(Producer $producer, RdKafkaMessage $message): void
+    {
+        (new ReflectionMethod($producer, 'handleDeliveryReport'))->invoke($producer, $message);
     }
 }

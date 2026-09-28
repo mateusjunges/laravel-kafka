@@ -11,10 +11,12 @@ use Junges\Kafka\Contracts\MessageSerializer;
 use Junges\Kafka\Contracts\Producer as ProducerContract;
 use Junges\Kafka\Contracts\ProducerMessage;
 use Junges\Kafka\Events\CouldNotPublishMessage as CouldNotPublishMessageEvent;
+use Junges\Kafka\Events\MessageDeliveryFailed;
 use Junges\Kafka\Events\MessagePublished;
 use Junges\Kafka\Events\PublishingMessage;
 use Junges\Kafka\Exceptions\CouldNotPublishMessage;
 use RdKafka\Conf;
+use RdKafka\Message;
 use RdKafka\Producer as KafkaProducer;
 use RdKafka\ProducerTopic;
 use Throwable;
@@ -127,9 +129,23 @@ class Producer implements ProducerContract
             $conf->set($key, (string) $value);
         }
 
-        foreach ($this->config->getConfigCallbacks() as $method => $callback) {
+        $callbacks = $this->config->getConfigCallbacks();
+        $deliveryReportCallback = $callbacks['setDrMsgCb'] ?? null;
+        unset($callbacks['setDrMsgCb']);
+
+        foreach ($callbacks as $method => $callback) {
             $conf->{$method}($callback);
         }
+
+        // Delivery failures of queued messages are only reported to this callback, so they are dispatched
+        // as events, before calling the delivery report callback registered on the connection, if any.
+        $conf->setDrMsgCb(function (KafkaProducer $kafka, Message $message) use ($deliveryReportCallback): void {
+            $this->handleDeliveryReport($message);
+
+            if ($deliveryReportCallback !== null) {
+                $deliveryReportCallback($kafka, $message);
+            }
+        });
 
         return $conf;
     }
@@ -141,10 +157,31 @@ class Producer implements ProducerContract
             msgflags: RD_KAFKA_MSG_F_BLOCK,
             payload: $message->getBody(),
             key: $message->getKey(),
-            headers: $message->getHeaders()
+            headers: $headers = $message->getHeaders(),
+            // Delivery reports don't include the message headers, so the message
+            // id is passed along as the opaque value, to be reported on failures.
+            msg_opaque: $headers[config('kafka.message_id_key')] ?? null,
         );
 
         $this->dispatcher->dispatch(new MessagePublished($message));
+    }
+
+    private function handleDeliveryReport(Message $message): void
+    {
+        if ($message->err === RD_KAFKA_RESP_ERR_NO_ERROR) {
+            return;
+        }
+
+        $this->dispatcher->dispatch(new MessageDeliveryFailed(
+            topic: $message->topic_name,
+            partition: $message->partition,
+            key: $message->key,
+            payload: $message->payload,
+            headers: $message->headers ?? [],
+            errorCode: $message->err,
+            error: $message->errstr(),
+            messageIdentifier: $message->opaque ?? $message->headers[config('kafka.message_id_key')] ?? null,
+        ));
     }
 
     private function runFlushCallback(): void

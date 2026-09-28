@@ -71,6 +71,8 @@ Kafka::connection()
     });
 ```
 
+Delivery failures are also dispatched as `Junges\Kafka\Events\MessageDeliveryFailed` events, so you usually don't need a delivery report callback, registered with `onDeliveryReport()`, to find out about them.
+
 Callbacks registered on a connection are applied to its producer and to the consumers created using it. Registering a callback after the connection's producer was created throws a `LogicException`, because librdkafka can't change the configuration of an existing producer.
 
 ### Transactions

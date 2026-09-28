@@ -32,6 +32,21 @@ Every connection has a single producer, created the first time you publish a mes
 
 Because there is nothing left to handle an exception when the application terminates, delivery failures at that point are reported to your exception handler instead of being thrown. The `Junges\Kafka\Events\CouldNotPublishMessage` event is dispatched as well.
 
+A successful flush means every queued message was handled, not that every message was delivered. A message can still fail on its own, for instance when its topic does not exist or it is not acknowledged within the `message.timeout.ms` producer option. For each of those, a `Junges\Kafka\Events\MessageDeliveryFailed` event is dispatched, with the topic, partition, key, payload, error and id of the message:
+
+```php
+use Illuminate\Support\Facades\Event;
+use Junges\Kafka\Events\MessageDeliveryFailed;
+
+Event::listen(function (MessageDeliveryFailed $event) {
+    logger()->error('Kafka message not delivered', [
+        'topic' => $event->topic,
+        'id' => $event->getMessageIdentifier(),
+        'error' => $event->error,
+    ]);
+});
+```
+
 ### Synchronous publishing
 
 If you need to know that a message was delivered before moving on, use the `publishSync` method. The message is flushed as soon as it is sent, and a `Junges\Kafka\Exceptions\CouldNotPublishMessage` exception is thrown if it could not be delivered:
