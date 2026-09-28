@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Junges\Kafka\Commit\DefaultCommitterFactory;
+use Junges\Kafka\Concerns\ProcessesMessages;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\Committer;
 use Junges\Kafka\Contracts\CommitterFactory;
@@ -16,9 +17,7 @@ use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\ContextAware;
 use Junges\Kafka\Contracts\Logger;
 use Junges\Kafka\Contracts\MessageDeserializer;
-use Junges\Kafka\Events\MessageConsumed;
 use Junges\Kafka\Events\MessageSentToDLQ;
-use Junges\Kafka\Events\MessageSkipped;
 use Junges\Kafka\Events\StartedConsumingMessage;
 use Junges\Kafka\Exceptions\ConsumerException;
 use Junges\Kafka\Factory;
@@ -36,6 +35,8 @@ use Throwable;
 
 class Consumer implements ConsumerContract
 {
+    use ProcessesMessages;
+
     /** The cache key where the "kafka:restart-consumers" command stores the time consumers were asked to restart. */
     public const string RESTART_CACHE_KEY = 'laravel-kafka:consumer:restart';
 
@@ -374,65 +375,33 @@ class Consumer implements ConsumerContract
         return $conf;
     }
 
-    /**
-     * Tries to handle the message received.
-     *
-     * @throws Throwable
-     */
+    private function logError(?Message $kafkaMessage, Throwable $throwable, string $prefix = 'ERROR'): void
+    {
+        if ($kafkaMessage instanceof Message) {
+            $this->logger->error($kafkaMessage, $throwable, $prefix);
+        }
+    }
+
+    /** @throws Throwable */
     private function executeMessage(Message $message): void
     {
-        $consumedMessage = null;
-        $handledMessage = null;
+        $consumerMessage = $this->getConsumerMessage($message);
+
+        // Here we will dispatch an event to inform possible interested listeners that a message
+        // was received and will be consumed as soon as a consumer is available to process it.
+        $this->dispatcher->dispatch(new StartedConsumingMessage($consumerMessage));
 
         try {
-            $consumedMessage = $this->getConsumerMessage($message);
-
-            // Here we will dispatch an event to inform possible interested listeners that a message
-            // was received and will be consumed as soon as a consumer is available to process it.
-            $this->dispatcher->dispatch(new StartedConsumingMessage($consumedMessage));
-
-            $consumedMessage = $this->deserializer->deserialize($consumedMessage);
-
-            // The handler is called again while it fails and has retries left, waiting for the backoff
-            // between attempts, with a copy of the message holding the attempt number. Retries stop
-            // early when the consumer is asked to stop consuming.
-            retry(
-                $this->config->getFailedMessageRetries() + 1,
-                function (int $attempt) use ($consumedMessage, &$handledMessage): void {
-                    $handledMessage = $consumedMessage->withAttempts($attempt);
-
-                    $this->config->getHandler()->handle($handledMessage, $this);
-                },
-                $this->config->getFailedMessageRetrySleep(),
-                function (Throwable $throwable) use ($message): bool {
-                    $this->logger->error($message, $throwable, 'RETRY');
-
-                    return ! $this->stopRequested;
-                },
-            );
-
-            // Dispatch an event informing that a message was consumed.
-            $this->dispatcher->dispatch(new MessageConsumed($handledMessage));
+            $deserializedMessage = $this->deserializer->deserialize($consumerMessage);
         } catch (Throwable $throwable) {
-            $this->logger->error($message, $throwable);
-            report($throwable);
+            $deserializedMessage = null;
 
-            // The failed message is the one the handler last received, or the raw message when it
-            // failed before reaching the handler, for instance while being deserialized.
-            $failedMessage = $handledMessage ?? $consumedMessage ?? $this->getConsumerMessage($message);
+            // A message that can't be deserialized fails without reaching the handler.
+            $this->handleFailedMessage($consumerMessage, $throwable, $message);
+        }
 
-            $this->notifyFailure($message, $failedMessage, $throwable);
-
-            if ($this->config->shouldSendToDlq()) {
-                $this->sendToDlq($message, $throwable);
-            } elseif ($this->config->shouldSkipFailedMessages()) {
-                $this->dispatcher->dispatch(new MessageSkipped($failedMessage, $throwable));
-            } else {
-                // Without a dead letter queue, the consumer stops and the offset of the failed message
-                // is left uncommitted, so it is consumed again once a consumer resumes from this
-                // partition. Skipping the message and moving on must be explicitly enabled.
-                throw ConsumerException::stoppedOnFailure($message, $throwable);
-            }
+        if ($deserializedMessage instanceof ConsumerMessage) {
+            $this->processMessage($deserializedMessage, $message);
         }
 
         $this->flushProducers();
@@ -452,23 +421,8 @@ class Consumer implements ConsumerContract
         }
     }
 
-    /**
-     * Run the failure callback of the handler. It can't change what happens to the failed message,
-     * so an exception thrown by it is logged and reported instead of stopping the consumer.
-     */
-    private function notifyFailure(Message $message, ConsumerMessage $failedMessage, Throwable $exception): void
-    {
-        try {
-            $this->config->getHandler()->failed($failedMessage, $exception);
-        } catch (Throwable $throwable) {
-            $this->logger->error($message, $throwable, 'FAILURE_CALLBACK');
-
-            report($throwable);
-        }
-    }
-
-    /** Send a message to the Dead Letter Queue. */
-    private function sendToDlq(Message $message, Throwable $throwable): void
+    /** Send a failed message to the dead letter queue, with its original payload, key and headers. */
+    private function sendToDeadLetterQueue(ConsumerMessage $consumerMessage, Throwable $throwable, ?Message $message): void
     {
         $topic = $this->producer->newTopic($this->config->getDlq());
 
