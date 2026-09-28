@@ -6,50 +6,38 @@ trait InteractsWithConfigCallbacks
 {
     protected array $callbacks = [];
 
-    /** Set the configuration error callback. */
-    public function withErrorCb(callable $callback): self
+    /** Set a callback for errors reported by librdkafka. */
+    public function onError(callable $callback): self
     {
         return $this->setConfigCallback('setErrorCb', $callback);
     }
 
-    /** Sets the delivery report callback. */
-    public function withDrMsgCb(callable $callback): self
-    {
-        return $this->setConfigCallback('setDrMsgCb', $callback);
-    }
-
-    /** Set consume callback to use with poll. */
-    public function withConsumeCb(callable $callback): self
-    {
-        return $this->setConfigCallback('setConsumeCb', $callback);
-    }
-
-    /** Set the log callback. */
-    public function withLogCb(callable $callback): self
+    /** Set a callback for the log messages of librdkafka. */
+    public function onLog(callable $callback): self
     {
         return $this->setConfigCallback('setLogCb', $callback);
     }
 
-    /** Set offset commit callback to use with consumer groups. */
-    public function withOffsetCommitCb(callable $callback): self
-    {
-        return $this->setConfigCallback('setOffsetCommitCb', $callback);
-    }
-
-    /** Set rebalance callback for  use with coordinated consumer group balancing. */
-    public function withRebalanceCb(callable $callback): self
-    {
-        return $this->setConfigCallback('setRebalanceCb', $callback);
-    }
-
-    /** Set statistics callback. */
-    public function withStatsCb(callable $callback): self
+    /** Set a callback for the statistics emitted by librdkafka every "statistics.interval.ms". */
+    public function onStatistics(callable $callback): self
     {
         return $this->setConfigCallback('setStatsCb', $callback);
     }
 
-    /** Set the OAUTHBEARER token refresh callback. */
-    public function withOAuthBearerTokenRefreshCallback(callable $callback): self
+    /** Set a callback for consumer group rebalances, which replaces the default partition assignment. */
+    public function onRebalance(callable $callback): self
+    {
+        return $this->setConfigCallback('setRebalanceCb', $callback);
+    }
+
+    /** Set a callback for the result of offset commits. */
+    public function onOffsetCommit(callable $callback): self
+    {
+        return $this->setConfigCallback('setOffsetCommitCb', $callback);
+    }
+
+    /** Set a callback that provides a new token when OAUTHBEARER authentication needs one. */
+    public function onOAuthBearerTokenRefresh(callable $callback): self
     {
         return $this->setConfigCallback('setOauthbearerTokenRefreshCb', $callback);
     }

@@ -215,7 +215,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     {
         $builder = Builder::create(new ConnectionConfig('default', 'broker'), ['test-topic'])
             ->withPartitionAssignmentCallback(fn () => null)
-            ->withRebalanceCb(fn () => null);
+            ->onRebalance(fn () => null);
 
         $this->expectException(LogicException::class);
 
@@ -226,7 +226,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     public function it_keeps_a_rebalance_callback_when_no_partition_assignment_callback_is_set(): void
     {
         $builder = Builder::create(new ConnectionConfig('default', 'broker'), ['test-topic'])
-            ->withRebalanceCb($callback = fn () => null);
+            ->onRebalance($callback = fn () => null);
 
         $this->assertSame($callback, $this->builtConfig($builder)->getConfigCallbacks()['setRebalanceCb']);
     }
@@ -477,7 +477,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     public function it_can_set_oauth_bearer_token_refresh_callback(): void
     {
         $consumer = Builder::create(new ConnectionConfig('default', 'broker'), ['test-topic'], 'group')
-            ->withOAuthBearerTokenRefreshCallback(function ($consumer, string $oauthConfig): void {
+            ->onOAuthBearerTokenRefresh(function ($consumer, string $oauthConfig): void {
                 // Token refresh logic
             });
 

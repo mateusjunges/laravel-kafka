@@ -4,18 +4,21 @@ namespace Junges\Kafka\Contracts;
 
 interface InteractsWithConfigCallbacks
 {
-    /** Set the configuration error callback.  */
-    public function withErrorCb(callable $callback): self;
+    /** Set a callback for errors reported by librdkafka. */
+    public function onError(callable $callback): self;
 
-    /** Sets the delivery report callback. */
-    public function withDrMsgCb(callable $callback): self;
+    /** Set a callback for the log messages of librdkafka. */
+    public function onLog(callable $callback): self;
 
-    /** Set consume callback to use with poll. */
-    public function withConsumeCb(callable $callback): self;
+    /** Set a callback for the statistics emitted by librdkafka every "statistics.interval.ms". */
+    public function onStatistics(callable $callback): self;
 
-    /** Set the log callback. */
-    public function withLogCb(callable $callback): self;
+    /** Set a callback for consumer group rebalances, which replaces the default partition assignment. */
+    public function onRebalance(callable $callback): self;
 
-    /** Set the OAUTHBEARER token refresh callback. */
-    public function withOAuthBearerTokenRefreshCallback(callable $callback): self;
+    /** Set a callback for the result of offset commits. */
+    public function onOffsetCommit(callable $callback): self;
+
+    /** Set a callback that provides a new token when OAUTHBEARER authentication needs one. */
+    public function onOAuthBearerTokenRefresh(callable $callback): self;
 }

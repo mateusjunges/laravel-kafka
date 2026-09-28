@@ -63,10 +63,10 @@ librdkafka configuration callbacks, such as the error, log and OAUTHBEARER token
 use Junges\Kafka\Facades\Kafka;
 
 Kafka::connection()
-    ->withErrorCb(function ($kafka, int $err, string $reason) {
+    ->onError(function ($kafka, int $err, string $reason) {
         logger()->error($reason);
     })
-    ->withLogCb(function ($kafka, int $level, string $facility, string $message) {
+    ->onLog(function ($kafka, int $level, string $facility, string $message) {
         logger()->debug($message);
     });
 ```

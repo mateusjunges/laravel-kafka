@@ -57,14 +57,14 @@ $consumer = \Junges\Kafka\Facades\Kafka::consumer()
 
 ### OAUTHBEARER Authentication
 
-If your Kafka cluster requires OAuth 2.0 (OAUTHBEARER) authentication, which is common with Confluent Cloud, AWS MSK with IAM, or enterprise deployments, you can use the `withOAuthBearerTokenRefreshCallback` method. This registers a callback that librdkafka invokes whenever it needs a fresh token.
+If your Kafka cluster requires OAuth 2.0 (OAUTHBEARER) authentication, which is common with Confluent Cloud, AWS MSK with IAM, or enterprise deployments, you can use the `onOAuthBearerTokenRefresh` method. This registers a callback that librdkafka invokes whenever it needs a fresh token.
 
 The callback is usually registered on the connection, in the `boot` method of a service provider, so it is used by the producer and by every consumer of the connection. Set the `sasl.mechanisms` option to `OAUTHBEARER` in the connection options:
 
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-Kafka::connection()->withOAuthBearerTokenRefreshCallback(function ($client, string $oauthConfig): void {
+Kafka::connection()->onOAuthBearerTokenRefresh(function ($client, string $oauthConfig): void {
     $client->oauthbearerSetToken(fetchTokenFromIdP(), getTokenExpiryMs(), 'my-client-id');
 });
 ```
@@ -79,7 +79,7 @@ $consumer = Kafka::consumer(['my.topic'])
         'security.protocol' => 'SASL_SSL',
         'sasl.mechanisms'   => 'OAUTHBEARER',
     ])
-    ->withOAuthBearerTokenRefreshCallback(function ($consumer, string $oauthConfig): void {
+    ->onOAuthBearerTokenRefresh(function ($consumer, string $oauthConfig): void {
         $token      = fetchTokenFromIdP();
         $expiresMs  = getTokenExpiryMs($token);
         $principal   = 'my-client-id';

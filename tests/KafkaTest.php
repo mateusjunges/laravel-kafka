@@ -206,12 +206,20 @@ final class KafkaTest extends LaravelKafkaTestCase
 
         $conf = $this->mockRdKafkaProducer($mockedProducerTopic);
 
-        Kafka::connection()->withErrorCb($callback = function () {});
+        Kafka::connection()->onError($callback = function () {});
 
         Kafka::publishSync('test')->withBody('foo')->send();
 
         $this->assertSame(['setErrorCb' => $callback], Kafka::connection()->getConfig()->callbacks);
         $this->assertInstanceOf(Conf::class, $conf());
+    }
+
+    #[Test]
+    public function it_registers_delivery_report_callbacks_on_connections(): void
+    {
+        Kafka::connection()->onDeliveryReport($callback = fn () => null);
+
+        $this->assertSame($callback, Kafka::connection()->getConfig()->callbacks['setDrMsgCb']);
     }
 
     #[Test]
@@ -224,14 +232,14 @@ final class KafkaTest extends LaravelKafkaTestCase
 
         $this->mockRdKafkaProducer($mockedProducerTopic);
 
-        Kafka::connection()->withLogCb(fn () => null);
+        Kafka::connection()->onLog(fn () => null);
 
         Kafka::publishSync('test')->withBody('foo')->send();
 
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage('Configuration callbacks must be registered on the [default] Kafka connection before its producer is created');
 
-        Kafka::connection()->withErrorCb(fn () => null);
+        Kafka::connection()->onError(fn () => null);
     }
 
     #[Test]
@@ -243,7 +251,7 @@ final class KafkaTest extends LaravelKafkaTestCase
 
         $this->expectException(LogicException::class);
 
-        Kafka::connection()->withOAuthBearerTokenRefreshCallback(fn () => null);
+        Kafka::connection()->onOAuthBearerTokenRefresh(fn () => null);
     }
 
     #[Test]

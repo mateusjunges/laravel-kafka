@@ -63,7 +63,7 @@ The following methods were removed:
 | `withSasl()` on the producer | The `sasl` key of the connection. |
 | `withFlushRetries()`, `withFlushTimeout()` | The `producer.flush_retries` and `producer.flush_timeout_ms` keys of the connection. |
 | `withFlushCallback()` on the producer builder | `Kafka::connection()->producer()->withFlushCallback()` |
-| `withErrorCb()`, `withLogCb()` and the other configuration callbacks on the producer builder | The same methods on the connection: `Kafka::connection()->withErrorCb()`. |
+| `withErrorCb()`, `withLogCb()` and the other configuration callbacks on the producer builder | The renamed methods on the connection, such as `Kafka::connection()->onError()`. See the configuration callbacks section below. |
 | `transactional()` | It had no effect. Use the producer of a connection with a `transactional.id`. |
 | `build()` on the producer builder | `Kafka::connection()->producer()` |
 
@@ -82,7 +82,7 @@ The `Junges\Kafka\Producers\Builder` class and the `Junges\Kafka\Contracts\Messa
 The order of the consumer builder methods no longer matters, as long as `build()` is called last:
 
 - `withDlq()` without a topic name can be called before `subscribe()`. The dead letter queue is named when the consumer is built, after the first subscribed topic, or the topic of the first assigned partition. The `ConsumerException` thrown when there is no topic is now thrown by `build()`.
-- `withPartitionAssignmentCallback()` and `assignPartitionsWithOffsets()` no longer replace each other: when both are used, the partitions are assigned with the offsets returned by the offset provider, and then passed to the assignment callback. Combining them with `withRebalanceCb()` now throws a `LogicException` when the consumer is built, instead of the last one silently replacing the others.
+- `withPartitionAssignmentCallback()` and `assignPartitionsWithOffsets()` no longer replace each other: when both are used, the partitions are assigned with the offsets returned by the offset provider, and then passed to the assignment callback. Combining them with `onRebalance()` now throws a `LogicException` when the consumer is built, instead of the last one silently replacing the others.
 
 The consumer now retries only fetching messages when Kafka times out, not handling them. Previously, a timeout while handling a message, such as a commit that still timed out after the committer retries, made the consumer fetch the next message, skipping the one being handled. Now the exception is thrown by `consume()` and the consumer stops.
 
@@ -129,6 +129,23 @@ The `__invoke` method of the `Junges\Kafka\Contracts\Middleware` interface now d
 
 Middleware classes given by name, such as `withMiddleware(LogMessages::class)`, are now resolved from the service container instead of being created with `new`, so their constructor can receive dependencies. Middlewares can also be registered for every consumer with `Kafka::consumerMiddleware()`, see [middlewares](/advanced-usage/middlewares).
 
+### Configuration callbacks
+
+The methods setting librdkafka configuration callbacks were renamed, on both the consumer builder and connections:
+
+| v2.11 | v3.0 |
+| --- | --- |
+| `withErrorCb()` | `onError()` |
+| `withLogCb()` | `onLog()` |
+| `withStatsCb()` | `onStatistics()` |
+| `withRebalanceCb()` | `onRebalance()` |
+| `withOffsetCommitCb()` | `onOffsetCommit()` |
+| `withOAuthBearerTokenRefreshCallback()` | `onOAuthBearerTokenRefresh()` |
+| `withDrMsgCb()` | `onDeliveryReport()`, only on connections, as delivery reports are only sent to producers. |
+| `withConsumeCb()` | Removed. librdkafka only calls it from its poll based consume API, which the consumer does not use, so it was never called. |
+
+The `Junges\Kafka\Contracts\InteractsWithConfigCallbacks` contract was updated accordingly.
+
 ### Failed messages
 
 Failed messages are now safe by default. Without a dead letter queue, the consumer stops when a message fails, after its retries are used, and `consume()` throws a `Junges\Kafka\Exceptions\ConsumerException`. The offset of the failed message is not committed, so it is consumed again once the consumer is restarted. In v2, the consumer committed the offset of the failed message and moved on, losing it.
@@ -153,7 +170,7 @@ The `Junges\Kafka\Contracts\ConsumerMessage` contract has new `getAttempts()` an
 
 ### Committers
 
-In auto commit mode, the consumer no longer commits the offset of each message synchronously. Offsets are stored after each message is processed, and librdkafka commits them in the background every `auto.commit.interval.ms`, 5 seconds by default, and when the consumer stops. In our measurements against a local broker, this made consuming more than ten times faster. If the consumer process crashes, the messages processed since the last background commit are consumed again, while in v2 at most the last batch was. Lower the `auto.commit.interval.ms` option to make that window shorter. Background commit failures are reported to the offset commit callback, set with `withOffsetCommitCb()`.
+In auto commit mode, the consumer no longer commits the offset of each message synchronously. Offsets are stored after each message is processed, and librdkafka commits them in the background every `auto.commit.interval.ms`, 5 seconds by default, and when the consumer stops. In our measurements against a local broker, this made consuming more than ten times faster. If the consumer process crashes, the messages processed since the last background commit are consumed again, while in v2 at most the last batch was. Lower the `auto.commit.interval.ms` option to make that window shorter. Background commit failures are reported to the offset commit callback, set with `onOffsetCommit()`.
 
 As a consequence, the following were removed:
 

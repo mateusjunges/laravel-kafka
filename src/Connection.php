@@ -88,6 +88,12 @@ class Connection implements InteractsWithConfigCallbacksContract
         $this->producer?->flush();
     }
 
+    /** Set a callback for the delivery report of each produced message. */
+    public function onDeliveryReport(callable $callback): self
+    {
+        return $this->setConfigCallback('setDrMsgCb', $callback);
+    }
+
     /**
      * The producer is configured when it is created, and librdkafka can't change its configuration
      * afterwards, so a callback registered later would be silently ignored by the producer.
