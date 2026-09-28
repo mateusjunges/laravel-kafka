@@ -10,7 +10,7 @@ Kafka clients allows you to implement your own partition assignment strategies f
 ```
 
 If you have a topic with multiple consumers and want to assign a consumer to a specific partition topic, you can
-use the `assignPartitions` method, available on the `ConsumerBuilder` instance:
+use the `assignPartitions` method of the consumer builder:
 
 ```php
 $partition = 1; // The partition number you want to assign

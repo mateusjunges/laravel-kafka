@@ -11,24 +11,25 @@ The Laravel Kafka package provides several methods to discover and work with par
 
 ## Getting Assigned Partitions
 
-After starting a consumer, you can retrieve the current partition assignment:
+While consuming, you can retrieve the current partition assignment from the consumer, which is passed to handlers and to the `beforeConsuming` and `afterConsuming` callbacks:
 
 ```php
+use Junges\Kafka\Contracts\Consumer;
+use Junges\Kafka\Contracts\ConsumerMessage;
+
 $consumer = \Junges\Kafka\Facades\Kafka::consumer(['my-topic'], 'my-group')
-    ->withHandler(function ($message) {
-        // Handle message
+    ->withHandler(function (ConsumerMessage $message, Consumer $consumer) {
+        // Returns an array of RdKafka\TopicPartition objects
+        foreach ($consumer->getAssignedPartitions() as $partition) {
+            logger()->debug("Topic: {$partition->getTopic()}, Partition: {$partition->getPartition()}");
+        }
     })
     ->build();
 
-// Get the assigned partitions (returns array of RdKafka\TopicPartition objects)
-$assignedPartitions = $consumer->getAssignedPartitions();
-
-foreach ($assignedPartitions as $partition) {
-    echo "Topic: {$partition->getTopic()}, Partition: {$partition->getPartition()}\n";
-}
+$consumer->consume();
 ```
 
-**Note:** `getAssignedPartitions()` returns an empty array until the consumer has been initialized and partitions have been assigned by the broker.
+**Note:** `getAssignedPartitions()` returns an empty array before the consumer starts consuming, until the broker assigns partitions to it, and after it stops consuming. To react to assignments when they happen, use the callbacks described below.
 
 ## Partition Assignment Callbacks
 
@@ -114,32 +115,6 @@ $consumer = \Junges\Kafka\Facades\Kafka::consumer(['user-events'], 'analytics-gr
     });
 ```
 
-### Time-based Offset Discovery
-
-```php
-use RdKafka\KafkaConsumer;
-
-$consumer = \Junges\Kafka\Facades\Kafka::consumer(['transactions'], 'payment-processor')
-    ->resolveOffsetsUsing(function ($partitions) {
-        $partitionsWithOffsets = [];
-        
-        // Target timestamp (e.g., start of today)
-        $targetTimestamp = strtotime('today') * 1000;
-        
-        foreach ($partitions as $partition) {
-            // You would typically use the low-level consumer to find offsets by timestamp
-            // This is a simplified example
-            $partition->setOffset(RD_KAFKA_OFFSET_BEGINNING);
-            $partitionsWithOffsets[] = $partition;
-        }
-        
-        return $partitionsWithOffsets;
-    })
-    ->withHandler(function ($message) {
-        processTransaction($message);
-    });
-```
-
 ### Partition-Specific Processing
 
 ```php
@@ -161,9 +136,9 @@ $consumer = \Junges\Kafka\Facades\Kafka::consumer(['orders'], 'order-processor')
     });
 ```
 
-## Combining with Manual Assignment
+## Manual Assignment
 
-You can also combine dynamic discovery with manual partition assignment:
+When you know the partitions to consume in advance, assign them with the `assignPartitions` method instead. Each partition can have its own starting offset:
 
 ```php
 $consumer = \Junges\Kafka\Facades\Kafka::consumer(['my-topic'], 'my-group')
@@ -175,9 +150,6 @@ $consumer = \Junges\Kafka\Facades\Kafka::consumer(['my-topic'], 'my-group')
         // Handle message
     });
 
-// Later, you can still get the current assignment
-$consumer = $consumer->build();
-$partitions = $consumer->getAssignedPartitions();
 ```
 
 ## Important Notes
