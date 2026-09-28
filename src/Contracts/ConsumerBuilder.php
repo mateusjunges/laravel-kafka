@@ -53,9 +53,8 @@ interface ConsumerBuilder extends InteractsWithConfigCallbacks
     public function withMaxTime(int $maxTime): self;
 
     /**
-     * Set the Dead Letter Queue to be used. If null, the dlq is created from the topic name.
-     *
-     * @throws \Junges\Kafka\Exceptions\ConsumerException
+     * Set the Dead Letter Queue to be used. When no topic is given, it is named after the first
+     * consumed topic, followed by "-dlq", when the consumer is built.
      */
     public function withDlq(?string $dlqTopic = null): self;
 

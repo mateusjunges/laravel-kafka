@@ -77,6 +77,11 @@ The `Junges\Kafka\Producers\Builder` class and the `Junges\Kafka\Contracts\Messa
 
 `Junges\Kafka\Consumers\Builder::create()` now receives a `Junges\Kafka\Config\ConnectionConfig` instead of the brokers. You can get one from `Kafka::connection()->getConfig()`.
 
+The order of the consumer builder methods no longer matters, as long as `build()` is called last:
+
+- `withDlq()` without a topic name can be called before `subscribe()`. The dead letter queue is named when the consumer is built, after the first subscribed topic, or the topic of the first assigned partition. The `ConsumerException` thrown when there is no topic is now thrown by `build()`.
+- `withPartitionAssignmentCallback()` and `assignPartitionsWithOffsets()` no longer replace each other: when both are used, the partitions are assigned with the offsets returned by the offset provider, and then passed to the assignment callback. Combining them with `withRebalanceCb()` now throws a `LogicException` when the consumer is built, instead of the last one silently replacing the others.
+
 The consumer now retries only fetching messages when Kafka times out, not handling them. Previously, a timeout while handling a message, such as a commit that still timed out after the committer retries, made the consumer fetch the next message, skipping the one being handled. Now the exception is thrown by `consume()` and the consumer stops.
 
 The consumer is now closed whenever `consume()` returns or throws, not only when it stops on a failure. Closing it commits the stored offsets, when auto commit is enabled, and leaves the consumer group right away, so its partitions are reassigned without waiting for the session to time out. As a consequence, `getAssignedPartitions()` returns an empty array once `consume()` returns.

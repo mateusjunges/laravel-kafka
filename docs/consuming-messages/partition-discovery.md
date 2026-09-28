@@ -186,7 +186,7 @@ $partitions = $consumer->getAssignedPartitions();
 
 2. **Consumer Groups**: If you're using consumer groups, partition assignments are managed by Kafka's partition assignment strategy. Manual assignments override consumer group behavior.
 
-3. **Rebalancing**: When using `withPartitionAssignmentCallback()` or `assignPartitionsWithOffsets()`, your callbacks will be called every time a rebalance occurs.
+3. **Rebalancing**: When using `withPartitionAssignmentCallback()` or `assignPartitionsWithOffsets()`, your callbacks will be called every time a rebalance occurs. Both can be used together, in any order: the partitions are assigned with the offsets returned by `assignPartitionsWithOffsets()`, and then passed to the `withPartitionAssignmentCallback()` callback. They set their own rebalance callback, so they can't be combined with `withRebalanceCb()`.
 
 4. **Error Handling**: Always handle potential errors in your callbacks, as exceptions can disrupt the rebalancing process.
 

@@ -61,7 +61,9 @@ final class KafkaConsumerTest extends LaravelKafkaTestCase
     {
         $consumer = new FakeKafkaConsumer(['dlq' => true]);
 
-        $this->assertSame('orders-dlq', $this->getPropertyWithReflection('dlq', Kafka::consumerFor($consumer)));
+        $config = $this->getPropertyWithReflection('config', Kafka::consumerFor($consumer)->build());
+
+        $this->assertSame('orders-dlq', $config->getDlq());
     }
 
     #[Test]

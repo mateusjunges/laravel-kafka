@@ -17,9 +17,12 @@ use Junges\Kafka\Exceptions\ConsumerException;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
 use Junges\Kafka\Tests\Fakes\FakeConsumer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
+use LogicException;
+use Mockery as m;
 use PHPUnit\Framework\Attributes\Test;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
+use RdKafka\TopicPartition;
 
 final class ConsumerBuilderTest extends LaravelKafkaTestCase
 {
@@ -132,25 +135,100 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_set_the_dead_letter_queue(): void
     {
-        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->subscribe('test')->withDlq('test-topic-dlq');
+        $builder = Builder::create(new ConnectionConfig('default', 'broker'))->subscribe('test')->withDlq('test-topic-dlq');
 
-        $this->assertInstanceOf(Consumer::class, $consumer->build());
-
-        $dlq = $this->getPropertyWithReflection('dlq', $consumer);
-
-        $this->assertEquals('test-topic-dlq', $dlq);
+        $this->assertSame('test-topic-dlq', $this->builtConfig($builder)->getDlq());
     }
 
     #[Test]
-    public function it_uses_dlq_suffix_if_dlq_is_null(): void
+    public function it_names_the_dead_letter_queue_after_the_first_topic_when_no_name_is_given(): void
     {
-        $consumer = Builder::create(new ConnectionConfig('default', 'broker'), ['foo'])->withDlq();
+        $builder = Builder::create(new ConnectionConfig('default', 'broker'), ['foo'])->withDlq();
 
-        $this->assertInstanceOf(Consumer::class, $consumer->build());
+        $this->assertSame('foo-dlq', $this->builtConfig($builder)->getDlq());
+    }
 
-        $dlq = $this->getPropertyWithReflection('dlq', $consumer);
+    #[Test]
+    public function it_names_the_dead_letter_queue_after_topics_subscribed_after_calling_with_dlq(): void
+    {
+        $builder = Builder::create(new ConnectionConfig('default', 'broker'))->withDlq()->subscribe('orders');
 
-        $this->assertEquals('foo-dlq', $dlq);
+        $this->assertSame('orders-dlq', $this->builtConfig($builder)->getDlq());
+    }
+
+    #[Test]
+    public function it_names_the_dead_letter_queue_after_the_assigned_partitions_when_not_subscribing(): void
+    {
+        $builder = Builder::create(new ConnectionConfig('default', 'broker'))
+            ->withDlq()
+            ->assignPartitions([new TopicPartition('payments', 0)]);
+
+        $this->assertSame('payments-dlq', $this->builtConfig($builder)->getDlq());
+    }
+
+    #[Test]
+    public function it_cant_build_a_consumer_with_an_unnamed_dlq_without_any_topics(): void
+    {
+        $builder = Builder::create(new ConnectionConfig('default', 'broker'))->withDlq();
+
+        $this->expectException(ConsumerException::class);
+
+        $builder->build();
+    }
+
+    #[Test]
+    public function it_combines_the_partition_assignment_callback_and_the_offset_provider_in_any_order(): void
+    {
+        $partitions = [new TopicPartition('test-topic', 0)];
+        $withOffsets = [new TopicPartition('test-topic', 0, 42)];
+
+        foreach ([true, false] as $offsetsFirst) {
+            $notified = null;
+
+            $builder = Builder::create(new ConnectionConfig('default', 'broker'), ['test-topic'], 'group');
+            $onAssign = function (array $assigned) use (&$notified) {
+                $notified = $assigned;
+            };
+            $offsetProvider = fn (array $assigned) => $withOffsets;
+
+            if ($offsetsFirst) {
+                $builder->assignPartitionsWithOffsets($offsetProvider)->withPartitionAssignmentCallback($onAssign);
+            } else {
+                $builder->withPartitionAssignmentCallback($onAssign)->assignPartitionsWithOffsets($offsetProvider);
+            }
+
+            $rebalance = $this->builtConfig($builder)->getConfigCallbacks()['setRebalanceCb'];
+
+            $kafkaConsumer = m::mock(KafkaConsumer::class);
+            $kafkaConsumer->shouldReceive('assign')->once()->with($withOffsets);
+            $kafkaConsumer->shouldReceive('assign')->once()->with(null);
+
+            $rebalance($kafkaConsumer, RD_KAFKA_RESP_ERR__ASSIGN_PARTITIONS, $partitions);
+            $rebalance($kafkaConsumer, RD_KAFKA_RESP_ERR__REVOKE_PARTITIONS, $partitions);
+
+            $this->assertSame($withOffsets, $notified);
+        }
+    }
+
+    #[Test]
+    public function it_does_not_combine_a_rebalance_callback_with_the_partition_assignment_callback(): void
+    {
+        $builder = Builder::create(new ConnectionConfig('default', 'broker'), ['test-topic'])
+            ->withPartitionAssignmentCallback(fn () => null)
+            ->withRebalanceCb(fn () => null);
+
+        $this->expectException(LogicException::class);
+
+        $builder->build();
+    }
+
+    #[Test]
+    public function it_keeps_a_rebalance_callback_when_no_partition_assignment_callback_is_set(): void
+    {
+        $builder = Builder::create(new ConnectionConfig('default', 'broker'), ['test-topic'])
+            ->withRebalanceCb($callback = fn () => null);
+
+        $this->assertSame($callback, $this->builtConfig($builder)->getConfigCallbacks()['setRebalanceCb']);
     }
 
     #[Test]
@@ -396,60 +474,6 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     }
 
     #[Test]
-    public function it_cant_create_a_consumer_with_dlq_without_subscribing_to_any_topics(): void
-    {
-        $this->expectException(ConsumerException::class);
-
-        Builder::create(new ConnectionConfig('default', 'broker'))->withDlq();
-    }
-
-    #[Test]
-    public function it_can_set_partition_assignment_callback(): void
-    {
-        $called = false;
-        $receivedPartitions = null;
-
-        $consumer = Builder::create(new ConnectionConfig('default', 'broker'), ['test-topic'], 'group')
-            ->withPartitionAssignmentCallback(function ($partitions) use (&$called, &$receivedPartitions) {
-                $called = true;
-                $receivedPartitions = $partitions;
-            });
-
-        $this->assertInstanceOf(Consumer::class, $consumer->build());
-
-        $partitionAssignmentCallback = $this->getPropertyWithReflection('partitionAssignmentCallback', $consumer);
-        $this->assertInstanceOf(Closure::class, $partitionAssignmentCallback);
-
-        // Verify that a rebalance callback was set
-        $callbacks = $this->getPropertyWithReflection('callbacks', $consumer);
-        $this->assertArrayHasKey('setRebalanceCb', $callbacks);
-        $this->assertIsCallable($callbacks['setRebalanceCb']);
-    }
-
-    #[Test]
-    public function it_can_set_assign_partitions_with_offsets_callback(): void
-    {
-        $called = false;
-        $receivedPartitions = null;
-
-        $consumer = Builder::create(new ConnectionConfig('default', 'broker'), ['test-topic'], 'group')
-            ->assignPartitionsWithOffsets(function ($partitions) use (&$called, &$receivedPartitions) {
-                $called = true;
-                $receivedPartitions = $partitions;
-
-                // Return the same partitions for testing
-                return $partitions;
-            });
-
-        $this->assertInstanceOf(Consumer::class, $consumer->build());
-
-        // Verify that a rebalance callback was set
-        $callbacks = $this->getPropertyWithReflection('callbacks', $consumer);
-        $this->assertArrayHasKey('setRebalanceCb', $callbacks);
-        $this->assertIsCallable($callbacks['setRebalanceCb']);
-    }
-
-    #[Test]
     public function it_can_set_oauth_bearer_token_refresh_callback(): void
     {
         $consumer = Builder::create(new ConnectionConfig('default', 'broker'), ['test-topic'], 'group')
@@ -462,6 +486,11 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
         $callbacks = $this->getPropertyWithReflection('callbacks', $consumer);
         $this->assertArrayHasKey('setOauthbearerTokenRefreshCb', $callbacks);
         $this->assertIsCallable($callbacks['setOauthbearerTokenRefreshCb']);
+    }
+
+    private function builtConfig(Builder $builder): Config
+    {
+        return $this->getPropertyWithReflection('config', $builder->build());
     }
 }
 

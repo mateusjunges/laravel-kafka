@@ -17,6 +17,7 @@ use Junges\Kafka\Contracts\Handler;
 use Junges\Kafka\Contracts\MessageDeserializer;
 use Junges\Kafka\Contracts\Middleware;
 use Junges\Kafka\Exceptions\ConsumerException;
+use LogicException;
 use RdKafka\TopicPartition;
 
 class Builder implements ConsumerBuilderContract
@@ -70,6 +71,10 @@ class Builder implements ConsumerBuilderContract
     protected ?Closure $onStopConsuming = null;
 
     protected ?Closure $partitionAssignmentCallback = null;
+
+    protected ?Closure $offsetProvider = null;
+
+    protected bool $useDefaultDlq = false;
 
     protected ?Closure $onMessageFailed = null;
 
@@ -194,15 +199,8 @@ class Builder implements ConsumerBuilderContract
     /** {@inheritDoc} */
     public function withDlq(?string $dlqTopic = null): self
     {
-        if (! isset($this->topics[0])) {
-            throw ConsumerException::dlqCanNotBeSetWithoutSubscribingToAnyTopics();
-        }
-
-        if ($dlqTopic === null) {
-            $dlqTopic = $this->topics[0].'-dlq';
-        }
-
         $this->dlq = $dlqTopic;
+        $this->useDefaultDlq = $dlqTopic === null;
 
         return $this;
     }
@@ -362,32 +360,12 @@ class Builder implements ConsumerBuilderContract
     {
         $this->partitionAssignmentCallback = $callback(...);
 
-        $this->withRebalanceCb(function ($consumer, $err, $partitions = null) use ($callback) {
-            if ($err === RD_KAFKA_RESP_ERR__ASSIGN_PARTITIONS) {
-                $consumer->assign($partitions);
-                $callback($partitions);
-            } elseif ($err === RD_KAFKA_RESP_ERR__REVOKE_PARTITIONS) {
-                $consumer->assign(null);
-            }
-        });
-
         return $this;
     }
 
     public function assignPartitionsWithOffsets(callable $offsetProvider): self
     {
-        // Set up the rebalance callback to handle dynamic partition assignment with offsets
-        $this->withRebalanceCb(function ($consumer, $err, $partitions = null) use ($offsetProvider) {
-            if ($err === RD_KAFKA_RESP_ERR__ASSIGN_PARTITIONS) {
-                // Get offset assignments from the provided callback
-                $partitionsWithOffsets = $offsetProvider($partitions);
-
-                // Assign the partitions with their offsets
-                $consumer->assign($partitionsWithOffsets);
-            } elseif ($err === RD_KAFKA_RESP_ERR__REVOKE_PARTITIONS) {
-                $consumer->assign(null);
-            }
-        });
+        $this->offsetProvider = $offsetProvider(...);
 
         return $this;
     }
@@ -402,12 +380,12 @@ class Builder implements ConsumerBuilderContract
             groupId: $this->groupId,
             handler: new MessageHandler($this->handler, $this->middlewares, $this->onMessageFailed),
             sasl: $this->saslConfig,
-            dlq: $this->dlq,
+            dlq: $this->resolveDlq(),
             maxMessages: $this->maxMessages,
             autoCommit: $this->autoCommit,
             customOptions: $this->options,
             stopAfterLastMessage: $this->stopAfterLastMessage,
-            callbacks: $this->callbacks,
+            callbacks: $this->resolveCallbacks(),
             beforeConsumingCallbacks: $this->beforeConsumingCallbacks,
             afterConsumingCallbacks: $this->afterConsumingCallbacks,
             maxTime: $this->maxTime,
@@ -420,6 +398,61 @@ class Builder implements ConsumerBuilderContract
         );
 
         return new Consumer($config, $this->deserializer, $this->committerFactory);
+    }
+
+    /**
+     * Resolve the dead letter queue topic. When no name is given, it is named after the first
+     * subscribed topic, or the topic of the first assigned partition.
+     *
+     * @throws ConsumerException
+     */
+    protected function resolveDlq(): ?string
+    {
+        if (! $this->useDefaultDlq) {
+            return $this->dlq;
+        }
+
+        $topic = $this->topics[0] ?? ($this->partitionAssignment[0] ?? null)?->getTopic();
+
+        if ($topic === null) {
+            throw ConsumerException::dlqCanNotBeSetWithoutSubscribingToAnyTopics();
+        }
+
+        return $topic.'-dlq';
+    }
+
+    /**
+     * Resolve the configuration callbacks, combining the partition assignment callback and
+     * the offset provider into a single rebalance callback.
+     */
+    protected function resolveCallbacks(): array
+    {
+        if (! $this->partitionAssignmentCallback instanceof Closure && ! $this->offsetProvider instanceof Closure) {
+            return $this->callbacks;
+        }
+
+        if (isset($this->callbacks['setRebalanceCb'])) {
+            throw new LogicException('A rebalance callback can not be combined with withPartitionAssignmentCallback() or assignPartitionsWithOffsets(), which set their own.');
+        }
+
+        $onAssign = $this->partitionAssignmentCallback;
+        $offsetProvider = $this->offsetProvider;
+
+        return [...$this->callbacks, 'setRebalanceCb' => function ($consumer, $err, $partitions = null) use ($onAssign, $offsetProvider): void {
+            if ($err === RD_KAFKA_RESP_ERR__ASSIGN_PARTITIONS) {
+                if ($offsetProvider instanceof Closure) {
+                    $partitions = $offsetProvider($partitions);
+                }
+
+                $consumer->assign($partitions);
+
+                if ($onAssign instanceof Closure) {
+                    $onAssign($partitions);
+                }
+            } elseif ($err === RD_KAFKA_RESP_ERR__REVOKE_PARTITIONS) {
+                $consumer->assign(null);
+            }
+        }];
     }
 
     /** Validates each topic before subscribing. */
