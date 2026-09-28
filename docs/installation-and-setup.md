@@ -76,9 +76,10 @@ return [
             'consumer' => [
                 /*
                  | Consumers in the same group share the topic partitions between them, so each partition is
-                 | consumed by a single consumer of the group.
+                 | consumed by a single consumer of the group. The default is named after your application, so
+                 | applications consuming from the same cluster don't join each other's group by accident.
                  */
-                'group_id' => env('KAFKA_CONSUMER_GROUP_ID', 'group'),
+                'group_id' => env('KAFKA_CONSUMER_GROUP_ID', Illuminate\Support\Str::slug(env('APP_NAME', 'laravel'))),
 
                 /*
                  | Whether the consumer commits offsets automatically after handling each message.

@@ -48,6 +48,8 @@ php artisan vendor:publish --tag=laravel-kafka-config --force
 | `debug` | `connections.default.options.debug`, set to `all` to enable it |
 | `partition`, `sleep_on_error` | Removed, they were not used. |
 
+The default consumer group is now named after your application, the slug of `APP_NAME`, instead of `group`, so applications consuming from the same cluster don't share a group by accident. **If your consumers relied on the default group, set `KAFKA_CONSUMER_GROUP_ID=group` before upgrading**: a consumer in a new group has no committed offsets, so depending on `auto.offset.reset`, it would consume the topics again from the beginning, or skip the messages published while it was being deployed.
+
 The environment variables did not change. The SASL configuration of the connection is now used by producers and by consumers created with `Kafka::consumer()`, not only by the `kafka:consume` command. The `security_protocol` is also used when it is not a SASL protocol, so you no longer need to set the `security.protocol` option to use `SSL`.
 
 See the [connections](/advanced-usage/connections) documentation for details.
