@@ -297,6 +297,38 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     }
 
     #[Test]
+    public function it_can_set_stop_on_failure(): void
+    {
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->stopOnFailure();
+
+        $this->assertInstanceOf(Consumer::class, $consumer->build());
+        $this->assertTrue($this->getPropertyWithReflection('stopOnFailure', $consumer));
+
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->stopOnFailure(false);
+
+        $this->assertInstanceOf(Consumer::class, $consumer->build());
+        $this->assertFalse($this->getPropertyWithReflection('stopOnFailure', $consumer));
+    }
+
+    #[Test]
+    public function it_can_set_failed_message_retries(): void
+    {
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->retryFailedMessages(3, backoffInMs: 500);
+
+        $this->assertInstanceOf(Consumer::class, $consumer->build());
+        $this->assertSame(3, $this->getPropertyWithReflection('failedMessageRetries', $consumer));
+        $this->assertSame(500, $this->getPropertyWithReflection('failedMessageRetryBackoff', $consumer));
+    }
+
+    #[Test]
+    public function it_does_not_accept_negative_failed_message_retries(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        Builder::create(new ConnectionConfig('default', 'broker'))->retryFailedMessages(-1);
+    }
+
+    #[Test]
     public function it_can_set_consumer_options(): void
     {
         $consumer = Builder::create(new ConnectionConfig('default', 'broker'))

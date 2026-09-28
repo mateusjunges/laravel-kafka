@@ -56,6 +56,12 @@ class Builder implements ConsumerBuilderContract
 
     protected bool $stopAfterLastMessage = false;
 
+    protected bool $stopOnFailure = false;
+
+    protected int $failedMessageRetries = 0;
+
+    protected int $failedMessageRetryBackoff = 0;
+
     /** @var list<callable> */
     protected array $beforeConsumingCallbacks = [];
 
@@ -309,6 +315,27 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
+    /** {@inheritDoc} */
+    public function stopOnFailure(bool $stopOnFailure = true): self
+    {
+        $this->stopOnFailure = $stopOnFailure;
+
+        return $this;
+    }
+
+    /** {@inheritDoc} */
+    public function retryFailedMessages(int $times, int $backoffInMs = 0): self
+    {
+        if ($times < 0 || $backoffInMs < 0) {
+            throw new InvalidArgumentException('The number of retries and the backoff must not be negative.');
+        }
+
+        $this->failedMessageRetries = $times;
+        $this->failedMessageRetryBackoff = $backoffInMs;
+
+        return $this;
+    }
+
     public function beforeConsuming(callable $callable): self
     {
         $this->beforeConsumingCallbacks[] = $callable(...);
@@ -401,6 +428,9 @@ class Builder implements ConsumerBuilderContract
             partitionAssignment: $this->partitionAssignment,
             whenStopConsuming: $this->onStopConsuming,
             consumerTimeoutInMs: $this->consumerTimeoutInMs,
+            stopOnFailure: $this->stopOnFailure,
+            failedMessageRetries: $this->failedMessageRetries,
+            failedMessageRetryBackoff: $this->failedMessageRetryBackoff,
         );
 
         return new Consumer($config, $this->deserializer, $this->committerFactory);

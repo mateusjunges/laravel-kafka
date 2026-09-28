@@ -234,7 +234,7 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
     {
         $this->fake->assertNothingPublished();
 
-        $this->fake->publish('broker')->withMessage(new Message('foo'))->send();
+        $this->fake->publish()->withMessage(new Message('foo'))->send();
 
         try {
             $this->fake->assertNothingPublished();

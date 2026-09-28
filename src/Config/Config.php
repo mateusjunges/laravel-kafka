@@ -90,6 +90,9 @@ class Config
         public readonly int $flushTimeoutInMs = 1000,
         public readonly int $flushRetrySleepInMs = 100,
         public readonly int $consumerTimeoutInMs = 2000,
+        private readonly bool $stopOnFailure = false,
+        private readonly int $failedMessageRetries = 0,
+        private readonly int $failedMessageRetryBackoff = 0,
     ) {}
 
     public function getCommit(): int
@@ -137,6 +140,31 @@ class Config
         return $this->stopAfterLastMessage;
     }
 
+    public function shouldStopOnFailure(): bool
+    {
+        return $this->stopOnFailure;
+    }
+
+    public function getFailedMessageRetries(): int
+    {
+        return $this->failedMessageRetries;
+    }
+
+    /** Get the time to wait before retrying a failed message, in milliseconds. */
+    public function getFailedMessageRetryBackoff(): int
+    {
+        return $this->failedMessageRetryBackoff;
+    }
+
+    /**
+     * Determine if offsets must be stored by the consumer after each message is processed,
+     * instead of being stored by librdkafka as soon as each message is fetched.
+     */
+    public function shouldStoreOffsetsAfterProcessing(): bool
+    {
+        return $this->autoCommit && ($this->stopOnFailure || $this->failedMessageRetries > 0);
+    }
+
     public function getConsumerOptions(): array
     {
         $options = [
@@ -147,7 +175,14 @@ class Config
             ...$this->getSecurityProtocolOptions(),
         ];
 
-        return collect(array_merge($options, $this->customOptions, $this->getSaslOptions()))
+        // With auto commit enabled, librdkafka stores the offset of each message as soon as it is
+        // fetched and commits it in the background, even when the handler fails. When failed messages
+        // are retried or stop the consumer, offsets are stored only after the message is processed.
+        $overrides = $this->shouldStoreOffsetsAfterProcessing()
+            ? ['enable.auto.offset.store' => 'false']
+            : [];
+
+        return collect(array_merge($options, $this->customOptions, $this->getSaslOptions(), $overrides))
             ->reject(fn (mixed $option, string $key) => in_array($key, self::PRODUCER_ONLY_CONFIG_OPTIONS))
             ->map($this->normalizeOption(...))
             ->toArray();

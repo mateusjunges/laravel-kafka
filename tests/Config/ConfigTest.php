@@ -39,6 +39,67 @@ final class ConfigTest extends LaravelKafkaTestCase
     }
 
     #[Test]
+    public function it_disables_automatic_offset_store_when_stopping_on_failure_with_auto_commit(): void
+    {
+        $config = new Config(
+            broker: 'broker',
+            topics: ['topic'],
+            securityProtocol: 'PLAINTEXT',
+            commit: 1,
+            groupId: 'group',
+            consumer: $this->createStub(Consumer::class),
+            sasl: null,
+            dlq: null,
+            autoCommit: true,
+            customOptions: ['enable.auto.offset.store' => 'true'],
+            stopOnFailure: true,
+        );
+
+        $this->assertTrue($config->shouldStoreOffsetsAfterProcessing());
+        $this->assertSame('false', $config->getConsumerOptions()['enable.auto.offset.store']);
+    }
+
+    #[Test]
+    public function it_disables_automatic_offset_store_when_retrying_failed_messages_with_auto_commit(): void
+    {
+        $config = new Config(
+            broker: 'broker',
+            topics: ['topic'],
+            securityProtocol: 'PLAINTEXT',
+            commit: 1,
+            groupId: 'group',
+            consumer: $this->createStub(Consumer::class),
+            sasl: null,
+            dlq: null,
+            autoCommit: true,
+            failedMessageRetries: 3,
+        );
+
+        $this->assertTrue($config->shouldStoreOffsetsAfterProcessing());
+        $this->assertSame('false', $config->getConsumerOptions()['enable.auto.offset.store']);
+    }
+
+    #[Test]
+    public function it_keeps_automatic_offset_store_when_stopping_on_failure_with_manual_commit(): void
+    {
+        $config = new Config(
+            broker: 'broker',
+            topics: ['topic'],
+            securityProtocol: 'PLAINTEXT',
+            commit: 1,
+            groupId: 'group',
+            consumer: $this->createStub(Consumer::class),
+            sasl: null,
+            dlq: null,
+            autoCommit: false,
+            stopOnFailure: true,
+        );
+
+        $this->assertFalse($config->shouldStoreOffsetsAfterProcessing());
+        $this->assertArrayNotHasKey('enable.auto.offset.store', $config->getConsumerOptions());
+    }
+
+    #[Test]
     public function it_override_default_options_if_using_custom(): void
     {
         $config = new Config(
