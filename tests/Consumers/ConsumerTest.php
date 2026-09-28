@@ -2,19 +2,19 @@
 
 namespace Junges\Kafka\Tests\Consumers;
 
+use Closure;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Sleep;
 use Junges\Kafka\Commit\VoidCommitter;
 use Junges\Kafka\Config\Config;
-use Junges\Kafka\Consumers\CallableConsumer;
 use Junges\Kafka\Consumers\Consumer;
+use Junges\Kafka\Consumers\MessageHandler;
 use Junges\Kafka\Contracts\Committer;
 use Junges\Kafka\Contracts\CommitterFactory;
-use Junges\Kafka\Contracts\Consumer as ContractsConsumer;
+use Junges\Kafka\Contracts\Consumer as ConsumerContract;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\Handler;
-use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Events\MessageConsumed;
 use Junges\Kafka\Events\MessageSentToDLQ;
 use Junges\Kafka\Events\MessageSkipped;
@@ -34,10 +34,14 @@ use RdKafka\KafkaConsumerTopic;
 use RdKafka\Message;
 use RdKafka\TopicPartition;
 use RuntimeException;
+use Throwable;
 
 final class ConsumerTest extends LaravelKafkaTestCase
 {
-    private ?MessageConsumer $stoppableConsumer = null;
+    /** The handler of the config created by configForFailingHandler(). */
+    private object $failingHandler;
+
+    private ?ConsumerContract $stoppableConsumer = null;
 
     private bool $stoppableConsumerStopped = false;
 
@@ -70,7 +74,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: new MessageHandler($fakeHandler),
             sasl: null,
             dlq: null,
             maxMessages: 1,
@@ -125,7 +129,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: new MessageHandler($fakeHandler),
             sasl: null,
             dlq: null,
             maxMessages: 1,
@@ -171,7 +175,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
                 $this->stoppableConsumerStopped = true;
                 $this->stoppedConsumerMessage = 'Consumer stopped.';
             })
-            ->withHandler(function (ConsumerMessage $message, MessageConsumer $consumer) {
+            ->withHandler(function (ConsumerMessage $message, ConsumerContract $consumer) {
                 if ($message->getKey() === 'key2') {
                     $consumer->stopConsuming();
                 }
@@ -209,7 +213,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: new MessageHandler($fakeHandler),
             sasl: null,
             dlq: null,
             maxMessages: 1,
@@ -252,7 +256,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: new MessageHandler($fakeHandler),
             sasl: null,
             dlq: null,
             maxMessages: 1,
@@ -288,7 +292,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $this->mockConsumerWithMessage($message, $message2);
         $this->mockProducer();
 
-        $fakeHandler = new CallableConsumer(
+        $fakeHandler = new MessageHandler(
             function (ConsumerMessage $message) {
                 // sleep 100 milliseconds to simulate restart interval check
                 usleep(100 * 1000);
@@ -302,7 +306,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: $fakeHandler,
             sasl: null,
             dlq: null,
             maxMessages: 2,
@@ -340,7 +344,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $this->mockConsumerWithMessage($message, $message2);
         $this->mockProducer();
 
-        $fakeHandler = new CallableConsumer(
+        $fakeHandler = new MessageHandler(
             function (ConsumerMessage $message) {
                 sleep(2);
             },
@@ -352,7 +356,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: $fakeHandler,
             sasl: null,
             dlq: null,
             maxMessages: 2,
@@ -389,7 +393,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: new MessageHandler($fakeHandler),
             sasl: null,
             dlq: null,
             maxMessages: 1,
@@ -435,7 +439,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
             ),
         ]);
 
-        /** @var MessageConsumer $consumer */
+        /** @var ConsumerContract $consumer */
         $consumer = Kafka::macroedConsumer('change-key-to-true')->build();
         $consumer->consume();
 
@@ -477,7 +481,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
                 private mixed &$messageDataRef
             ) {}
 
-            public function __invoke(ConsumerMessage $message, MessageConsumer $consumer): void
+            public function __invoke(ConsumerMessage $message, ConsumerContract $consumer): void
             {
                 $this->handlerCalledRef = true;
                 $this->consumerProvidedRef = $consumer !== null;
@@ -496,7 +500,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: new CallableConsumer($handler, []),
+            handler: new MessageHandler($handler, []),
             maxMessages: 1,
             autoCommit: false
         );
@@ -572,7 +576,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
         {
             public function __construct(private bool &$handlerCalledRef) {}
 
-            public function __invoke(ConsumerMessage $message, MessageConsumer $consumer): void
+            public function __invoke(ConsumerMessage $message, ConsumerContract $consumer): void
             {
                 $this->handlerCalledRef = true;
                 // Manually commit using the consumer parameter - just like closures!
@@ -585,7 +589,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: new CallableConsumer($handler, []),
+            handler: new MessageHandler($handler, []),
             maxMessages: 1,
             autoCommit: false
         );
@@ -609,7 +613,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: new FakeHandler,
+            handler: new MessageHandler(new FakeHandler),
             sasl: null,
             dlq: null,
             maxMessages: 1,
@@ -650,11 +654,11 @@ final class ConsumerTest extends LaravelKafkaTestCase
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: new MessageHandler($fakeHandler),
             sasl: null,
             dlq: null,
             maxMessages: 1,
-            afterConsumingCallbacks: [function (MessageConsumer $consumer) use (&$partitions) {
+            afterConsumingCallbacks: [function (ConsumerContract $consumer) use (&$partitions) {
                 $partitions = $consumer->getAssignedPartitions();
             }],
         );
@@ -677,9 +681,9 @@ final class ConsumerTest extends LaravelKafkaTestCase
     {
         Event::fake();
 
-        $fakeHandler = new class extends ContractsConsumer
+        $fakeHandler = new class implements Handler
         {
-            public function handle(ConsumerMessage $message, MessageConsumer $consumer): void
+            public function __invoke(ConsumerMessage $message, ConsumerContract $consumer): void
             {
                 throw new RuntimeException('fail');
             }
@@ -708,7 +712,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
             topics: ['test-topic'],
             securityProtocol: null,
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: new MessageHandler($fakeHandler),
             sasl: null,
             dlq: 'dlq-topic',
             maxMessages: 1,
@@ -729,11 +733,11 @@ final class ConsumerTest extends LaravelKafkaTestCase
 
         $context = ['context_key' => 'context_value'];
 
-        $fakeHandler = new class($context) extends ContractsConsumer
+        $fakeHandler = new class($context) implements Handler
         {
             public function __construct(private array $context) {}
 
-            public function handle(ConsumerMessage $message, MessageConsumer $consumer): void
+            public function __invoke(ConsumerMessage $message, ConsumerContract $consumer): void
             {
                 throw new ContextAwareException($this->context, 'fail');
             }
@@ -763,7 +767,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
             topics: ['test-topic'],
             securityProtocol: null,
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: new MessageHandler($fakeHandler),
             sasl: null,
             dlq: 'dlq-topic',
             maxMessages: 1,
@@ -815,7 +819,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: new MessageHandler($fakeHandler),
             sasl: null,
             dlq: null,
             maxMessages: -1,
@@ -893,7 +897,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: new MessageHandler($fakeHandler),
             sasl: null,
             dlq: null,
             maxMessages: -1,
@@ -926,7 +930,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: new MessageHandler($fakeHandler),
             sasl: null,
             dlq: null,
             maxMessages: -1,
@@ -1066,8 +1070,8 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $consumer = new Consumer($config, new JsonDeserializer);
         $consumer->consume();
 
-        $this->assertSame(3, $config->getConsumer()->attempts);
-        $this->assertSame([1, 2, 3], $config->getConsumer()->receivedAttempts);
+        $this->assertSame(3, $this->failingHandler->attempts);
+        $this->assertSame([1, 2, 3], $this->failingHandler->receivedAttempts);
         Sleep::assertSequence([Sleep::for(100)->milliseconds(), Sleep::for(100)->milliseconds()]);
     }
 
@@ -1094,7 +1098,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
 
             $this->fail('The consumer should stop once all retries are used.');
         } catch (ConsumerException) {
-            $this->assertSame(3, $config->getConsumer()->attempts);
+            $this->assertSame(3, $this->failingHandler->attempts);
         }
     }
 
@@ -1119,7 +1123,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $consumer = new Consumer($config, new JsonDeserializer);
         $consumer->consume();
 
-        $this->assertSame(3, $config->getConsumer()->attempts);
+        $this->assertSame(3, $this->failingHandler->attempts);
         Event::assertDispatchedTimes(MessageSentToDLQ::class, 1);
     }
 
@@ -1141,7 +1145,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $consumer = new Consumer($config, new JsonDeserializer);
         $consumer->consume();
 
-        $this->assertSame(1, $config->getConsumer()->attempts);
+        $this->assertSame(1, $this->failingHandler->attempts);
         Sleep::assertNeverSlept();
     }
 
@@ -1191,6 +1195,55 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $consumer->consume();
     }
 
+    #[Test]
+    public function it_notifies_the_failure_callback_before_handling_the_message_as_failed(): void
+    {
+        Event::fake();
+        Sleep::fake();
+
+        $mockedKafkaConsumer = $this->mockKafkaConsumer();
+        $mockedKafkaConsumer->shouldReceive('subscribe')->andReturnSelf();
+        $mockedKafkaConsumer->shouldReceive('consume')->once()->andReturn($this->makeMessage('failing', offset: 0));
+
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
+
+        $failures = [];
+
+        $config = $this->configForFailingHandler(maxMessages: 1, retries: 1, skipFailedMessages: true, onFailure: function (ConsumerMessage $message, Throwable $exception) use (&$failures) {
+            $failures[] = [$message->getBody(), $message->getAttempts(), $exception->getMessage()];
+        });
+
+        (new Consumer($config, new JsonDeserializer))->consume();
+
+        $this->assertSame([[['body' => 'failing'], 2, 'fail']], $failures);
+        Event::assertDispatched(MessageSkipped::class);
+    }
+
+    #[Test]
+    public function it_reports_exceptions_thrown_by_the_failure_callback_without_changing_the_outcome(): void
+    {
+        Event::fake();
+
+        $callbackFailure = new RuntimeException('callback failed');
+
+        $handler = m::mock(ExceptionHandler::class);
+        $handler->shouldReceive('report')->once()->with(m::on(fn ($e) => $e->getMessage() === 'fail'));
+        $handler->shouldReceive('report')->once()->with($callbackFailure);
+        $this->app->instance(ExceptionHandler::class, $handler);
+
+        $mockedKafkaConsumer = $this->mockKafkaConsumer();
+        $mockedKafkaConsumer->shouldReceive('subscribe')->andReturnSelf();
+        $mockedKafkaConsumer->shouldReceive('consume')->once()->andReturn($this->makeMessage('failing', offset: 0));
+
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
+
+        $config = $this->configForFailingHandler(maxMessages: 1, skipFailedMessages: true, onFailure: fn () => throw $callbackFailure);
+
+        (new Consumer($config, new JsonDeserializer))->consume();
+
+        Event::assertDispatched(MessageSkipped::class);
+    }
+
     private function makeMessage(string $payload, int $offset): Message
     {
         $message = new Message;
@@ -1214,8 +1267,9 @@ final class ConsumerTest extends LaravelKafkaTestCase
         int $backoff = 0,
         int $failures = PHP_INT_MAX,
         bool $stopConsumingOnFailure = false,
+        ?Closure $onFailure = null,
     ): Config {
-        $handler = new class($failures, $stopConsumingOnFailure) extends ContractsConsumer
+        $handler = new class($failures, $stopConsumingOnFailure) implements Handler
         {
             public int $attempts = 0;
 
@@ -1224,7 +1278,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
 
             public function __construct(private readonly int $failures, private readonly bool $stopConsumingOnFailure) {}
 
-            public function handle(ConsumerMessage $message, MessageConsumer $consumer): void
+            public function __invoke(ConsumerMessage $message, ConsumerContract $consumer): void
             {
                 $this->receivedAttempts[] = $message->getAttempts();
 
@@ -1240,12 +1294,14 @@ final class ConsumerTest extends LaravelKafkaTestCase
             }
         };
 
+        $this->failingHandler = $handler;
+
         return new Config(
             broker: 'localhost:9092',
             topics: ['test-topic'],
             securityProtocol: null,
             groupId: 'group',
-            consumer: $handler,
+            handler: new MessageHandler($handler, [], $onFailure),
             sasl: null,
             dlq: $dlq,
             maxMessages: $maxMessages,

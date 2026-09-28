@@ -11,9 +11,9 @@ use Junges\Kafka\Config\ConnectionConfig;
 use Junges\Kafka\Config\RebalanceStrategy;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Contracts\CommitterFactory;
+use Junges\Kafka\Contracts\Consumer as ConsumerContract;
 use Junges\Kafka\Contracts\ConsumerBuilder as ConsumerBuilderContract;
 use Junges\Kafka\Contracts\Handler;
-use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Contracts\MessageDeserializer;
 use Junges\Kafka\Contracts\Middleware;
 use Junges\Kafka\Exceptions\ConsumerException;
@@ -70,6 +70,8 @@ class Builder implements ConsumerBuilderContract
     protected ?Closure $onStopConsuming = null;
 
     protected ?Closure $partitionAssignmentCallback = null;
+
+    protected ?Closure $onMessageFailed = null;
 
     protected string $brokers;
 
@@ -348,6 +350,14 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
+    /** {@inheritDoc} */
+    public function onMessageFailed(callable $callback): self
+    {
+        $this->onMessageFailed = $callback(...);
+
+        return $this;
+    }
+
     public function withPartitionAssignmentCallback(callable $callback): self
     {
         $this->partitionAssignmentCallback = $callback(...);
@@ -383,14 +393,14 @@ class Builder implements ConsumerBuilderContract
     }
 
     /** {@inheritDoc} */
-    public function build(): MessageConsumer
+    public function build(): ConsumerContract
     {
         $config = new Config(
             broker: $this->brokers,
             topics: $this->topics,
             securityProtocol: $this->getSecurityProtocol(),
             groupId: $this->groupId,
-            consumer: new CallableConsumer($this->handler, $this->middlewares),
+            handler: new MessageHandler($this->handler, $this->middlewares, $this->onMessageFailed),
             sasl: $this->saslConfig,
             dlq: $this->dlq,
             maxMessages: $this->maxMessages,

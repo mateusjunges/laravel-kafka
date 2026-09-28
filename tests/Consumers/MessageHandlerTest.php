@@ -3,16 +3,19 @@
 namespace Junges\Kafka\Tests\Consumers;
 
 use Illuminate\Support\Str;
-use Junges\Kafka\Consumers\CallableConsumer;
+use Junges\Kafka\Consumers\MessageHandler;
+use Junges\Kafka\Contracts\Consumer;
 use Junges\Kafka\Contracts\ConsumerMessage;
-use Junges\Kafka\Contracts\MessageConsumer;
+use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use Mockery as m;
 use PHPUnit\Framework\Attributes\Test;
 use RdKafka\Message;
+use RuntimeException;
 use stdClass;
+use Throwable;
 
-final class CallableConsumerTest extends LaravelKafkaTestCase
+final class MessageHandlerTest extends LaravelKafkaTestCase
 {
     #[Test]
     public function it_decodes_messages(): void
@@ -28,9 +31,9 @@ final class CallableConsumerTest extends LaravelKafkaTestCase
         $message->headers = [];
         $message->offset = 0;
 
-        $messageConsumerMock = m::mock(MessageConsumer::class);
+        $messageConsumerMock = m::mock(Consumer::class);
 
-        $consumer = new CallableConsumer($this->handleMessage(...), [
+        $handler = new MessageHandler($this->handleMessage(...), [
             function (ConsumerMessage $message, callable $next): void {
                 $decoded = json_decode($message->getBody());
                 $next($decoded);
@@ -41,7 +44,7 @@ final class CallableConsumerTest extends LaravelKafkaTestCase
             },
         ]);
 
-        $consumer->handle($this->getConsumerMessage($message), $messageConsumerMock);
+        $handler->handle($this->getConsumerMessage($message), $messageConsumerMock);
     }
 
     public function handleMessage(array $data): void
@@ -49,5 +52,22 @@ final class CallableConsumerTest extends LaravelKafkaTestCase
         $this->assertEquals([
             'foo' => 'bar',
         ], $data);
+    }
+
+    #[Test]
+    public function it_notifies_failures_to_the_failure_callback(): void
+    {
+        $received = null;
+
+        $handler = new MessageHandler(fn () => null, [], function (ConsumerMessage $message, Throwable $exception) use (&$received) {
+            $received = [$message, $exception];
+        });
+
+        $message = new ConsumedMessage('topic', 0, [], null, null, 0, null);
+        $exception = new RuntimeException('fail');
+
+        $handler->failed($message, $exception);
+
+        $this->assertSame([$message, $exception], $received);
     }
 }

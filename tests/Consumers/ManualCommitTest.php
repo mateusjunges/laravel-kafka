@@ -4,8 +4,8 @@ namespace Junges\Kafka\Tests\Consumers;
 
 use Exception;
 use Junges\Kafka\Config\Config;
-use Junges\Kafka\Consumers\CallableConsumer;
 use Junges\Kafka\Consumers\Consumer;
+use Junges\Kafka\Consumers\MessageHandler;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
@@ -70,7 +70,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $handlerCalled = false;
         $manualCommitCalled = false;
 
-        $fakeHandler = new CallableConsumer(
+        $fakeHandler = new MessageHandler(
             function (ConsumerMessage $message, Consumer $consumer) use (&$handlerCalled, &$manualCommitCalled) {
                 $handlerCalled = true;
                 $consumer->commit($message);
@@ -84,7 +84,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: $fakeHandler,
             maxMessages: 1,
             autoCommit: false
         );
@@ -133,7 +133,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
         $this->mockProducer();
 
-        $fakeHandler = new CallableConsumer(
+        $fakeHandler = new MessageHandler(
             function (ConsumerMessage $message, Consumer $consumer) {
                 $consumer->commitAsync($message);
             },
@@ -145,7 +145,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: $fakeHandler,
             maxMessages: 1,
             autoCommit: false
         );
@@ -188,7 +188,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
         $this->mockProducer();
 
-        $fakeHandler = new CallableConsumer(
+        $fakeHandler = new MessageHandler(
             function (ConsumerMessage $message, Consumer $consumer) {
                 // Commit all current assignment offsets
                 $consumer->commit();
@@ -201,7 +201,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: $fakeHandler,
             maxMessages: 1,
             autoCommit: false
         );
@@ -248,7 +248,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
         $this->mockProducer();
 
-        $fakeHandler = new CallableConsumer(
+        $fakeHandler = new MessageHandler(
             function (ConsumerMessage $message, Consumer $consumer) {
                 $rdkafkaMessage = new Message;
                 $rdkafkaMessage->topic_name = $message->getTopicName();
@@ -265,7 +265,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: $fakeHandler,
             maxMessages: 1,
             autoCommit: false
         );
@@ -302,7 +302,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
         $this->mockProducer();
 
-        $fakeHandler = new CallableConsumer(
+        $fakeHandler = new MessageHandler(
             function (ConsumerMessage $message, Consumer $consumer) {
                 // Process message but don't commit, with manual commit disabled, no auto-commit should happen
             },
@@ -314,7 +314,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: $fakeHandler,
             maxMessages: 1,
             autoCommit: false
         );
@@ -379,7 +379,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
         $this->mockProducer();
 
-        $fakeHandler = new CallableConsumer(
+        $fakeHandler = new MessageHandler(
             function (ConsumerMessage $message, Consumer $consumer) use ($consumerMessage) {
                 // Use the specific ConsumerMessage for commit
                 $consumer->commit($consumerMessage);
@@ -392,7 +392,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: $fakeHandler,
             maxMessages: 1,
             autoCommit: false
         );
@@ -433,7 +433,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
         $this->mockProducer();
 
-        $fakeHandler = new CallableConsumer(
+        $fakeHandler = new MessageHandler(
             function (ConsumerMessage $message, Consumer $consumer) use (&$exceptionThrown) {
                 try {
                     $consumer->commit($message);
@@ -449,7 +449,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: $fakeHandler,
             maxMessages: 1,
             autoCommit: false
         );
@@ -487,7 +487,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
         $this->mockProducer();
 
-        $fakeHandler = new CallableConsumer(
+        $fakeHandler = new MessageHandler(
             function (ConsumerMessage $message, Consumer $consumer) use (&$noExceptionThrown) {
                 try {
                     $consumer->commit($message);
@@ -503,7 +503,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: $fakeHandler,
             maxMessages: 1,
             autoCommit: false
         );
@@ -548,7 +548,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
 
         $handlerCalled = false;
 
-        $fakeHandler = new CallableConsumer(
+        $fakeHandler = new MessageHandler(
             function (ConsumerMessage $message, Consumer $consumer) use (&$handlerCalled) {
                 $handlerCalled = true;
                 // Don't manually commit, auto-commit should handle it
@@ -561,7 +561,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: $fakeHandler,
             maxMessages: 1,
             autoCommit: true
         );
@@ -606,7 +606,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
 
         $handlerCalled = false;
 
-        $fakeHandler = new CallableConsumer(
+        $fakeHandler = new MessageHandler(
             function (ConsumerMessage $message, Consumer $consumer) use (&$handlerCalled) {
                 $handlerCalled = true;
                 $consumer->commit($message);
@@ -619,7 +619,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: $fakeHandler,
             maxMessages: 1,
             autoCommit: false
         );
@@ -660,7 +660,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
 
         $manualCommitHandlerCalled = false;
 
-        $fakeHandlerManualCommit = new CallableConsumer(
+        $fakeHandlerManualCommit = new MessageHandler(
             function (ConsumerMessage $message, Consumer $consumer) use (&$manualCommitHandlerCalled) {
                 $manualCommitHandlerCalled = true;
 
@@ -674,7 +674,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandlerManualCommit,
+            handler: $fakeHandlerManualCommit,
             maxMessages: 1,
             autoCommit: false
         );
@@ -724,7 +724,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $this->mockProducer();
 
         // Test 1: Auto-commit mode
-        $autoCommitHandler = new CallableConsumer(
+        $autoCommitHandler = new MessageHandler(
             function (ConsumerMessage $message, Consumer $consumer) {
                 // Just process, the stored offset is committed in the background
             },
@@ -736,7 +736,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $autoCommitHandler,
+            handler: $autoCommitHandler,
             maxMessages: 1,
             autoCommit: true
         );
@@ -744,7 +744,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $autoCommitConsumer = new Consumer($autoCommitConfig, new JsonDeserializer);
         $autoCommitConsumer->consume();
 
-        $manualCommitHandler = new CallableConsumer(
+        $manualCommitHandler = new MessageHandler(
             function (ConsumerMessage $message, Consumer $consumer) {
                 $consumer->commit($message);
             },
@@ -756,7 +756,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $manualCommitHandler,
+            handler: $manualCommitHandler,
             maxMessages: 1,
             autoCommit: false
         );

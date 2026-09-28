@@ -3,10 +3,11 @@
 namespace Junges\Kafka;
 
 use Junges\Kafka\Consumers\Builder;
+use Junges\Kafka\Contracts\Consumer;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\Manager;
-use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Contracts\Middleware;
+use Throwable;
 
 /**
  * A consumer defined as a class, which can be run with "php artisan kafka:consume". Its methods
@@ -23,7 +24,16 @@ abstract class KafkaConsumer
     abstract public function topics(): array;
 
     /** Handle a consumed message. */
-    abstract public function handle(ConsumerMessage $message, MessageConsumer $consumer): void;
+    abstract public function handle(ConsumerMessage $message, Consumer $consumer): void;
+
+    /**
+     * Called when a message is handled as failed, once its retries are used, before it is sent to the dead
+     * letter queue, skipped, or stops the consumer. It can't change what happens to the message.
+     */
+    public function failed(ConsumerMessage $message, Throwable $exception): void
+    {
+        //
+    }
 
     /** Get the connection to consume from, or null to use the default connection. */
     public function connection(): ?string
@@ -83,6 +93,7 @@ abstract class KafkaConsumer
         $builder = $manager->connection($this->connection())
             ->consumer($this->topics(), $this->group())
             ->withHandler($this->handle(...))
+            ->onMessageFailed($this->failed(...))
             ->retryFailedMessages($this->retries(), $this->backoff())
             ->skipFailedMessages($this->skipFailedMessages());
 

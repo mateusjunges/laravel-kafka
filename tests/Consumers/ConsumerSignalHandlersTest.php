@@ -3,7 +3,7 @@
 namespace Junges\Kafka\Tests\Consumers;
 
 use Closure;
-use Junges\Kafka\Contracts\MessageConsumer;
+use Junges\Kafka\Contracts\Consumer as ConsumerContract;
 use Junges\Kafka\Exceptions\ConsumerException;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
@@ -163,7 +163,7 @@ final class ConsumerSignalHandlersTest extends LaravelKafkaTestCase
         return [SIGTERM, SIGQUIT, SIGINT];
     }
 
-    private function buildConsumer(): MessageConsumer
+    private function buildConsumer(): ConsumerContract
     {
         return Kafka::consumer(['test'])
             ->withHandler(static function (): void {})

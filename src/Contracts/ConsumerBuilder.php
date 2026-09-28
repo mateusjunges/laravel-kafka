@@ -19,6 +19,12 @@ interface ConsumerBuilder extends InteractsWithConfigCallbacks
     /** Defines a callback to be executed when consumer stops consuming messages. */
     public function onStopConsuming(callable $onStopConsuming): self;
 
+    /**
+     * Defines a callback to be executed when a message is handled as failed, once its retries are used, before
+     * it is sent to the dead letter queue, skipped, or stops the consumer. It receives the message and the exception.
+     */
+    public function onMessageFailed(callable $callback): self;
+
     /** Set a callback to be executed when partitions are assigned to this consumer. */
     public function withPartitionAssignmentCallback(callable $callback): self;
 
@@ -104,5 +110,5 @@ interface ConsumerBuilder extends InteractsWithConfigCallbacks
     public function retryFailedMessages(int $times, int $backoffInMs = 0): self;
 
     /** Build the Kafka consumer. */
-    public function build(): MessageConsumer;
+    public function build(): Consumer;
 }

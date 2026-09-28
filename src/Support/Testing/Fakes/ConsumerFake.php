@@ -4,13 +4,13 @@ namespace Junges\Kafka\Support\Testing\Fakes;
 
 use Closure;
 use Junges\Kafka\Config\Config;
+use Junges\Kafka\Contracts\Consumer;
 use Junges\Kafka\Contracts\ConsumerMessage;
-use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\MessageCounter;
 use RdKafka\Conf;
 use RdKafka\Message;
 
-class ConsumerFake implements MessageConsumer
+class ConsumerFake implements Consumer
 {
     private readonly MessageCounter $messageCounter;
 
@@ -113,7 +113,7 @@ class ConsumerFake implements MessageConsumer
     /** Handle the message. */
     private function handleMessage(ConsumerMessage $message): void
     {
-        $this->config->getConsumer()->handle($message, $this);
+        $this->config->getHandler()->handle($message, $this);
         $this->messageCounter->add();
     }
 

@@ -4,7 +4,7 @@ namespace Junges\Kafka\Config;
 
 use Closure;
 use JetBrains\PhpStorm\Pure;
-use Junges\Kafka\Contracts\Consumer;
+use Junges\Kafka\Consumers\MessageHandler;
 use RdKafka\TopicPartition;
 
 class Config
@@ -70,7 +70,7 @@ class Config
         private readonly array $topics,
         private readonly ?string $securityProtocol = null,
         private readonly ?string $groupId = null,
-        private readonly ?Consumer $consumer = null,
+        private readonly ?MessageHandler $handler = null,
         private readonly ?Sasl $sasl = null,
         private readonly ?string $dlq = null,
         private readonly int $maxMessages = -1,
@@ -98,9 +98,9 @@ class Config
         return $this->topics;
     }
 
-    public function getConsumer(): Consumer
+    public function getHandler(): MessageHandler
     {
-        return $this->consumer;
+        return $this->handler;
     }
 
     public function getDlq(): ?string

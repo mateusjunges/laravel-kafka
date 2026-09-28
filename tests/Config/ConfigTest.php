@@ -4,7 +4,6 @@ namespace Junges\Kafka\Tests\Config;
 
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\Sasl;
-use Junges\Kafka\Contracts\Consumer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use PHPUnit\Framework\Attributes\Test;
 
@@ -18,7 +17,6 @@ final class ConfigTest extends LaravelKafkaTestCase
             topics: ['topic'],
             securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $this->createMock(Consumer::class),
             sasl: null,
             dlq: null,
         );
@@ -46,7 +44,6 @@ final class ConfigTest extends LaravelKafkaTestCase
             topics: ['topic'],
             securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $this->createStub(Consumer::class),
             sasl: null,
             dlq: null,
             autoCommit: true,
@@ -65,7 +62,6 @@ final class ConfigTest extends LaravelKafkaTestCase
             topics: ['topic'],
             securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $this->createStub(Consumer::class),
             sasl: null,
             dlq: null,
             autoCommit: false,
@@ -83,7 +79,6 @@ final class ConfigTest extends LaravelKafkaTestCase
             topics: ['topic'],
             securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $this->createMock(Consumer::class),
             sasl: null,
             dlq: null,
             maxMessages: -1,
@@ -115,7 +110,6 @@ final class ConfigTest extends LaravelKafkaTestCase
             topics: ['topic'],
             securityProtocol: 'SASL_SSL',
             groupId: 'group',
-            consumer: $this->createMock(Consumer::class),
             sasl: new Sasl('foo', 'bar', 'SCRAM-SHA-512', 'SASL_SSL'),
             dlq: null,
             maxMessages: -1,
@@ -156,7 +150,6 @@ final class ConfigTest extends LaravelKafkaTestCase
             topics: ['topic'],
             securityProtocol: 'SASL_PLAINTEXT',
             groupId: 'group',
-            consumer: $this->createMock(Consumer::class),
             sasl: $sasl,
             dlq: null,
         );
@@ -193,7 +186,6 @@ final class ConfigTest extends LaravelKafkaTestCase
             topics: ['topic'],
             securityProtocol: 'SASL_PLAINTEXT',
             groupId: 'group',
-            consumer: $this->createMock(Consumer::class),
             dlq: null,
             customOptions: $customOptions
         );
@@ -221,7 +213,6 @@ final class ConfigTest extends LaravelKafkaTestCase
             topics: ['topic'],
             securityProtocol: 'sasl_plaintext',
             groupId: 'group',
-            consumer: $this->createMock(Consumer::class),
             sasl: new Sasl(
                 username: 'username',
                 password: 'password',

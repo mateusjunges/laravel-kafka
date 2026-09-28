@@ -3,8 +3,8 @@
 namespace Junges\Kafka\Tests\Fakes;
 
 use Junges\Kafka\Consumers\Builder;
+use Junges\Kafka\Contracts\Consumer;
 use Junges\Kafka\Contracts\ConsumerMessage;
-use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\KafkaConsumer;
 
 final class FakeKafkaConsumer extends KafkaConsumer
@@ -55,7 +55,7 @@ final class FakeKafkaConsumer extends KafkaConsumer
         return $this->options['skipFailedMessages'] ?? false;
     }
 
-    public function handle(ConsumerMessage $message, MessageConsumer $consumer): void
+    public function handle(ConsumerMessage $message, Consumer $consumer): void
     {
         $this->handled[] = $message;
     }

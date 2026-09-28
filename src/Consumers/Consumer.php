@@ -12,10 +12,10 @@ use Junges\Kafka\Commit\NativeSleeper;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\Committer;
 use Junges\Kafka\Contracts\CommitterFactory;
+use Junges\Kafka\Contracts\Consumer as ConsumerContract;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\ContextAware;
 use Junges\Kafka\Contracts\Logger;
-use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Contracts\MessageDeserializer;
 use Junges\Kafka\Events\MessageConsumed;
 use Junges\Kafka\Events\MessageSentToDLQ;
@@ -35,7 +35,7 @@ use RdKafka\Producer as KafkaProducer;
 use RdKafka\TopicPartition;
 use Throwable;
 
-class Consumer implements MessageConsumer
+class Consumer implements ConsumerContract
 {
     private const array IGNORABLE_CONSUMER_ERRORS = [
         RD_KAFKA_RESP_ERR__PARTITION_EOF,
@@ -406,7 +406,7 @@ class Consumer implements MessageConsumer
                 function (int $attempt) use ($consumedMessage, &$handledMessage): void {
                     $handledMessage = $consumedMessage->withAttempts($attempt);
 
-                    $this->config->getConsumer()->handle($handledMessage, $this);
+                    $this->config->getHandler()->handle($handledMessage, $this);
                 },
                 $this->config->getFailedMessageRetryBackoff(),
                 function (Throwable $throwable) use ($message): bool {
@@ -420,61 +420,46 @@ class Consumer implements MessageConsumer
             $this->dispatcher->dispatch(new MessageConsumed($handledMessage));
         } catch (Throwable $throwable) {
             $this->logger->error($message, $throwable);
+            report($throwable);
 
-            if (! $this->handleException($throwable, $message)) {
+            // The failed message is the one the handler last received, or the raw message when it
+            // failed before reaching the handler, for instance while being deserialized.
+            $failedMessage = $handledMessage ?? $consumedMessage ?? $this->getConsumerMessage($message);
+
+            $this->notifyFailure($message, $failedMessage, $throwable);
+
+            if ($this->config->shouldSendToDlq()) {
+                $this->sendToDlq($message, $throwable);
+            } elseif ($this->config->shouldSkipFailedMessages()) {
+                $this->dispatcher->dispatch(new MessageSkipped($failedMessage, $throwable));
+            } else {
                 // Without a dead letter queue, the consumer stops and the offset of the failed message
                 // is left uncommitted, so it is consumed again once a consumer resumes from this
                 // partition. Skipping the message and moving on must be explicitly enabled.
-                if (! $this->config->shouldSkipFailedMessages()) {
-                    throw ConsumerException::stoppedOnFailure($message, $throwable);
-                }
-
-                // The skipped message is the one the handler last received, or the raw message when it
-                // failed before reaching the handler, for instance while being deserialized.
-                $skippedMessage = $handledMessage ?? $consumedMessage ?? $this->getConsumerMessage($message);
-
-                $this->dispatcher->dispatch(new MessageSkipped($skippedMessage, $throwable));
+                throw ConsumerException::stoppedOnFailure($message, $throwable);
             }
         }
 
         $this->storeOffsetIfRequired($message);
     }
 
-    /** Handle exceptions while consuming messages, returning whether the message was sent to the dead letter queue. */
-    private function handleException(Throwable $exception, Message|ConsumerMessage $message): bool
+    /**
+     * Run the failure callback of the handler. It can't change what happens to the failed message,
+     * so an exception thrown by it is logged and reported instead of stopping the consumer.
+     */
+    private function notifyFailure(Message $message, ConsumerMessage $failedMessage, Throwable $exception): void
     {
         try {
-            // If the message consumption fails, we first try to reprocess the message
-            // using the fallback provided by the consumer. Message will be sent to
-            // a dead letter queue only if the failed method throws an exception.
-            $this->config->getConsumer()->failed(
-                $message->payload ?? '',
-                $this->config->getTopics()[0],
-                $exception
-            );
+            $this->config->getHandler()->failed($failedMessage, $exception);
         } catch (Throwable $throwable) {
-            if ($exception !== $throwable) {
-                $this->logger->error($message, $throwable, 'HANDLER_EXCEPTION');
-            }
+            $this->logger->error($message, $throwable, 'FAILURE_CALLBACK');
 
             report($throwable);
-
-            if ($this->config->shouldSendToDlq()) {
-                $messageIdentifier = $message instanceof ConsumerMessage
-                    ? $message->getMessageIdentifier()
-                    : null;
-
-                $this->sendToDlq($message, $messageIdentifier, $throwable);
-
-                return true;
-            }
-
-            return false;
         }
     }
 
     /** Send a message to the Dead Letter Queue. */
-    private function sendToDlq(Message $message, ?string $messageIdentifier = null, ?Throwable $throwable = null): void
+    private function sendToDlq(Message $message, Throwable $throwable): void
     {
         $topic = $this->producer->newTopic($this->config->getDlq());
 
@@ -482,16 +467,16 @@ class Consumer implements MessageConsumer
             partition: RD_KAFKA_PARTITION_UA,
             msgflags: 0,
             payload: $message->payload,
-            key: $this->config->getConsumer()->producerKey($message),
+            key: $message->key,
             headers: $this->buildHeadersForDlq($message, $throwable)
         );
 
         $this->dispatcher->dispatch(new MessageSentToDLQ(
             $message->payload,
-            $this->config->getConsumer()->producerKey($message),
+            $message->key,
             $message->headers ?? [],
             $throwable,
-            $messageIdentifier
+            $message->headers[config('kafka.message_id_key')] ?? null,
         ));
 
         if (method_exists($this->producer, 'flush')) {

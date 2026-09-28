@@ -4,8 +4,8 @@ namespace Junges\Kafka\Tests;
 
 use Carbon\Carbon;
 use Illuminate\Support\Str;
+use Junges\Kafka\Contracts\Consumer as ConsumerContract;
 use Junges\Kafka\Contracts\ConsumerMessage;
-use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\Message\Message;
@@ -19,7 +19,7 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
 {
     private KafkaFake $fake;
 
-    private MessageConsumer $consumer;
+    private ConsumerContract $consumer;
 
     #[Override]
     protected function setUp(): void

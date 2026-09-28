@@ -3,7 +3,7 @@ title: Handling failed messages
 weight: 6
 ---
 
-When a message handler throws an exception, the consumer first calls the `failed` method of the consumer class. By default, it rethrows the exception, which is then logged and reported through the Laravel exception handler. What happens to the message next depends on how the consumer is configured.
+When a message handler throws an exception, the exception is logged and reported through the Laravel exception handler. What happens to the message next depends on how the consumer is configured.
 
 ```+parse
 <x-sponsors.request-sponsor/>
@@ -51,9 +51,9 @@ When the handler throws an exception, it is called again with the same message, 
 
 ```php
 use Junges\Kafka\Contracts\ConsumerMessage;
-use Junges\Kafka\Contracts\MessageConsumer;
+use Junges\Kafka\Contracts\Consumer;
 
-function (ConsumerMessage $message, MessageConsumer $consumer) {
+function (ConsumerMessage $message, Consumer $consumer) {
     if ($message->getAttempts() > 1) {
         logger()->info('Retrying message', ['offset' => $message->getOffset()]);
     }
@@ -61,7 +61,7 @@ function (ConsumerMessage $message, MessageConsumer $consumer) {
     // ...
 }
 ```
- Once all retries are used, the message is handled as failed: the `failed` method of the consumer class is called, and the message is sent to the dead letter queue, stops the consumer, or is skipped, depending on the configuration. Retries also end early when the consumer is asked to stop, for instance by a termination signal.
+ Once all retries are used, the message is handled as failed: the [failure callback](#being-notified-of-failed-messages) is called, and the message is sent to the dead letter queue, stops the consumer, or is skipped, depending on the configuration. Retries also end early when the consumer is asked to stop, for instance by a termination signal.
 
 The consumer waits during the backoff, so no other message is consumed while a message is being retried. Keep the total time spent retrying a message (the number of retries multiplied by the backoff, plus the time the handler takes) well below the `max.poll.interval.ms` consumer option, 5 minutes by default. A consumer that does not poll Kafka within that interval is removed from the consumer group. Longer outages are better handled by a dead letter queue or by letting the consumer stop.
 
@@ -97,3 +97,32 @@ Event::listen(function (MessageSkipped $event) {
 ```
 
 When a dead letter queue is also configured, failed messages are sent to it instead of being skipped.
+
+## Being notified of failed messages
+
+To run some code when a message is handled as failed, once its retries are used, override the `failed` method of a [consumer class](class-structure.md):
+
+```php
+use Illuminate\Support\Facades\Notification;
+use Junges\Kafka\Contracts\ConsumerMessage;
+use Throwable;
+
+public function failed(ConsumerMessage $message, Throwable $exception): void
+{
+    Notification::route('slack', config('services.slack.alerts'))
+        ->notify(new KafkaMessageFailed($message, $exception));
+}
+```
+
+When building a consumer yourself, use the `onMessageFailed` method of the consumer builder:
+
+```php
+$consumer = \Junges\Kafka\Facades\Kafka::consumer(['orders'])
+    ->onMessageFailed(function (ConsumerMessage $message, Throwable $exception) {
+        // ...
+    })
+    ->withHandler(new OrderHandler)
+    ->build();
+```
+
+The callback runs before the message is sent to the dead letter queue, skipped, or stops the consumer, and it can't change what happens to it. An exception thrown by the callback is reported, and the message is handled as usual.

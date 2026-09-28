@@ -5,9 +5,9 @@ namespace Junges\Kafka\Support\Testing\Fakes;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\ConnectionConfig;
 use Junges\Kafka\Consumers\Builder;
-use Junges\Kafka\Consumers\CallableConsumer;
+use Junges\Kafka\Consumers\MessageHandler;
+use Junges\Kafka\Contracts\Consumer as ConsumerContract;
 use Junges\Kafka\Contracts\ConsumerBuilder as ConsumerBuilderContract;
-use Junges\Kafka\Contracts\MessageConsumer;
 use Override;
 
 class BuilderFake extends Builder implements ConsumerBuilderContract
@@ -36,14 +36,14 @@ class BuilderFake extends Builder implements ConsumerBuilderContract
 
     /** Build the Kafka consumer. */
     #[Override]
-    public function build(): MessageConsumer
+    public function build(): ConsumerContract
     {
         $config = new Config(
             broker: $this->brokers,
             topics: $this->topics,
             securityProtocol: $this->getSecurityProtocol(),
             groupId: $this->groupId,
-            consumer: new CallableConsumer($this->handler, $this->middlewares),
+            handler: new MessageHandler($this->handler, $this->middlewares, $this->onMessageFailed),
             sasl: $this->saslConfig,
             dlq: $this->dlq,
             maxMessages: $this->maxMessages,

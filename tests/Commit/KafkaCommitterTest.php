@@ -4,8 +4,8 @@ namespace Junges\Kafka\Tests\Commit;
 
 use Junges\Kafka\Commit\Committer;
 use Junges\Kafka\Config\Config;
-use Junges\Kafka\Consumers\CallableConsumer;
 use Junges\Kafka\Consumers\Consumer;
+use Junges\Kafka\Consumers\MessageHandler;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
@@ -84,7 +84,7 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
 
         $handlerCalled = false;
 
-        $fakeHandler = new CallableConsumer(
+        $fakeHandler = new MessageHandler(
             function (ConsumerMessage $message, Consumer $consumer) use (&$handlerCalled) {
                 $handlerCalled = true;
                 // This should actually commit now!
@@ -98,7 +98,7 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: $fakeHandler,
             maxMessages: 1,
             autoCommit: false
         );
@@ -137,7 +137,7 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
 
         $handlerCalled = false;
 
-        $fakeHandler = new CallableConsumer(
+        $fakeHandler = new MessageHandler(
             function (ConsumerMessage $message, Consumer $consumer) use (&$handlerCalled) {
                 $handlerCalled = true;
                 // Don't manually commit, should result in no commits
@@ -150,7 +150,7 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: $fakeHandler,
             maxMessages: 1,
             autoCommit: false
         );
@@ -193,7 +193,7 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
 
         $handlerCalled = false;
 
-        $fakeHandler = new CallableConsumer(
+        $fakeHandler = new MessageHandler(
             function (ConsumerMessage $message, Consumer $consumer) use (&$handlerCalled) {
                 $handlerCalled = true;
                 // Don't manually commit, auto-commit should handle it
@@ -206,7 +206,7 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: $fakeHandler,
             maxMessages: 1,
             autoCommit: true
         );

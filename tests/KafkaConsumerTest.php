@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Tests;
 
+use Closure;
 use InvalidArgumentException;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Facades\Kafka;
@@ -41,6 +42,7 @@ final class KafkaConsumerTest extends LaravelKafkaTestCase
         $this->assertCount(1, $this->getPropertyWithReflection('middlewares', $builder));
         $this->assertTrue($consumer->configured);
         $this->assertSame(600000, $this->getPropertyWithReflection('options', $builder)['max.poll.interval.ms']);
+        $this->assertInstanceOf(Closure::class, $this->getPropertyWithReflection('onMessageFailed', $builder));
     }
 
     #[Test]

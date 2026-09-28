@@ -10,7 +10,7 @@ You can use an invokable class or a simple callback. Use the `withHandler` metho
 $consumer = \Junges\Kafka\Facades\Kafka::consumer();
 
 // Using callback:
-$consumer->withHandler(function(\Junges\Kafka\Contracts\ConsumerMessage $message, \Junges\Kafka\Contracts\MessageConsumer $consumer) {
+$consumer->withHandler(function(\Junges\Kafka\Contracts\ConsumerMessage $message, \Junges\Kafka\Contracts\Consumer $consumer) {
     // Handle your message here
 });
 ```
@@ -20,7 +20,7 @@ Or, using an invokable class:
 ```php
 class Handler
 {
-    public function __invoke(\Junges\Kafka\Contracts\ConsumerMessage $message, \Junges\Kafka\Contracts\MessageConsumer $consumer) {
+    public function __invoke(\Junges\Kafka\Contracts\ConsumerMessage $message, \Junges\Kafka\Contracts\Consumer $consumer) {
         // Handle your message here
     }
 }
@@ -44,7 +44,7 @@ When using manual commit mode (`withAutoCommit(false)`), your handlers receive a
 ```php
 $consumer = \Junges\Kafka\Facades\Kafka::consumer()
     ->withManualCommit()  // Enable manual commit mode
-    ->withHandler(function(\Junges\Kafka\Contracts\ConsumerMessage $message, \Junges\Kafka\Contracts\MessageConsumer $consumer) {
+    ->withHandler(function(\Junges\Kafka\Contracts\ConsumerMessage $message, \Junges\Kafka\Contracts\Consumer $consumer) {
         try {
             // Process your message
             $data = json_decode($message->getBody(), true);
@@ -84,11 +84,11 @@ You can also create dedicated handler classes by implementing the `Handler` inte
 ```php
 use Junges\Kafka\Contracts\Handler;
 use Junges\Kafka\Contracts\ConsumerMessage;
-use Junges\Kafka\Contracts\MessageConsumer;
+use Junges\Kafka\Contracts\Consumer;
 
 class ProcessOrderHandler implements Handler
 {
-    public function __invoke(ConsumerMessage $message, MessageConsumer $consumer): void
+    public function __invoke(ConsumerMessage $message, Consumer $consumer): void
     {
         try {
             $order = json_decode($message->getBody(), true);

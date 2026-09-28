@@ -17,7 +17,7 @@ A consumer class extends `Junges\Kafka\KafkaConsumer`. Its methods configure the
 namespace App\Kafka\Consumers;
 
 use Junges\Kafka\Contracts\ConsumerMessage;
-use Junges\Kafka\Contracts\MessageConsumer;
+use Junges\Kafka\Contracts\Consumer;
 use Junges\Kafka\KafkaConsumer;
 
 class OrdersConsumer extends KafkaConsumer
@@ -47,7 +47,7 @@ class OrdersConsumer extends KafkaConsumer
         return true;
     }
 
-    public function handle(ConsumerMessage $message, MessageConsumer $consumer): void
+    public function handle(ConsumerMessage $message, Consumer $consumer): void
     {
         // Handle your message here
     }
@@ -73,6 +73,8 @@ Only `topics` and `handle` are required. The other methods have defaults, and ca
 | `backoff()` | How long to wait before each retry, in milliseconds. Defaults to `0`. |
 | `dlq()` | The dead letter queue topic. When it returns `true`, the name of the first topic followed by `-dlq` is used. Defaults to `null`, which disables the dead letter queue. |
 | `skipFailedMessages()` | Whether failed messages are skipped when there is no dead letter queue, instead of stopping the consumer. Defaults to `false`. |
+
+To be notified when a message is handled as failed, override the `failed` method. See [handling failed messages](handling-failed-messages.md#being-notified-of-failed-messages).
 
 ### Middlewares
 

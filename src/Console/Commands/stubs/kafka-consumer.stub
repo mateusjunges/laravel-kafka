@@ -3,7 +3,7 @@
 namespace {{ namespace }};
 
 use Junges\Kafka\Contracts\ConsumerMessage;
-use Junges\Kafka\Contracts\MessageConsumer;
+use Junges\Kafka\Contracts\Consumer;
 use Junges\Kafka\KafkaConsumer;
 
 class {{ class }} extends KafkaConsumer
@@ -21,7 +21,7 @@ class {{ class }} extends KafkaConsumer
     /**
      * Handle a consumed message.
      */
-    public function handle(ConsumerMessage $message, MessageConsumer $consumer): void
+    public function handle(ConsumerMessage $message, Consumer $consumer): void
     {
         //
     }
