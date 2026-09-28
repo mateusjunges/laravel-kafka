@@ -10,7 +10,7 @@ final readonly class MessageSentToDLQ
         public ?string $payload,
         public ?string $key,
         public array $headers,
-        public ?Throwable $throwable,
+        public Throwable $throwable,
         public ?string $messageIdentifier,
     ) {}
 

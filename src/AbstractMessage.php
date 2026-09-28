@@ -19,13 +19,6 @@ abstract class AbstractMessage implements KafkaMessage
         $this->headers = $headers ?? [];
     }
 
-    public function setTopicName(string $topic): self
-    {
-        $this->topicName = $topic;
-
-        return $this;
-    }
-
     public function getTopicName(): ?string
     {
         return $this->topicName;
@@ -54,10 +47,12 @@ abstract class AbstractMessage implements KafkaMessage
     /** @throws MessageIdNotSet */
     public function getMessageIdentifier(): string
     {
-        if (! is_string($this->getHeaders()[config('kafka.message_id_key')])) {
+        $identifier = $this->getHeaders()[config('kafka.message_id_key')] ?? null;
+
+        if (! is_string($identifier)) {
             throw new MessageIdNotSet;
         }
 
-        return $this->getHeaders()[config('kafka.message_id_key')];
+        return $identifier;
     }
 }

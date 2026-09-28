@@ -223,6 +223,15 @@ The `commit()` and `commitAsync()` methods of the `Junges\Kafka\Contracts\Consum
 
 The `Junges\Kafka\Commit\SeekToCurrentErrorCommitter` class, deprecated in v2.12.0, was removed. It did not make failed messages be consumed again. Use `retryFailedMessages()` or a dead letter queue instead, see [handling failed messages](/consuming-messages/handling-failed-messages).
 
+### Removed classes and methods
+
+The following classes and methods were removed, as they were no longer used or were superseded:
+
+- `Junges\Kafka\Handlers\RetryableHandler`, `Junges\Kafka\Handlers\RetryStrategies\DefaultRetryStrategy` and the `Junges\Kafka\Contracts\RetryStrategy` contract. Use `retryFailedMessages()` on the consumer builder, or the `retries()` and `backoff()` methods of consumer classes, see [handling failed messages](/consuming-messages/handling-failed-messages).
+- `Junges\Kafka\Retryable`, the `Junges\Kafka\Contracts\Sleeper` contract and `Junges\Kafka\Commit\NativeSleeper`.
+- `CouldNotPublishMessage::getKafkaErrorCode()` and `CouldNotPublishMessage::flushError()`. The librdkafka error code is available through `getCode()`.
+- `AbstractMessage::setTopicName()`. Use `onTopic()` on messages you publish.
+
 ### Manager
 
 The `Junges\Kafka\Factory` is now a singleton, also bound to the `Junges\Kafka\Contracts\Manager` contract. The contract no longer contains the `fresh()`, `shouldFake()` and `shouldReceiveMessages()` methods, and has new `connection()`, `flush()` and `getDefaultConnection()` methods.

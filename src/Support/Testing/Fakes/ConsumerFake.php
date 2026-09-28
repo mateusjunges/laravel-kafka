@@ -2,7 +2,6 @@
 
 namespace Junges\Kafka\Support\Testing\Fakes;
 
-use Closure;
 use Illuminate\Contracts\Events\Dispatcher;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\Consumer;
@@ -13,7 +12,6 @@ use Junges\Kafka\Events\MessageSkipped;
 use Junges\Kafka\Events\StartedConsumingMessage;
 use Junges\Kafka\Exceptions\ConsumerException;
 use Junges\Kafka\MessageCounter;
-use RdKafka\Conf;
 use RdKafka\Message;
 use Throwable;
 
@@ -21,26 +19,23 @@ class ConsumerFake implements Consumer
 {
     private readonly MessageCounter $messageCounter;
 
-    /** @param ConsumerMessage[] $messages  */
+    private bool $stopRequested = false;
+
+    /** @param ConsumerMessage[] $messages */
     public function __construct(
         private readonly Config $config,
         private readonly array $messages = [],
-        private bool $stopRequested = false,
-        private ?Closure $whenStopConsuming = null
     ) {
         $this->messageCounter = new MessageCounter($config->getMaxMessages());
-        $this->whenStopConsuming = $this->config->getWhenStopConsumingCallback();
     }
 
-    /** Consume messages from a kafka topic in loop. */
+    /** Consume the messages given to the fake, in order. */
     public function consume(): void
     {
+        $this->cancelStopConsume();
         $this->doConsume();
 
-        if ($this->shouldRunStopConsumingCallback()) {
-            $callback = $this->whenStopConsuming;
-            $callback(...)();
-        }
+        $this->config->getWhenStopConsumingCallback()?->__invoke();
     }
 
     /** {@inheritdoc} */
@@ -53,7 +48,6 @@ class ConsumerFake implements Consumer
     public function cancelStopConsume(): void
     {
         $this->stopRequested = false;
-        $this->whenStopConsuming = null;
     }
 
     /** Count the number of messages consumed by this consumer */
@@ -80,16 +74,7 @@ class ConsumerFake implements Consumer
         return [];
     }
 
-    /** Set the consumer configuration. */
-    public function setConf(array $options = []): Conf
-    {
-        return new Conf;
-    }
-
-    /**
-     * Consume messages
-     */
-    public function doConsume(): void
+    private function doConsume(): void
     {
         foreach ($this->messages as $message) {
             if ($this->shouldStopConsuming()) {
@@ -98,11 +83,6 @@ class ConsumerFake implements Consumer
 
             $this->handleMessage($message);
         }
-    }
-
-    private function shouldRunStopConsumingCallback(): bool
-    {
-        return $this->whenStopConsuming !== null;
     }
 
     /** Determine if the max message limit is reached. */
@@ -182,18 +162,5 @@ class ConsumerFake implements Consumer
         } else {
             throw ConsumerException::stoppedOnFailure($message, $throwable);
         }
-    }
-
-    private function getConsumerMessage(Message $message): ConsumerMessage
-    {
-        return app(ConsumerMessage::class, [
-            'topicName' => $message->topic_name,
-            'partition' => $message->partition,
-            'headers' => $message->headers ?? [],
-            'body' => unserialize($message->payload),
-            'key' => $message->key,
-            'offset' => $message->offset,
-            'timestamp' => $message->timestamp,
-        ]);
     }
 }

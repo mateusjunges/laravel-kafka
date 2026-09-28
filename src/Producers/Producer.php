@@ -89,7 +89,7 @@ class Producer implements ProducerContract
             }, $this->config->flushRetrySleepInMs);
         } catch (CouldNotPublishMessage $exception) {
             $this->dispatcher->dispatch(new CouldNotPublishMessageEvent(
-                $exception->getKafkaErrorCode(),
+                $exception->getCode(),
                 $exception->getMessage(),
                 $exception,
             ));

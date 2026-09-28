@@ -3,7 +3,6 @@
 namespace Junges\Kafka\Config;
 
 use Closure;
-use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Consumers\MessageHandler;
 use RdKafka\TopicPartition;
 
@@ -118,11 +117,6 @@ class Config
         return $this->maxTime;
     }
 
-    public function isAutoCommit(): bool
-    {
-        return $this->autoCommit;
-    }
-
     public function shouldStopAfterLastMessage(): bool
     {
         return $this->stopAfterLastMessage;
@@ -137,13 +131,6 @@ class Config
     public function getFailedMessageRetries(): int
     {
         return $this->failedMessageRetries;
-    }
-
-    /** Get the time to wait before retrying a failed message, in milliseconds. */
-    /** @return int|list<int> */
-    public function getFailedMessageRetryBackoff(): int|array
-    {
-        return $this->failedMessageRetryBackoff;
     }
 
     /**
@@ -234,11 +221,11 @@ class Config
 
     public function shouldAssignTopicPartitions(): bool
     {
-        return $this->getPartitionAssigment() !== [];
+        return $this->getPartitionAssignment() !== [];
     }
 
     /** @return array<int, TopicPartition> */
-    public function getPartitionAssigment(): array
+    public function getPartitionAssignment(): array
     {
         return $this->partitionAssignment;
     }
@@ -259,7 +246,6 @@ class Config
         return $this->securityProtocol === null ? [] : ['security.protocol' => $this->securityProtocol];
     }
 
-    #[Pure]
     private function getSaslOptions(): array
     {
         if ($this->usingSasl() && $this->sasl !== null) {

@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Junges\Kafka\Commit\DefaultCommitterFactory;
-use Junges\Kafka\Commit\NativeSleeper;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\Committer;
 use Junges\Kafka\Contracts\CommitterFactory;
@@ -24,7 +23,6 @@ use Junges\Kafka\Events\StartedConsumingMessage;
 use Junges\Kafka\Exceptions\ConsumerException;
 use Junges\Kafka\Factory;
 use Junges\Kafka\MessageCounter;
-use Junges\Kafka\Retryable;
 use Junges\Kafka\Support\InfiniteTimer;
 use Junges\Kafka\Support\Timer;
 use RdKafka\Conf;
@@ -51,6 +49,9 @@ class Consumer implements ConsumerContract
         RD_KAFKA_RESP_ERR__TIMED_OUT,
     ];
 
+    /** How many times fetching a message is retried when Kafka times out, waiting 1 second before the first retry and twice as long before each next one. */
+    private const int FETCH_RETRIES = 6;
+
     private const array TIMEOUT_ERRORS = [
         RD_KAFKA_RESP_ERR_REQUEST_TIMED_OUT,
     ];
@@ -68,8 +69,6 @@ class Consumer implements ConsumerContract
     private readonly MessageCounter $messageCounter;
 
     private Committer $committer;
-
-    private readonly Retryable $retryable;
 
     private readonly CommitterFactory $committerFactory;
 
@@ -100,7 +99,6 @@ class Consumer implements ConsumerContract
     {
         $this->logger = app(Logger::class);
         $this->messageCounter = new MessageCounter($config->getMaxMessages());
-        $this->retryable = new Retryable(new NativeSleeper, 6, self::TIMEOUT_ERRORS);
 
         $this->committerFactory = $committerFactory ?? new DefaultCommitterFactory;
         $this->dispatcher = App::make(Dispatcher::class);
@@ -144,7 +142,7 @@ class Consumer implements ConsumerContract
             // the subscribe method on the consumer. Partition assignment
             // have precedence over topic subscriptions.
             if ($this->config->shouldAssignTopicPartitions()) {
-                $this->consumer->assign($this->config->getPartitionAssigment());
+                $this->consumer->assign($this->config->getPartitionAssignment());
             } else {
                 $this->consumer->subscribe($this->config->getTopics());
             }
@@ -367,11 +365,12 @@ class Consumer implements ConsumerContract
         // Only fetching the message is retried. Retrying the handling as well would fetch
         // the next message when handling fails with a timeout, for instance when a commit
         // times out, skipping the message that was being handled.
-        $message = null;
-
-        $this->retryable->retry(function () use (&$message): void {
-            $message = $this->consumer->consume($this->config->consumerTimeoutInMs);
-        });
+        $message = retry(
+            self::FETCH_RETRIES + 1,
+            fn (): Message => $this->consumer->consume($this->config->consumerTimeoutInMs),
+            fn (int $attempt): int => 1000 * 2 ** ($attempt - 1),
+            fn (Throwable $exception): bool => in_array($exception->getCode(), self::TIMEOUT_ERRORS, true),
+        );
 
         $this->handleMessage($message);
     }

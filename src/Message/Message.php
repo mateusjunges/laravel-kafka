@@ -4,7 +4,6 @@ namespace Junges\Kafka\Message;
 
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Str;
-use JetBrains\PhpStorm\ArrayShape;
 use Junges\Kafka\AbstractMessage;
 use Junges\Kafka\Contracts\ProducerMessage;
 
@@ -73,7 +72,6 @@ class Message extends AbstractMessage implements Arrayable, ProducerMessage
         return $this;
     }
 
-    #[ArrayShape(['payload' => 'array', 'key' => 'null|string', 'headers' => 'array'])]
     public function toArray(): array
     {
         return [
