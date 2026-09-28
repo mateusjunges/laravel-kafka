@@ -126,7 +126,8 @@ class KafkaFake extends Factory
                 }
 
                 if ($expectedMessage !== null) {
-                    return json_encode($publishedMessage->toArray(), JSON_THROW_ON_ERROR) === json_encode($expectedMessage->toArray(), JSON_THROW_ON_ERROR);
+                    return json_encode($this->withoutMessageId($publishedMessage->toArray()), JSON_THROW_ON_ERROR)
+                        === json_encode($this->withoutMessageId($expectedMessage->toArray()), JSON_THROW_ON_ERROR);
                 }
 
                 return true;
@@ -145,5 +146,13 @@ class KafkaFake extends Factory
     private function getPublishedMessages(): array
     {
         return $this->publishedMessages;
+    }
+
+    /** Messages are compared without their id, which is generated for every message. */
+    private function withoutMessageId(array $message): array
+    {
+        unset($message['headers'][config('kafka.message_id_key')]);
+
+        return $message;
     }
 }

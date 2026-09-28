@@ -2,13 +2,19 @@
 
 namespace Junges\Kafka\Tests\Producers;
 
+use Illuminate\Support\Facades\Event;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\ProducerMessage;
+use Junges\Kafka\Events\MessagePublished;
+use Junges\Kafka\Events\PublishingMessage;
 use Junges\Kafka\Message\Message;
 use Junges\Kafka\Message\Serializers\JsonSerializer;
 use Junges\Kafka\Producers\Producer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
+use Mockery as m;
 use PHPUnit\Framework\Attributes\Test;
+use RdKafka\Producer as KafkaProducer;
+use RdKafka\ProducerTopic;
 use ReflectionProperty;
 
 final class ProducerTest extends LaravelKafkaTestCase
@@ -83,5 +89,37 @@ final class ProducerTest extends LaravelKafkaTestCase
         $this->assertInstanceOf(ProducerMessage::class, $receivedMessages[0]);
         $this->assertSame('test-topic', $receivedMessages[0]->getTopicName());
         $this->assertSame(['key' => 'value'], json_decode((string) $receivedMessages[0]->getBody(), true));
+    }
+
+    #[Test]
+    public function the_published_event_has_the_message_id_sent_to_kafka(): void
+    {
+        Event::fake();
+
+        $sentHeaders = null;
+
+        $topic = m::mock(ProducerTopic::class);
+        $topic->shouldReceive('producev')->once()->withArgs(function (...$arguments) use (&$sentHeaders) {
+            $sentHeaders = $arguments[4];
+
+            return true;
+        });
+
+        $kafkaProducer = m::mock(KafkaProducer::class);
+        $kafkaProducer->shouldReceive('newTopic')->andReturn($topic);
+        $kafkaProducer->shouldReceive('poll');
+        $kafkaProducer->shouldReceive('flush')->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR);
+
+        $this->app->bind(KafkaProducer::class, fn () => $kafkaProducer);
+
+        $message = Message::create('test-topic')->withBody(['key' => 'value']);
+
+        (new Producer(new Config('broker', ['test-topic']), new JsonSerializer))->produce($message);
+
+        $id = $sentHeaders[config('kafka.message_id_key')];
+
+        $this->assertSame($message->getMessageIdentifier(), $id);
+        Event::assertDispatched(MessagePublished::class, fn (MessagePublished $event) => $event->message->getMessageIdentifier() === $id);
+        Event::assertDispatched(PublishingMessage::class, fn (PublishingMessage $event) => $event->message->getMessageIdentifier() === $id);
     }
 }

@@ -69,6 +69,8 @@ The following methods were removed:
 
 The key, headers, body and topic set on a pending message are now applied on top of the message given to `withMessage()`, whether they are set before or after it. Previously, `withMessage()` discarded the changes made before it. The given message is no longer modified when it is sent.
 
+The id of a `Junges\Kafka\Message\Message` is now generated once, when the message is created, instead of every time its headers were read. `getMessageIdentifier()` returns the same id for the whole life of the message, it matches the id sent to Kafka and the one in the `PublishingMessage` and `MessagePublished` events, and an id set in the message headers is no longer replaced. As the id is now part of the message headers, it is included in `toArray()`. `withHeaders()` keeps the id, unless the given headers contain one. The assertions of `Kafka::fake()` ignore the id when comparing messages.
+
 `send()` now returns `void`. It used to return `true` even when the message was only queued.
 
 The `Junges\Kafka\Producers\Builder` class and the `Junges\Kafka\Contracts\MessageProducer` contract were removed. The `Junges\Kafka\Contracts\Producer` contract methods changed: `produce()` returns `void` and accepts an optional serializer, `flush()` returns `void`, and `withFlushCallback()` was added. The `Junges\Kafka\Contracts\ProducerMessage` contract now requires a `withBodyKey()` method.

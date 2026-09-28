@@ -19,7 +19,7 @@ final class PendingMessageTest extends LaravelKafkaTestCase
             ->getMessage();
 
         $this->assertSame('order-1', $message->getKey());
-        $this->assertSame(['source' => 'api'], $message->toArray()['headers']);
+        $this->assertSame('api', $message->getHeaders()['source']);
         $this->assertSame(['id' => 1], $message->getBody());
     }
 
