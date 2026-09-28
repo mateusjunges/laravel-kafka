@@ -3,134 +3,80 @@ title: Message handlers
 weight: 5
 ---
 
-Now that you have created your kafka consumer, you must create a handler for the messages this consumer receives. By default, a consumer is any `callable`.
-You can use an invokable class or a simple callback. Use the `withHandler` method to specify your handler:
+Now that you have created your kafka consumer, you must create a handler for the messages it receives. A handler receives the consumed message and the consumer, and it can be a closure, an invokable class, or a class implementing the `Junges\Kafka\Contracts\Handler` interface. Use the `withHandler` method to specify your handler:
 
 ```php
-$consumer = \Junges\Kafka\Facades\Kafka::consumer();
+use Junges\Kafka\Contracts\Consumer;
+use Junges\Kafka\Contracts\ConsumerMessage;
 
-// Using callback:
-$consumer->withHandler(function(\Junges\Kafka\Contracts\ConsumerMessage $message, \Junges\Kafka\Contracts\Consumer $consumer) {
-    // Handle your message here
-});
-```
-
-Or, using an invokable class:
-
-```php
-class Handler
-{
-    public function __invoke(\Junges\Kafka\Contracts\ConsumerMessage $message, \Junges\Kafka\Contracts\Consumer $consumer) {
+$consumer = \Junges\Kafka\Facades\Kafka::consumer(['orders'])
+    ->withHandler(function (ConsumerMessage $message, Consumer $consumer) {
         // Handle your message here
-    }
-}
-
-$consumer = \Junges\Kafka\Facades\Kafka::consumer()->withHandler(new Handler)
-```
-
-The `ConsumerMessage` contract gives you some handy methods to get the message properties:
-
-- `getKey()`: Returns the Kafka Message Key
-- `getTopicName()`: Returns the topic where the message was published
-- `getPartition()`: Returns the kafka partition where the message was published
-- `getHeaders()`: Returns the kafka message headers
-- `getBody()`: Returns the body of the message
-- `getOffset()`: Returns the offset where the message was published
-
-## Manual Commit in Handlers
-
-When using manual commit mode (`withAutoCommit(false)`), your handlers receive a `$consumer` parameter that provides commit methods. This allows you to control exactly when message offsets are committed:
-
-```php
-$consumer = \Junges\Kafka\Facades\Kafka::consumer()
-    ->withManualCommit()  // Enable manual commit mode
-    ->withHandler(function(\Junges\Kafka\Contracts\ConsumerMessage $message, \Junges\Kafka\Contracts\Consumer $consumer) {
-        try {
-            // Process your message
-            $data = json_decode($message->getBody(), true);
-            processBusinessLogic($data);
-            
-            // Commit the message after successful processing
-            $consumer->commit($message);
-            
-        } catch (ValidationException $e) {
-            // Don't commit invalid messages, send to DLQ or handle differently
-            Log::warning('Invalid message format', ['message' => $message->getBody()]);
-            
-        } catch (Exception $e) {
-            Log::error('Processing failed', ['error' => $e->getMessage()]);
-            throw $e;
-        }
     });
 ```
 
-### Available Commit Methods
-
-The `$consumer` parameter provides these commit methods:
-
-**Synchronous commits** (blocking):
-- `$consumer->commit()` - Commit current assignment offsets
-- `$consumer->commit($message)` - Commit specific message offset
-
-**Asynchronous commits** (non-blocking, better performance):
-- `$consumer->commitAsync()` - Commit current assignment offsets
-- `$consumer->commitAsync($message)` - Commit specific message offset
-
-
-## Handler Classes
-
-You can also create dedicated handler classes by implementing the `Handler` interface. Handler classes receive both the message and consumer parameters, just like closure handlers:
-
-```php
-use Junges\Kafka\Contracts\Handler;
-use Junges\Kafka\Contracts\ConsumerMessage;
-use Junges\Kafka\Contracts\Consumer;
-
-class ProcessOrderHandler implements Handler
-{
-    public function __invoke(ConsumerMessage $message, Consumer $consumer): void
-    {
-        try {
-            $order = json_decode($message->getBody(), true);
-            
-            // Process the order
-            $this->processOrder($order);
-            
-            // Manual commit after successful processing
-            $consumer->commit($message);
-            
-        } catch (ValidationException $e) {
-            // Don't commit invalid messages
-            Log::warning('Invalid order data', ['message' => $message->getBody()]);
-            
-        } catch (Exception $e) {
-            // Don't commit on processing errors
-            Log::error('Order processing failed', ['error' => $e->getMessage()]);
-            throw $e; // Re-throw to trigger DLQ handling if configured
-        }
-    }
-    
-    private function processOrder(array $order): void
-    {
-        // Your business logic here
-    }
-}
-```
-
-**Using Handler classes with the consumer:**
-
-```php
-use Junges\Kafka\Facades\Kafka;
-
-$consumer = Kafka::consumer(['orders'])
-    ->withManualCommit()  // Enable manual commit mode
-    ->withHandler(new ProcessOrderHandler())
-    ->build();
-
-$consumer->consume();
-```
+To keep a consumer and its configuration in a single class, see [consumer classes](class-structure.md).
 
 ```+parse
 <x-sponsors.request-sponsor/>
 ```
 
+## The consumed message
+
+The `ConsumerMessage` contract gives you some handy methods to get the message properties:
+
+- `getBody()`: the body of the message. With the default JSON deserializer, it is already decoded into an array.
+- `getKey()`: the key of the message.
+- `getHeaders()`: the headers of the message.
+- `getTopicName()`: the topic the message was consumed from.
+- `getPartition()`: the partition the message was consumed from.
+- `getOffset()`: the offset of the message in its partition.
+- `getTimestamp()`: the timestamp of the message, in milliseconds.
+- `getMessageIdentifier()`: the id of the message. See [message ids](../producing-messages/configuring-message-payload.md#message-ids).
+- `getAttempts()`: how many times the handler was called with this message, including the current call, when failed messages are [retried](handling-failed-messages.md).
+
+## Handler classes
+
+Handler classes implement the `Handler` interface:
+
+```php
+use Junges\Kafka\Contracts\Consumer;
+use Junges\Kafka\Contracts\ConsumerMessage;
+use Junges\Kafka\Contracts\Handler;
+
+class ProcessOrderHandler implements Handler
+{
+    public function __invoke(ConsumerMessage $message, Consumer $consumer): void
+    {
+        $order = $message->getBody();
+
+        // Process the order
+    }
+}
+
+$consumer = \Junges\Kafka\Facades\Kafka::consumer(['orders'])
+    ->withHandler(new ProcessOrderHandler)
+    ->build();
+
+$consumer->consume();
+```
+
+## Failures
+
+When the handler throws an exception, the message is handled as failed: it is retried if the consumer [retries failed messages](handling-failed-messages.md#retrying-failed-messages), and then sent to the dead letter queue, skipped, or stops the consumer, depending on the configuration. Let exceptions propagate from your handler, since catching them without rethrowing makes the consumer move on as if the message was processed.
+
+## Committing from handlers
+
+The consumer passed to handlers can commit offsets itself, which is useful in [manual commit](../advanced-usage/manual-commit.md) mode:
+
+```php
+$consumer = \Junges\Kafka\Facades\Kafka::consumer(['orders'])
+    ->withManualCommit()
+    ->withHandler(function (ConsumerMessage $message, Consumer $consumer) {
+        processOrder($message->getBody());
+
+        $consumer->commit($message);
+    });
+```
+
+It can also stop the consumer, see [stopping a consumer on demand](../advanced-usage/stopping-a-consumer.md).

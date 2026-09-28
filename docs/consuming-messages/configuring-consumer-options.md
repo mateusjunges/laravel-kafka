@@ -3,7 +3,7 @@ title: Configuring consumer options
 weight: 6
 ---
 
-The `ConsumerBuilder` offers you some few configuration options.
+The consumer builder, returned by `Kafka::consumer()`, offers the following configuration options. Options shared by every consumer of a Kafka cluster belong in the [connection configuration](../advanced-usage/connections.md) instead.
 
 ```+parse
 <x-sponsors.request-sponsor/>
@@ -110,54 +110,36 @@ Header values must be strings. Arrays/objects/numbers as well as empty string ke
 ```
 
 ### Commit modes: Auto vs Manual
-The package supports two commit modes for controlling when message offsets are committed to Kafka:
+The package supports two commit modes for controlling when message offsets are committed to Kafka. Both deliver every message at least once, since failed messages are never committed unless they are sent to a dead letter queue or skipped on purpose.
 
 #### Auto Commit (Default)
-With auto-commit enabled, messages are automatically committed after your handler successfully processes them. This is the default behavior and simplest to use:
+With auto commit, the offset of each message is stored after your handler processes it, and librdkafka commits the stored offsets in the background. This is the default and simplest mode:
 
 ```php
 $consumer = \Junges\Kafka\Facades\Kafka::consumer()
-    ->withAutoCommit() // Optional as this is the default
-    ->withHandler(function($message, $consumer) {
-        // Process your message.
-        // Message is automatically committed after handler returns successfully
+    ->withHandler(function ($message, $consumer) {
+        // Process your message. Its offset is stored once the handler returns.
     });
 ```
 
+The `auto_commit` key of the connection defines whether consumers use auto commit, and `withAutoCommit()` overrides it for a single consumer.
+
 #### Manual Commit
-With manual commit, you have full control over when messages are committed. This provides better error handling and processing guarantees:
+With manual commit, the handler decides when offsets are committed, by calling the `commit` or `commitAsync` methods of the consumer:
 
 ```php
 $consumer = \Junges\Kafka\Facades\Kafka::consumer()
     ->withManualCommit()
-    ->withHandler(function($message, $consumer) {
-        try {
-            // Process your message
-            processMessage($message);
-            
-            // Manually commit the message
-            $consumer->commit($message);  // Synchronous commit
-            // OR: $consumer->commitAsync($message);  // Asynchronous commit
-            
-        } catch (Exception $e) {
-            Log::error('Message processing failed', ['error' => $e->getMessage()]);
-        }
+    ->withHandler(function ($message, $consumer) {
+        processMessage($message);
+
+        $consumer->commit($message);
     });
 ```
 
-#### When to use each mode:
-- **Auto-commit**: Simple use cases where message loss is acceptable, and you want automatic offset management
-- **Manual commit**: When you need guaranteed processing, complex error handling, or want to implement custom commit strategies
+Let exceptions propagate from the handler. Catching the exception of a failed message without rethrowing it makes the consumer move on as if it was processed.
 
-#### Available commit methods:
-When using manual commit mode, your handlers can use these methods on the `$consumer` parameter:
-
-- `commit()` - Commit current assignment offsets (synchronous)
-- `commit($message)` - Commit specific message offset (synchronous)
-- `commitAsync()` - Commit current assignment offsets (asynchronous)
-- `commitAsync($message)` - Commit specific message offset (asynchronous)
-
-For more detailed information about manual commit patterns, see the [Manual Commit guide](../advanced-usage/manual-commit.md).
+See the [manual commit guide](../advanced-usage/manual-commit.md) for the available commit methods and patterns.
 
 ### Stopping after a number of messages or seconds
 If you want to consume a limited amount of messages, use the `stopAfterMessages` method, and to consume for a limited amount of time, use the `stopAfterSeconds` method:
@@ -183,3 +165,24 @@ $consumer = \Junges\Kafka\Facades\Kafka::consumer()
 $consumer = \Junges\Kafka\Facades\Kafka::consumer()
     ->withOption('option-name', 'option-value');
 ```
+
+### Configuration callbacks
+librdkafka reports some information through callbacks, which you can register on the consumer builder:
+
+```php
+$consumer = \Junges\Kafka\Facades\Kafka::consumer(['orders'])
+    ->onError(function ($kafka, int $error, string $reason) {
+        logger()->error("Kafka error: {$reason}");
+    })
+    ->onLog(function ($kafka, int $level, string $facility, string $message) {
+        logger()->debug($message);
+    })
+    ->onStatistics(function ($kafka, string $json, int $length) {
+        // Emitted every "statistics.interval.ms", when that option is set
+    })
+    ->onOffsetCommit(function ($kafka, int $error, array $partitions) {
+        // Called with the result of every commit, including background and asynchronous ones
+    });
+```
+
+The same methods are available on [connections](../advanced-usage/connections.md), where they apply to the producer and to every consumer of the connection. The `onRebalance` method sets the rebalance callback, see [partition discovery](partition-discovery.md) for simpler ways to react to partition assignments, and `onOAuthBearerTokenRefresh` is described in [SASL authentication](../advanced-usage/sasl-authentication.md).
