@@ -21,7 +21,7 @@ class Message extends AbstractMessage implements Arrayable, ProducerMessage
         mixed $body = [],
         mixed $key = null,
     ) {
-        parent::__construct($topicName, $partition, $headers ?? [], $body, $key);
+        parent::__construct($topicName, $partition, $headers, $body, $key);
 
         $this->headers[config('kafka.message_id_key')] ??= Str::uuid()->toString();
     }

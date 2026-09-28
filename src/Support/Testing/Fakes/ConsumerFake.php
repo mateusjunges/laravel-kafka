@@ -173,7 +173,7 @@ class ConsumerFake implements Consumer
             $dispatcher->dispatch(new MessageSentToDLQ(
                 is_string($body) || $body === null ? $body : json_encode($body),
                 $message->getKey(),
-                $message->getHeaders() ?? [],
+                $message->getHeaders(),
                 $throwable,
                 $message->getHeaders()[config('kafka.message_id_key')] ?? null,
             ));

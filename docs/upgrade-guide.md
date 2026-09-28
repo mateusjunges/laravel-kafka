@@ -196,6 +196,8 @@ With auto commit enabled, every consumer now sets the `enable.auto.offset.store`
 
 See [handling failed messages](/consuming-messages/handling-failed-messages) for details.
 
+The `getHeaders()` method of the `Junges\Kafka\Contracts\KafkaMessage` contract now returns `array` instead of `?array`, as headers are never null, and `getBody()` declares a `mixed` return type. Custom implementations of the message contracts must update their signatures.
+
 The `Junges\Kafka\Contracts\ConsumerMessage` contract has new `getAttempts()` and `withAttempts()` methods, which expose how many times the handler was called with a message when failed messages are retried. Custom implementations of the contract must add them. Custom deserializers that return a new message should create it with the attempts of the original message, or leave the default of `1`, as the consumer sets the attempt number after deserializing.
 
 ### Committers

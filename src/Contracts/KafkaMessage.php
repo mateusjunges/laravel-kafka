@@ -10,9 +10,9 @@ interface KafkaMessage
 
     public function getPartition(): ?int;
 
-    public function getHeaders(): ?array;
+    public function getHeaders(): array;
 
     public function getMessageIdentifier(): string;
 
-    public function getBody();
+    public function getBody(): mixed;
 }
