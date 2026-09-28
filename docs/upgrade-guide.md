@@ -67,6 +67,8 @@ The following methods were removed:
 | `transactional()` | It had no effect. Use the producer of a connection with a `transactional.id`. |
 | `build()` on the producer builder | `Kafka::connection()->producer()` |
 
+The key, headers, body and topic set on a pending message are now applied on top of the message given to `withMessage()`, whether they are set before or after it. Previously, `withMessage()` discarded the changes made before it. The given message is no longer modified when it is sent.
+
 `send()` now returns `void`. It used to return `true` even when the message was only queued.
 
 The `Junges\Kafka\Producers\Builder` class and the `Junges\Kafka\Contracts\MessageProducer` contract were removed. The `Junges\Kafka\Contracts\Producer` contract methods changed: `produce()` returns `void` and accepts an optional serializer, `flush()` returns `void`, and `withFlushCallback()` was added. The `Junges\Kafka\Contracts\ProducerMessage` contract now requires a `withBodyKey()` method.

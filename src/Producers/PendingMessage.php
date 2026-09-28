@@ -2,80 +2,75 @@
 
 namespace Junges\Kafka\Producers;
 
+use Closure;
 use Illuminate\Support\Traits\Conditionable;
 use Junges\Kafka\Connection;
 use Junges\Kafka\Contracts\MessageSerializer;
 use Junges\Kafka\Contracts\ProducerMessage;
 use LogicException;
 
+/**
+ * Builds a message to publish. Changes are recorded and applied, in order, to a copy of the message when it is
+ * sent, so they are kept when the message is replaced with withMessage(), whether they were made before or after.
+ */
 class PendingMessage
 {
     use Conditionable;
 
     private ProducerMessage $message;
 
+    /** @var list<Closure(ProducerMessage): mixed> */
+    private array $changes = [];
+
     private ?MessageSerializer $serializer = null;
 
     public function __construct(
         private readonly Connection $connection,
-        private ?string $topic = null,
+        private readonly ?string $topic = null,
         private readonly bool $sync = false,
     ) {
         /** @var ProducerMessage $message */
         $message = app(ProducerMessage::class);
-        $this->message = $message::create($topic);
+        $this->message = $message::create();
     }
 
     /** Set the topic the message is published to. */
     public function onTopic(string $topic): self
     {
-        $this->topic = $topic;
-        $this->message->onTopic($topic);
-
-        return $this;
+        return $this->change(fn (ProducerMessage $message) => $message->onTopic($topic));
     }
 
     /** Set the message key. */
     public function withKey(mixed $key): self
     {
-        $this->message->withKey($key);
-
-        return $this;
+        return $this->change(fn (ProducerMessage $message) => $message->withKey($key));
     }
 
     /** Set the message body. */
     public function withBody(mixed $body): self
     {
-        $this->message->withBody($body);
-
-        return $this;
+        return $this->change(fn (ProducerMessage $message) => $message->withBody($body));
     }
 
     /** Set a key of the message body. */
     public function withBodyKey(string $key, mixed $value): self
     {
-        $this->message->withBodyKey($key, $value);
-
-        return $this;
+        return $this->change(fn (ProducerMessage $message) => $message->withBodyKey($key, $value));
     }
 
     /** Set the message headers. */
     public function withHeaders(array $headers = []): self
     {
-        $this->message->withHeaders($headers);
-
-        return $this;
+        return $this->change(fn (ProducerMessage $message) => $message->withHeaders($headers));
     }
 
     /** Set a single message header. */
     public function withHeader(string $key, string|int|float $value): self
     {
-        $this->message->withHeader($key, $value);
-
-        return $this;
+        return $this->change(fn (ProducerMessage $message) => $message->withHeader($key, $value));
     }
 
-    /** Replace the message being built with the given one. */
+    /** Use the given message, applying the changes made through this pending message to it. */
     public function withMessage(ProducerMessage $message): self
     {
         $this->message = $message;
@@ -91,9 +86,21 @@ class PendingMessage
         return $this;
     }
 
+    /** Get the message that is published, with every change applied. */
     public function getMessage(): ProducerMessage
     {
-        return $this->message;
+        $message = clone $this->message;
+
+        foreach ($this->changes as $change) {
+            $change($message);
+        }
+
+        // The topic given to publish() is used when the message has no topic of its own.
+        if (blank($message->getTopicName()) && $this->topic !== null) {
+            $message->onTopic($this->topic);
+        }
+
+        return $message;
     }
 
     /**
@@ -104,20 +111,25 @@ class PendingMessage
      */
     public function send(): void
     {
-        if ($this->message->getTopicName() === null && $this->topic !== null) {
-            $this->message->onTopic($this->topic);
-        }
+        $message = $this->getMessage();
 
-        if (blank($this->message->getTopicName())) {
+        if (blank($message->getTopicName())) {
             throw new LogicException('The message can not be published without a topic. Use the onTopic() method to set one.');
         }
 
         $producer = $this->connection->producer();
 
-        $producer->produce($this->message, $this->serializer);
+        $producer->produce($message, $this->serializer);
 
         if ($this->sync) {
             $producer->flush();
         }
+    }
+
+    private function change(Closure $change): self
+    {
+        $this->changes[] = $change;
+
+        return $this;
     }
 }

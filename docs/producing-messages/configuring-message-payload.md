@@ -24,7 +24,7 @@ Kafka::publish('topic')
 ### Configure the message body
 You can configure the message with the `withMessage` or `withBodyKey` methods.
 
-The `withMessage` sets the entire message, and it accepts a `Junges\Kafka\Message\Message::class` instance as argument.
+The `withMessage` sets the entire message, and it accepts a `Junges\Kafka\Message\Message::class` instance as argument. The key, headers and body set with the other methods are applied on top of it, whether they are called before or after `withMessage`, and the given message itself is not modified.
 
 This is how you should use it:
 
