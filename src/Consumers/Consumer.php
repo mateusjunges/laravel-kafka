@@ -17,18 +17,21 @@ use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\ContextAware;
 use Junges\Kafka\Contracts\Logger;
 use Junges\Kafka\Contracts\MessageDeserializer;
+use Junges\Kafka\Contracts\Producer as ProducerContract;
+use Junges\Kafka\Contracts\ProducerMessage;
 use Junges\Kafka\Events\MessageSentToDLQ;
 use Junges\Kafka\Events\StartedConsumingMessage;
 use Junges\Kafka\Exceptions\ConsumerException;
 use Junges\Kafka\Factory;
+use Junges\Kafka\Message\Serializers\NullSerializer;
 use Junges\Kafka\MessageCounter;
+use Junges\Kafka\Producers\Producer;
 use Junges\Kafka\Support\InfiniteTimer;
 use Junges\Kafka\Support\Timer;
 use RdKafka\Exception;
 use RdKafka\KafkaConsumer;
 use RdKafka\KafkaConsumerTopic;
 use RdKafka\Message;
-use RdKafka\Producer as KafkaProducer;
 use RdKafka\TopicPartition;
 use Throwable;
 
@@ -67,7 +70,7 @@ class Consumer implements ConsumerContract
 
     private ?KafkaConsumer $consumer = null;
 
-    private KafkaProducer $producer;
+    private ?ProducerContract $deadLetterQueueProducer = null;
 
     private readonly MessageCounter $messageCounter;
 
@@ -130,8 +133,9 @@ class Consumer implements ConsumerContract
             // queue, and creating one opens broker connections and background threads
             // of its own, so it is created only when a dead letter queue is configured.
             if ($this->config->shouldSendToDlq()) {
-                $this->producer = app(KafkaProducer::class, [
-                    'conf' => $this->config->makeConf($this->config->getProducerOptions()),
+                $this->deadLetterQueueProducer = app(Producer::class, [
+                    'config' => $this->config,
+                    'serializer' => new NullSerializer,
                 ]);
             }
 
@@ -404,18 +408,23 @@ class Consumer implements ConsumerContract
         }
     }
 
-    /** Send a failed message to the dead letter queue, with its original payload, key and headers. */
+    /**
+     * Send a failed message to the dead letter queue, with its original payload, key and headers. The
+     * message is flushed right away, so its offset is only stored once the dead letter queue has it.
+     *
+     * @throws \Junges\Kafka\Exceptions\CouldNotPublishMessage
+     */
     private function sendToDeadLetterQueue(ConsumerMessage $consumerMessage, Throwable $throwable, ?Message $message): void
     {
-        $topic = $this->producer->newTopic($this->config->getDlq());
+        /** @var ProducerMessage $deadLetter */
+        $deadLetter = app(ProducerMessage::class)
+            ->onTopic($this->config->getDlq())
+            ->withBody($message->payload)
+            ->withKey($message->key)
+            ->withHeaders($this->buildHeadersForDlq($message, $throwable));
 
-        $topic->producev(
-            partition: RD_KAFKA_PARTITION_UA,
-            msgflags: 0,
-            payload: $message->payload,
-            key: $message->key,
-            headers: $this->buildHeadersForDlq($message, $throwable)
-        );
+        $this->deadLetterQueueProducer->produce($deadLetter);
+        $this->deadLetterQueueProducer->flush();
 
         $this->dispatcher->dispatch(new MessageSentToDLQ(
             $message->payload,
@@ -424,18 +433,10 @@ class Consumer implements ConsumerContract
             $throwable,
             $message->headers[config('kafka.message_id_key')] ?? null,
         ));
-
-        if (method_exists($this->producer, 'flush')) {
-            $this->producer->flush(12000);
-        }
     }
 
-    private function buildHeadersForDlq(Message $message, ?Throwable $throwable = null): array
+    private function buildHeadersForDlq(Message $message, Throwable $throwable): array
     {
-        if (! $throwable instanceof Throwable) {
-            return [];
-        }
-
         $throwableHeaders['kafka_throwable_message'] = $throwable->getMessage();
         $throwableHeaders['kafka_throwable_code'] = $throwable->getCode();
         $throwableHeaders['kafka_throwable_class_name'] = $throwable::class;

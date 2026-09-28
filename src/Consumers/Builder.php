@@ -86,6 +86,9 @@ class Builder
 
     protected int $consumerTimeoutInMs;
 
+    /** The producer settings of the connection, used to publish failed messages to the dead letter queue. */
+    protected ConnectionConfig $connection;
+
     protected function __construct(ConnectionConfig $connection, array $topics = [], ?string $groupId = null)
     {
         foreach ($topics as $topic) {
@@ -102,6 +105,7 @@ class Builder
         $this->options = [...$connection->options, ...$connection->consumerOptions];
         $this->callbacks = $connection->callbacks;
         $this->consumerTimeoutInMs = $connection->consumerTimeoutInMs;
+        $this->connection = $connection;
 
         $this->handler = function () {};
         $this->maxMessages = -1;
@@ -427,6 +431,11 @@ class Builder
             maxMessages: $this->maxMessages,
             autoCommit: $this->autoCommit,
             customOptions: $this->options,
+            // Failed messages are published to the dead letter queue outside of any transaction.
+            producerOptions: array_diff_key($this->connection->producerOptions, ['transactional.id' => true]),
+            flushRetries: $this->connection->flushRetries,
+            flushTimeoutInMs: $this->connection->flushTimeoutInMs,
+            flushRetrySleepInMs: $this->connection->flushRetrySleepInMs,
             stopAfterLastMessage: $this->stopWhenEmpty,
             callbacks: $this->resolveCallbacks(),
             beforeConsumingCallbacks: $this->beforeConsumingCallbacks,

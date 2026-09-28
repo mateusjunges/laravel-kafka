@@ -20,6 +20,7 @@ use Junges\Kafka\Events\MessageSentToDLQ;
 use Junges\Kafka\Events\MessageSkipped;
 use Junges\Kafka\Exceptions\ConsumerException;
 use Junges\Kafka\Exceptions\ContextAwareException;
+use Junges\Kafka\Exceptions\CouldNotPublishMessage;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
@@ -32,6 +33,8 @@ use RdKafka\Exception as RdKafkaException;
 use RdKafka\KafkaConsumer;
 use RdKafka\KafkaConsumerTopic;
 use RdKafka\Message;
+use RdKafka\Producer as KafkaProducer;
+use RdKafka\ProducerTopic;
 use RdKafka\TopicPartition;
 use RuntimeException;
 use Throwable;
@@ -1242,6 +1245,36 @@ final class ConsumerTest extends LaravelKafkaTestCase
         (new Consumer($config, new JsonDeserializer))->consume();
 
         Event::assertDispatched(MessageSkipped::class);
+    }
+
+    #[Test]
+    public function it_does_not_store_the_offset_when_the_message_could_not_be_sent_to_the_dlq(): void
+    {
+        $mockedTopic = m::mock(KafkaConsumerTopic::class);
+        $mockedTopic->shouldNotReceive('offsetStore');
+
+        $mockedKafkaConsumer = $this->mockKafkaConsumer();
+        $mockedKafkaConsumer->shouldReceive('subscribe')->andReturnSelf();
+        $mockedKafkaConsumer->shouldReceive('consume')->once()->andReturn($this->makeMessage('failing', offset: 0));
+        $mockedKafkaConsumer->shouldReceive('newTopic')->andReturn($mockedTopic);
+
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
+
+        $producerTopic = m::mock(ProducerTopic::class);
+        $producerTopic->shouldReceive('producev')->once();
+
+        $kafkaProducer = m::mock(KafkaProducer::class);
+        $kafkaProducer->shouldReceive('newTopic')->with('test-topic-dlq')->andReturn($producerTopic);
+        $kafkaProducer->shouldReceive('poll');
+        $kafkaProducer->shouldReceive('flush')->andReturn(RD_KAFKA_RESP_ERR__TIMED_OUT);
+
+        $this->app->bind(KafkaProducer::class, fn () => $kafkaProducer);
+
+        $consumer = new Consumer($this->configForFailingHandler(dlq: 'test-topic-dlq'), new JsonDeserializer);
+
+        $this->expectException(CouldNotPublishMessage::class);
+
+        $consumer->consume();
     }
 
     private function makeMessage(string $payload, int $offset): Message

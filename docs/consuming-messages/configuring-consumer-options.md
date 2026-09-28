@@ -16,6 +16,8 @@ able to make it to the desired destination due to some error.
 To create a `dlq` in this package, you can use the `withDlq` method. If you don't specify the DLQ topic name, it will be created based on the topic you are consuming,
 adding the `-dlq` suffix to the topic name.
 
+Failed messages are published to the dead letter queue with the producer options of the consumer connection, and flushed right away. If the dead letter queue can't be reached, the consumer stops without committing the offset of the message, so it is not lost.
+
 Without a dead letter queue, the consumer stops when a message fails, without committing its offset. See [handling failed messages](handling-failed-messages.md) for the available options.
 
 ```php

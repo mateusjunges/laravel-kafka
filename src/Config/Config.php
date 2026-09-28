@@ -72,6 +72,7 @@ class Config
         private readonly int $maxMessages = -1,
         private readonly bool $autoCommit = true,
         private readonly array $customOptions = [],
+        private readonly array $producerOptions = [],
         private readonly bool $stopAfterLastMessage = false,
         private readonly int $restartInterval = 1000,
         private readonly array $callbacks = [],
@@ -185,7 +186,7 @@ class Config
             ...$this->getSecurityProtocolOptions(),
         ];
 
-        return collect(array_merge($config, $this->customOptions, $this->getSaslOptions()))
+        return collect(array_merge($config, $this->customOptions, $this->producerOptions, $this->getSaslOptions()))
             ->reject(fn (mixed $option, string $key) => in_array($key, self::CONSUMER_ONLY_CONFIG_OPTIONS))
             ->map($this->normalizeOption(...))
             ->toArray();

@@ -339,6 +339,23 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     }
 
     #[Test]
+    public function the_dead_letter_queue_uses_the_producer_options_of_the_connection_without_transactions(): void
+    {
+        $connection = new ConnectionConfig(
+            'default',
+            'broker',
+            producerOptions: ['linger.ms' => 5, 'transactional.id' => 'app'],
+            flushRetries: 3,
+        );
+
+        $config = $this->builtConfig(Builder::create($connection, ['orders'])->withDlq());
+
+        $this->assertSame('5', $config->getProducerOptions()['linger.ms']);
+        $this->assertArrayNotHasKey('transactional.id', $config->getProducerOptions());
+        $this->assertSame(3, $config->flushRetries);
+    }
+
+    #[Test]
     public function it_can_set_auto_commit(): void
     {
         $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->withAutoCommit();
