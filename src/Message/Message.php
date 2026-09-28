@@ -20,9 +20,9 @@ class Message extends AbstractMessage implements Arrayable, ProducerMessage
     }
 
     /** Set a key in the message array. */
-    public function withBodyKey(string $key, mixed $message): self
+    public function withBodyKey(string $key, mixed $value): self
     {
-        $this->body[$key] = $message;
+        $this->body[$key] = $value;
 
         return $this;
     }
