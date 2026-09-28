@@ -9,7 +9,8 @@ use RdKafka\Message;
 /**
  * @deprecated Failed messages are not consumed again with this committer. With auto commit enabled, their offsets
  *             are committed by librdkafka when the consumer unsubscribes, and with manual commit this committer
- *             is never called. Use the `retryFailedMessages` method of the consumer builder instead.
+ *             is never called. Use the `retryFailedMessages` or `stopOnFailure` methods of the consumer builder,
+ *             or a dead letter queue, instead.
  */
 class SeekToCurrentErrorCommitter implements Committer
 {
