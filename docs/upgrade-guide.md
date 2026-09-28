@@ -79,7 +79,7 @@ The following methods were removed:
 | `withDebugEnabled()`, `withDebugDisabled()` | The `debug` option of the connection. |
 | `withSasl()` on the producer | The `sasl` key of the connection. |
 | `withFlushRetries()`, `withFlushTimeout()` | The `producer.flush_retries` and `producer.flush_timeout_ms` keys of the connection. |
-| `withFlushCallback()` on the producer builder | `Kafka::connection()->producer()->withFlushCallback()` |
+| `withFlushCallback()` on the producer builder | Removed, as it reported every flushed message, including the ones that failed. Listen to the `MessageDeliveryFailed` event, or register a delivery report callback with `Kafka::connection()->onDeliveryReport()`. |
 | `withErrorCb()`, `withLogCb()` and the other configuration callbacks on the producer builder | The renamed methods on the connection, such as `Kafka::connection()->onError()`. See the configuration callbacks section below. |
 | `transactional()` | It had no effect. Use the producer of a connection with a `transactional.id`. |
 | `build()` on the producer builder | `Kafka::connection()->producer()` |
@@ -90,7 +90,7 @@ The id of a `Junges\Kafka\Message\Message` is now generated once, when the messa
 
 `send()` now returns `void`. It used to return `true` even when the message was only queued.
 
-The `Junges\Kafka\Producers\Builder` class and the `Junges\Kafka\Contracts\MessageProducer` contract were removed. The `Junges\Kafka\Contracts\Producer` contract methods changed: `produce()` returns `void` and accepts an optional serializer, `flush()` returns `void`, and `withFlushCallback()` was added. The `Junges\Kafka\Contracts\ProducerMessage` contract now requires a `withBodyKey()` method.
+The `Junges\Kafka\Producers\Builder` class and the `Junges\Kafka\Contracts\MessageProducer` contract were removed. The `Junges\Kafka\Contracts\Producer` contract methods changed: `produce()` returns `void` and accepts an optional serializer, and `flush()` returns `void`. The `Junges\Kafka\Contracts\ProducerMessage` contract now requires a `withBodyKey()` method.
 
 ### Consuming messages
 

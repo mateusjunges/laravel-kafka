@@ -2,7 +2,6 @@
 
 namespace Junges\Kafka\Producers;
 
-use Closure;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Facades\App;
 use Junges\Kafka\Concerns\ManagesTransactions;
@@ -30,11 +29,6 @@ class Producer implements ProducerContract
     private readonly KafkaProducer $producer;
 
     private readonly Dispatcher $dispatcher;
-
-    /** @var list<ProducerMessage> */
-    private array $pendingMessages = [];
-
-    private ?Closure $flushCallback = null;
 
     /** Whether messages were queued since the last flush. */
     private bool $hasQueuedMessages = false;
@@ -75,10 +69,6 @@ class Producer implements ProducerContract
         $this->produceMessage($topic, $message);
         $this->hasQueuedMessages = true;
 
-        if ($this->flushCallback instanceof Closure) {
-            $this->pendingMessages[] = $message;
-        }
-
         $this->producer->poll(0);
     }
 
@@ -108,16 +98,6 @@ class Producer implements ProducerContract
         }
 
         $this->hasQueuedMessages = false;
-
-        $this->runFlushCallback();
-    }
-
-    /** {@inheritDoc} */
-    public function withFlushCallback(callable $callback): self
-    {
-        $this->flushCallback = $callback(...);
-
-        return $this;
     }
 
     /** Set the Kafka Configuration. */
@@ -182,17 +162,5 @@ class Producer implements ProducerContract
             error: $message->errstr(),
             messageIdentifier: $message->opaque ?? $message->headers[config('kafka.message_id_key')] ?? null,
         ));
-    }
-
-    private function runFlushCallback(): void
-    {
-        if ($this->pendingMessages === []) {
-            return;
-        }
-
-        $pendingMessages = $this->pendingMessages;
-        $this->pendingMessages = [];
-
-        ($this->flushCallback)($pendingMessages);
     }
 }

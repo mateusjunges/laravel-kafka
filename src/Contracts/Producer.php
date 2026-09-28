@@ -17,9 +17,6 @@ interface Producer
      */
     public function flush(): void;
 
-    /** Set a callback to be executed with the delivered messages after flushing. */
-    public function withFlushCallback(callable $callback): self;
-
     /**
      * @throws \Junges\Kafka\Exceptions\Transactions\TransactionShouldBeRetriedException
      * @throws \Junges\Kafka\Exceptions\Transactions\TransactionFatalErrorException

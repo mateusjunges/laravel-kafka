@@ -4,7 +4,6 @@ namespace Junges\Kafka\Tests\Producers;
 
 use Illuminate\Support\Facades\Event;
 use Junges\Kafka\Config\Config;
-use Junges\Kafka\Contracts\ProducerMessage;
 use Junges\Kafka\Events\MessageDeliveryFailed;
 use Junges\Kafka\Events\MessagePublished;
 use Junges\Kafka\Events\PublishingMessage;
@@ -18,7 +17,6 @@ use RdKafka\Message as RdKafkaMessage;
 use RdKafka\Producer as KafkaProducer;
 use RdKafka\ProducerTopic;
 use ReflectionMethod;
-use ReflectionProperty;
 
 final class ProducerTest extends LaravelKafkaTestCase
 {
@@ -37,61 +35,6 @@ final class ProducerTest extends LaravelKafkaTestCase
         $producer->produce($message);
 
         $this->assertSame($payload, $message->getBody());
-    }
-
-    #[Test]
-    public function it_does_not_leak_pending_messages_when_no_flush_callback_is_defined(): void
-    {
-        $this->mockKafkaProducer();
-
-        $producer = new Producer(
-            new Config('broker', ['test-topic']),
-            new JsonSerializer,
-        );
-
-        $message = new Message(body: ['key' => 'value']);
-        $message->onTopic('test-topic');
-
-        $producer->produce($message);
-        $producer->produce($message);
-        $producer->produce($message);
-
-        // Reflect on pendingMessages to assert it has been cleared after each flush
-        $reflection = new ReflectionProperty(Producer::class, 'pendingMessages');
-        $reflection->setAccessible(true);
-
-        $this->assertSame([], $reflection->getValue($producer));
-    }
-
-    #[Test]
-    public function it_calls_callback_after_flushing_messages(): void
-    {
-        $this->mockKafkaProducer();
-        $callbackCalls = 0;
-        $receivedMessages = [];
-
-        $producer = (new Producer(new Config('broker', ['test-topic']), new JsonSerializer))
-            ->withFlushCallback(function (array $messages) use (&$callbackCalls, &$receivedMessages) {
-                $callbackCalls++;
-                $receivedMessages = $messages;
-            });
-
-        $message = new Message(
-            body: ['key' => 'value'],
-        );
-        $message->onTopic('test-topic');
-
-        $producer->produce($message);
-
-        $this->assertSame(0, $callbackCalls);
-
-        $producer->flush();
-
-        $this->assertSame(1, $callbackCalls);
-        $this->assertCount(1, $receivedMessages);
-        $this->assertInstanceOf(ProducerMessage::class, $receivedMessages[0]);
-        $this->assertSame('test-topic', $receivedMessages[0]->getTopicName());
-        $this->assertSame(['key' => 'value'], json_decode((string) $receivedMessages[0]->getBody(), true));
     }
 
     #[Test]

@@ -45,15 +45,7 @@ To enable debug mode while developing your application, set the `debug` option:
 
 The `flush_timeout_ms`, `flush_retries` and `flush_retry_sleep_ms` keys of the `producer` configuration define how long to wait for queued messages to be delivered when flushing the producer, and how many times to retry before giving up.
 
-If you need to know which messages were delivered by each flush, register a flush callback on the connection producer. The callback receives the delivered messages:
-
-```php
-use Junges\Kafka\Facades\Kafka;
-
-Kafka::connection()->producer()->withFlushCallback(function (array $messages) {
-    // ...
-});
-```
+To find out about messages that could not be delivered, listen to the `MessageDeliveryFailed` [event](../advanced-usage/events.md). To be notified of the delivery of every message, register a delivery report callback on the connection with `onDeliveryReport()`.
 
 ### Configuration callbacks
 
