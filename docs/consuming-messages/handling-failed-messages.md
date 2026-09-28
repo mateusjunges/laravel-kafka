@@ -34,8 +34,6 @@ When the handler throws an exception, it is called again with the same message, 
 
 The consumer waits during the backoff, so no other message is consumed while a message is being retried. Keep the total time spent retrying a message (the number of retries multiplied by the backoff, plus the time the handler takes) well below the `max.poll.interval.ms` consumer option, 5 minutes by default. A consumer that does not poll Kafka within that interval is removed from the consumer group. Longer outages are better handled by a dead letter queue or by stopping the consumer.
 
-The `SeekToCurrentErrorCommitter` committer is deprecated in favor of this method, as it does not make failed messages be consumed again.
-
 ## Sending failed messages to a dead letter queue
 
 When a dead letter queue is configured with `withDlq`, failed messages are published to the dead letter queue topic before their offsets are committed, and the consumer moves on to the next message. See [configuring a dead letter queue](configuring-consumer-options.md) for details.
