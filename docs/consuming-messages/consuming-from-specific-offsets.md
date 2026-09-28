@@ -24,11 +24,11 @@ $consumer = \Junges\Kafka\Facades\Kafka::consumer()
 
 ## Dynamic Offset Assignment
 
-If you need to assign offsets dynamically based on partition assignments (useful when you don't know partition numbers in advance), you can use the `assignPartitionsWithOffsets` method:
+If you need to assign offsets dynamically based on partition assignments (useful when you don't know partition numbers in advance), you can use the `resolveOffsetsUsing` method:
 
 ```php
 $consumer = \Junges\Kafka\Facades\Kafka::consumer(['your-topic-name'], 'your-group')
-    ->assignPartitionsWithOffsets(function ($partitions) {
+    ->resolveOffsetsUsing(function ($partitions) {
         $partitionsWithOffsets = [];
         
         foreach ($partitions as $partition) {

@@ -36,7 +36,7 @@ You can set a callback that gets executed whenever partitions are assigned to yo
 
 ```php
 $consumer = \Junges\Kafka\Facades\Kafka::consumer(['my-topic'], 'my-group')
-    ->withPartitionAssignmentCallback(function ($partitions) {
+    ->onPartitionsAssigned(function ($partitions) {
         echo "Assigned " . count($partitions) . " partitions:\n";
         
         foreach ($partitions as $partition) {
@@ -59,7 +59,7 @@ The most powerful feature is the ability to dynamically assign offsets based on 
 
 ```php
 $consumer = \Junges\Kafka\Facades\Kafka::consumer(['my-topic'], 'my-group')
-    ->assignPartitionsWithOffsets(function ($partitions) {
+    ->resolveOffsetsUsing(function ($partitions) {
         $partitionsWithOffsets = [];
         
         foreach ($partitions as $partition) {
@@ -91,7 +91,7 @@ $consumer = \Junges\Kafka\Facades\Kafka::consumer(['my-topic'], 'my-group')
 
 ```php
 $consumer = \Junges\Kafka\Facades\Kafka::consumer(['user-events'], 'analytics-group')
-    ->assignPartitionsWithOffsets(function ($partitions) {
+    ->resolveOffsetsUsing(function ($partitions) {
         $partitionsWithOffsets = [];
         
         foreach ($partitions as $partition) {
@@ -120,7 +120,7 @@ $consumer = \Junges\Kafka\Facades\Kafka::consumer(['user-events'], 'analytics-gr
 use RdKafka\KafkaConsumer;
 
 $consumer = \Junges\Kafka\Facades\Kafka::consumer(['transactions'], 'payment-processor')
-    ->assignPartitionsWithOffsets(function ($partitions) {
+    ->resolveOffsetsUsing(function ($partitions) {
         $partitionsWithOffsets = [];
         
         // Target timestamp (e.g., start of today)
@@ -144,7 +144,7 @@ $consumer = \Junges\Kafka\Facades\Kafka::consumer(['transactions'], 'payment-pro
 
 ```php
 $consumer = \Junges\Kafka\Facades\Kafka::consumer(['orders'], 'order-processor')
-    ->withPartitionAssignmentCallback(function ($partitions) {
+    ->onPartitionsAssigned(function ($partitions) {
         // Initialize partition-specific resources
         foreach ($partitions as $partition) {
             $partitionId = $partition->getPartition();
@@ -186,7 +186,7 @@ $partitions = $consumer->getAssignedPartitions();
 
 2. **Consumer Groups**: If you're using consumer groups, partition assignments are managed by Kafka's partition assignment strategy. Manual assignments override consumer group behavior.
 
-3. **Rebalancing**: When using `withPartitionAssignmentCallback()` or `assignPartitionsWithOffsets()`, your callbacks will be called every time a rebalance occurs. Both can be used together, in any order: the partitions are assigned with the offsets returned by `assignPartitionsWithOffsets()`, and then passed to the `withPartitionAssignmentCallback()` callback. They set their own rebalance callback, so they can't be combined with `onRebalance()`.
+3. **Rebalancing**: When using `onPartitionsAssigned()` or `resolveOffsetsUsing()`, your callbacks will be called every time a rebalance occurs. Both can be used together, in any order: the partitions are assigned with the offsets returned by `resolveOffsetsUsing()`, and then passed to the `onPartitionsAssigned()` callback. They set their own rebalance callback, so they can't be combined with `onRebalance()`.
 
 4. **Error Handling**: Always handle potential errors in your callbacks, as exceptions can disrupt the rebalancing process.
 

@@ -25,11 +25,14 @@ interface ConsumerBuilder extends InteractsWithConfigCallbacks
      */
     public function onMessageFailed(callable $callback): self;
 
-    /** Set a callback to be executed when partitions are assigned to this consumer. */
-    public function withPartitionAssignmentCallback(callable $callback): self;
+    /** Set a callback that receives the partitions assigned to this consumer, on every rebalance. */
+    public function onPartitionsAssigned(callable $callback): self;
 
-    /** Set dynamic partition assignment with offset provider callback. */
-    public function assignPartitionsWithOffsets(callable $offsetProvider): self;
+    /**
+     * Set a callback that receives the partitions assigned to this consumer, on every rebalance,
+     * and returns them with the offsets the consumer should start reading from.
+     */
+    public function resolveOffsetsUsing(callable $resolver): self;
 
     /** Set the brokers the kafka consumer should use, instead of the connection brokers. */
     public function withBrokers(string $brokers): self;

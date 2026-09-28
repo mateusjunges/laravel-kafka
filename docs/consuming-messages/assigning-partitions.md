@@ -39,7 +39,7 @@ If you don't know the partition numbers in advance (which is common when using c
 
 ```php
 $consumer = \Junges\Kafka\Facades\Kafka::consumer(['your-topic-name'], 'your-group')
-    ->withPartitionAssignmentCallback(function ($partitions) {
+    ->onPartitionsAssigned(function ($partitions) {
         echo "Assigned " . count($partitions) . " partitions\n";
         
         foreach ($partitions as $partition) {

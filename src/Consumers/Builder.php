@@ -70,9 +70,9 @@ class Builder implements ConsumerBuilderContract
 
     protected ?Closure $onStopConsuming = null;
 
-    protected ?Closure $partitionAssignmentCallback = null;
+    protected ?Closure $onPartitionsAssigned = null;
 
-    protected ?Closure $offsetProvider = null;
+    protected ?Closure $offsetResolver = null;
 
     protected bool $useDefaultDlq = false;
 
@@ -354,16 +354,18 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    public function withPartitionAssignmentCallback(callable $callback): self
+    /** {@inheritDoc} */
+    public function onPartitionsAssigned(callable $callback): self
     {
-        $this->partitionAssignmentCallback = $callback(...);
+        $this->onPartitionsAssigned = $callback(...);
 
         return $this;
     }
 
-    public function assignPartitionsWithOffsets(callable $offsetProvider): self
+    /** {@inheritDoc} */
+    public function resolveOffsetsUsing(callable $resolver): self
     {
-        $this->offsetProvider = $offsetProvider(...);
+        $this->offsetResolver = $resolver(...);
 
         return $this;
     }
@@ -420,26 +422,26 @@ class Builder implements ConsumerBuilderContract
     }
 
     /**
-     * Resolve the configuration callbacks, combining the partition assignment callback and
-     * the offset provider into a single rebalance callback.
+     * Resolve the configuration callbacks, combining the partitions assigned callback and
+     * the offset resolver into a single rebalance callback.
      */
     protected function resolveCallbacks(): array
     {
-        if (! $this->partitionAssignmentCallback instanceof Closure && ! $this->offsetProvider instanceof Closure) {
+        if (! $this->onPartitionsAssigned instanceof Closure && ! $this->offsetResolver instanceof Closure) {
             return $this->callbacks;
         }
 
         if (isset($this->callbacks['setRebalanceCb'])) {
-            throw new LogicException('A rebalance callback can not be combined with withPartitionAssignmentCallback() or assignPartitionsWithOffsets(), which set their own.');
+            throw new LogicException('A rebalance callback can not be combined with onPartitionsAssigned() or resolveOffsetsUsing(), which set their own.');
         }
 
-        $onAssign = $this->partitionAssignmentCallback;
-        $offsetProvider = $this->offsetProvider;
+        $onAssign = $this->onPartitionsAssigned;
+        $offsetResolver = $this->offsetResolver;
 
-        return [...$this->callbacks, 'setRebalanceCb' => function ($consumer, $err, $partitions = null) use ($onAssign, $offsetProvider): void {
+        return [...$this->callbacks, 'setRebalanceCb' => function ($consumer, $err, $partitions = null) use ($onAssign, $offsetResolver): void {
             if ($err === RD_KAFKA_RESP_ERR__ASSIGN_PARTITIONS) {
-                if ($offsetProvider instanceof Closure) {
-                    $partitions = $offsetProvider($partitions);
+                if ($offsetResolver instanceof Closure) {
+                    $partitions = $offsetResolver($partitions);
                 }
 
                 $consumer->assign($partitions);

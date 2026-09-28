@@ -177,7 +177,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     }
 
     #[Test]
-    public function it_combines_the_partition_assignment_callback_and_the_offset_provider_in_any_order(): void
+    public function it_combines_the_partitions_assigned_callback_and_the_offset_resolver_in_any_order(): void
     {
         $partitions = [new TopicPartition('test-topic', 0)];
         $withOffsets = [new TopicPartition('test-topic', 0, 42)];
@@ -189,12 +189,12 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
             $onAssign = function (array $assigned) use (&$notified) {
                 $notified = $assigned;
             };
-            $offsetProvider = fn (array $assigned) => $withOffsets;
+            $offsetResolver = fn (array $assigned) => $withOffsets;
 
             if ($offsetsFirst) {
-                $builder->assignPartitionsWithOffsets($offsetProvider)->withPartitionAssignmentCallback($onAssign);
+                $builder->resolveOffsetsUsing($offsetResolver)->onPartitionsAssigned($onAssign);
             } else {
-                $builder->withPartitionAssignmentCallback($onAssign)->assignPartitionsWithOffsets($offsetProvider);
+                $builder->onPartitionsAssigned($onAssign)->resolveOffsetsUsing($offsetResolver);
             }
 
             $rebalance = $this->builtConfig($builder)->getConfigCallbacks()['setRebalanceCb'];
@@ -211,10 +211,10 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     }
 
     #[Test]
-    public function it_does_not_combine_a_rebalance_callback_with_the_partition_assignment_callback(): void
+    public function it_does_not_combine_a_rebalance_callback_with_the_partitions_assigned_callback(): void
     {
         $builder = Builder::create(new ConnectionConfig('default', 'broker'), ['test-topic'])
-            ->withPartitionAssignmentCallback(fn () => null)
+            ->onPartitionsAssigned(fn () => null)
             ->onRebalance(fn () => null);
 
         $this->expectException(LogicException::class);
@@ -223,7 +223,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     }
 
     #[Test]
-    public function it_keeps_a_rebalance_callback_when_no_partition_assignment_callback_is_set(): void
+    public function it_keeps_a_rebalance_callback_when_no_partitions_assigned_callback_is_set(): void
     {
         $builder = Builder::create(new ConnectionConfig('default', 'broker'), ['test-topic'])
             ->onRebalance($callback = fn () => null);
