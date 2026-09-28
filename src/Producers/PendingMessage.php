@@ -29,9 +29,7 @@ class PendingMessage
         private readonly ?string $topic = null,
         private readonly bool $sync = false,
     ) {
-        /** @var ProducerMessage $message */
-        $message = app(ProducerMessage::class);
-        $this->message = $message::create();
+        $this->message = app(ProducerMessage::class);
     }
 
     /** Set the topic the message is published to. */

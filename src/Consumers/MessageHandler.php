@@ -15,6 +15,9 @@ final class MessageHandler
 {
     private readonly Closure|Handler $handler;
 
+    /** The handler wrapped by the middlewares, built on the first message and reused for the next ones. */
+    private ?Closure $pipeline = null;
+
     /**
      * @param  list<Middleware|callable|class-string<Middleware>>  $middlewares
      * @param  (Closure(ConsumerMessage, Throwable): void)|null  $onFailure
@@ -29,13 +32,7 @@ final class MessageHandler
 
     public function handle(ConsumerMessage $message, Consumer $consumer): void
     {
-        $handler = $this->handler;
-
-        foreach (array_reverse($this->middlewares) as $middleware) {
-            $handler = $this->wrapMiddleware($middleware, $consumer)($handler);
-        }
-
-        $handler($message, $consumer);
+        ($this->pipeline ??= $this->buildPipeline())($message, $consumer);
     }
 
     /** Notify that a message failed, once its retries are used. */
@@ -46,15 +43,30 @@ final class MessageHandler
         }
     }
 
-    private function wrapMiddleware(Middleware|string|callable $middleware, Consumer $consumer): callable
+    /** Wrap the handler in the middlewares, so the first middleware runs first. */
+    private function buildPipeline(): Closure
     {
-        $middleware = match (true) {
-            is_string($middleware) && is_subclass_of($middleware, Middleware::class) => app($middleware),
-            $middleware instanceof Middleware => $middleware,
-            is_callable($middleware) => $middleware,
-            default => throw new LogicException('Invalid middleware.')
-        };
+        $pipeline = Closure::fromCallable($this->handler);
 
-        return static fn (callable $handler) => static fn ($message) => $middleware($message, fn ($message) => $handler($message, $consumer));
+        foreach (array_reverse($this->middlewares) as $middleware) {
+            $middleware = $this->resolveMiddleware($middleware);
+            $next = $pipeline;
+
+            $pipeline = static fn (mixed $message, Consumer $consumer): mixed => $middleware(
+                $message,
+                static fn (mixed $message): mixed => $next($message, $consumer),
+            );
+        }
+
+        return $pipeline;
+    }
+
+    private function resolveMiddleware(Middleware|string|callable $middleware): callable
+    {
+        return match (true) {
+            is_string($middleware) && is_subclass_of($middleware, Middleware::class) => app($middleware),
+            $middleware instanceof Middleware, is_callable($middleware) => $middleware,
+            default => throw new LogicException('Invalid middleware.'),
+        };
     }
 }

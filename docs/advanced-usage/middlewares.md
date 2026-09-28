@@ -22,7 +22,7 @@ function (ConsumerMessage $message, callable $next) {
 }
 ```
 
-Or a class implementing the `Junges\Kafka\Contracts\Middleware` interface. Middleware classes given by name are resolved from the service container, so their constructor can receive any dependency they need:
+Or a class implementing the `Junges\Kafka\Contracts\Middleware` interface. Middleware classes given by name are resolved from the service container, so their constructor can receive any dependency they need. They are resolved once, when the consumer handles its first message, and the same instance handles every message, so don't keep state about a single message in their properties:
 
 ```php
 use Illuminate\Log\LogManager;

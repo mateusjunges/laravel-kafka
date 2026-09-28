@@ -58,9 +58,9 @@ class LaravelKafkaServiceProvider extends ServiceProvider
 
         $this->app->bind(MessageDeserializer::class, fn () => new JsonDeserializer);
 
-        $this->app->bind(ProducerMessage::class, fn () => new Message(''));
+        $this->app->bind(ProducerMessage::class, fn () => new Message);
 
-        $this->app->bind(ConsumerMessage::class, ConsumedMessage::class);
+        $this->app->bind(ConsumerMessage::class, fn ($app, array $parameters) => new ConsumedMessage(...$parameters));
 
         $this->app->singleton(Factory::class);
 

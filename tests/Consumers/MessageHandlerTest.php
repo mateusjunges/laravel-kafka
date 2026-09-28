@@ -89,4 +89,25 @@ final class MessageHandlerTest extends LaravelKafkaTestCase
         $this->assertSame([$message], FakeMiddleware::$messages);
         $this->assertSame($message, $handled);
     }
+
+    #[Test]
+    public function it_resolves_middleware_classes_once(): void
+    {
+        FakeMiddleware::$messages = [];
+        $resolved = 0;
+
+        $this->app->bind(FakeMiddleware::class, function ($app) use (&$resolved) {
+            $resolved++;
+
+            return new FakeMiddleware($app['config']);
+        });
+
+        $handler = new MessageHandler(fn () => null, [FakeMiddleware::class]);
+
+        $handler->handle(new ConsumedMessage('topic', body: 1), m::mock(Consumer::class));
+        $handler->handle(new ConsumedMessage('topic', body: 2), m::mock(Consumer::class));
+
+        $this->assertSame(1, $resolved);
+        $this->assertCount(2, FakeMiddleware::$messages);
+    }
 }

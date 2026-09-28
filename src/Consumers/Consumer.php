@@ -72,6 +72,11 @@ class Consumer implements ConsumerContract
 
     private ?ProducerContract $deadLetterQueueProducer = null;
 
+    /** The manager whose producers are flushed before storing offsets, once it is resolved. */
+    private ?Factory $producers = null;
+
+    private readonly string $messageIdKey;
+
     private readonly MessageCounter $messageCounter;
 
     private Committer $committer;
@@ -106,6 +111,7 @@ class Consumer implements ConsumerContract
 
         $this->committerFactory = $committerFactory ?? new DefaultCommitterFactory;
         $this->dispatcher = App::make(Dispatcher::class);
+        $this->messageIdKey = config('kafka.message_id_key');
     }
 
     /**
@@ -403,9 +409,11 @@ class Consumer implements ConsumerContract
      */
     private function flushProducers(): void
     {
-        if (app()->resolved(Factory::class)) {
-            app(Factory::class)->flush();
+        if (! $this->producers instanceof Factory && app()->resolved(Factory::class)) {
+            $this->producers = app(Factory::class);
         }
+
+        $this->producers?->flush();
     }
 
     /**
@@ -431,7 +439,7 @@ class Consumer implements ConsumerContract
             $message->key,
             $message->headers ?? [],
             $throwable,
-            $message->headers[config('kafka.message_id_key')] ?? null,
+            $message->headers[$this->messageIdKey] ?? null,
         ));
     }
 
@@ -536,8 +544,8 @@ class Consumer implements ConsumerContract
         // First, we set a new unique id that allows us to identify this message. Then
         // we create a new consumer message instance that will be passed as an arg
         // to the consumer class/closure responsible for consuming this message.
-        if (! array_key_exists(config('kafka.message_id_key'), $message->headers ?? [])) {
-            $message->headers[config('kafka.message_id_key')] = Str::uuid()->toString();
+        if (! array_key_exists($this->messageIdKey, $message->headers ?? [])) {
+            $message->headers[$this->messageIdKey] = Str::uuid()->toString();
         }
 
         return app(ConsumerMessage::class, [

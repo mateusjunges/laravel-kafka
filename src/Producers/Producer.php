@@ -30,6 +30,11 @@ class Producer implements ProducerContract
 
     private readonly Dispatcher $dispatcher;
 
+    /** @var array<string, ProducerTopic> Topic handles, created once per topic. */
+    private array $topics = [];
+
+    private readonly string $messageIdKey;
+
     /** Whether messages were queued since the last flush. */
     private bool $hasQueuedMessages = false;
 
@@ -41,6 +46,7 @@ class Producer implements ProducerContract
             'conf' => $this->getConf($this->config->getProducerOptions()),
         ]);
         $this->dispatcher = App::make(Dispatcher::class);
+        $this->messageIdKey = config('kafka.message_id_key');
     }
 
     /**
@@ -62,7 +68,7 @@ class Producer implements ProducerContract
     {
         $this->dispatcher->dispatch(new PublishingMessage($message));
 
-        $topic = $this->producer->newTopic($message->getTopicName());
+        $topic = $this->topics[$message->getTopicName()] ??= $this->producer->newTopic($message->getTopicName());
 
         $message = ($serializer ?? $this->serializer)->serialize(clone $message);
 
@@ -129,7 +135,7 @@ class Producer implements ProducerContract
             headers: $headers = $message->getHeaders(),
             // Delivery reports don't include the message headers, so the message
             // id is passed along as the opaque value, to be reported on failures.
-            msg_opaque: $headers[config('kafka.message_id_key')] ?? null,
+            msg_opaque: $headers[$this->messageIdKey] ?? null,
         );
 
         $this->dispatcher->dispatch(new MessagePublished($message));
@@ -149,7 +155,7 @@ class Producer implements ProducerContract
             headers: $message->headers ?? [],
             errorCode: $message->err,
             error: $message->errstr(),
-            messageIdentifier: $message->opaque ?? $message->headers[config('kafka.message_id_key')] ?? null,
+            messageIdentifier: $message->opaque ?? $message->headers[$this->messageIdKey] ?? null,
         ));
     }
 }

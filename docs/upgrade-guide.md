@@ -149,7 +149,7 @@ The `__invoke` method of the `Junges\Kafka\Contracts\Middleware` interface now d
 +public function __invoke(ConsumerMessage $message, callable $next): mixed
 ```
 
-Middleware classes given by name, such as `withMiddleware(LogMessages::class)`, are now resolved from the service container instead of being created with `new`, so their constructor can receive dependencies. Middlewares can also be registered for every consumer with `Kafka::consumerMiddleware()`, see [middlewares](/advanced-usage/middlewares).
+Middleware classes given by name, such as `withMiddleware(LogMessages::class)`, are now resolved from the service container instead of being created with `new`, so their constructor can receive dependencies. They are resolved once per consumer, instead of once per message, so the same instance handles every message. Middlewares can also be registered for every consumer with `Kafka::consumerMiddleware()`, see [middlewares](/advanced-usage/middlewares).
 
 ### Stopping consumers
 
