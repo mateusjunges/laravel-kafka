@@ -86,7 +86,12 @@ class Consumer implements MessageConsumer
     /** @var array<string, true> Partitions that have reached EOF, keyed by "topic-partition". */
     private array $partitionsAtEof = [];
 
-    /** @var array<string, KafkaConsumerTopic> Topics used to store offsets, keyed by topic name. */
+    /**
+     * Topics used to store offsets, keyed by topic name. They are created once per topic,
+     * as php-rdkafka never releases the topic handles created by the consumer.
+     *
+     * @var array<string, KafkaConsumerTopic>
+     */
     private array $offsetStoreTopics = [];
 
     private ?Closure $whenStopConsuming;
@@ -370,8 +375,13 @@ class Consumer implements MessageConsumer
             $this->logger->error($message, $throwable);
             $success = $this->handleException($throwable, $message);
 
+            // Without a dead letter queue, the offset of the failed message is left uncommitted,
+            // so it is consumed again once a consumer resumes from this partition. Closing the
+            // consumer commits the offsets stored so far and leaves the group right away.
             if (! $success && $this->config->shouldStopOnFailure()) {
-                $this->stopOnFailure($message, $throwable);
+                $this->consumer->close();
+
+                throw ConsumerException::stoppedOnFailure($message, $throwable);
             }
         }
 
@@ -380,23 +390,6 @@ class Consumer implements MessageConsumer
         }
 
         $this->autoCommitIfEnabled($message, $success);
-    }
-
-    /**
-     * Committing the offset of a failed message that was not sent to a dead letter queue means
-     * it is never consumed again. Stopping instead leaves its offset uncommitted, so it is
-     * consumed again once a consumer resumes from this partition.
-     *
-     * @throws ConsumerException
-     */
-    private function stopOnFailure(Message $message, Throwable $throwable): never
-    {
-        // Closing the consumer commits the offsets stored for the messages processed so far
-        // and leaves the consumer group right away, so the partitions are reassigned without
-        // waiting for the session to time out, even if this consumer is kept in memory.
-        $this->consumer->close();
-
-        throw ConsumerException::stoppedOnFailure($message, $throwable);
     }
 
     /** Handle exceptions while consuming messages. */
