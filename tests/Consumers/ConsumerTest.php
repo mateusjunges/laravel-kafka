@@ -4,6 +4,7 @@ namespace Junges\Kafka\Tests\Consumers;
 
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Sleep;
 use Junges\Kafka\Commit\VoidCommitter;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Consumers\CallableConsumer;
@@ -1096,6 +1097,103 @@ final class ConsumerTest extends LaravelKafkaTestCase
         Event::assertDispatched(MessageSentToDLQ::class);
     }
 
+    #[Test]
+    public function it_retries_the_handler_of_a_failed_message_waiting_for_the_backoff(): void
+    {
+        Sleep::fake();
+
+        $failing = $this->makeMessage('failing', offset: 0);
+
+        $mockedKafkaConsumer = m::mock(KafkaConsumer::class);
+        $mockedKafkaConsumer->shouldReceive('subscribe')->andReturnSelf();
+        $mockedKafkaConsumer->shouldReceive('consume')->once()->andReturn($failing);
+        $mockedKafkaConsumer->shouldReceive('commit')->once()->with($failing);
+        $mockedKafkaConsumer->shouldReceive('newTopic')->once()->andReturn(m::mock(KafkaConsumerTopic::class, ['offsetStore' => null]));
+
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
+
+        $config = $this->configForFailingHandler(maxMessages: 1, retries: 3, backoff: 100, failures: 2);
+        $consumer = new Consumer($config, new JsonDeserializer);
+        $consumer->consume();
+
+        $this->assertSame(3, $config->getConsumer()->attempts);
+        Sleep::assertSequence([Sleep::for(100)->milliseconds(), Sleep::for(100)->milliseconds()]);
+    }
+
+    #[Test]
+    public function it_handles_a_message_as_failed_once_all_retries_are_used(): void
+    {
+        Sleep::fake();
+
+        $failing = $this->makeMessage('failing', offset: 0);
+
+        $mockedKafkaConsumer = m::mock(KafkaConsumer::class);
+        $mockedKafkaConsumer->shouldReceive('subscribe')->andReturnSelf();
+        $mockedKafkaConsumer->shouldReceive('consume')->once()->andReturn($failing);
+        $mockedKafkaConsumer->shouldNotReceive('commit');
+        $mockedKafkaConsumer->shouldReceive('close')->once();
+
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
+
+        $config = $this->configForFailingHandler(stopOnFailure: true, retries: 2);
+        $consumer = new Consumer($config, new JsonDeserializer);
+
+        try {
+            $consumer->consume();
+
+            $this->fail('The consumer should stop once all retries are used.');
+        } catch (ConsumerException) {
+            $this->assertSame(3, $config->getConsumer()->attempts);
+        }
+    }
+
+    #[Test]
+    public function it_sends_a_message_to_the_dlq_only_once_all_retries_are_used(): void
+    {
+        Event::fake();
+        Sleep::fake();
+
+        $failing = $this->makeMessage('failing', offset: 0);
+
+        $mockedKafkaConsumer = m::mock(KafkaConsumer::class);
+        $mockedKafkaConsumer->shouldReceive('subscribe')->andReturnSelf();
+        $mockedKafkaConsumer->shouldReceive('consume')->once()->andReturn($failing);
+        $mockedKafkaConsumer->shouldReceive('commit');
+        $mockedKafkaConsumer->shouldReceive('newTopic')->andReturn(m::mock(KafkaConsumerTopic::class, ['offsetStore' => null]));
+
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
+        $this->mockKafkaProducerForDlq([]);
+
+        $config = $this->configForFailingHandler(maxMessages: 1, dlq: 'test-topic-dlq', retries: 2);
+        $consumer = new Consumer($config, new JsonDeserializer);
+        $consumer->consume();
+
+        $this->assertSame(3, $config->getConsumer()->attempts);
+        Event::assertDispatchedTimes(MessageSentToDLQ::class, 1);
+    }
+
+    #[Test]
+    public function it_stops_retrying_when_the_consumer_is_asked_to_stop(): void
+    {
+        Sleep::fake();
+
+        $failing = $this->makeMessage('failing', offset: 0);
+
+        $mockedKafkaConsumer = m::mock(KafkaConsumer::class);
+        $mockedKafkaConsumer->shouldReceive('subscribe')->andReturnSelf();
+        $mockedKafkaConsumer->shouldReceive('consume')->once()->andReturn($failing);
+        $mockedKafkaConsumer->shouldReceive('commit')->once()->with($failing);
+
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
+
+        $config = $this->configForFailingHandler(retries: 3, stopConsumingOnFailure: true);
+        $consumer = new Consumer($config, new JsonDeserializer);
+        $consumer->consume();
+
+        $this->assertSame(1, $config->getConsumer()->attempts);
+        Sleep::assertNeverSlept();
+    }
+
     private function makeMessage(string $payload, int $offset): Message
     {
         $message = new Message;
@@ -1110,15 +1208,33 @@ final class ConsumerTest extends LaravelKafkaTestCase
         return $message;
     }
 
-    private function configForFailingHandler(int $maxMessages = -1, bool $stopOnFailure = false, bool $autoCommit = true, ?string $dlq = null): Config
-    {
-        $handler = new class extends ContractsConsumer
+    private function configForFailingHandler(
+        int $maxMessages = -1,
+        bool $stopOnFailure = false,
+        bool $autoCommit = true,
+        ?string $dlq = null,
+        int $retries = 0,
+        int $backoff = 0,
+        int $failures = PHP_INT_MAX,
+        bool $stopConsumingOnFailure = false,
+    ): Config {
+        $handler = new class($failures, $stopConsumingOnFailure) extends ContractsConsumer
         {
+            public int $attempts = 0;
+
+            public function __construct(private readonly int $failures, private readonly bool $stopConsumingOnFailure) {}
+
             public function handle(ConsumerMessage $message, MessageConsumer $consumer): void
             {
-                if ($message->getBody()['body'] === 'failing') {
-                    throw new RuntimeException('fail');
+                if ($message->getBody()['body'] !== 'failing' || ++$this->attempts > $this->failures) {
+                    return;
                 }
+
+                if ($this->stopConsumingOnFailure) {
+                    $consumer->stopConsuming();
+                }
+
+                throw new RuntimeException('fail');
             }
         };
 
@@ -1134,6 +1250,8 @@ final class ConsumerTest extends LaravelKafkaTestCase
             maxMessages: $maxMessages,
             autoCommit: $autoCommit,
             stopOnFailure: $stopOnFailure,
+            failedMessageRetries: $retries,
+            failedMessageRetryBackoff: $backoff,
         );
     }
 

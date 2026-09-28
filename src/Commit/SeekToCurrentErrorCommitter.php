@@ -6,6 +6,11 @@ use Junges\Kafka\Contracts\Committer;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
 
+/**
+ * @deprecated Failed messages are not consumed again with this committer. With auto commit enabled, their offsets
+ *             are committed by librdkafka when the consumer unsubscribes, and with manual commit this committer
+ *             is never called. Use the `retryFailedMessages` method of the consumer builder instead.
+ */
 class SeekToCurrentErrorCommitter implements Committer
 {
     public function __construct(private readonly KafkaConsumer $consumer, private readonly Committer $committer) {}

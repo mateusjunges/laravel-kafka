@@ -51,6 +51,8 @@ class BuilderFake extends Builder implements ConsumerBuilderContract
             callbacks: $this->callbacks,
             whenStopConsuming: $this->onStopConsuming,
             stopOnFailure: $this->stopOnFailure,
+            failedMessageRetries: $this->failedMessageRetries,
+            failedMessageRetryBackoff: $this->failedMessageRetryBackoff,
         );
 
         return new ConsumerFake(
