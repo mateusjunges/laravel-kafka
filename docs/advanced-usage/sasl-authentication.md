@@ -26,7 +26,7 @@ SASL is configured per connection, in your `config/kafka.php` file. It is used b
 ],
 ```
 
-To use different credentials for a single consumer, you can use the `withSasl` method of the consumer builder. The mechanism and the security protocol accept the `Junges\Kafka\Config\SaslMechanism` and `Junges\Kafka\Config\SecurityProtocol` enums, or their string values. The security protocol is optional, and `SASL_PLAINTEXT` is used by default:
+To use different credentials for a single consumer, you can use the `withSasl` method of the consumer builder. The mechanism and the security protocol accept the `Junges\Kafka\Config\SaslMechanism` and `Junges\Kafka\Config\SecurityProtocol` enums, or their string values. The security protocol is optional: by default, `SASL_SSL` is used when the connection is encrypted, using `SSL` or `SASL_SSL`, and `SASL_PLAINTEXT` otherwise, so a consumer never connects with less encryption than its connection:
 
 ```php
 use Junges\Kafka\Config\SaslMechanism;
@@ -42,12 +42,6 @@ $consumer = \Junges\Kafka\Facades\Kafka::consumer(['orders'])
 ```
 
 The available mechanisms are `PLAIN`, `SCRAM_SHA_256`, `SCRAM_SHA_512`, `GSSAPI` and `OAUTHBEARER`.
-
-```+parse
-<x-docs.tip title="Hot tip!">
-    When using the `withSasl` method, its security protocol takes priority over the one set with the `withSecurityProtocol` method, whatever the order they are called in.
-</x-docs.tip>
-```
 
 ### OAUTHBEARER Authentication
 

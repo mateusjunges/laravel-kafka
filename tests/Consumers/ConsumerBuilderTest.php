@@ -281,19 +281,6 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     }
 
     #[Test]
-    public function it_can_set_security_protocol(): void
-    {
-        $consumer = Builder::create(new ConnectionConfig('default', 'broker'), ['foo'], 'group')
-            ->withSecurityProtocol('security');
-
-        $this->assertInstanceOf(Consumer::class, $consumer->build());
-
-        $securityProtocol = $this->getPropertyWithReflection('securityProtocol', $consumer);
-
-        $this->assertEquals('security', $securityProtocol);
-    }
-
-    #[Test]
     public function it_can_set_security_protocol_via_sasl_config(): void
     {
         $consumer = Builder::create(new ConnectionConfig('default', 'broker'), ['foo'], 'group')
@@ -332,11 +319,23 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     }
 
     #[Test]
-    public function it_accepts_an_enum_for_the_security_protocol(): void
+    public function sasl_keeps_the_encryption_of_the_connection_by_default(): void
     {
-        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->withSecurityProtocol(SecurityProtocol::SSL);
+        $protocols = [
+            'PLAINTEXT' => 'SASL_PLAINTEXT',
+            'SASL_PLAINTEXT' => 'SASL_PLAINTEXT',
+            'SSL' => 'SASL_SSL',
+            'SASL_SSL' => 'SASL_SSL',
+        ];
 
-        $this->assertSame('SSL', $this->getPropertyWithReflection('config', $consumer->build())->getConsumerOptions()['security.protocol']);
+        foreach ($protocols as $connectionProtocol => $expected) {
+            $consumer = Builder::create(new ConnectionConfig('default', 'broker', securityProtocol: $connectionProtocol), ['foo'])
+                ->withSasl('username', 'password', SaslMechanism::PLAIN);
+
+            $options = $this->getPropertyWithReflection('config', $consumer->build())->getConsumerOptions();
+
+            $this->assertSame($expected, $options['security.protocol'], "Connection using {$connectionProtocol}");
+        }
     }
 
     #[Test]

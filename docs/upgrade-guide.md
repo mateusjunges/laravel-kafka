@@ -163,7 +163,9 @@ The consumer builder methods that stop the consumer were renamed, to read as a f
 
 The `withConsumerGroupId()` method of the consumer builder was renamed to `withGroupId()`, and it no longer accepts `null`. The group of the connection is used when it is not called.
 
-The `$mechanisms` parameter of `withSasl()` was renamed to `$mechanism`, as it receives a single mechanism, which affects calls using named arguments. `withSasl()` and `withSecurityProtocol()` now also accept the new `Junges\Kafka\Config\SaslMechanism` and `Junges\Kafka\Config\SecurityProtocol` enums. The `mechanisms` argument of the `Junges\Kafka\Config\Sasl` constructor and its `getMechanisms()` method were renamed to `mechanism` and `getMechanism()`.
+The `$mechanisms` parameter of `withSasl()` was renamed to `$mechanism`, as it receives a single mechanism, which affects calls using named arguments. `withSasl()` now also accepts the new `Junges\Kafka\Config\SaslMechanism` and `Junges\Kafka\Config\SecurityProtocol` enums, and when no security protocol is given, it keeps the encryption of the connection: `SASL_SSL` is used when the connection uses `SSL` or `SASL_SSL`, and `SASL_PLAINTEXT` otherwise. Previously, `SASL_PLAINTEXT` was always used.
+
+The `withSecurityProtocol()` method of the consumer builder was removed, as a consumer uses the security protocol of its connection, or the one given to `withSasl()`. To use another security protocol for a single consumer, set the `security.protocol` option with `withOption()`. The `mechanisms` argument of the `Junges\Kafka\Config\Sasl` constructor and its `getMechanisms()` method were renamed to `mechanism` and `getMechanism()`.
 
 ### Configuration callbacks
 

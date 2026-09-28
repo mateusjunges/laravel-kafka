@@ -65,13 +65,14 @@ interface ConsumerBuilder extends InteractsWithConfigCallbacks
 
     /**
      * Authenticate this consumer with SASL, using the given credentials instead of the ones of the connection.
-     * The security protocol must be SASL_PLAINTEXT or SASL_SSL.
+     * The security protocol must be SASL_PLAINTEXT or SASL_SSL. When it is not given, SASL_SSL is used if
+     * the connection is encrypted, and SASL_PLAINTEXT otherwise.
      */
     public function withSasl(
         string $username,
         string $password,
         SaslMechanism|string $mechanism,
-        SecurityProtocol|string $securityProtocol = SecurityProtocol::SASL_PLAINTEXT,
+        SecurityProtocol|string|null $securityProtocol = null,
     ): self;
 
     /**
@@ -88,9 +89,6 @@ interface ConsumerBuilder extends InteractsWithConfigCallbacks
 
     /** Defies a callback that runs after consuming the message. */
     public function afterConsuming(callable $callable): self;
-
-    /** Specify the security protocol that should be used. */
-    public function withSecurityProtocol(SecurityProtocol|string $securityProtocol): self;
 
     /** Enable or disable consumer auto commit option. */
     public function withAutoCommit(bool $autoCommit = true): self;

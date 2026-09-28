@@ -211,13 +211,13 @@ class Builder implements ConsumerBuilderContract
         string $username,
         string $password,
         SaslMechanism|string $mechanism,
-        SecurityProtocol|string $securityProtocol = SecurityProtocol::SASL_PLAINTEXT,
+        SecurityProtocol|string|null $securityProtocol = null,
     ): self {
         $this->saslConfig = new Sasl(
             username: $username,
             password: $password,
             mechanism: $mechanism instanceof SaslMechanism ? $mechanism->value : $mechanism,
-            securityProtocol: $securityProtocol instanceof SecurityProtocol ? $securityProtocol->value : $securityProtocol,
+            securityProtocol: $this->resolveSaslSecurityProtocol($securityProtocol),
         );
 
         return $this;
@@ -227,14 +227,6 @@ class Builder implements ConsumerBuilderContract
     public function withMiddleware(Middleware|callable|string $middleware): self
     {
         $this->middlewares[] = $middleware;
-
-        return $this;
-    }
-
-    /** {@inheritDoc} */
-    public function withSecurityProtocol(SecurityProtocol|string $securityProtocol): self
-    {
-        $this->securityProtocol = $securityProtocol instanceof SecurityProtocol ? $securityProtocol->value : $securityProtocol;
 
         return $this;
     }
@@ -480,5 +472,20 @@ class Builder implements ConsumerBuilderContract
         return $this->saslConfig !== null
             ? $this->saslConfig->getSecurityProtocol()
             : $this->securityProtocol;
+    }
+
+    /**
+     * Without a given security protocol, the encryption of the connection is kept, so adding SASL
+     * credentials to a consumer of an encrypted connection doesn't make it connect unencrypted.
+     */
+    private function resolveSaslSecurityProtocol(SecurityProtocol|string|null $securityProtocol): string
+    {
+        if ($securityProtocol !== null) {
+            return $securityProtocol instanceof SecurityProtocol ? $securityProtocol->value : $securityProtocol;
+        }
+
+        return in_array(mb_strtoupper($this->securityProtocol), [SecurityProtocol::SSL->value, SecurityProtocol::SASL_SSL->value], true)
+            ? SecurityProtocol::SASL_SSL->value
+            : SecurityProtocol::SASL_PLAINTEXT->value;
     }
 }
