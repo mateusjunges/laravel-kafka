@@ -25,24 +25,20 @@ interface Consumer
     public function consumedMessagesCount(): int;
 
     /**
-     * Commit offsets synchronously.
+     * Commit offsets synchronously. Without arguments, it commits the offsets of the current assignment.
+     * Given a message, it commits the offset right after it, in its partition, and given an array of
+     * topic partitions, it commits their offsets.
      *
-     * @param  ConsumerMessage|Message|list<TopicPartition>|null  $messageOrOffsets  What to commit:
-     *                                                                               - null: the offsets of the current assignment.
-     *                                                                               - A message: the offset right after the message, in its partition.
-     *                                                                               - An array of topic partitions: the given offsets.
+     * @param  ConsumerMessage|Message|list<TopicPartition>|null  $messageOrOffsets
      *
      * @throws \RdKafka\Exception
      */
     public function commit(ConsumerMessage|Message|array|null $messageOrOffsets = null): void;
 
     /**
-     * Commit offsets asynchronously.
+     * Commit offsets asynchronously. It accepts the same arguments as commit().
      *
-     * @param  ConsumerMessage|Message|list<TopicPartition>|null  $messageOrOffsets  What to commit:
-     *                                                                               - null: the offsets of the current assignment.
-     *                                                                               - A message: the offset right after the message, in its partition.
-     *                                                                               - An array of topic partitions: the given offsets.
+     * @param  ConsumerMessage|Message|list<TopicPartition>|null  $messageOrOffsets
      *
      * @throws \RdKafka\Exception
      */
