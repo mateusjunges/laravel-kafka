@@ -15,8 +15,6 @@ final class Options
 
     private ?string $groupId = null;
 
-    private int $commit = 1;
-
     private ?string $dlq = null;
 
     private int $maxMessages = -1;
@@ -65,11 +63,6 @@ final class Options
     public function getGroupId(): ?string
     {
         return mb_strlen((string) $this->groupId) > 1 ? $this->groupId : $this->config['groupId'];
-    }
-
-    public function getCommit(): int
-    {
-        return $this->commit;
     }
 
     public function getDlq(): ?string

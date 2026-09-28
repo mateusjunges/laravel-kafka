@@ -69,13 +69,11 @@ class Config
         private readonly string $broker,
         private readonly array $topics,
         private readonly ?string $securityProtocol = null,
-        private readonly int $commit = 1,
         private readonly ?string $groupId = null,
         private readonly ?Consumer $consumer = null,
         private readonly ?Sasl $sasl = null,
         private readonly ?string $dlq = null,
         private readonly int $maxMessages = -1,
-        private readonly int $maxCommitRetries = 6,
         private readonly bool $autoCommit = true,
         private readonly array $customOptions = [],
         private readonly bool $stopAfterLastMessage = false,
@@ -94,16 +92,6 @@ class Config
         private readonly int $failedMessageRetries = 0,
         private readonly int $failedMessageRetryBackoff = 0,
     ) {}
-
-    public function getCommit(): int
-    {
-        return $this->commit;
-    }
-
-    public function getMaxCommitRetries(): int
-    {
-        return $this->maxCommitRetries;
-    }
 
     public function getTopics(): array
     {

@@ -31,9 +31,6 @@ interface ConsumerBuilder extends InteractsWithConfigCallbacks
     /** Specify the consumer group id. */
     public function withConsumerGroupId(?string $groupId): self;
 
-    /** Specify the commit batch size. */
-    public function withCommitBatchSize(int $size): self;
-
     /** Specify the class used to handle consumed messages. */
     public function withHandler(callable $handler): self;
 
@@ -46,20 +43,8 @@ interface ConsumerBuilder extends InteractsWithConfigCallbacks
     /** Define the max number of messages that should be consumed. */
     public function withMaxMessages(int $maxMessages): self;
 
-    /** Specify the max retries attempts. */
-    /**
-     * Define the max number seconds that a consumer should run
-     *
-     * @return \Junges\Kafka\Consumers\Builder
-     */
+    /** Define the max number seconds that a consumer should run. */
     public function withMaxTime(int $maxTime): self;
-
-    /**
-     * Specify the max retries attempts.
-     *
-     * @return \Junges\Kafka\Consumers\Builder
-     */
-    public function withMaxCommitRetries(int $maxCommitRetries): self;
 
     /**
      * Set the Dead Letter Queue to be used. If null, the dlq is created from the topic name.

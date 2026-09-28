@@ -3,14 +3,9 @@
 namespace Junges\Kafka\Commit;
 
 use Junges\Kafka\Contracts\Committer;
-use RdKafka\Message;
 
 class VoidCommitter implements Committer
 {
-    public function commitMessage(Message $message): void {}
-
-    public function commitDlq(Message $message): void {}
-
     public function commit(mixed $messageOrOffsets = null): void {}
 
     public function commitAsync(mixed $messageOrOffsets = null): void {}

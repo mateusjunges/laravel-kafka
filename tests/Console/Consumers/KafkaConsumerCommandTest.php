@@ -35,13 +35,11 @@ final class KafkaConsumerCommandTest extends LaravelKafkaTestCase
             broker: 'broker',
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
-            commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,
             sasl: null,
             dlq: null,
             maxMessages: 1,
-            maxCommitRetries: 1
         );
 
         $consumer = new Consumer($config, new JsonDeserializer);

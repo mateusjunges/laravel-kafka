@@ -105,7 +105,14 @@ The `Junges\Kafka\Contracts\ConsumerMessage` contract has new `getAttempts()` an
 
 ### Committers
 
-The `$success` parameter was removed from `Junges\Kafka\Contracts\Committer::commitMessage()`, which is now `commitMessage(Message $message): void`. Failed messages only reach `commitMessage()` when they are skipped or sent to the dead letter queue. Custom committers must drop the parameter, or give it a default value (`bool $success = true`) if they also support v2. To monitor failed messages, listen to the `Junges\Kafka\Events\MessageSkipped` and `Junges\Kafka\Events\MessageSentToDLQ` events.
+In auto commit mode, the consumer no longer commits the offset of each message synchronously. Offsets are stored after each message is processed, and librdkafka commits them in the background every `auto.commit.interval.ms`, 5 seconds by default, and when the consumer stops. In our measurements against a local broker, this made consuming more than ten times faster. If the consumer process crashes, the messages processed since the last background commit are consumed again, while in v2 at most the last batch was. Lower the `auto.commit.interval.ms` option to make that window shorter. Background commit failures are reported to the offset commit callback, set with `withOffsetCommitCb()`.
+
+As a consequence, the following were removed:
+
+- The `commitMessage()` and `commitDlq()` methods of the `Junges\Kafka\Contracts\Committer` contract, which now only handles the commits made by handlers through `commit()` and `commitAsync()`. To monitor failed messages, listen to the `Junges\Kafka\Events\MessageSkipped` and `Junges\Kafka\Events\MessageSentToDLQ` events.
+- The `withCommitBatchSize()` and `withMaxCommitRetries()` consumer builder methods, and the `--commit` option of the `kafka:consume` command.
+- The `Junges\Kafka\Commit\BatchCommitter` and `Junges\Kafka\Commit\RetryableCommitter` classes. `DefaultCommitterFactory` no longer receives a `MessageCounter`.
+- The `commit` and `maxCommitRetries` arguments of `Junges\Kafka\Config\Config`, with their `getCommit()` and `getMaxCommitRetries()` methods.
 
 The `Junges\Kafka\Commit\SeekToCurrentErrorCommitter` class, deprecated in v2.12.0, was removed. It did not make failed messages be consumed again. Use `retryFailedMessages()` or a dead letter queue instead, see [handling failed messages](/consuming-messages/handling-failed-messages).
 

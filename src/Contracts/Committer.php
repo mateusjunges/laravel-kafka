@@ -2,16 +2,12 @@
 
 namespace Junges\Kafka\Contracts;
 
-use RdKafka\Message;
-
+/**
+ * Commits offsets when handlers call the commit methods of the consumer. In auto commit mode, offsets are
+ * stored after each message is processed and committed by librdkafka in the background instead.
+ */
 interface Committer
 {
-    /** Commits the given message after it is processed, or skipped after failing. */
-    public function commitMessage(Message $message): void;
-
-    /** Commits the given message to the Dead Letter Queue. */
-    public function commitDlq(Message $message): void;
-
     /**
      * Commit offsets synchronously.
      *

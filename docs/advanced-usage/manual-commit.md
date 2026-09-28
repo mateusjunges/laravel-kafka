@@ -11,7 +11,15 @@ Manual commit gives you complete control over when message offsets are committed
 
 ## Overview
 
-By default, the package uses auto-commit mode where the offset of each message is committed after your handler processes it (see [handling failed messages](../consuming-messages/handling-failed-messages.md) for what happens when it fails). With manual commit, you decide exactly when to commit messages, allowing for:
+By default, the package uses auto-commit mode. The offset of each message is stored after your handler processes it (see [handling failed messages](../consuming-messages/handling-failed-messages.md) for what happens when it fails), and librdkafka commits the stored offsets in the background every `auto.commit.interval.ms`, 5 seconds by default, and when the consumer stops. If the consumer process crashes, the messages processed since the last commit are consumed again. To make that window shorter, lower the interval:
+
+```php
+$consumer = Kafka::consumer(['orders'])
+    ->withOption('auto.commit.interval.ms', 1000)
+    ->withHandler($handler);
+```
+
+With manual commit, you decide exactly when to commit messages, allowing for:
 
 - **At-least-once delivery**: Ensure messages are only committed after successful processing
 - **Better error handling**: Don't commit messages that failed to process

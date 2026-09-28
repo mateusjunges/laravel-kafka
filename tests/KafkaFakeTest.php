@@ -264,7 +264,6 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
             ->subscribe(['test-topic'])
             ->withBrokers('localhost:9092')
             ->withConsumerGroupId('group')
-            ->withCommitBatchSize(1)
             ->withHandler(fn (ConsumerMessage $message) => $this->assertEquals($message, $message))
             ->build();
 

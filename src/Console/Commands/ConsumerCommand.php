@@ -18,7 +18,6 @@ class ConsumerCommand extends Command
             {--consumer= : The consumer which will consume messages in the specified topic} 
             {--deserializer= : The deserializer class to use when consuming message}
             {--groupId=anonymous : The consumer group id} 
-            {--commit=1} 
             {--dlq=? : The Dead Letter Queue} 
             {--maxMessage=? : The max number of messages that should be handled}
             {--maxTime=0 : The max number of seconds that a consumer should run }
@@ -64,7 +63,6 @@ class ConsumerCommand extends Command
             broker: $options->getBroker(),
             topics: $options->getTopics(),
             securityProtocol: $options->getSecurityProtocol(),
-            commit: $options->getCommit(),
             groupId: $options->getGroupId(),
             consumer: app($consumer),
             sasl: $options->getSasl(),

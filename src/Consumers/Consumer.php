@@ -54,10 +54,6 @@ class Consumer implements MessageConsumer
         RD_KAFKA_RESP_ERR_REQUEST_TIMED_OUT,
     ];
 
-    private const array IGNORABLE_COMMIT_ERRORS = [
-        RD_KAFKA_RESP_ERR__NO_OFFSET,
-    ];
-
     protected int $lastRestart = 0;
 
     protected Timer $restartTimer;
@@ -105,7 +101,7 @@ class Consumer implements MessageConsumer
         $this->messageCounter = new MessageCounter($config->getMaxMessages());
         $this->retryable = new Retryable(new NativeSleeper, 6, self::TIMEOUT_ERRORS);
 
-        $this->committerFactory = $committerFactory ?? new DefaultCommitterFactory($this->messageCounter);
+        $this->committerFactory = $committerFactory ?? new DefaultCommitterFactory;
         $this->dispatcher = App::make(Dispatcher::class);
         $this->whenStopConsuming = $this->config->getWhenStopConsumingCallback();
     }
@@ -435,7 +431,6 @@ class Consumer implements MessageConsumer
         }
 
         $this->storeOffsetIfRequired($message);
-        $this->autoCommitIfEnabled($message);
     }
 
     /** Handle exceptions while consuming messages, returning whether the message was sent to the dead letter queue. */
@@ -463,7 +458,6 @@ class Consumer implements MessageConsumer
                     : null;
 
                 $this->sendToDlq($message, $messageIdentifier, $throwable);
-                $this->committer->commitDlq($message);
 
                 return true;
             }
@@ -516,7 +510,8 @@ class Consumer implements MessageConsumer
     }
 
     /**
-     * Store the offset of a processed message, so it is committed by librdkafka auto commit.
+     * Store the offset of a processed message. librdkafka commits the stored offsets in the background,
+     * every "auto.commit.interval.ms", and when the consumer is closed.
      *
      * @throws Exception
      */
@@ -535,24 +530,6 @@ class Consumer implements MessageConsumer
             // owner resumes from the last committed offset, so there is nothing to store.
             if ($exception->getCode() !== RD_KAFKA_RESP_ERR__STATE) {
                 throw $exception;
-            }
-        }
-    }
-
-    /** @throws Throwable */
-    private function autoCommitIfEnabled(Message $message): void
-    {
-        if (! $this->config->isAutoCommit()) {
-            return;
-        }
-
-        try {
-            $this->committer->commitMessage($message);
-        } catch (Throwable $throwable) {
-            if ($throwable->getCode() !== RD_KAFKA_RESP_ERR__NO_OFFSET) {
-                $this->logger->error($message, $throwable, 'AUTO_COMMIT');
-
-                throw $throwable;
             }
         }
     }

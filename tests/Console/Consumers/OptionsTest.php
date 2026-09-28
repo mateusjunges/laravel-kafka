@@ -36,7 +36,6 @@ class OptionsTest extends LaravelKafkaTestCase
             'topics' => 'test-topic,test-topic-1',
             'consumer' => FakeHandler::class,
             'groupId' => 'test',
-            'commit' => 1,
             'dlq' => 'test-dlq',
             'maxMessages' => 2,
             'securityProtocol' => 'plaintext',
@@ -48,7 +47,6 @@ class OptionsTest extends LaravelKafkaTestCase
         $this->assertEquals(['test-topic', 'test-topic-1'], $options->getTopics());
         $this->assertEquals(FakeHandler::class, $options->getConsumer());
         $this->assertEquals('test', $options->getGroupId());
-        $this->assertEquals(1, $options->getCommit());
         $this->assertEquals('test-dlq', $options->getDlq());
         $this->assertEquals(2, $options->getMaxMessages());
         $this->assertEquals('plaintext', $options->getSecurityProtocol());
@@ -69,7 +67,6 @@ class OptionsTest extends LaravelKafkaTestCase
         $this->assertEquals(['test-topic', 'test-topic-1'], $options->getTopics());
         $this->assertEquals(FakeHandler::class, $options->getConsumer());
         $this->assertNull($options->getGroupId());
-        $this->assertEquals(1, $options->getCommit());
         $this->assertNull($options->getDlq());
         $this->assertEquals(-1, $options->getMaxMessages());
         $this->assertEquals('plaintext', $options->getSecurityProtocol());

@@ -106,17 +106,6 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     }
 
     #[Test]
-    public function it_can_save_the_commit_batch_size(): void
-    {
-        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))
-            ->withCommitBatchSize(1);
-
-        $commitValue = $this->getPropertyWithReflection('commit', $consumer);
-
-        $this->assertEquals(1, $commitValue);
-    }
-
-    #[Test]
     public function it_uses_the_correct_handler(): void
     {
         $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->withHandler(new FakeConsumer);
@@ -138,18 +127,6 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
         $maxMessages = $this->getPropertyWithReflection('maxMessages', $consumer);
 
         $this->assertEquals(2, $maxMessages);
-    }
-
-    #[Test]
-    public function it_can_set_max_commit_retries(): void
-    {
-        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->withMaxCommitRetries(2);
-
-        $this->assertInstanceOf(Consumer::class, $consumer->build());
-
-        $maxCommitRetries = $this->getPropertyWithReflection('maxCommitRetries', $consumer);
-
-        $this->assertEquals(2, $maxCommitRetries);
     }
 
     #[Test]

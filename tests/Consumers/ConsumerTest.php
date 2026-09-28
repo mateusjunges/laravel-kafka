@@ -23,7 +23,6 @@ use Junges\Kafka\Exceptions\ContextAwareException;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
-use Junges\Kafka\Tests\FailingCommitter;
 use Junges\Kafka\Tests\Fakes\FakeConsumer;
 use Junges\Kafka\Tests\Fakes\FakeHandler;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
@@ -70,13 +69,11 @@ final class ConsumerTest extends LaravelKafkaTestCase
             broker: 'broker',
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
-            commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,
             sasl: null,
             dlq: null,
             maxMessages: 1,
-            maxCommitRetries: 1
         );
 
         $consumer = new Consumer($config, new JsonDeserializer);
@@ -127,13 +124,11 @@ final class ConsumerTest extends LaravelKafkaTestCase
             broker: 'broker',
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
-            commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,
             sasl: null,
             dlq: null,
             maxMessages: 1,
-            maxCommitRetries: 1
         );
 
         $message = new Message;
@@ -213,13 +208,11 @@ final class ConsumerTest extends LaravelKafkaTestCase
             broker: 'broker',
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
-            commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,
             sasl: null,
             dlq: null,
             maxMessages: 1,
-            maxCommitRetries: 1
         );
 
         $mockedCommitterFactory = $this->createMock(CommitterFactory::class);
@@ -258,13 +251,11 @@ final class ConsumerTest extends LaravelKafkaTestCase
             broker: 'broker',
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
-            commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,
             sasl: null,
             dlq: null,
             maxMessages: 1,
-            maxCommitRetries: 1
         );
 
         $consumer = new Consumer($config, new JsonDeserializer);
@@ -310,13 +301,11 @@ final class ConsumerTest extends LaravelKafkaTestCase
             broker: 'broker',
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
-            commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,
             sasl: null,
             dlq: null,
             maxMessages: 2,
-            maxCommitRetries: 1,
             restartInterval : 100
         );
 
@@ -362,7 +351,6 @@ final class ConsumerTest extends LaravelKafkaTestCase
             broker: 'broker',
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
-            commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,
             sasl: null,
@@ -400,13 +388,11 @@ final class ConsumerTest extends LaravelKafkaTestCase
             broker: 'broker',
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
-            commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,
             sasl: null,
             dlq: null,
             maxMessages: 1,
-            maxCommitRetries: 1,
             beforeConsumingCallbacks: [
                 fn () => $this->countBeforeConsuming = 1,
                 fn () => $this->countBeforeConsuming++,
@@ -509,7 +495,6 @@ final class ConsumerTest extends LaravelKafkaTestCase
             broker: 'broker',
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
-            commit: 1,
             groupId: 'group',
             consumer: new CallableConsumer($handler, []),
             maxMessages: 1,
@@ -547,16 +532,6 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $customCommitter = new class($commitCalled, $commitParams) implements Committer
         {
             public function __construct(private bool &$commitCalledRef, private mixed &$commitParamsRef) {}
-
-            public function commitMessage(Message $message): void
-            {
-                // Not called for manual commits
-            }
-
-            public function commitDlq(Message $message): void
-            {
-                // Not relevant for this test
-            }
 
             public function commit(mixed $messageOrOffsets = null): void
             {
@@ -609,7 +584,6 @@ final class ConsumerTest extends LaravelKafkaTestCase
             broker: 'broker',
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
-            commit: 1,
             groupId: 'group',
             consumer: new CallableConsumer($handler, []),
             maxMessages: 1,
@@ -634,13 +608,11 @@ final class ConsumerTest extends LaravelKafkaTestCase
             broker: 'broker',
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
-            commit: 1,
             groupId: 'group',
             consumer: new FakeHandler,
             sasl: null,
             dlq: null,
             maxMessages: 1,
-            maxCommitRetries: 1
         );
 
         $consumer = new Consumer($config, new JsonDeserializer);
@@ -677,13 +649,11 @@ final class ConsumerTest extends LaravelKafkaTestCase
             broker: 'broker',
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
-            commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,
             sasl: null,
             dlq: null,
             maxMessages: 1,
-            maxCommitRetries: 1,
             afterConsumingCallbacks: [function (MessageConsumer $consumer) use (&$partitions) {
                 $partitions = $consumer->getAssignedPartitions();
             }],
@@ -737,7 +707,6 @@ final class ConsumerTest extends LaravelKafkaTestCase
             broker: 'localhost:9092',
             topics: ['test-topic'],
             securityProtocol: null,
-            commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,
             sasl: null,
@@ -793,7 +762,6 @@ final class ConsumerTest extends LaravelKafkaTestCase
             broker: 'localhost:9092',
             topics: ['test-topic'],
             securityProtocol: null,
-            commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,
             sasl: null,
@@ -846,13 +814,11 @@ final class ConsumerTest extends LaravelKafkaTestCase
             broker: 'broker',
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
-            commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,
             sasl: null,
             dlq: null,
             maxMessages: -1,
-            maxCommitRetries: 1,
             stopAfterLastMessage: true,
         );
 
@@ -926,13 +892,11 @@ final class ConsumerTest extends LaravelKafkaTestCase
             broker: 'broker',
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
-            commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,
             sasl: null,
             dlq: null,
             maxMessages: -1,
-            maxCommitRetries: 1,
             stopAfterLastMessage: true,
         );
 
@@ -961,13 +925,11 @@ final class ConsumerTest extends LaravelKafkaTestCase
             broker: 'broker',
             topics: ['test-topic'],
             securityProtocol: 'PLAINTEXT',
-            commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,
             sasl: null,
             dlq: null,
             maxMessages: -1,
-            maxCommitRetries: 1,
             stopAfterLastMessage: true,
         );
 
@@ -991,7 +953,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $mockedKafkaConsumer = $this->mockKafkaConsumer();
         $mockedKafkaConsumer->shouldReceive('subscribe')->andReturnSelf();
         $mockedKafkaConsumer->shouldReceive('consume')->andReturn($message);
-        $mockedKafkaConsumer->shouldReceive('commit')->once()->with($message);
+        $mockedKafkaConsumer->shouldNotReceive('commit');
         $mockedKafkaConsumer->shouldReceive('newTopic')->once()->with('test-topic')->andReturn($mockedTopic);
         $mockedKafkaConsumer->shouldReceive('close')->once();
 
@@ -1018,7 +980,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $mockedKafkaConsumer = $this->mockKafkaConsumer();
         $mockedKafkaConsumer->shouldReceive('subscribe')->andReturnSelf();
         $mockedKafkaConsumer->shouldReceive('consume')->twice()->andReturn($processed, $failing, $neverConsumed);
-        $mockedKafkaConsumer->shouldReceive('commit')->once()->with($processed);
+        $mockedKafkaConsumer->shouldNotReceive('commit');
         $mockedKafkaConsumer->shouldReceive('newTopic')->once()->with('test-topic')->andReturn($mockedTopic);
         $mockedKafkaConsumer->shouldReceive('close')->once();
 
@@ -1070,7 +1032,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $mockedKafkaConsumer = $this->mockKafkaConsumer();
         $mockedKafkaConsumer->shouldReceive('subscribe')->andReturnSelf();
         $mockedKafkaConsumer->shouldReceive('consume')->once()->andReturn($failing);
-        $mockedKafkaConsumer->shouldReceive('commit')->with($failing);
+        $mockedKafkaConsumer->shouldNotReceive('commit');
         $mockedKafkaConsumer->shouldReceive('newTopic')->once()->with('test-topic')->andReturn($mockedTopic);
         $mockedKafkaConsumer->shouldReceive('close')->once();
 
@@ -1093,7 +1055,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $mockedKafkaConsumer = $this->mockKafkaConsumer();
         $mockedKafkaConsumer->shouldReceive('subscribe')->andReturnSelf();
         $mockedKafkaConsumer->shouldReceive('consume')->once()->andReturn($failing);
-        $mockedKafkaConsumer->shouldReceive('commit')->once()->with($failing);
+        $mockedKafkaConsumer->shouldNotReceive('commit');
         $mockedKafkaConsumer->shouldReceive('newTopic')->once()->andReturn(m::mock(KafkaConsumerTopic::class, ['offsetStore' => null]));
 
         $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
@@ -1145,7 +1107,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $mockedKafkaConsumer = $this->mockKafkaConsumer();
         $mockedKafkaConsumer->shouldReceive('subscribe')->andReturnSelf();
         $mockedKafkaConsumer->shouldReceive('consume')->once()->andReturn($failing);
-        $mockedKafkaConsumer->shouldReceive('commit');
+        $mockedKafkaConsumer->shouldNotReceive('commit');
         $mockedKafkaConsumer->shouldReceive('newTopic')->andReturn(m::mock(KafkaConsumerTopic::class, ['offsetStore' => null]));
 
         $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
@@ -1169,7 +1131,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $mockedKafkaConsumer = $this->mockKafkaConsumer();
         $mockedKafkaConsumer->shouldReceive('subscribe')->andReturnSelf();
         $mockedKafkaConsumer->shouldReceive('consume')->once()->andReturn($failing);
-        $mockedKafkaConsumer->shouldReceive('commit')->once()->with($failing);
+        $mockedKafkaConsumer->shouldNotReceive('commit');
 
         $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
 
@@ -1184,27 +1146,19 @@ final class ConsumerTest extends LaravelKafkaTestCase
     #[Test]
     public function it_does_not_fetch_the_next_message_when_handling_a_message_times_out(): void
     {
-        $message = $this->makeMessage('ok', offset: 0);
+        $timeout = new RdKafkaException('Request timed out', RD_KAFKA_RESP_ERR_REQUEST_TIMED_OUT);
+
+        $mockedTopic = m::mock(KafkaConsumerTopic::class);
+        $mockedTopic->shouldReceive('offsetStore')->once()->andThrow($timeout);
 
         $mockedKafkaConsumer = $this->mockKafkaConsumer();
         $mockedKafkaConsumer->shouldReceive('subscribe')->andReturnSelf();
-        $mockedKafkaConsumer->shouldReceive('consume')->once()->andReturn($message);
+        $mockedKafkaConsumer->shouldReceive('consume')->once()->andReturn($this->makeMessage('ok', offset: 0));
+        $mockedKafkaConsumer->shouldReceive('newTopic')->andReturn($mockedTopic);
 
         $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
 
-        $timeout = new RdKafkaException('Request timed out', RD_KAFKA_RESP_ERR_REQUEST_TIMED_OUT);
-
-        $committerFactory = new class($timeout) implements CommitterFactory
-        {
-            public function __construct(private readonly RdKafkaException $timeout) {}
-
-            public function make(KafkaConsumer $kafkaConsumer, Config $config): Committer
-            {
-                return new FailingCommitter($this->timeout, PHP_INT_MAX);
-            }
-        };
-
-        $consumer = new Consumer($this->configForFailingHandler(), new JsonDeserializer, $committerFactory);
+        $consumer = new Consumer($this->configForFailingHandler(), new JsonDeserializer);
 
         $this->expectExceptionObject($timeout);
 
@@ -1288,7 +1242,6 @@ final class ConsumerTest extends LaravelKafkaTestCase
             broker: 'localhost:9092',
             topics: ['test-topic'],
             securityProtocol: null,
-            commit: 1,
             groupId: 'group',
             consumer: $handler,
             sasl: null,

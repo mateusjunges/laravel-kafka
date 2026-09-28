@@ -27,15 +27,11 @@ class Builder implements ConsumerBuilderContract
     /** @var list<string> */
     protected array $topics;
 
-    protected int $commit;
-
     protected Closure|Handler $handler;
 
     protected int $maxMessages;
 
     protected int $maxTime = 0;
-
-    protected int $maxCommitRetries;
 
     /** @var list<callable> */
     protected array $middlewares;
@@ -98,10 +94,8 @@ class Builder implements ConsumerBuilderContract
         $this->callbacks = $connection->callbacks;
         $this->consumerTimeoutInMs = $connection->consumerTimeoutInMs;
 
-        $this->commit = 1;
         $this->handler = function () {};
         $this->maxMessages = -1;
-        $this->maxCommitRetries = 6;
         $this->middlewares = [];
 
         $this->deserializer = app(MessageDeserializer::class);
@@ -152,14 +146,6 @@ class Builder implements ConsumerBuilderContract
     }
 
     /** {@inheritDoc} */
-    public function withCommitBatchSize(int $size): self
-    {
-        $this->commit = $size;
-
-        return $this;
-    }
-
-    /** {@inheritDoc} */
     public function withHandler(callable|Handler $handler): self
     {
         $this->handler = $handler instanceof Handler
@@ -199,14 +185,6 @@ class Builder implements ConsumerBuilderContract
     public function withMaxTime(int $maxTime): self
     {
         $this->maxTime = $maxTime;
-
-        return $this;
-    }
-
-    /** {@inheritDoc} */
-    public function withMaxCommitRetries(int $maxCommitRetries): self
-    {
-        $this->maxCommitRetries = $maxCommitRetries;
 
         return $this;
     }
@@ -411,13 +389,11 @@ class Builder implements ConsumerBuilderContract
             broker: $this->brokers,
             topics: $this->topics,
             securityProtocol: $this->getSecurityProtocol(),
-            commit: $this->commit,
             groupId: $this->groupId,
             consumer: new CallableConsumer($this->handler, $this->middlewares),
             sasl: $this->saslConfig,
             dlq: $this->dlq,
             maxMessages: $this->maxMessages,
-            maxCommitRetries: $this->maxCommitRetries,
             autoCommit: $this->autoCommit,
             customOptions: $this->options,
             stopAfterLastMessage: $this->stopAfterLastMessage,
