@@ -55,6 +55,8 @@ class Builder implements ConsumerBuilderContract
 
     protected bool $stopAfterLastMessage = false;
 
+    protected bool $stopOnFailure = false;
+
     /** @var list<callable> */
     protected array $beforeConsumingCallbacks = [];
 
@@ -298,6 +300,14 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
+    /** {@inheritDoc} */
+    public function stopOnFailure(bool $stopOnFailure = true): self
+    {
+        $this->stopOnFailure = $stopOnFailure;
+
+        return $this;
+    }
+
     public function beforeConsuming(callable $callable): self
     {
         $this->beforeConsumingCallbacks[] = $callable(...);
@@ -389,6 +399,7 @@ class Builder implements ConsumerBuilderContract
             maxTime: $this->maxTime,
             partitionAssignment: $this->partitionAssignment,
             whenStopConsuming: $this->onStopConsuming,
+            stopOnFailure: $this->stopOnFailure,
         );
 
         return new Consumer($config, $this->deserializer, $this->committerFactory);

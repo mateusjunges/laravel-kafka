@@ -108,6 +108,9 @@ interface ConsumerBuilder extends InteractsWithConfigCallbacks
     /** Enable or disable the read to end option. */
     public function stopAfterLastMessage(bool $stopAfterLastMessage = true): self;
 
+    /** Stop consuming when a message fails and there is no dead letter queue, without committing its offset. */
+    public function stopOnFailure(bool $stopOnFailure = true): self;
+
     /** Build the Kafka consumer. */
     public function build(): MessageConsumer;
 }

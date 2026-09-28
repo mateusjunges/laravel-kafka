@@ -28,6 +28,7 @@ use Junges\Kafka\Support\Timer;
 use RdKafka\Conf;
 use RdKafka\Exception;
 use RdKafka\KafkaConsumer;
+use RdKafka\KafkaConsumerTopic;
 use RdKafka\Message;
 use RdKafka\Producer as KafkaProducer;
 use RdKafka\TopicPartition;
@@ -85,6 +86,14 @@ class Consumer implements MessageConsumer
     /** @var array<string, true> Partitions that have reached EOF, keyed by "topic-partition". */
     private array $partitionsAtEof = [];
 
+    /**
+     * Topics used to store offsets, keyed by topic name. They are created once per topic,
+     * as php-rdkafka never releases the topic handles created by the consumer.
+     *
+     * @var array<string, KafkaConsumerTopic>
+     */
+    private array $offsetStoreTopics = [];
+
     private ?Closure $whenStopConsuming;
 
     private Dispatcher $dispatcher;
@@ -119,6 +128,7 @@ class Consumer implements MessageConsumer
             $this->consumer = app(KafkaConsumer::class, [
                 'conf' => $this->setConf($this->config->getConsumerOptions()),
             ]);
+            $this->offsetStoreTopics = [];
 
             // The producer is only needed to forward failed messages to the dead letter
             // queue, and creating one opens broker connections and background threads
@@ -364,6 +374,19 @@ class Consumer implements MessageConsumer
         } catch (Throwable $throwable) {
             $this->logger->error($message, $throwable);
             $success = $this->handleException($throwable, $message);
+
+            // Without a dead letter queue, the offset of the failed message is left uncommitted,
+            // so it is consumed again once a consumer resumes from this partition. Closing the
+            // consumer commits the offsets stored so far and leaves the group right away.
+            if (! $success && $this->config->shouldStopOnFailure()) {
+                $this->consumer->close();
+
+                throw ConsumerException::stoppedOnFailure($message, $throwable);
+            }
+        }
+
+        if ($success) {
+            $this->storeOffsetIfRequired($message);
         }
 
         $this->autoCommitIfEnabled($message, $success);
@@ -444,6 +467,30 @@ class Consumer implements MessageConsumer
         }
 
         return array_merge($message->headers ?? [], $throwableHeaders, $contextHeaders ?? []);
+    }
+
+    /**
+     * Store the offset of a processed message, so it is committed by librdkafka auto commit.
+     *
+     * @throws Exception
+     */
+    private function storeOffsetIfRequired(Message $message): void
+    {
+        if (! $this->config->shouldStoreOffsetsAfterProcessing()) {
+            return;
+        }
+
+        $this->offsetStoreTopics[$message->topic_name] ??= $this->consumer->newTopic($message->topic_name);
+
+        try {
+            $this->offsetStoreTopics[$message->topic_name]->offsetStore($message->partition, $message->offset);
+        } catch (Exception $exception) {
+            // The partition was revoked while the message was processed. Its new
+            // owner resumes from the last committed offset, so there is nothing to store.
+            if ($exception->getCode() !== RD_KAFKA_RESP_ERR__STATE) {
+                throw $exception;
+            }
+        }
     }
 
     /** @throws Throwable */

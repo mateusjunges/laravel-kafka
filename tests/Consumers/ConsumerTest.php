@@ -27,6 +27,7 @@ use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use Mockery as m;
 use PHPUnit\Framework\Attributes\Test;
 use RdKafka\KafkaConsumer;
+use RdKafka\KafkaConsumerTopic;
 use RdKafka\Message;
 use RdKafka\TopicPartition;
 use RuntimeException;
@@ -995,6 +996,145 @@ final class ConsumerTest extends LaravelKafkaTestCase
 
         $this->assertSame(0, $consumer->consumedMessagesCount());
         $this->assertNull($fakeHandler->lastMessage());
+    }
+
+    #[Test]
+    public function it_commits_failed_messages_by_default_when_no_dlq_is_configured(): void
+    {
+        $message = $this->makeMessage('failing', offset: 0);
+
+        $mockedKafkaConsumer = m::mock(KafkaConsumer::class);
+        $mockedKafkaConsumer->shouldReceive('subscribe')->andReturnSelf();
+        $mockedKafkaConsumer->shouldReceive('consume')->andReturn($message);
+        $mockedKafkaConsumer->shouldReceive('commit')->once()->with($message);
+        $mockedKafkaConsumer->shouldNotReceive('newTopic');
+        $mockedKafkaConsumer->shouldNotReceive('close');
+
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
+
+        $consumer = new Consumer($this->configForFailingHandler(maxMessages: 1), new JsonDeserializer);
+        $consumer->consume();
+
+        $this->assertSame(1, $consumer->consumedMessagesCount());
+    }
+
+    #[Test]
+    public function it_stops_consuming_without_committing_the_failed_message_when_stop_on_failure_is_enabled(): void
+    {
+        $processed = $this->makeMessage('ok', offset: 0);
+        $failing = $this->makeMessage('failing', offset: 1);
+        $neverConsumed = $this->makeMessage('ok', offset: 2);
+
+        $mockedTopic = m::mock(KafkaConsumerTopic::class);
+        $mockedTopic->shouldReceive('offsetStore')->once()->with(0, 0);
+
+        $mockedKafkaConsumer = m::mock(KafkaConsumer::class);
+        $mockedKafkaConsumer->shouldReceive('subscribe')->andReturnSelf();
+        $mockedKafkaConsumer->shouldReceive('consume')->twice()->andReturn($processed, $failing, $neverConsumed);
+        $mockedKafkaConsumer->shouldReceive('commit')->once()->with($processed);
+        $mockedKafkaConsumer->shouldReceive('newTopic')->once()->with('test-topic')->andReturn($mockedTopic);
+        $mockedKafkaConsumer->shouldReceive('close')->once();
+
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
+
+        $consumer = new Consumer($this->configForFailingHandler(stopOnFailure: true), new JsonDeserializer);
+
+        try {
+            $consumer->consume();
+
+            $this->fail('The consumer should stop when a message fails.');
+        } catch (ConsumerException $exception) {
+            $this->assertInstanceOf(RuntimeException::class, $exception->getPrevious());
+            $this->assertStringContainsString('offset [1] of topic [test-topic] partition [0]', $exception->getMessage());
+        }
+    }
+
+    #[Test]
+    public function it_stops_consuming_without_committing_the_failed_message_when_stop_on_failure_is_enabled_with_manual_commit(): void
+    {
+        $failing = $this->makeMessage('failing', offset: 0);
+
+        $mockedKafkaConsumer = m::mock(KafkaConsumer::class);
+        $mockedKafkaConsumer->shouldReceive('subscribe')->andReturnSelf();
+        $mockedKafkaConsumer->shouldReceive('consume')->once()->andReturn($failing);
+        $mockedKafkaConsumer->shouldNotReceive('commit');
+        $mockedKafkaConsumer->shouldNotReceive('newTopic');
+        $mockedKafkaConsumer->shouldReceive('close')->once();
+
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
+
+        $consumer = new Consumer($this->configForFailingHandler(stopOnFailure: true, autoCommit: false), new JsonDeserializer);
+
+        $this->expectException(ConsumerException::class);
+
+        $consumer->consume();
+    }
+
+    #[Test]
+    public function it_sends_failed_messages_to_the_dlq_instead_of_stopping_when_stop_on_failure_is_enabled(): void
+    {
+        Event::fake();
+
+        $failing = $this->makeMessage('failing', offset: 0);
+
+        $mockedTopic = m::mock(KafkaConsumerTopic::class);
+        $mockedTopic->shouldReceive('offsetStore')->once()->with(0, 0);
+
+        $mockedKafkaConsumer = m::mock(KafkaConsumer::class);
+        $mockedKafkaConsumer->shouldReceive('subscribe')->andReturnSelf();
+        $mockedKafkaConsumer->shouldReceive('consume')->once()->andReturn($failing);
+        $mockedKafkaConsumer->shouldReceive('commit')->with($failing);
+        $mockedKafkaConsumer->shouldReceive('newTopic')->once()->with('test-topic')->andReturn($mockedTopic);
+        $mockedKafkaConsumer->shouldNotReceive('close');
+
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
+        $this->mockKafkaProducerForDlq([]);
+
+        $consumer = new Consumer($this->configForFailingHandler(maxMessages: 1, stopOnFailure: true, dlq: 'test-topic-dlq'), new JsonDeserializer);
+        $consumer->consume();
+
+        Event::assertDispatched(MessageSentToDLQ::class);
+    }
+
+    private function makeMessage(string $payload, int $offset): Message
+    {
+        $message = new Message;
+        $message->err = 0;
+        $message->key = 'key';
+        $message->topic_name = 'test-topic';
+        $message->payload = json_encode(['body' => $payload]);
+        $message->offset = $offset;
+        $message->partition = 0;
+        $message->headers = [];
+
+        return $message;
+    }
+
+    private function configForFailingHandler(int $maxMessages = -1, bool $stopOnFailure = false, bool $autoCommit = true, ?string $dlq = null): Config
+    {
+        $handler = new class extends ContractsConsumer
+        {
+            public function handle(ConsumerMessage $message, MessageConsumer $consumer): void
+            {
+                if ($message->getBody()['body'] === 'failing') {
+                    throw new RuntimeException('fail');
+                }
+            }
+        };
+
+        return new Config(
+            broker: 'localhost:9092',
+            topics: ['test-topic'],
+            securityProtocol: null,
+            commit: 1,
+            groupId: 'group',
+            consumer: $handler,
+            sasl: null,
+            dlq: $dlq,
+            maxMessages: $maxMessages,
+            autoCommit: $autoCommit,
+            stopOnFailure: $stopOnFailure,
+        );
     }
 
     private function mockConsumerWithMessagesAndPartitions(array $partitions, Message ...$messages): void

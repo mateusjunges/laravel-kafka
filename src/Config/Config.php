@@ -88,6 +88,7 @@ class Config
         private readonly ?Closure $whenStopConsuming = null,
         public readonly ?int $flushRetries = null,
         public readonly ?int $flushTimeoutInMs = null,
+        private readonly bool $stopOnFailure = false,
     ) {}
 
     public function getCommit(): int
@@ -135,6 +136,20 @@ class Config
         return $this->stopAfterLastMessage;
     }
 
+    public function shouldStopOnFailure(): bool
+    {
+        return $this->stopOnFailure;
+    }
+
+    /**
+     * Determine if offsets must be stored by the consumer after each message is processed,
+     * instead of being stored by librdkafka as soon as each message is fetched.
+     */
+    public function shouldStoreOffsetsAfterProcessing(): bool
+    {
+        return $this->stopOnFailure && $this->autoCommit;
+    }
+
     public function getConsumerOptions(): array
     {
         $options = [
@@ -149,7 +164,14 @@ class Config
             $options['enable.auto.commit'] = $this->autoCommit === true ? 'true' : 'false';
         }
 
-        return collect(array_merge($options, $this->customOptions, $this->getSaslOptions()))
+        // With auto commit enabled, librdkafka stores the offset of each message as soon as it is
+        // fetched and commits it in the background, even when the handler fails. When stopping on
+        // failure, offsets are stored by the consumer only after the message is processed instead.
+        $overrides = $this->shouldStoreOffsetsAfterProcessing()
+            ? ['enable.auto.offset.store' => 'false']
+            : [];
+
+        return collect(array_merge($options, $this->customOptions, $this->getSaslOptions(), $overrides))
             ->reject(fn (string|int $option, string $key) => in_array($key, self::PRODUCER_ONLY_CONFIG_OPTIONS))
             ->toArray();
     }

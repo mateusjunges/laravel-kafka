@@ -296,6 +296,20 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     }
 
     #[Test]
+    public function it_can_set_stop_on_failure(): void
+    {
+        $consumer = Builder::create('broker')->stopOnFailure();
+
+        $this->assertInstanceOf(Consumer::class, $consumer->build());
+        $this->assertTrue($this->getPropertyWithReflection('stopOnFailure', $consumer));
+
+        $consumer = Builder::create('broker')->stopOnFailure(false);
+
+        $this->assertInstanceOf(Consumer::class, $consumer->build());
+        $this->assertFalse($this->getPropertyWithReflection('stopOnFailure', $consumer));
+    }
+
+    #[Test]
     public function it_can_set_consumer_options(): void
     {
         $consumer = Builder::create('broker')
