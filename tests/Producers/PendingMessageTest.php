@@ -27,12 +27,14 @@ final class PendingMessageTest extends LaravelKafkaTestCase
     public function it_applies_the_changes_in_the_order_they_were_made(): void
     {
         $message = Kafka::publish('orders')
-            ->withBodyKey('id', 1)
-            ->withBody(['id' => 2])
-            ->withBodyKey('status', 'paid')
+            ->withHeader('source', 'api')
+            ->withHeaders(['tenant' => 'acme'])
+            ->withHeader('status', 'paid')
             ->getMessage();
 
-        $this->assertSame(['id' => 2, 'status' => 'paid'], $message->getBody());
+        $this->assertArrayNotHasKey('source', $message->getHeaders());
+        $this->assertSame('acme', $message->getHeaders()['tenant']);
+        $this->assertSame('paid', $message->getHeaders()['status']);
     }
 
     #[Test]

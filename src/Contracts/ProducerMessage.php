@@ -10,8 +10,6 @@ interface ProducerMessage extends KafkaMessage
 
     public function withBody(mixed $body): self;
 
-    public function withBodyKey(string $key, mixed $value): self;
-
     public function onTopic(string $topic): self;
 
     public function withHeaders(array $headers = []): self;

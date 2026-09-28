@@ -20,24 +20,11 @@ final class MessageTest extends LaravelKafkaTestCase
     }
 
     #[Test]
-    public function it_can_set_a_message_key(): void
+    public function it_can_set_the_message_body(): void
     {
-        $this->message->withBodyKey('foo', 'bar');
+        $this->message->withBody(['foo' => 'bar']);
 
         $expected = $this->expectedMessage(body: ['foo' => 'bar']);
-
-        $this->assertEquals($expected, $this->message);
-    }
-
-    #[Test]
-    public function it_can_forget_a_message_key(): void
-    {
-        $this->message->withBodyKey('foo', 'bar');
-        $this->message->withBodyKey('bar', 'foo');
-
-        $expected = $this->expectedMessage(body: ['bar' => 'foo']);
-
-        $this->message->forgetBodyKey('foo');
 
         $this->assertEquals($expected, $this->message);
     }
@@ -67,8 +54,7 @@ final class MessageTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_get_the_message_payload(): void
     {
-        $this->message->withBodyKey('foo', 'bar');
-        $this->message->withBodyKey('bar', 'foo');
+        $this->message->withBody(['foo' => 'bar', 'bar' => 'foo']);
 
         $expectedMessage = $this->expectedMessage(body: $array = ['foo' => 'bar', 'bar' => 'foo']);
 
@@ -82,8 +68,7 @@ final class MessageTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_transform_a_message_in_array(): void
     {
-        $this->message->withBodyKey('foo', 'bar');
-        $this->message->withBodyKey('bar', 'foo');
+        $this->message->withBody(['foo' => 'bar', 'bar' => 'foo']);
         $this->message->withKey($uuid = Str::uuid()->toString());
         $this->message->withHeaders($headers = ['foo' => 'bar']);
 

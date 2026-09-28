@@ -21,7 +21,7 @@ class MyTest extends TestCase
         
         $producer = Kafka::publish('some-kafka-topic')
             ->withHeaders(['key' => 'value'])
-            ->withBodyKey('key', 'value');
+            ->withBody(['key' => 'value']);
             
         $producer->send();
         
@@ -49,7 +49,7 @@ class MyTest extends TestCase
         
         $producer = Kafka::publish('some-kafka-topic')
             ->withHeaders(['key' => 'value'])
-            ->withBodyKey('key', 'value');
+            ->withBody(['key' => 'value']);
             
         $producer->send();
         

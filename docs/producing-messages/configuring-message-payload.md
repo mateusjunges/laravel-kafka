@@ -10,14 +10,13 @@ A Kafka message has a body, headers and a key. All of them can be configured on 
 ```
 
 ### Configuring the message body
-Use the `withBody` method to set the entire body, and the `withBodyKey` method to set a single key of an array body. With the default JSON serializer, arrays are encoded as JSON:
+Use the `withBody` method to set the body of the message. With the default JSON serializer, arrays are encoded as JSON:
 
 ```php
 use Junges\Kafka\Facades\Kafka;
 
 Kafka::publish('orders')
-    ->withBody(['id' => 1, 'status' => 'paid'])
-    ->withBodyKey('paid_at', now()->toIso8601String())
+    ->withBody(['id' => 1, 'status' => 'paid', 'paid_at' => now()->toIso8601String()])
     ->send();
 ```
 

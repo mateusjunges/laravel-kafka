@@ -50,12 +50,6 @@ class PendingMessage
         return $this->change(fn (ProducerMessage $message) => $message->withBody($body));
     }
 
-    /** Set a key of the message body. */
-    public function withBodyKey(string $key, mixed $value): self
-    {
-        return $this->change(fn (ProducerMessage $message) => $message->withBodyKey($key, $value));
-    }
-
     /** Set the message headers. */
     public function withHeaders(array $headers = []): self
     {

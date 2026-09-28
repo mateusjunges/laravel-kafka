@@ -45,7 +45,7 @@ final class KafkaTest extends LaravelKafkaTestCase
 
         Kafka::publish('test')
             ->withKey(Str::uuid()->toString())
-            ->withBodyKey('test', ['test'])
+            ->withBody(['test' => ['test']])
             ->withHeaders(['custom' => 'header'])
             ->send();
 
@@ -68,8 +68,8 @@ final class KafkaTest extends LaravelKafkaTestCase
 
         $this->app->bind(Producer::class, fn () => $mockedProducer);
 
-        Kafka::publishSync('test')->withBodyKey('test', ['test'])->send();
-        Kafka::publishSync('test')->withBodyKey('test', ['test'])->send();
+        Kafka::publishSync('test')->withBody(['test' => ['test']])->send();
+        Kafka::publishSync('test')->withBody(['test' => ['test']])->send();
     }
 
     #[Test]
@@ -94,8 +94,8 @@ final class KafkaTest extends LaravelKafkaTestCase
             return $mockedProducer;
         });
 
-        Kafka::publish('test')->withBodyKey('test', ['test'])->send();
-        Kafka::publish('test')->withBodyKey('test', ['test'])->send();
+        Kafka::publish('test')->withBody(['test' => ['test']])->send();
+        Kafka::publish('test')->withBody(['test' => ['test']])->send();
 
         $this->assertSame(1, $producersCreated);
 
@@ -350,7 +350,7 @@ final class KafkaTest extends LaravelKafkaTestCase
 
         Kafka::publishSync('test-topic')
             ->usingSerializer($serializer)
-            ->withBodyKey('test', ['test'])
+            ->withBody(['test' => ['test']])
             ->send();
     }
 
@@ -370,7 +370,7 @@ final class KafkaTest extends LaravelKafkaTestCase
 
         Kafka::publish('test-topic')
             ->withKey(Str::uuid()->toString())
-            ->withBodyKey('test', ['test'])
+            ->withBody(['test' => ['test']])
             ->withHeaders(['custom' => 'header'])
             ->send();
 
@@ -482,7 +482,7 @@ final class KafkaTest extends LaravelKafkaTestCase
         $this->app->bind(Producer::class, fn () => $mockedProducer);
 
         try {
-            Kafka::publishSync('test')->withBodyKey('foo', 'bar')->send();
+            Kafka::publishSync('test')->withBody(['foo' => 'bar'])->send();
         } finally {
             Event::assertDispatched(CouldNotPublishMessageEvent::class, fn (CouldNotPublishMessageEvent $event) => $event->throwable instanceof CouldNotPublishMessage
                 && $event->errorCode === RD_KAFKA_RESP_ERR__FAIL
@@ -505,7 +505,7 @@ final class KafkaTest extends LaravelKafkaTestCase
     public function it_stores_published_messages_when_using_macros(): void
     {
         $expectedMessage = (new Message)
-            ->withBodyKey('test', ['test'])
+            ->withBody(['test' => ['test']])
             ->withHeaders(['custom' => 'header'])
             ->onTopic('topic')
             ->withKey(Str::uuid()->toString());

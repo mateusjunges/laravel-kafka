@@ -34,7 +34,7 @@ Behavior changes:
 
 ## Publishing
 
-Search for: `Kafka::publish(`, `Kafka::asyncPublish(`, `Kafka::publishAsync(`, `Kafka::fresh(`, `withKafkaKey(`, `withConfigOption`, `withTransactionalId(`, `withDebugEnabled(`, `withDebugDisabled(`, `withFlushRetries(`, `withFlushTimeout(`, `withFlushCallback(`, `transactional(`, `->build()` on producers, `Junges\Kafka\Producers\Builder`, `MessageProducer`.
+Search for: `Kafka::publish(`, `Kafka::asyncPublish(`, `Kafka::publishAsync(`, `Kafka::fresh(`, `withKafkaKey(`, `withBodyKey(`, `forgetBodyKey(`, `withConfigOption`, `withTransactionalId(`, `withDebugEnabled(`, `withDebugDisabled(`, `withFlushRetries(`, `withFlushTimeout(`, `withFlushCallback(`, `transactional(`, `->build()` on producers, `Junges\Kafka\Producers\Builder`, `MessageProducer`.
 
 | v2 | v3 |
 | --- | --- |
@@ -44,6 +44,7 @@ Search for: `Kafka::publish(`, `Kafka::asyncPublish(`, `Kafka::publishAsync(`, `
 | Publishing to another cluster, `Kafka::publish('other-broker:9092')` | Define a connection and use `Kafka::connection('name')->publish('topic')`. |
 | `Kafka::fresh()->publish(...)` | `Kafka::publish(...)`. Every connection shares one producer. |
 | `->withKafkaKey($key)` | `->withKey($key)` |
+| `->withBodyKey('id', 1)->withBodyKey('status', 'paid')` | `->withBody(['id' => 1, 'status' => 'paid'])`. `withBodyKey()` was removed from the pending message and from `Junges\Kafka\Message\Message`, and `forgetBodyKey()` from `Message`. When the calls add keys to the body of a message given to `withMessage()`, build that message with the complete body instead. |
 | `->withConfigOption()`, `->withConfigOptions()`, `->withTransactionalId()` | The `producer.options` key of the connection. They then apply to every message published through it, so use a dedicated connection, with the same brokers, when only some messages need them. |
 | `->withDebugEnabled()`, `->withDebugDisabled()` | The `debug` option of the connection. |
 | `->withSasl(...)` on the producer | The `sasl` key of the connection. |
@@ -178,7 +179,6 @@ Search for: `implements Committer`, `CommitterFactory`, `commitMessage(`, `commi
 | `BatchCommitter`, `RetryableCommitter`, `SeekToCurrentErrorCommitter` | Removed. Use `retryFailedMessages()` or a dead letter queue for failures. |
 | Custom `KafkaMessage` implementations | `getHeaders(): array` and `getBody(): mixed`. |
 | Custom `ConsumerMessage` implementations | Add `getAttempts(): int` and `withAttempts(int $attempts): static`. |
-| Custom `ProducerMessage` implementations | Add `withBodyKey(string $key, mixed $value): self`. |
 | `CouldNotPublishMessage::getKafkaErrorCode()` | `getCode()` |
 | `$message->setTopicName($topic)` | `$message->onTopic($topic)` |
 | `Junges\Kafka\Handlers\RetryableHandler` and retry strategies | `retryFailedMessages()` on the builder, or `retries()` and `backoff()` on consumer classes. |

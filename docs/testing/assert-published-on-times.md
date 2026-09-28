@@ -17,12 +17,12 @@ class MyTest extends TestCase
 
         Kafka::publish('some-kafka-topic')
             ->withHeaders(['key' => 'value'])
-            ->withBodyKey('key', 'value')
+            ->withBody(['key' => 'value'])
             ->send();
 
         Kafka::publish('some-kafka-topic')
             ->withHeaders(['key' => 'value'])
-            ->withBodyKey('key', 'value')
+            ->withBody(['key' => 'value'])
             ->send();
 
         Kafka::assertPublishedOnTimes('some-kafka-topic', 2);

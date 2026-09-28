@@ -8,7 +8,7 @@ weight: 6
 Version 3.0 has many breaking changes. The ones most likely to affect your application are:
 
 - **Connections**: the configuration file now defines named connections. Publish the new configuration file and move your settings into it, see [connections](#connections).
-- **Publishing**: `Kafka::publish()` receives the topic instead of the broker, is asynchronous, and `withKafkaKey()` was renamed to `withKey()`. See [publishing messages](#publishing-messages).
+- **Publishing**: `Kafka::publish()` receives the topic instead of the broker, is asynchronous, `withKafkaKey()` was renamed to `withKey()`, and `withBodyKey()` was removed in favor of `withBody()`. See [publishing messages](#publishing-messages).
 - **Failed messages**: without a dead letter queue, a failed message now stops the consumer instead of being skipped. Call `skipFailedMessages()` to keep the v2 behavior, see [failed messages](#failed-messages).
 - **The `kafka:consume` command** now runs consumer classes, see [the kafka:consume command](#the-kafkaconsume-command).
 - **Handlers**: the `Junges\Kafka\Contracts\MessageConsumer` argument of handlers was renamed to `Junges\Kafka\Contracts\Consumer`, see [consumer contracts and handlers](#consumer-contracts-and-handlers).
@@ -81,6 +81,7 @@ The following methods were removed:
 | `Kafka::asyncPublish()`, `Kafka::publishAsync()` | `Kafka::publish()` |
 | `Kafka::fresh()` | Not needed anymore. |
 | `withKafkaKey()` | `withKey()` |
+| `withBodyKey()` on the producer builder and on `Junges\Kafka\Message\Message`, and `forgetBodyKey()` on `Message` | `withBody()`, with every key of the body: `->withBodyKey('id', 1)->withBodyKey('status', 'paid')` becomes `->withBody(['id' => 1, 'status' => 'paid'])`. |
 | `withConfigOption()`, `withConfigOptions()`, `withTransactionalId()` | The `producer.options` key of the connection. |
 | `withDebugEnabled()`, `withDebugDisabled()` | The `debug` option of the connection. |
 | `withSasl()` on the producer | The `sasl` key of the connection. |
@@ -96,7 +97,7 @@ The id of a `Junges\Kafka\Message\Message` is now generated once, when the messa
 
 `send()` now returns `void`. It used to return `true` even when the message was only queued.
 
-The `Junges\Kafka\Producers\Builder` class and the `Junges\Kafka\Contracts\MessageProducer` contract were removed. The `Junges\Kafka\Contracts\Producer` contract methods changed: `produce()` returns `void` and accepts an optional serializer, and `flush()` returns `void`. The `Junges\Kafka\Contracts\ProducerMessage` contract now requires a `withBodyKey()` method.
+The `Junges\Kafka\Producers\Builder` class and the `Junges\Kafka\Contracts\MessageProducer` contract were removed. The `Junges\Kafka\Contracts\Producer` contract methods changed: `produce()` returns `void` and accepts an optional serializer, and `flush()` returns `void`.
 
 ### Consuming messages
 

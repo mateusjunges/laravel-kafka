@@ -31,22 +31,6 @@ class Message extends AbstractMessage implements Arrayable, ProducerMessage
         return new self($topicName, $partition);
     }
 
-    /** Set a key in the message array. */
-    public function withBodyKey(string $key, mixed $value): self
-    {
-        $this->body[$key] = $value;
-
-        return $this;
-    }
-
-    /** Unset a key in the message array. */
-    public function forgetBodyKey(string $key): self
-    {
-        unset($this->body[$key]);
-
-        return $this;
-    }
-
     /** Set the message headers. The message id is kept, unless the given headers contain one. */
     public function withHeaders(array $headers = []): self
     {
