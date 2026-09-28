@@ -7,6 +7,7 @@ use Junges\Kafka\Config\Config;
 use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Consumers\MessageHandler;
 use Junges\Kafka\Contracts\ConsumerMessage;
+use Junges\Kafka\Exceptions\ConsumerException;
 use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
@@ -766,5 +767,45 @@ final class ManualCommitTest extends LaravelKafkaTestCase
 
         $this->assertCount(1, $commitCallsLog);
         $this->assertIsArray($commitCallsLog[0]['params']);
+    }
+
+    #[Test]
+    public function it_throws_the_kafka_error_when_committing_a_consumer_message_fails(): void
+    {
+        $message = new Message;
+        $message->err = 0;
+        $message->key = 'key';
+        $message->topic_name = 'test-topic';
+        $message->payload = '{"body": "message payload"}';
+        $message->offset = 0;
+        $message->partition = 1;
+        $message->headers = [];
+
+        $commitFailure = new \RdKafka\Exception('Commit failed', RD_KAFKA_RESP_ERR__FAIL);
+
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
+            ->shouldReceive('subscribe')->andReturn(m::self())
+            ->shouldReceive('consume')->andReturn($message)
+            ->shouldReceive('commit')->andThrow($commitFailure)
+            ->getMock();
+
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
+
+        $config = new Config(
+            broker: 'broker',
+            topics: ['test-topic'],
+            groupId: 'group',
+            handler: new MessageHandler(fn (ConsumerMessage $message, Consumer $consumer) => $consumer->commit($message)),
+            maxMessages: 1,
+            autoCommit: false,
+        );
+
+        try {
+            (new Consumer($config, new JsonDeserializer))->consume();
+
+            $this->fail('The consumer should stop when committing fails.');
+        } catch (ConsumerException $exception) {
+            $this->assertSame($commitFailure, $exception->getPrevious());
+        }
     }
 }

@@ -211,6 +211,8 @@ As a consequence, the following were removed:
 - The `Junges\Kafka\Commit\BatchCommitter` and `Junges\Kafka\Commit\RetryableCommitter` classes. `DefaultCommitterFactory` no longer receives a `MessageCounter`.
 - The `commit` and `maxCommitRetries` arguments of `Junges\Kafka\Config\Config`, with their `getCommit()` and `getMaxCommitRetries()` methods.
 
+The `commit()` and `commitAsync()` methods of the `Junges\Kafka\Contracts\Consumer` and `Junges\Kafka\Contracts\Committer` contracts now declare the values they accept, `ConsumerMessage|Message|array|null`, instead of `mixed`, and the parameter of `Consumer::commitAsync()` was renamed from `$message_or_offsets` to `$messageOrOffsets`, like the other ones. Custom committers must update their signatures.
+
 The `Junges\Kafka\Commit\SeekToCurrentErrorCommitter` class, deprecated in v2.12.0, was removed. It did not make failed messages be consumed again. Use `retryFailedMessages()` or a dead letter queue instead, see [handling failed messages](/consuming-messages/handling-failed-messages).
 
 ### Manager

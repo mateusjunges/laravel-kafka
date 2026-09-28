@@ -5,6 +5,7 @@ namespace Junges\Kafka\Commit;
 use Junges\Kafka\Contracts\Committer as CommitterContract;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use RdKafka\KafkaConsumer;
+use RdKafka\Message;
 use RdKafka\TopicPartition;
 
 class Committer implements CommitterContract
@@ -12,7 +13,7 @@ class Committer implements CommitterContract
     public function __construct(private readonly KafkaConsumer $consumer) {}
 
     /** @throws \RdKafka\Exception */
-    public function commit(mixed $messageOrOffsets = null): void
+    public function commit(ConsumerMessage|Message|array|null $messageOrOffsets = null): void
     {
         if ($messageOrOffsets instanceof ConsumerMessage) {
             $topicPartition = new TopicPartition(
@@ -27,7 +28,7 @@ class Committer implements CommitterContract
     }
 
     /** @throws \RdKafka\Exception */
-    public function commitAsync(mixed $messageOrOffsets = null): void
+    public function commitAsync(ConsumerMessage|Message|array|null $messageOrOffsets = null): void
     {
         if ($messageOrOffsets instanceof ConsumerMessage) {
             $topicPartition = new TopicPartition(

@@ -11,8 +11,8 @@ In auto commit mode, the consumer stores the offset of each message after it is 
 
 The `Junges\Kafka\Contracts\Committer` interface has two methods:
 
-- `commit(mixed $messageOrOffsets = null): void`, used for synchronous commits.
-- `commitAsync(mixed $messageOrOffsets = null): void`, used for asynchronous commits.
+- `commit(ConsumerMessage|Message|array|null $messageOrOffsets = null): void`, used for synchronous commits.
+- `commitAsync(ConsumerMessage|Message|array|null $messageOrOffsets = null): void`, used for asynchronous commits.
 
 Both receive what the handler passed to the consumer: nothing, to commit the offsets of the current assignment, a `Junges\Kafka\Contracts\ConsumerMessage` or `RdKafka\Message`, or an array of `RdKafka\TopicPartition`.
 
@@ -25,20 +25,21 @@ use Junges\Kafka\Contracts\Committer;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use RdKafka\Exception;
 use RdKafka\KafkaConsumer;
+use RdKafka\Message;
 use RdKafka\TopicPartition;
 
 class RetryingCommitter implements Committer
 {
     public function __construct(private KafkaConsumer $consumer) {}
 
-    public function commit(mixed $messageOrOffsets = null): void
+    public function commit(ConsumerMessage|Message|array|null $messageOrOffsets = null): void
     {
         retry(3, fn () => $this->consumer->commit($this->offsets($messageOrOffsets)), 100, function (Exception $exception) {
             return $exception->getCode() === RD_KAFKA_RESP_ERR_REBALANCE_IN_PROGRESS;
         });
     }
 
-    public function commitAsync(mixed $messageOrOffsets = null): void
+    public function commitAsync(ConsumerMessage|Message|array|null $messageOrOffsets = null): void
     {
         $this->consumer->commitAsync($this->offsets($messageOrOffsets));
     }

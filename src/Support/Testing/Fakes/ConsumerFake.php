@@ -63,13 +63,13 @@ class ConsumerFake implements Consumer
     }
 
     /** {@inheritdoc} */
-    public function commit(mixed $messageOrOffsets = null): void
+    public function commit(ConsumerMessage|Message|array|null $messageOrOffsets = null): void
     {
         //
     }
 
     /** {@inheritdoc} */
-    public function commitAsync(mixed $message_or_offsets = null): void
+    public function commitAsync(ConsumerMessage|Message|array|null $messageOrOffsets = null): void
     {
         //
     }

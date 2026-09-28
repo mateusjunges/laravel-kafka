@@ -537,13 +537,13 @@ final class ConsumerTest extends LaravelKafkaTestCase
         {
             public function __construct(private bool &$commitCalledRef, private mixed &$commitParamsRef) {}
 
-            public function commit(mixed $messageOrOffsets = null): void
+            public function commit(ConsumerMessage|Message|array|null $messageOrOffsets = null): void
             {
                 $this->commitCalledRef = true;
                 $this->commitParamsRef = $messageOrOffsets;
             }
 
-            public function commitAsync(mixed $messageOrOffsets = null): void
+            public function commitAsync(ConsumerMessage|Message|array|null $messageOrOffsets = null): void
             {
                 // Not used in this test
             }

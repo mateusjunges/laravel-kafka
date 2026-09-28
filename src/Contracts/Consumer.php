@@ -2,6 +2,9 @@
 
 namespace Junges\Kafka\Contracts;
 
+use RdKafka\Message;
+use RdKafka\TopicPartition;
+
 /** The consumer that handles messages, passed to handlers and middlewares along with each message. */
 interface Consumer
 {
@@ -24,28 +27,26 @@ interface Consumer
     /**
      * Commit offsets synchronously.
      *
-     * @param  mixed  $messageOrOffsets  Can be:
-     *                                   - null: Commit offsets for current assignment
-     *                                   - \RdKafka\Message: Commit offset for a single topic+partition
-     *                                   - ConsumerMessage: Commit offset for a single topic+partition
-     *                                   - array of \RdKafka\TopicPartition: Commit offsets for provided partitions
+     * @param  ConsumerMessage|Message|list<TopicPartition>|null  $messageOrOffsets  What to commit:
+     *                                                                               - null: the offsets of the current assignment.
+     *                                                                               - A message: the offset right after the message, in its partition.
+     *                                                                               - An array of topic partitions: the given offsets.
      *
      * @throws \RdKafka\Exception
      */
-    public function commit(mixed $messageOrOffsets = null): void;
+    public function commit(ConsumerMessage|Message|array|null $messageOrOffsets = null): void;
 
     /**
      * Commit offsets asynchronously.
      *
-     * @param  mixed  $message_or_offsets  Can be:
-     *                                     - null: Commit offsets for current assignment
-     *                                     - \RdKafka\Message: Commit offset for a single topic+partition
-     *                                     - ConsumerMessage: Commit offset for a single topic+partition
-     *                                     - array of \RdKafka\TopicPartition: Commit offsets for provided partitions
+     * @param  ConsumerMessage|Message|list<TopicPartition>|null  $messageOrOffsets  What to commit:
+     *                                                                               - null: the offsets of the current assignment.
+     *                                                                               - A message: the offset right after the message, in its partition.
+     *                                                                               - An array of topic partitions: the given offsets.
      *
      * @throws \RdKafka\Exception
      */
-    public function commitAsync(mixed $message_or_offsets = null): void;
+    public function commitAsync(ConsumerMessage|Message|array|null $messageOrOffsets = null): void;
 
     /** Get the current partition assignment for this consumer */
     public function getAssignedPartitions(): array;

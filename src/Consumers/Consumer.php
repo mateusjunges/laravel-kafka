@@ -188,7 +188,7 @@ class Consumer implements ConsumerContract
     }
 
     /** {@inheritdoc} */
-    public function commit(mixed $messageOrOffsets = null): void
+    public function commit(ConsumerMessage|Message|array|null $messageOrOffsets = null): void
     {
         $this->flushProducers();
 
@@ -196,7 +196,7 @@ class Consumer implements ConsumerContract
             $this->committer->commit($messageOrOffsets);
         } catch (Throwable $throwable) {
             if ($throwable->getCode() !== RD_KAFKA_RESP_ERR__NO_OFFSET) {
-                $this->logger->error($messageOrOffsets, $throwable, 'COMMIT_ERROR');
+                $this->logCommitError($messageOrOffsets, $throwable);
 
                 throw $throwable;
             }
@@ -204,15 +204,15 @@ class Consumer implements ConsumerContract
     }
 
     /** {@inheritdoc} */
-    public function commitAsync(mixed $message_or_offsets = null): void
+    public function commitAsync(ConsumerMessage|Message|array|null $messageOrOffsets = null): void
     {
         $this->flushProducers();
 
         try {
-            $this->committer->commitAsync($message_or_offsets);
+            $this->committer->commitAsync($messageOrOffsets);
         } catch (Throwable $throwable) {
             if ($throwable->getCode() !== RD_KAFKA_RESP_ERR__NO_OFFSET) {
-                $this->logger->error($message_or_offsets, $throwable, 'COMMIT_ERROR');
+                $this->logCommitError($messageOrOffsets, $throwable);
 
                 throw $throwable;
             }
@@ -265,6 +265,14 @@ class Consumer implements ConsumerContract
     protected function getLastRestart(): int
     {
         return (int) Cache::driver(config('kafka.cache_driver'))->get('laravel-kafka:consumer:restart', 0);
+    }
+
+    /** The logger only logs Kafka messages, so errors committing other offsets are only thrown. */
+    private function logCommitError(ConsumerMessage|Message|array|null $messageOrOffsets, Throwable $throwable): void
+    {
+        if ($messageOrOffsets instanceof Message) {
+            $this->logger->error($messageOrOffsets, $throwable, 'COMMIT_ERROR');
+        }
     }
 
     /**
