@@ -153,7 +153,7 @@ class Consumer implements MessageConsumer
 
             do {
                 $this->runBeforeCallbacks();
-                $this->retryable->retry(fn () => $this->doConsume());
+                $this->doConsume();
                 $this->runAfterConsumingCallbacks();
                 $this->checkForRestart();
             } while (! $this->maxMessagesLimitReached() && ! $stopTimer->isTimedOut() && ! $this->stopRequested);
@@ -329,7 +329,15 @@ class Consumer implements MessageConsumer
      */
     private function doConsume(): void
     {
-        $message = $this->consumer->consume($this->config->consumerTimeoutInMs);
+        // Only fetching the message is retried. Retrying the handling as well would fetch
+        // the next message when handling fails with a timeout, for instance when a commit
+        // times out, skipping the message that was being handled.
+        $message = null;
+
+        $this->retryable->retry(function () use (&$message): void {
+            $message = $this->consumer->consume($this->config->consumerTimeoutInMs);
+        });
+
         $this->handleMessage($message);
     }
 

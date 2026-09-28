@@ -8,6 +8,7 @@ use Junges\Kafka\Commit\VoidCommitter;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Consumers\CallableConsumer;
 use Junges\Kafka\Consumers\Consumer;
+use Junges\Kafka\Contracts\Committer;
 use Junges\Kafka\Contracts\CommitterFactory;
 use Junges\Kafka\Contracts\Consumer as ContractsConsumer;
 use Junges\Kafka\Contracts\ConsumerMessage;
@@ -20,11 +21,13 @@ use Junges\Kafka\Exceptions\ContextAwareException;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
+use Junges\Kafka\Tests\FailingCommitter;
 use Junges\Kafka\Tests\Fakes\FakeConsumer;
 use Junges\Kafka\Tests\Fakes\FakeHandler;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use Mockery as m;
 use PHPUnit\Framework\Attributes\Test;
+use RdKafka\Exception as RdKafkaException;
 use RdKafka\KafkaConsumer;
 use RdKafka\KafkaConsumerTopic;
 use RdKafka\Message;
@@ -539,7 +542,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $commitParams = null;
 
         // Mock the committer to track manual commits
-        $customCommitter = new class($commitCalled, $commitParams) implements \Junges\Kafka\Contracts\Committer
+        $customCommitter = new class($commitCalled, $commitParams) implements Committer
         {
             public function __construct(private bool &$commitCalledRef, private mixed &$commitParamsRef) {}
 
@@ -567,9 +570,9 @@ final class ConsumerTest extends LaravelKafkaTestCase
 
         $customCommitterFactory = new readonly class($customCommitter) implements CommitterFactory
         {
-            public function __construct(private \Junges\Kafka\Contracts\Committer $committer) {}
+            public function __construct(private Committer $committer) {}
 
-            public function make(KafkaConsumer $kafkaConsumer, Config $config): \Junges\Kafka\Contracts\Committer
+            public function make(KafkaConsumer $kafkaConsumer, Config $config): Committer
             {
                 return $this->committer;
             }
@@ -1162,6 +1165,36 @@ final class ConsumerTest extends LaravelKafkaTestCase
 
         $this->assertSame(1, $config->getConsumer()->attempts);
         Sleep::assertNeverSlept();
+    }
+
+    #[Test]
+    public function it_does_not_fetch_the_next_message_when_handling_a_message_times_out(): void
+    {
+        $message = $this->makeMessage('ok', offset: 0);
+
+        $mockedKafkaConsumer = m::mock(KafkaConsumer::class);
+        $mockedKafkaConsumer->shouldReceive('subscribe')->andReturnSelf();
+        $mockedKafkaConsumer->shouldReceive('consume')->once()->andReturn($message);
+
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
+
+        $timeout = new RdKafkaException('Request timed out', RD_KAFKA_RESP_ERR_REQUEST_TIMED_OUT);
+
+        $committerFactory = new class($timeout) implements CommitterFactory
+        {
+            public function __construct(private readonly RdKafkaException $timeout) {}
+
+            public function make(KafkaConsumer $kafkaConsumer, Config $config): Committer
+            {
+                return new FailingCommitter($this->timeout, PHP_INT_MAX);
+            }
+        };
+
+        $consumer = new Consumer($this->configForFailingHandler(), new JsonDeserializer, $committerFactory);
+
+        $this->expectExceptionObject($timeout);
+
+        $consumer->consume();
     }
 
     private function makeMessage(string $payload, int $offset): Message
