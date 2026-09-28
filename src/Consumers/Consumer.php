@@ -63,7 +63,7 @@ class Consumer implements MessageConsumer
 
     private readonly Logger $logger;
 
-    private KafkaConsumer $consumer;
+    private ?KafkaConsumer $consumer = null;
 
     private KafkaProducer $producer;
 
@@ -163,6 +163,8 @@ class Consumer implements MessageConsumer
                 $callback(...)();
             }
         } finally {
+            $this->closeConsumer();
+
             if ($this->supportAsyncSignals()) {
                 $this->restoreSignalHandlers();
             }
@@ -218,7 +220,7 @@ class Consumer implements MessageConsumer
     /** Get the current partition assignment for this consumer */
     public function getAssignedPartitions(): array
     {
-        if (! isset($this->consumer)) {
+        if (! $this->consumer instanceof KafkaConsumer) {
             return [];
         }
 
@@ -261,6 +263,29 @@ class Consumer implements MessageConsumer
     protected function getLastRestart(): int
     {
         return (int) Cache::driver(config('kafka.cache_driver'))->get('laravel-kafka:consumer:restart', 0);
+    }
+
+    /**
+     * Closing the consumer commits the offsets stored so far, when auto commit is enabled, and
+     * leaves the consumer group right away, so its partitions are reassigned without waiting
+     * for the session to time out. It runs while an exception may be propagating, so a
+     * failure to close is reported instead of replacing that exception.
+     */
+    private function closeConsumer(): void
+    {
+        if (! $this->consumer instanceof KafkaConsumer) {
+            return;
+        }
+
+        $consumer = $this->consumer;
+        $this->consumer = null;
+        $this->offsetStoreTopics = [];
+
+        try {
+            $consumer->close();
+        } catch (Throwable $throwable) {
+            report($throwable);
+        }
     }
 
     private function runBeforeCallbacks(): void
@@ -394,11 +419,8 @@ class Consumer implements MessageConsumer
             $success = $this->handleException($throwable, $message);
 
             // Without a dead letter queue, the offset of the failed message is left uncommitted,
-            // so it is consumed again once a consumer resumes from this partition. Closing the
-            // consumer commits the offsets stored so far and leaves the group right away.
+            // so it is consumed again once a consumer resumes from this partition.
             if (! $success && $this->config->shouldStopOnFailure()) {
-                $this->consumer->close();
-
                 throw ConsumerException::stoppedOnFailure($message, $throwable);
             }
         }

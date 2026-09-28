@@ -79,6 +79,8 @@ The `Junges\Kafka\Producers\Builder` class and the `Junges\Kafka\Contracts\Messa
 
 The consumer now retries only fetching messages when Kafka times out, not handling them. Previously, a timeout while handling a message, such as a commit that still timed out after the committer retries, made the consumer fetch the next message, skipping the one being handled. Now the exception is thrown by `consume()` and the consumer stops.
 
+The consumer is now closed whenever `consume()` returns or throws, not only when it stops on a failure. Closing it commits the stored offsets, when auto commit is enabled, and leaves the consumer group right away, so its partitions are reassigned without waiting for the session to time out. As a consequence, `getAssignedPartitions()` returns an empty array once `consume()` returns.
+
 ### Committers
 
 The `$success` parameter was removed from `Junges\Kafka\Contracts\Committer::commitMessage()`, which is now `commitMessage(Message $message): void`. Custom committers must drop the parameter, or give it a default value (`bool $success = true`) if they also support v2.

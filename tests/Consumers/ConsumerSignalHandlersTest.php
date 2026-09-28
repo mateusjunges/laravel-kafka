@@ -174,7 +174,7 @@ final class ConsumerSignalHandlersTest extends LaravelKafkaTestCase
 
     private function mockConsumerRaisingSignalWhileConsuming(int $signal, ?Message $message = null): void
     {
-        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')

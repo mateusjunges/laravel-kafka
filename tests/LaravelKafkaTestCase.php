@@ -118,7 +118,7 @@ abstract class LaravelKafkaTestCase extends Orchestra
 
     protected function mockConsumerWithMessageFailingCommit(Message $message): void
     {
-        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')
@@ -133,7 +133,7 @@ abstract class LaravelKafkaTestCase extends Orchestra
 
     protected function mockConsumerWithMessage(Message ...$message): void
     {
-        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')
@@ -146,6 +146,15 @@ abstract class LaravelKafkaTestCase extends Orchestra
             ->getMock();
 
         $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
+    }
+
+    /** Mock a KafkaConsumer that may be closed, as the consumer closes it whenever it stops consuming. */
+    protected function mockKafkaConsumer(): m\MockInterface
+    {
+        $consumer = m::mock(KafkaConsumer::class);
+        $consumer->shouldReceive('close')->byDefault();
+
+        return $consumer;
     }
 
     protected function getPropertyWithReflection(string $property, object $object): mixed

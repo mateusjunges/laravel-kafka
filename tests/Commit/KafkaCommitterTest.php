@@ -20,7 +20,7 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_commit(): void
     {
-        $kafkaConsumer = m::mock(KafkaConsumer::class)
+        $kafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('commit')->once()
             ->andReturnSelf();
 
@@ -48,7 +48,7 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_commit_to_dlq(): void
     {
-        $kafkaConsumer = m::mock(KafkaConsumer::class)
+        $kafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('commit')->once()
             ->andReturnSelf();
 
@@ -87,7 +87,7 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
 
         $commitCalled = false;
 
-        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')
@@ -145,7 +145,7 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
         $message->partition = 1;
         $message->headers = [];
 
-        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')
@@ -199,7 +199,7 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
 
         $autoCommitCalled = false;
 
-        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')

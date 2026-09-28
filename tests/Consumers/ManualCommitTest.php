@@ -34,7 +34,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $commitCalled = false;
         $committedOffsets = [];
 
-        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')
@@ -114,7 +114,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
 
         $commitAsyncCalled = false;
 
-        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')
@@ -171,7 +171,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
 
         $commitCalled = false;
 
-        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')
@@ -229,7 +229,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $commitCalled = false;
         $committedMessage = null;
 
-        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')
@@ -290,7 +290,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $message->partition = 1;
         $message->headers = [];
 
-        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')
@@ -349,7 +349,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $dummyMessage->payload = '{}';
         $dummyMessage->headers = [];
 
-        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')
@@ -423,7 +423,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
 
         $exceptionThrown = false;
 
-        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')
@@ -478,7 +478,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
 
         $noExceptionThrown = true;
 
-        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')
@@ -534,7 +534,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
 
         $autoCommitCalled = false;
 
-        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')
@@ -594,7 +594,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
 
         $manualCommitCalled = false;
 
-        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')
@@ -652,7 +652,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $message->partition = 1;
         $message->headers = [];
 
-        $mockedKafkaConsumerManualCommit = m::mock(KafkaConsumer::class)
+        $mockedKafkaConsumerManualCommit = $this->mockKafkaConsumer()
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')
@@ -713,7 +713,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
 
         $commitCallsLog = [];
 
-        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')
