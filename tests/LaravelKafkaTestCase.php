@@ -11,6 +11,7 @@ use Orchestra\Testbench\TestCase as Orchestra;
 use Override;
 use RdKafka\Conf;
 use RdKafka\KafkaConsumer;
+use RdKafka\KafkaConsumerTopic;
 use RdKafka\Message;
 use RdKafka\Producer as KafkaProducer;
 use RdKafka\ProducerTopic;
@@ -148,11 +149,18 @@ abstract class LaravelKafkaTestCase extends Orchestra
         $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
     }
 
-    /** Mock a KafkaConsumer that may be closed, as the consumer closes it whenever it stops consuming. */
+    /**
+     * Mock a KafkaConsumer that may be closed, as the consumer closes it whenever it stops consuming,
+     * and that may store offsets, as it does after processing each message in auto commit mode.
+     */
     protected function mockKafkaConsumer(): m\MockInterface
     {
+        $topic = m::mock(KafkaConsumerTopic::class);
+        $topic->shouldReceive('offsetStore')->byDefault();
+
         $consumer = m::mock(KafkaConsumer::class);
         $consumer->shouldReceive('close')->byDefault();
+        $consumer->shouldReceive('newTopic')->andReturn($topic)->byDefault();
 
         return $consumer;
     }

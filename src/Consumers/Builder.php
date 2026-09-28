@@ -56,7 +56,7 @@ class Builder implements ConsumerBuilderContract
 
     protected bool $stopAfterLastMessage = false;
 
-    protected bool $stopOnFailure = false;
+    protected bool $skipFailedMessages = false;
 
     protected int $failedMessageRetries = 0;
 
@@ -316,9 +316,9 @@ class Builder implements ConsumerBuilderContract
     }
 
     /** {@inheritDoc} */
-    public function stopOnFailure(bool $stopOnFailure = true): self
+    public function skipFailedMessages(bool $skipFailedMessages = true): self
     {
-        $this->stopOnFailure = $stopOnFailure;
+        $this->skipFailedMessages = $skipFailedMessages;
 
         return $this;
     }
@@ -428,7 +428,7 @@ class Builder implements ConsumerBuilderContract
             partitionAssignment: $this->partitionAssignment,
             whenStopConsuming: $this->onStopConsuming,
             consumerTimeoutInMs: $this->consumerTimeoutInMs,
-            stopOnFailure: $this->stopOnFailure,
+            skipFailedMessages: $this->skipFailedMessages,
             failedMessageRetries: $this->failedMessageRetries,
             failedMessageRetryBackoff: $this->failedMessageRetryBackoff,
         );

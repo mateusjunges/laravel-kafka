@@ -16,7 +16,7 @@ able to make it to the desired destination due to some error.
 To create a `dlq` in this package, you can use the `withDlq` method. If you don't specify the DLQ topic name, it will be created based on the topic you are consuming,
 adding the `-dlq` suffix to the topic name.
 
-Without a dead letter queue, messages whose handler fails are skipped and their offsets are committed. See [handling failed messages](handling-failed-messages.md) for the available options.
+Without a dead letter queue, the consumer stops when a message fails, without committing its offset. See [handling failed messages](handling-failed-messages.md) for the available options.
 
 ```php
 $consumer = \Junges\Kafka\Facades\Kafka::consumer()->subscribe('topic')->withDlq();

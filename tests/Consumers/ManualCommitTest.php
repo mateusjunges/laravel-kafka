@@ -240,7 +240,9 @@ final class ManualCommitTest extends LaravelKafkaTestCase
                 $commitCalled = true;
                 $committedMessage = $msg;
 
-                return $msg === $message;
+                return $msg->topic_name === $message->topic_name
+                    && $msg->partition === $message->partition
+                    && $msg->offset === $message->offset;
             }))
             ->andReturn()
             ->getMock();

@@ -81,9 +81,29 @@ The consumer now retries only fetching messages when Kafka times out, not handli
 
 The consumer is now closed whenever `consume()` returns or throws, not only when it stops on a failure. Closing it commits the stored offsets, when auto commit is enabled, and leaves the consumer group right away, so its partitions are reassigned without waiting for the session to time out. As a consequence, `getAssignedPartitions()` returns an empty array once `consume()` returns.
 
+### Failed messages
+
+Failed messages are now safe by default. Without a dead letter queue, the consumer stops when a message fails, after its retries are used, and `consume()` throws a `Junges\Kafka\Exceptions\ConsumerException`. The offset of the failed message is not committed, so it is consumed again once the consumer is restarted. In v2, the consumer committed the offset of the failed message and moved on, losing it.
+
+This is what `stopOnFailure()` did in v2.12, so that method was removed. Remove it from your consumers. To keep the v2 behavior, call the new `skipFailedMessages()` method. A `Junges\Kafka\Events\MessageSkipped` event is dispatched for every skipped message.
+
+```php
+// v2.x: skipping failed messages was the default
+Kafka::consumer(['page-views'])->withHandler($handler);
+
+// v3.0
+Kafka::consumer(['page-views'])->skipFailedMessages()->withHandler($handler);
+```
+
+The `kafka:consume` command follows the new default as well.
+
+With auto commit enabled, every consumer now sets the `enable.auto.offset.store` option to `false` and stores the offset of each message only after it is processed or skipped, even when set to `true` through `withOptions()`. In v2, this only happened when `stopOnFailure()` or `retryFailedMessages()` were used.
+
+See [handling failed messages](/consuming-messages/handling-failed-messages) for details.
+
 ### Committers
 
-The `$success` parameter was removed from `Junges\Kafka\Contracts\Committer::commitMessage()`, which is now `commitMessage(Message $message): void`. Custom committers must drop the parameter, or give it a default value (`bool $success = true`) if they also support v2.
+The `$success` parameter was removed from `Junges\Kafka\Contracts\Committer::commitMessage()`, which is now `commitMessage(Message $message): void`. Failed messages only reach `commitMessage()` when they are skipped or sent to the dead letter queue. Custom committers must drop the parameter, or give it a default value (`bool $success = true`) if they also support v2. To monitor failed messages, listen to the `Junges\Kafka\Events\MessageSkipped` and `Junges\Kafka\Events\MessageSentToDLQ` events.
 
 The `Junges\Kafka\Commit\SeekToCurrentErrorCommitter` class, deprecated in v2.12.0, was removed. It did not make failed messages be consumed again. Use `retryFailedMessages()` or a dead letter queue instead, see [handling failed messages](/consuming-messages/handling-failed-messages).
 

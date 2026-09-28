@@ -19,6 +19,7 @@ use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Contracts\MessageDeserializer;
 use Junges\Kafka\Events\MessageConsumed;
 use Junges\Kafka\Events\MessageSentToDLQ;
+use Junges\Kafka\Events\MessageSkipped;
 use Junges\Kafka\Events\StartedConsumingMessage;
 use Junges\Kafka\Exceptions\ConsumerException;
 use Junges\Kafka\MessageCounter;
@@ -410,29 +411,29 @@ class Consumer implements MessageConsumer
                     return ! $this->stopRequested;
                 },
             );
-            $success = true;
 
             // Dispatch an event informing that a message was consumed.
             $this->dispatcher->dispatch(new MessageConsumed($consumedMessage));
         } catch (Throwable $throwable) {
             $this->logger->error($message, $throwable);
-            $success = $this->handleException($throwable, $message);
 
-            // Without a dead letter queue, the offset of the failed message is left uncommitted,
-            // so it is consumed again once a consumer resumes from this partition.
-            if (! $success && $this->config->shouldStopOnFailure()) {
-                throw ConsumerException::stoppedOnFailure($message, $throwable);
+            if (! $this->handleException($throwable, $message)) {
+                // Without a dead letter queue, the consumer stops and the offset of the failed message
+                // is left uncommitted, so it is consumed again once a consumer resumes from this
+                // partition. Skipping the message and moving on must be explicitly enabled.
+                if (! $this->config->shouldSkipFailedMessages()) {
+                    throw ConsumerException::stoppedOnFailure($message, $throwable);
+                }
+
+                $this->dispatcher->dispatch(new MessageSkipped($this->getConsumerMessage($message), $throwable));
             }
         }
 
-        if ($success) {
-            $this->storeOffsetIfRequired($message);
-        }
-
+        $this->storeOffsetIfRequired($message);
         $this->autoCommitIfEnabled($message);
     }
 
-    /** Handle exceptions while consuming messages. */
+    /** Handle exceptions while consuming messages, returning whether the message was sent to the dead letter queue. */
     private function handleException(Throwable $exception, Message|ConsumerMessage $message): bool
     {
         try {

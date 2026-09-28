@@ -53,7 +53,7 @@ When handlers call `$consumer->commit()` or `$consumer->commitAsync()`, these ca
 
 ### Usage example
 If you want to define a new committer for you consumer, you must start by creating a new class that implements the `Committer` interface.
-The `commitMessage` method is called in auto commit mode after each message is handled. The following committer commits those messages asynchronously, so the consumer doesn't wait for Kafka to acknowledge each commit:
+The `commitMessage` method is called in auto commit mode after a message is processed, or after a failed message is skipped or sent to the dead letter queue. The following committer commits those messages asynchronously, so the consumer doesn't wait for Kafka to acknowledge each commit:
 
 ```php
 use Junges\Kafka\Contracts\Committer as CommitterContract;
@@ -105,6 +105,8 @@ class AsyncCommitter implements CommitterContract
     }
 }
 ```
+
+To monitor failed messages, listen to the `Junges\Kafka\Events\MessageSkipped` and `Junges\Kafka\Events\MessageSentToDLQ` events instead of doing it in a committer.
 
 After creating your custom committer implementation, you must create a committer factory, which is a simples class that implements the `CommitterFactory` interface, which will be used to provide your custom committer implementation to the consumer class:
 

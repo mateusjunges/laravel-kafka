@@ -90,7 +90,7 @@ class Config
         public readonly int $flushTimeoutInMs = 1000,
         public readonly int $flushRetrySleepInMs = 100,
         public readonly int $consumerTimeoutInMs = 2000,
-        private readonly bool $stopOnFailure = false,
+        private readonly bool $skipFailedMessages = false,
         private readonly int $failedMessageRetries = 0,
         private readonly int $failedMessageRetryBackoff = 0,
     ) {}
@@ -140,9 +140,10 @@ class Config
         return $this->stopAfterLastMessage;
     }
 
-    public function shouldStopOnFailure(): bool
+    /** Determine if failed messages are skipped when there is no dead letter queue, instead of stopping the consumer. */
+    public function shouldSkipFailedMessages(): bool
     {
-        return $this->stopOnFailure;
+        return $this->skipFailedMessages;
     }
 
     public function getFailedMessageRetries(): int
@@ -162,7 +163,7 @@ class Config
      */
     public function shouldStoreOffsetsAfterProcessing(): bool
     {
-        return $this->autoCommit && ($this->stopOnFailure || $this->failedMessageRetries > 0);
+        return $this->autoCommit;
     }
 
     public function getConsumerOptions(): array
@@ -175,9 +176,9 @@ class Config
             ...$this->getSecurityProtocolOptions(),
         ];
 
-        // With auto commit enabled, librdkafka stores the offset of each message as soon as it is
-        // fetched and commits it in the background, even when the handler fails. When failed messages
-        // are retried or stop the consumer, offsets are stored only after the message is processed.
+        // By default, librdkafka stores the offset of each message as soon as it is fetched and commits
+        // it in the background, even when the handler fails. With auto commit enabled, offsets are
+        // stored by the consumer instead, only after each message is processed or skipped.
         $overrides = $this->shouldStoreOffsetsAfterProcessing()
             ? ['enable.auto.offset.store' => 'false']
             : [];

@@ -297,17 +297,17 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     }
 
     #[Test]
-    public function it_can_set_stop_on_failure(): void
+    public function it_can_skip_failed_messages(): void
     {
-        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->stopOnFailure();
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->skipFailedMessages();
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
-        $this->assertTrue($this->getPropertyWithReflection('stopOnFailure', $consumer));
+        $this->assertTrue($this->getPropertyWithReflection('skipFailedMessages', $consumer));
 
-        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->stopOnFailure(false);
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->skipFailedMessages(false);
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
-        $this->assertFalse($this->getPropertyWithReflection('stopOnFailure', $consumer));
+        $this->assertFalse($this->getPropertyWithReflection('skipFailedMessages', $consumer));
     }
 
     #[Test]

@@ -109,8 +109,11 @@ interface ConsumerBuilder extends InteractsWithConfigCallbacks
     /** Enable or disable the read to end option. */
     public function stopAfterLastMessage(bool $stopAfterLastMessage = true): self;
 
-    /** Stop consuming when a message fails and there is no dead letter queue, without committing its offset. */
-    public function stopOnFailure(bool $stopOnFailure = true): self;
+    /**
+     * Skip messages that fail when there is no dead letter queue, committing their offsets.
+     * By default, the consumer stops without committing the offset of the failed message.
+     */
+    public function skipFailedMessages(bool $skipFailedMessages = true): self;
 
     /** Call the handler of a failed message again up to the given number of times before handling it as failed. */
     public function retryFailedMessages(int $times, int $backoffInMs = 0): self;
