@@ -964,6 +964,8 @@ final class ConsumerTest extends LaravelKafkaTestCase
 
         $this->assertSame(1, $consumer->consumedMessagesCount());
         Event::assertDispatched(MessageSkipped::class, fn (MessageSkipped $event) => $event->message->getOffset() === 0
+            && $event->message->getBody() === ['body' => 'failing']
+            && $event->message->getAttempts() === 1
             && $event->throwable instanceof RuntimeException);
     }
 

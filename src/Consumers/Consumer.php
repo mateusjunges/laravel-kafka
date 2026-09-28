@@ -386,6 +386,9 @@ class Consumer implements MessageConsumer
      */
     private function executeMessage(Message $message): void
     {
+        $consumedMessage = null;
+        $handledMessage = null;
+
         try {
             $consumedMessage = $this->getConsumerMessage($message);
 
@@ -426,7 +429,11 @@ class Consumer implements MessageConsumer
                     throw ConsumerException::stoppedOnFailure($message, $throwable);
                 }
 
-                $this->dispatcher->dispatch(new MessageSkipped($this->getConsumerMessage($message), $throwable));
+                // The skipped message is the one the handler last received, or the raw message when it
+                // failed before reaching the handler, for instance while being deserialized.
+                $skippedMessage = $handledMessage ?? $consumedMessage ?? $this->getConsumerMessage($message);
+
+                $this->dispatcher->dispatch(new MessageSkipped($skippedMessage, $throwable));
             }
         }
 
