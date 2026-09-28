@@ -9,7 +9,7 @@ You can install this package using composer:
 composer require mateusjunges/laravel-kafka
 ```
 
-You need to publish the configuration file using
+The package works with its default configuration, reading the brokers and credentials from environment variables such as `KAFKA_BROKERS`. To customize it, for instance to add [connections](/advanced-usage/connections), publish the configuration file:
 
 ```bash
 php artisan vendor:publish --tag=laravel-kafka-config
