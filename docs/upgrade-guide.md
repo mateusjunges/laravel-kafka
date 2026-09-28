@@ -81,6 +81,20 @@ The consumer now retries only fetching messages when Kafka times out, not handli
 
 The consumer is now closed whenever `consume()` returns or throws, not only when it stops on a failure. Closing it commits the stored offsets, when auto commit is enabled, and leaves the consumer group right away, so its partitions are reassigned without waiting for the session to time out. As a consequence, `getAssignedPartitions()` returns an empty array once `consume()` returns.
 
+### The kafka:consume command
+
+The `kafka:consume` command now runs consumer classes, which extend `Junges\Kafka\KafkaConsumer`, instead of receiving the topics, the handler and the rest of the configuration as options. Its `--topics`, `--consumer`, `--deserializer`, `--groupId`, `--commit`, `--dlq`, `--maxMessage`, `--maxTime` and `--securityProtocol` options were removed, along with the `Junges\Kafka\Console\Commands\KafkaConsumer\Options` class. Move the configuration to a consumer class, which you can create with `php artisan make:kafka-consumer`:
+
+```bash
+# v2.x
+php artisan kafka:consume --topics=orders --consumer="App\Handlers\OrderHandler" --groupId=orders --dlq=orders-dlq
+
+# v3.0
+php artisan kafka:consume OrdersConsumer
+```
+
+The `--max-messages`, `--max-time` and `--stop-when-empty` options are still available. See [consumer classes](/consuming-messages/class-structure) for details.
+
 ### Failed messages
 
 Failed messages are now safe by default. Without a dead letter queue, the consumer stops when a message fails, after its retries are used, and `consume()` throws a `Junges\Kafka\Exceptions\ConsumerException`. The offset of the failed message is not committed, so it is consumed again once the consumer is restarted. In v2, the consumer committed the offset of the failed message and moved on, losing it.

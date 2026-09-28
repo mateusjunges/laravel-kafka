@@ -43,6 +43,20 @@ class Factory implements Manager
     }
 
     /** {@inheritDoc} */
+    public function consumerFor(KafkaConsumer|string $consumer): ConsumerBuilder
+    {
+        if (is_string($consumer)) {
+            if (! is_subclass_of($consumer, KafkaConsumer::class)) {
+                throw new InvalidArgumentException("The consumer [{$consumer}] must extend [".KafkaConsumer::class.'].');
+            }
+
+            $consumer = app($consumer);
+        }
+
+        return $consumer->toBuilder($this);
+    }
+
+    /** {@inheritDoc} */
     public function flush(): void
     {
         foreach ($this->connections as $connection) {

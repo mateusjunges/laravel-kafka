@@ -11,6 +11,7 @@ use Junges\Kafka\Support\Testing\Fakes\KafkaFake;
  * @method static \Junges\Kafka\Producers\PendingMessage publish(string|null $topic = null)
  * @method static \Junges\Kafka\Producers\PendingMessage publishSync(string|null $topic = null)
  * @method static \Junges\Kafka\Consumers\Builder consumer(array $topics = [], string|null $groupId = null)
+ * @method static \Junges\Kafka\Consumers\Builder consumerFor(\Junges\Kafka\KafkaConsumer|string $consumer)
  * @method static void flush()
  * @method static string getDefaultConnection()
  * @method static void assertPublished(\Junges\Kafka\Contracts\ProducerMessage|null $expectedMessage = null, callable|null $callback = null)

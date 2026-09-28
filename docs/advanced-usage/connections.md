@@ -52,7 +52,7 @@ Kafka::connection('analytics')->consumer(['page-views'])
     ->consume();
 ```
 
-To consume using another connection from the `kafka:consume` command, use the `--connection` option.
+[Consumer classes](/consuming-messages/class-structure) use the connection defined in their `$connection` property.
 
 ### Configuration reference
 

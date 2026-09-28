@@ -56,3 +56,33 @@ public function test_post_is_marked_as_published()
 }
 ```
 
+### Testing consumer classes
+
+[Consumer classes](../consuming-messages/class-structure.md) can be tested the same way, building them with the `consumerFor` method:
+
+```php
+use App\Kafka\Consumers\OrdersConsumer;
+use Junges\Kafka\Facades\Kafka;
+use Junges\Kafka\Message\ConsumedMessage;
+
+public function test_orders_are_created()
+{
+    Kafka::fake();
+
+    Kafka::shouldReceiveMessages([
+        new ConsumedMessage(
+            topicName: 'orders',
+            partition: 0,
+            headers: [],
+            body: ['id' => 1],
+            key: null,
+            offset: 0,
+            timestamp: 0,
+        ),
+    ]);
+
+    Kafka::consumerFor(OrdersConsumer::class)->build()->consume();
+
+    $this->assertDatabaseHas('orders', ['id' => 1]);
+}
+```

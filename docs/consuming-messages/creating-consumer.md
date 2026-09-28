@@ -31,6 +31,8 @@ $consumer = Kafka::connection('analytics')->consumer(['topic-1']);
 
 These methods return a `Junges\Kafka\Consumers\Builder` instance, and you can use it to configure your consumer.
 
+Consumers can also be defined as classes and run with the `kafka:consume` command. See [consumer classes](class-structure.md) for details.
+
 ```+parse
 <x-sponsors.request-sponsor/>
 ```

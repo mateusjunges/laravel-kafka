@@ -4,6 +4,7 @@ namespace Junges\Kafka\Contracts;
 
 use Junges\Kafka\Connection;
 use Junges\Kafka\Consumers\Builder;
+use Junges\Kafka\KafkaConsumer;
 use Junges\Kafka\Producers\PendingMessage;
 
 interface Manager
@@ -19,6 +20,13 @@ interface Manager
 
     /** Start building a consumer using the default connection. */
     public function consumer(array $topics = [], ?string $groupId = null): Builder;
+
+    /**
+     * Create the builder of the given consumer class.
+     *
+     * @param  KafkaConsumer|class-string<KafkaConsumer>  $consumer
+     */
+    public function consumerFor(KafkaConsumer|string $consumer): Builder;
 
     /** Wait until every message queued on the resolved connections is delivered. */
     public function flush(): void;

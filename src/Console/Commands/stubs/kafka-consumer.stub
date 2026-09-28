@@ -1,0 +1,25 @@
+<?php
+
+namespace {{ namespace }};
+
+use Junges\Kafka\Contracts\ConsumerMessage;
+use Junges\Kafka\Contracts\MessageConsumer;
+use Junges\Kafka\KafkaConsumer;
+
+class {{ class }} extends KafkaConsumer
+{
+    /**
+     * The topics to consume.
+     *
+     * @var list<string>
+     */
+    public array $topics = [];
+
+    /**
+     * Handle a consumed message.
+     */
+    public function handle(ConsumerMessage $message, MessageConsumer $consumer): void
+    {
+        //
+    }
+}

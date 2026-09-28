@@ -7,6 +7,7 @@ use Illuminate\Queue\Events\JobExceptionOccurred;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Support\ServiceProvider;
 use Junges\Kafka\Console\Commands\ConsumerCommand;
+use Junges\Kafka\Console\Commands\MakeConsumerCommand;
 use Junges\Kafka\Console\Commands\RestartConsumersCommand;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\Logger as LoggerContract;
@@ -32,6 +33,7 @@ class LaravelKafkaServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 ConsumerCommand::class,
+                MakeConsumerCommand::class,
                 RestartConsumersCommand::class,
             ]);
         }
