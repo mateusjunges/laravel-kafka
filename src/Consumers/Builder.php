@@ -111,9 +111,9 @@ class Builder
     }
 
     /** Creates a new ConsumerBuilder instance for the given connection. */
-    public static function create(ConnectionConfig $connection, array $topics = [], ?string $groupId = null): self
+    public static function create(ConnectionConfig $connection, array $topics = [], ?string $groupId = null): static
     {
-        return new self(
+        return new static(
             connection: $connection,
             topics: $topics,
             groupId: $groupId
@@ -406,7 +406,13 @@ class Builder
     /** Build the Kafka consumer. */
     public function build(): ConsumerContract
     {
-        $config = new Config(
+        return new Consumer($this->makeConfig(), $this->deserializer, $this->committerFactory);
+    }
+
+    /** Create the configuration of the consumer. */
+    protected function makeConfig(): Config
+    {
+        return new Config(
             broker: $this->brokers,
             topics: $this->topics,
             securityProtocol: $this->getSecurityProtocol(),
@@ -429,8 +435,6 @@ class Builder
             failedMessageRetries: $this->failedMessageRetries,
             failedMessageRetryBackoff: $this->failedMessageRetryBackoff,
         );
-
-        return new Consumer($config, $this->deserializer, $this->committerFactory);
     }
 
     /**

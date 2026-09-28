@@ -2,30 +2,17 @@
 
 namespace Junges\Kafka\Support\Testing\Fakes;
 
-use Junges\Kafka\Config\Config;
-use Junges\Kafka\Config\ConnectionConfig;
 use Junges\Kafka\Consumers\Builder;
-use Junges\Kafka\Consumers\MessageHandler;
 use Junges\Kafka\Contracts\Consumer as ConsumerContract;
+use Junges\Kafka\Contracts\ConsumerMessage;
 use Override;
 
 class BuilderFake extends Builder
 {
-    /** @var \Junges\Kafka\Contracts\ConsumerMessage[] */
+    /** @var list<ConsumerMessage> */
     private array $messages = [];
 
-    /** {@inheritDoc} */
-    #[Override]
-    public static function create(ConnectionConfig $connection, array $topics = [], ?string $groupId = null): self
-    {
-        return new self(
-            connection: $connection,
-            topics: $topics,
-            groupId: $groupId
-        );
-    }
-
-    /** Set fake messages to the consumer.  */
+    /** Set the messages the faked consumer receives. */
     public function setMessages(array $messages): self
     {
         $this->messages = $messages;
@@ -33,34 +20,10 @@ class BuilderFake extends Builder
         return $this;
     }
 
-    /** Build the Kafka consumer. */
+    /** Build a consumer that handles the given messages instead of consuming from Kafka. */
     #[Override]
     public function build(): ConsumerContract
     {
-        $config = new Config(
-            broker: $this->brokers,
-            topics: $this->topics,
-            securityProtocol: $this->getSecurityProtocol(),
-            groupId: $this->groupId,
-            handler: new MessageHandler($this->handler, $this->middlewares, $this->onMessageFailed),
-            sasl: $this->saslConfig,
-            dlq: $this->resolveDlq(),
-            maxMessages: $this->maxMessages,
-            autoCommit: $this->autoCommit,
-            customOptions: $this->options,
-            stopAfterLastMessage: $this->stopWhenEmpty,
-            callbacks: $this->resolveCallbacks(),
-            beforeConsumingCallbacks: $this->beforeConsumingCallbacks,
-            afterConsumingCallbacks: $this->afterConsumingCallbacks,
-            whenStopConsuming: $this->onStopConsuming,
-            skipFailedMessages: $this->skipFailedMessages,
-            failedMessageRetries: $this->failedMessageRetries,
-            failedMessageRetryBackoff: $this->failedMessageRetryBackoff,
-        );
-
-        return new ConsumerFake(
-            $config,
-            $this->messages
-        );
+        return new ConsumerFake($this->makeConfig(), $this->messages);
     }
 }
