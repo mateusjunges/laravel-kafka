@@ -17,8 +17,11 @@ use Junges\Kafka\Events\CouldNotPublishMessage as CouldNotPublishMessageEvent;
 use Junges\Kafka\Events\MessagePublished;
 use Junges\Kafka\Exceptions\CouldNotPublishMessage;
 use Junges\Kafka\Facades\Kafka;
+use Junges\Kafka\Message\Deserializers\JsonDeserializer;
 use Junges\Kafka\Message\Message;
 use Junges\Kafka\Producers\PendingMessage;
+use Junges\Kafka\Tests\Fakes\FakeDeserializer;
+use Junges\Kafka\Tests\Fakes\FakeSerializer;
 use LogicException;
 use Mockery as m;
 use PHPUnit\Framework\Attributes\Test;
@@ -252,6 +255,29 @@ final class KafkaTest extends LaravelKafkaTestCase
         $this->expectException(LogicException::class);
 
         Kafka::connection()->onOAuthBearerTokenRefresh(fn () => null);
+    }
+
+    #[Test]
+    public function it_uses_the_serializer_and_deserializer_of_the_connection(): void
+    {
+        config(['kafka.connections.avro' => [
+            'brokers' => 'avro:9092',
+            'producer' => ['serializer' => FakeSerializer::class],
+            'consumer' => ['deserializer' => FakeDeserializer::class],
+        ]]);
+
+        $mockedProducerTopic = m::mock(ProducerTopic::class)
+            ->shouldReceive('producev')->once()
+            ->withArgs(fn ($partition, $flags, $payload) => $payload === 'serialized by '.FakeSerializer::class)
+            ->andReturn(m::self())
+            ->getMock();
+
+        $this->mockRdKafkaProducer($mockedProducerTopic);
+
+        Kafka::connection('avro')->publishSync('test')->withBody(['foo' => 'bar'])->send();
+
+        $this->assertInstanceOf(FakeDeserializer::class, $this->getPropertyWithReflection('deserializer', Kafka::connection('avro')->consumer()));
+        $this->assertInstanceOf(JsonDeserializer::class, $this->getPropertyWithReflection('deserializer', Kafka::consumer()));
     }
 
     #[Test]

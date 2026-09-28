@@ -106,7 +106,7 @@ class Builder implements ConsumerBuilderContract
         $this->maxMessages = -1;
         $this->middlewares = [];
 
-        $this->deserializer = app(MessageDeserializer::class);
+        $this->deserializer = app($connection->deserializer ?? MessageDeserializer::class);
     }
 
     /** {@inheritDoc} */

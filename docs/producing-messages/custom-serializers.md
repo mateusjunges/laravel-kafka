@@ -20,7 +20,7 @@ To create a custom serializer, create a class that implements the `\Junges\Kafka
 \Junges\Kafka\Facades\Kafka::publish('topic')->usingSerializer(new MyCustomSerializer());
 ```
 
-To change the serializer used by default, see [replacing the default serializer](../advanced-usage/replacing-default-serializer.md).
+To change the serializer used by default, for every connection or for a single one, see [replacing the default serializer](../advanced-usage/replacing-default-serializer.md).
 
 ### Using the AVRO serializer
 To use the AVRO serializer, create a schema registry and map the schemas of each topic:

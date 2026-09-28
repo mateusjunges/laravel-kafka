@@ -184,7 +184,7 @@ class Connection implements InteractsWithConfigCallbacksContract
                 flushTimeoutInMs: $connection->flushTimeoutInMs,
                 flushRetrySleepInMs: $connection->flushRetrySleepInMs,
             ),
-            'serializer' => app(MessageSerializer::class),
+            'serializer' => app($connection->serializer ?? MessageSerializer::class),
         ]);
     }
 

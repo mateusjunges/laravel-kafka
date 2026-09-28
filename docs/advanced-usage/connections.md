@@ -63,6 +63,7 @@ Kafka::connection('analytics')->consumer(['page-views'])
 | `sasl` | The SASL `mechanisms`, `username` and `password`. SASL is used when a username is set and the security protocol is `SASL_PLAINTEXT` or `SASL_SSL`. |
 | `options` | librdkafka options applied to both producers and consumers. |
 | `producer.options` | librdkafka options applied only to the producer. |
+| `producer.serializer` | The class serializing the published messages, resolved from the service container. Defaults to the `MessageSerializer` binding, the JSON serializer. |
 | `producer.flush_timeout_ms` | How long to wait for queued messages to be delivered when flushing the producer. |
 | `producer.flush_retries` | How many times to retry flushing before giving up. |
 | `producer.flush_retry_sleep_ms` | How long to wait between flush retries. |
@@ -70,5 +71,6 @@ Kafka::connection('analytics')->consumer(['page-views'])
 | `consumer.auto_commit` | Whether consumers commit offsets automatically after handling each message. |
 | `consumer.timeout_ms` | How long the consumer waits for a message before polling again. |
 | `consumer.options` | librdkafka options applied only to consumers. |
+| `consumer.deserializer` | The class deserializing the consumed messages, resolved from the service container. Defaults to the `MessageDeserializer` binding, the JSON deserializer. |
 
 The consumer builder methods, such as `withSasl`, `withOptions` and `withAutoCommit`, can still be used to override the connection configuration for a single consumer.

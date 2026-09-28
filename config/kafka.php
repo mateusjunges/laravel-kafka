@@ -42,6 +42,13 @@ return [
                 'flush_retry_sleep_ms' => 100,
 
                 /*
+                 | The class used to serialize the messages published through this connection, resolved from the
+                 | service container. When null, the MessageSerializer bound in the container is used, which is
+                 | the JSON serializer by default.
+                 */
+                'serializer' => null,
+
+                /*
                  | librdkafka options applied only to the producer.
                  */
                 'options' => [
@@ -66,6 +73,13 @@ return [
                  | How long the consumer waits for a message before polling again.
                  */
                 'timeout_ms' => env('KAFKA_CONSUMER_DEFAULT_TIMEOUT', 2000),
+
+                /*
+                 | The class used to deserialize the messages consumed through this connection, resolved from the
+                 | service container. When null, the MessageDeserializer bound in the container is used, which is
+                 | the JSON deserializer by default.
+                 */
+                'deserializer' => null,
 
                 /*
                  | librdkafka options applied only to consumers. "auto.offset.reset" defines where a consumer

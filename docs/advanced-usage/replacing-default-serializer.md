@@ -20,3 +20,21 @@ $this->app->bind(\Junges\Kafka\Contracts\MessageDeserializer::class, function() 
     return new MyCustomDeserializer();
 });
 ```
+
+To use a different serializer or deserializer for a single [connection](connections.md), for instance a cluster where messages are encoded with Avro, set the `producer.serializer` and `consumer.deserializer` keys of the connection instead:
+
+```php
+'connections' => [
+    'analytics' => [
+        'brokers' => env('KAFKA_ANALYTICS_BROKERS'),
+        'producer' => [
+            'serializer' => \Junges\Kafka\Message\Serializers\AvroSerializer::class,
+        ],
+        'consumer' => [
+            'deserializer' => \Junges\Kafka\Message\Deserializers\AvroDeserializer::class,
+        ],
+    ],
+],
+```
+
+Both are resolved from the service container, so bind them with their dependencies, such as the schema registry, in a service provider.

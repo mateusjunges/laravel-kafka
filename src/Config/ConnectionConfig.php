@@ -11,6 +11,8 @@ final readonly class ConnectionConfig
      * @param  array<string, mixed>  $producerOptions  librdkafka options applied only to producers.
      * @param  array<string, mixed>  $consumerOptions  librdkafka options applied only to consumers.
      * @param  array<string, callable>  $callbacks  librdkafka configuration callbacks, keyed by the \RdKafka\Conf setter name.
+     * @param  class-string<\Junges\Kafka\Contracts\MessageSerializer>|null  $serializer  The serializer of the producer, instead of the default one.
+     * @param  class-string<\Junges\Kafka\Contracts\MessageDeserializer>|null  $deserializer  The deserializer of consumers, instead of the default one.
      */
     public function __construct(
         public string $name,
@@ -27,6 +29,8 @@ final readonly class ConnectionConfig
         public int $flushRetries = 10,
         public int $flushRetrySleepInMs = 100,
         public array $callbacks = [],
+        public ?string $serializer = null,
+        public ?string $deserializer = null,
     ) {}
 
     /** Create the connection configuration from a "kafka.connections.*" config array. */
@@ -54,6 +58,8 @@ final readonly class ConnectionConfig
             flushTimeoutInMs: (int) ($producer['flush_timeout_ms'] ?? 1000),
             flushRetries: (int) ($producer['flush_retries'] ?? 10),
             flushRetrySleepInMs: (int) ($producer['flush_retry_sleep_ms'] ?? 100),
+            serializer: $producer['serializer'] ?? null,
+            deserializer: $consumer['deserializer'] ?? null,
         );
     }
 
