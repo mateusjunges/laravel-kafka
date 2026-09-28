@@ -5,6 +5,21 @@ weight: 6
 
 ## Upgrade to v3.0 from v2.11
 
+Version 3.0 has many breaking changes. The ones most likely to affect your application are:
+
+- **Connections**: the configuration file now defines named connections. Publish the new configuration file and move your settings into it, see [connections](#connections).
+- **Publishing**: `Kafka::publish()` receives the topic instead of the broker, is asynchronous, and `withKafkaKey()` was renamed to `withKey()`. See [publishing messages](#publishing-messages).
+- **Failed messages**: without a dead letter queue, a failed message now stops the consumer instead of being skipped. Call `skipFailedMessages()` to keep the v2 behavior, see [failed messages](#failed-messages).
+- **The `kafka:consume` command** now runs consumer classes, see [the kafka:consume command](#the-kafkaconsume-command).
+- **Handlers**: the `Junges\Kafka\Contracts\MessageConsumer` argument of handlers was renamed to `Junges\Kafka\Contracts\Consumer`, see [consumer contracts and handlers](#consumer-contracts-and-handlers).
+
+Changes that affect fewer applications:
+
+- Several consumer builder methods were renamed, see [stopping consumers](#stopping-consumers), [configuration callbacks](#configuration-callbacks) and [consuming messages](#consuming-messages).
+- Auto commit no longer commits every message synchronously, and custom committers only handle manual commits, see [committers](#committers).
+- Middleware classes must declare a return type, see [middlewares](#middlewares).
+- Faked consumers handle failed messages like real ones, see [testing](#testing).
+
 ### Requirements
 
 The minimum PHP version is now 8.3.
