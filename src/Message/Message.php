@@ -27,7 +27,7 @@ class Message extends AbstractMessage implements Arrayable, ProducerMessage
     }
 
     /** Creates a new message instance.*/
-    public static function create(?string $topicName = null, int $partition = RD_KAFKA_PARTITION_UA): ProducerMessage
+    public static function create(?string $topicName = null, int $partition = RD_KAFKA_PARTITION_UA): self
     {
         return new self($topicName, $partition);
     }
@@ -83,14 +83,14 @@ class Message extends AbstractMessage implements Arrayable, ProducerMessage
         ];
     }
 
-    public function withBody(mixed $body): ProducerMessage
+    public function withBody(mixed $body): self
     {
         $this->body = $body;
 
         return $this;
     }
 
-    public function withHeader(string $key, string|int|float $value): ProducerMessage
+    public function withHeader(string $key, string|int|float $value): self
     {
         $this->headers[$key] = $value;
 

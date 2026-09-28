@@ -40,8 +40,8 @@ interface ConsumerBuilder extends InteractsWithConfigCallbacks
     /** Specify the consumer group id. */
     public function withConsumerGroupId(?string $groupId): self;
 
-    /** Specify the class used to handle consumed messages. */
-    public function withHandler(callable $handler): self;
+    /** Specify the handler of the consumed messages, a callable receiving the message and the consumer. */
+    public function withHandler(callable|Handler $handler): self;
 
     /** Specify the class that should be used to deserialize messages. */
     public function usingDeserializer(MessageDeserializer $deserializer): self;
@@ -65,15 +65,13 @@ interface ConsumerBuilder extends InteractsWithConfigCallbacks
     public function withSasl(string $username, string $password, string $mechanisms, string $securityProtocol = 'SASL_PLAINTEXT'): self;
 
     /**
-     * Specify middlewares to be executed before handling the message.
-     * The middlewares get executed in the order they are defined.
-     * The middleware is a callable in which the first argument is
-     * the message itself and the second is the next handler
+     * Add a middleware the messages go through before being handled. Middlewares run in the order they are added,
+     * and receive the message and the next step of the pipeline. Middleware classes given by name are resolved
+     * from the service container.
      *
-     * @param  callable(mixed, callable): void  $middleware
-     * @return \Junges\Kafka\Consumers\Builder
+     * @param  Middleware|callable(ConsumerMessage, callable): mixed|class-string<Middleware>  $middleware
      */
-    public function withMiddleware(callable $middleware): self;
+    public function withMiddleware(Middleware|callable|string $middleware): self;
 
     /** Defines a callback that runs before consuming the message. */
     public function beforeConsuming(callable $callable): self;

@@ -110,6 +110,7 @@ The names of the consumer types were cleaned up:
 
 - `Junges\Kafka\Contracts\MessageConsumer`, the consumer passed to handlers, middlewares and callbacks, was renamed to `Junges\Kafka\Contracts\Consumer`. Update the type of the `$consumer` argument of your handlers.
 - The abstract `Junges\Kafka\Contracts\Consumer` class, previously used as the base of handler classes, was removed. Handler classes implement the `Junges\Kafka\Contracts\Handler` interface instead, or extend `Junges\Kafka\KafkaConsumer`. Its `failed()` method was replaced by the `failed()` method of consumer classes and the `onMessageFailed()` method of the consumer builder, which are notified of failed messages. Its `producerKey()` method was removed, messages sent to the dead letter queue keep their key.
+- The `withHandler()` and `withMiddleware()` methods of the `Junges\Kafka\Contracts\ConsumerBuilder` contract now declare the types the consumer builder accepts, `callable|Handler` and `Middleware|callable|string`. Custom implementations of the contract must update them.
 - `Junges\Kafka\Consumers\CallableConsumer` was renamed to `Junges\Kafka\Consumers\MessageHandler`, and the `consumer` argument of `Junges\Kafka\Config\Config` was renamed to `handler`, with its `getConsumer()` method renamed to `getHandler()`.
 
 ```diff
