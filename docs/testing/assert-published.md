@@ -48,6 +48,18 @@ class MyTest extends TestCase
 }
 ```
 
+To check the published message yourself, pass a callback receiving each published message and returning whether it matches:
+
+```php
+use Junges\Kafka\Contracts\ProducerMessage;
+
+Kafka::assertPublished(function (ProducerMessage $message) {
+    return $message->getBody()['foo'] === 'bar';
+});
+```
+
+When you pass both an expected message and a callback, a published message must match both.
+
 ```+parse
 <x-sponsors.request-sponsor/>
 ```

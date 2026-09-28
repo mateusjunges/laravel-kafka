@@ -8,13 +8,13 @@ use Junges\Kafka\Contracts\ConsumerMessage;
 class ConsumedMessage extends AbstractMessage implements ConsumerMessage
 {
     public function __construct(
-        protected ?string $topicName,
-        protected ?int $partition,
-        protected ?array $headers,
-        protected mixed $body,
-        protected mixed $key,
-        protected ?int $offset,
-        protected ?int $timestamp,
+        protected ?string $topicName = null,
+        protected ?int $partition = 0,
+        protected ?array $headers = [],
+        protected mixed $body = null,
+        protected mixed $key = null,
+        protected ?int $offset = 0,
+        protected ?int $timestamp = null,
         protected int $attempts = 1,
     ) {
         parent::__construct(

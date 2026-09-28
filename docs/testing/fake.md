@@ -32,8 +32,10 @@ The following assertions are available:
 - [`assertPublishedOn`](assert-published-on.md): a message was published on a topic.
 - [`assertPublishedTimes`](assert-published-times.md): a number of messages were published.
 - [`assertPublishedOnTimes`](assert-published-on-times.md): a number of messages were published on a topic.
+- [`assertNotPublished`](assert-not-published.md): a message was not published.
+- [`assertNothingPublishedOn`](assert-not-published.md): no message was published on a topic.
 - [`assertNothingPublished`](assert-nothing-published.md): no message was published.
 
-They accept the expected message, a callback receiving each published message and returning whether it matches, or both. When comparing messages, their [ids](../producing-messages/configuring-message-payload.md#message-ids) are ignored, since every message gets its own.
+They accept the expected message, a callback receiving each published message and returning whether it matches, or both, in which case a message must match both. When comparing messages, their [ids](../producing-messages/configuring-message-payload.md#message-ids) are ignored, since every message gets its own.
 
 To test consumers, including [consumer classes](../consuming-messages/class-structure.md), see [mocking your kafka consumer](mocking-your-kafka-consumer.md).

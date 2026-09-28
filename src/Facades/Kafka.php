@@ -16,11 +16,13 @@ use Junges\Kafka\Support\Testing\Fakes\KafkaFake;
  * @method static array getConsumerMiddleware()
  * @method static void flush()
  * @method static string getDefaultConnection()
- * @method static void assertPublished(\Junges\Kafka\Contracts\ProducerMessage|null $expectedMessage = null, callable|null $callback = null)
- * @method static void assertPublishedTimes(int $times = 1, \Junges\Kafka\Contracts\ProducerMessage|null $expectedMessage = null, callable|null $callback = null)
- * @method static void assertPublishedOn(string $topic, \Junges\Kafka\Contracts\ProducerMessage|null $expectedMessage = null, callable|null $callback = null)
- * @method static void assertPublishedOnTimes(string $topic, int $times = 1, \Junges\Kafka\Contracts\ProducerMessage|null $expectedMessage = null, callable|null $callback = null)
+ * @method static void assertPublished(\Junges\Kafka\Contracts\ProducerMessage|callable|null $expected = null, callable|null $callback = null)
+ * @method static void assertPublishedTimes(int $times = 1, \Junges\Kafka\Contracts\ProducerMessage|callable|null $expected = null, callable|null $callback = null)
+ * @method static void assertPublishedOn(string $topic, \Junges\Kafka\Contracts\ProducerMessage|callable|null $expected = null, callable|null $callback = null)
+ * @method static void assertPublishedOnTimes(string $topic, int $times = 1, \Junges\Kafka\Contracts\ProducerMessage|callable|null $expected = null, callable|null $callback = null)
+ * @method static void assertNotPublished(\Junges\Kafka\Contracts\ProducerMessage|callable $expected, callable|null $callback = null)
  * @method static void assertNothingPublished()
+ * @method static void assertNothingPublishedOn(string $topic)
  * @method static void shouldReceiveMessages(\Junges\Kafka\Contracts\ConsumerMessage|\Junges\Kafka\Contracts\ConsumerMessage[] $messages)
  *
  * @see Factory

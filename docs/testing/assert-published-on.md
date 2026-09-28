@@ -34,8 +34,7 @@ class MyTest extends TestCase
 }
 ```
 
-You can also use a callback function to perform assertions within the message using a callback in which the argument is the published message
-itself.
+You can also pass a callback, which receives each message published on the topic and returns whether it matches:
 
 ```php
 use Tests\TestCase;
@@ -54,12 +53,12 @@ class MyTest extends TestCase
             
         $producer->send();
         
-        Kafka::assertPublishedOn('some-kafka-topic', $producer->getMessage(), function(Message $message) {
+        Kafka::assertPublishedOn('some-kafka-topic', function (Message $message) {
             return $message->getHeaders()['key'] === 'value';
         });
-        
-        // Or:
-        Kafka::assertPublishedOn('some-kafka-topic', null, function(Message $message) {
+
+        // The expected message and a callback can also be combined, a message must match both:
+        Kafka::assertPublishedOn('some-kafka-topic', $producer->getMessage(), function (Message $message) {
             return $message->getHeaders()['key'] === 'value';
         });
     }

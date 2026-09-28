@@ -27,12 +27,7 @@ public function test_post_is_marked_as_published()
     \Junges\Kafka\Facades\Kafka::shouldReceiveMessages([
         new \Junges\Kafka\Message\ConsumedMessage(
             topicName: 'mark-post-as-published-topic',
-            partition: 0,
-            headers: [],
             body: ['post_id' => 1],
-            key: null,
-            offset: 0,
-            timestamp: 0
         ),
     ]);
     
@@ -55,6 +50,8 @@ public function test_post_is_marked_as_published()
     $this->assertNotNull($post->refresh()->published_at);
 }
 ```
+
+Only the topic name and the body of the messages are usually relevant. The partition and the offset default to `0`, the headers to an empty array, and the key and timestamp to `null`.
 
 ### Failed messages
 
@@ -85,15 +82,7 @@ public function test_orders_are_created()
     Kafka::fake();
 
     Kafka::shouldReceiveMessages([
-        new ConsumedMessage(
-            topicName: 'orders',
-            partition: 0,
-            headers: [],
-            body: ['id' => 1],
-            key: null,
-            offset: 0,
-            timestamp: 0,
-        ),
+        new ConsumedMessage(topicName: 'orders', body: ['id' => 1]),
     ]);
 
     Kafka::consumerFor(OrdersConsumer::class)->build()->consume();

@@ -158,8 +158,10 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
 
         try {
             $this->fake->assertPublishedOn('not-published-on-this-topic', $producer->getMessage());
+
+            $this->fail('The assertion should fail.');
         } catch (ExpectationFailedException $exception) {
-            $this->assertThat($exception, new ExceptionMessageIsOrContains('The expected message was not published.'));
+            $this->assertThat($exception, new ExceptionMessageIsOrContains('The expected message was not published on the [not-published-on-this-topic] topic.'));
         }
     }
 
@@ -178,8 +180,10 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
 
         try {
             $this->fake->assertPublishedOn('not-published-on-this-topic', $producer->getMessage());
+
+            $this->fail('The assertion should fail.');
         } catch (ExpectationFailedException $exception) {
-            $this->assertThat($exception, new ExceptionMessageIsOrContains('The expected message was not published.'));
+            $this->assertThat($exception, new ExceptionMessageIsOrContains('The expected message was not published on the [not-published-on-this-topic] topic.'));
         }
     }
 
@@ -200,8 +204,10 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
 
         try {
             $this->fake->assertPublishedOnTimes('topic', 4, $producer->getMessage());
+
+            $this->fail('The assertion should fail.');
         } catch (ExpectationFailedException $exception) {
-            $this->assertThat($exception, new ExceptionMessageIsOrContains('Kafka published 1 messages instead of 4.'));
+            $this->assertThat($exception, new ExceptionMessageIsOrContains('Kafka published 1 messages on the [topic] topic instead of 4.'));
         }
     }
 
@@ -222,8 +228,10 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
 
         try {
             $this->fake->assertPublishedOn('topic', $producer->getMessage(), fn ($message) => $message->getKey() === 'different-key');
+
+            $this->fail('The assertion should fail.');
         } catch (ExpectationFailedException $exception) {
-            $this->assertThat($exception, new ExceptionMessageIsOrContains('The expected message was not published.'));
+            $this->assertThat($exception, new ExceptionMessageIsOrContains('The expected message was not published on the [topic] topic.'));
         }
 
         $this->fake->assertPublishedOn('topic', $producer->getMessage(), fn ($message) => $message->getKey() === $uuid);

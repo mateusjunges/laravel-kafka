@@ -3,7 +3,6 @@
 namespace Junges\Kafka\Support\Testing\Fakes;
 
 use Illuminate\Support\Collection;
-use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Config\ConnectionConfig;
 use Junges\Kafka\Connection;
 use Junges\Kafka\Contracts\ConsumerMessage;
@@ -32,51 +31,64 @@ class KafkaFake extends Factory
         }
     }
 
-    /** Assert if a messages was published based on a truth-test callback. */
-    public function assertPublished(?ProducerMessage $expectedMessage = null, ?callable $callback = null): void
+    /**
+     * Assert that a message was published. It can be matched against an expected message, a callback
+     * receiving each published message and returning whether it matches, or both.
+     */
+    public function assertPublished(ProducerMessage|callable|null $expected = null, ?callable $callback = null): void
     {
         PHPUnit::assertTrue(
-            condition: $this->published($callback, $expectedMessage)->count() > 0,
+            condition: $this->published($expected, $callback)->isNotEmpty(),
             message: 'The expected message was not published.'
         );
     }
 
-    /** Assert if a messages was published based on a truth-test callback. */
-    public function assertPublishedTimes(int $times = 1, ?ProducerMessage $expectedMessage = null, ?callable $callback = null): void
+    /** Assert that a number of messages were published, optionally matching an expected message or a callback. */
+    public function assertPublishedTimes(int $times = 1, ProducerMessage|callable|null $expected = null, ?callable $callback = null): void
     {
-        $count = $this->published($callback, $expectedMessage)->count();
+        $count = $this->published($expected, $callback)->count();
 
+        PHPUnit::assertSame($times, $count, "Kafka published {$count} messages instead of {$times}.");
+    }
+
+    /** Assert that a message was published on a topic, optionally matching an expected message or a callback. */
+    public function assertPublishedOn(string $topic, ProducerMessage|callable|null $expected = null, ?callable $callback = null): void
+    {
         PHPUnit::assertTrue(
-            condition: $count === $times,
-            message: "Kafka published {$count} messages instead of {$times}."
+            condition: $this->published($expected, $callback, $topic)->isNotEmpty(),
+            message: "The expected message was not published on the [{$topic}] topic."
         );
     }
 
-    /** Assert that a message was published on a specific topic. */
-    public function assertPublishedOn(string $topic, ?ProducerMessage $expectedMessage = null, ?callable $callback = null): void
+    /** Assert that a number of messages were published on a topic, optionally matching an expected message or a callback. */
+    public function assertPublishedOnTimes(string $topic, int $times = 1, ProducerMessage|callable|null $expected = null, ?callable $callback = null): void
     {
-        PHPUnit::assertTrue(
-            condition: $this->published($callback, $expectedMessage, $topic)->count() > 0,
-            message: 'The expected message was not published.'
-        );
+        $count = $this->published($expected, $callback, $topic)->count();
+
+        PHPUnit::assertSame($times, $count, "Kafka published {$count} messages on the [{$topic}] topic instead of {$times}.");
     }
 
-    /** Assert that a message was published on a specific topic. */
-    public function assertPublishedOnTimes(string $topic, int $times = 1, ?ProducerMessage $expectedMessage = null, ?callable $callback = null): void
+    /** Assert that no message matching the expected message or the callback was published. */
+    public function assertNotPublished(ProducerMessage|callable $expected, ?callable $callback = null): void
     {
-        $count = $this->published($callback, $expectedMessage, $topic)->count();
-
-        PHPUnit::assertSame(
-            $count,
-            $times,
-            "Kafka published {$count} messages instead of {$times}."
+        PHPUnit::assertTrue(
+            condition: $this->published($expected, $callback)->isEmpty(),
+            message: 'The unexpected message was published.'
         );
     }
 
     /** Assert that no messages were published. */
     public function assertNothingPublished(): void
     {
-        PHPUnit::assertEmpty($this->getPublishedMessages(), 'Messages were published unexpectedly.');
+        PHPUnit::assertEmpty($this->publishedMessages, 'Messages were published unexpectedly.');
+    }
+
+    /** Assert that no messages were published on a topic. */
+    public function assertNothingPublishedOn(string $topic): void
+    {
+        $count = $this->published(null, null, $topic)->count();
+
+        PHPUnit::assertSame(0, $count, "Kafka published {$count} messages on the [{$topic}] topic unexpectedly.");
     }
 
     /** Connections that are not configured are allowed, so tests don't need a Kafka configuration. */
@@ -108,44 +120,26 @@ class KafkaFake extends Factory
         $this->messagesToConsume[] = $message;
     }
 
-    /*** Get all messages matching a truth-test callback. */
-    private function published(?callable $callback = null, ?ProducerMessage $expectedMessage = null, ?string $topic = null): Collection
+    /**
+     * Get the published messages matching the expected message and the callback. A callable
+     * given as the expected message is used as the callback.
+     */
+    private function published(ProducerMessage|callable|null $expected, ?callable $callback, ?string $topic = null): Collection
     {
-        if (! $this->hasPublished()) {
-            return collect();
+        if (is_callable($expected)) {
+            [$expected, $callback] = [null, $expected];
         }
 
-        return collect($this->getPublishedMessages())
-            ->filter(function (ProducerMessage $publishedMessage) use ($topic, $expectedMessage, $callback) {
-                if ($topic !== null && $publishedMessage->getTopicName() !== $topic) {
-                    return false;
-                }
-
-                if ($callback !== null) {
-                    return $callback($publishedMessage);
-                }
-
-                if ($expectedMessage !== null) {
-                    return json_encode($this->withoutMessageId($publishedMessage->toArray()), JSON_THROW_ON_ERROR)
-                        === json_encode($this->withoutMessageId($expectedMessage->toArray()), JSON_THROW_ON_ERROR);
-                }
-
-                return true;
-            });
+        return collect($this->publishedMessages)
+            ->filter(fn (ProducerMessage $message) => $topic === null || $message->getTopicName() === $topic)
+            ->filter(fn (ProducerMessage $message) => ! $expected instanceof ProducerMessage || $this->sameMessage($message, $expected))
+            ->filter(fn (ProducerMessage $message) => $callback === null || $callback($message));
     }
 
-    /** Check if the producer has published messages. */
-    #[Pure]
-    private function hasPublished(): bool
+    private function sameMessage(ProducerMessage $published, ProducerMessage $expected): bool
     {
-        return ! empty($this->getPublishedMessages());
-    }
-
-    /** Get published messages. */
-    #[Pure]
-    private function getPublishedMessages(): array
-    {
-        return $this->publishedMessages;
+        return json_encode($this->withoutMessageId($published->toArray()), JSON_THROW_ON_ERROR)
+            === json_encode($this->withoutMessageId($expected->toArray()), JSON_THROW_ON_ERROR);
     }
 
     /** Messages are compared without their id, which is generated for every message. */
