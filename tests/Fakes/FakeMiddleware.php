@@ -14,7 +14,7 @@ final class FakeMiddleware implements Middleware
 
     public function __construct(public readonly Repository $config) {}
 
-    public function __invoke(ConsumerMessage $message, callable $next)
+    public function __invoke(ConsumerMessage $message, callable $next): mixed
     {
         self::$messages[] = $message;
 

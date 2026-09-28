@@ -33,7 +33,7 @@ class LogMessages implements Middleware
 {
     public function __construct(private LogManager $log) {}
 
-    public function __invoke(ConsumerMessage $message, callable $next)
+    public function __invoke(ConsumerMessage $message, callable $next): mixed
     {
         $result = $next($message);
 

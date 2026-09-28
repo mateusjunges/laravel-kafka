@@ -111,6 +111,17 @@ The names of the consumer types were cleaned up:
 +function (ConsumerMessage $message, Consumer $consumer) {
 ```
 
+### Middlewares
+
+The `__invoke` method of the `Junges\Kafka\Contracts\Middleware` interface now declares a `mixed` return type. Add it to your middleware classes:
+
+```diff
+-public function __invoke(ConsumerMessage $message, callable $next)
++public function __invoke(ConsumerMessage $message, callable $next): mixed
+```
+
+Middleware classes given by name, such as `withMiddleware(LogMessages::class)`, are now resolved from the service container instead of being created with `new`, so their constructor can receive dependencies. Middlewares can also be registered for every consumer with `Kafka::consumerMiddleware()`, see [middlewares](/advanced-usage/middlewares).
+
 ### Failed messages
 
 Failed messages are now safe by default. Without a dead letter queue, the consumer stops when a message fails, after its retries are used, and `consume()` throws a `Junges\Kafka\Exceptions\ConsumerException`. The offset of the failed message is not committed, so it is consumed again once the consumer is restarted. In v2, the consumer committed the offset of the failed message and moved on, losing it.
