@@ -213,6 +213,31 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     }
 
     #[Test]
+    public function it_assigns_partitions_incrementally_with_cooperative_rebalancing(): void
+    {
+        $partitions = [new TopicPartition('test-topic', 0)];
+        $notified = null;
+
+        $builder = Builder::create(new ConnectionConfig('default', 'broker'), ['test-topic'])
+            ->withRebalanceStrategy(RebalanceStrategy::COOPERATIVE_STICKY)
+            ->onPartitionsAssigned(function (array $assigned) use (&$notified) {
+                $notified = $assigned;
+            });
+
+        $rebalance = $this->builtConfig($builder)->getConfigCallbacks()['setRebalanceCb'];
+
+        $kafkaConsumer = m::mock(KafkaConsumer::class);
+        $kafkaConsumer->shouldReceive('incrementalAssign')->once()->with($partitions);
+        $kafkaConsumer->shouldReceive('incrementalUnassign')->once()->with($partitions);
+        $kafkaConsumer->shouldNotReceive('assign');
+
+        $rebalance($kafkaConsumer, RD_KAFKA_RESP_ERR__ASSIGN_PARTITIONS, $partitions);
+        $rebalance($kafkaConsumer, RD_KAFKA_RESP_ERR__REVOKE_PARTITIONS, $partitions);
+
+        $this->assertSame($partitions, $notified);
+    }
+
+    #[Test]
     public function it_does_not_combine_a_rebalance_callback_with_the_partitions_assigned_callback(): void
     {
         $builder = Builder::create(new ConnectionConfig('default', 'broker'), ['test-topic'])

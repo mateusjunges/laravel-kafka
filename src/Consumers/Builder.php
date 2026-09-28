@@ -488,19 +488,23 @@ class Builder
         $onAssign = $this->onPartitionsAssigned;
         $offsetResolver = $this->offsetResolver;
 
-        return [...$this->callbacks, 'setRebalanceCb' => function ($consumer, $err, $partitions = null) use ($onAssign, $offsetResolver): void {
+        // With cooperative rebalancing, partitions are added to and removed from the current
+        // assignment, instead of replacing the whole assignment on every rebalance.
+        $cooperative = ($this->options['partition.assignment.strategy'] ?? null) === RebalanceStrategy::COOPERATIVE_STICKY->value;
+
+        return [...$this->callbacks, 'setRebalanceCb' => function ($consumer, $err, $partitions = null) use ($onAssign, $offsetResolver, $cooperative): void {
             if ($err === RD_KAFKA_RESP_ERR__ASSIGN_PARTITIONS) {
                 if ($offsetResolver instanceof Closure) {
                     $partitions = $offsetResolver($partitions);
                 }
 
-                $consumer->assign($partitions);
+                $cooperative ? $consumer->incrementalAssign($partitions) : $consumer->assign($partitions);
 
                 if ($onAssign instanceof Closure) {
                     $onAssign($partitions);
                 }
             } elseif ($err === RD_KAFKA_RESP_ERR__REVOKE_PARTITIONS) {
-                $consumer->assign(null);
+                $cooperative ? $consumer->incrementalUnassign($partitions) : $consumer->assign(null);
             }
         }];
     }

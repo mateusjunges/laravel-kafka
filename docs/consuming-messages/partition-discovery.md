@@ -158,7 +158,7 @@ $consumer = \Junges\Kafka\Facades\Kafka::consumer(['my-topic'], 'my-group')
 
 2. **Consumer Groups**: If you're using consumer groups, partition assignments are managed by Kafka's partition assignment strategy. Manual assignments override consumer group behavior.
 
-3. **Rebalancing**: When using `onPartitionsAssigned()` or `resolveOffsetsUsing()`, your callbacks will be called every time a rebalance occurs. Both can be used together, in any order: the partitions are assigned with the offsets returned by `resolveOffsetsUsing()`, and then passed to the `onPartitionsAssigned()` callback. They set their own rebalance callback, so they can't be combined with `onRebalance()`.
+3. **Rebalancing**: When using `onPartitionsAssigned()` or `resolveOffsetsUsing()`, your callbacks will be called every time a rebalance occurs. Both can be used together, in any order: the partitions are assigned with the offsets returned by `resolveOffsetsUsing()`, and then passed to the `onPartitionsAssigned()` callback. They set their own rebalance callback, so they can't be combined with `onRebalance()`. With the cooperative sticky [rebalance strategy](consumer-groups.md#partition-assignment-strategies), partitions are added to and removed from the assignment one rebalance at a time, so the callbacks receive only the partitions that were just assigned.
 
 4. **Error Handling**: Always handle potential errors in your callbacks, as exceptions can disrupt the rebalancing process.
 
