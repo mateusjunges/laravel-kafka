@@ -7,6 +7,7 @@ use Junges\Kafka\Consumers\MessageHandler;
 use Junges\Kafka\Contracts\Consumer;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Message\ConsumedMessage;
+use Junges\Kafka\Tests\Fakes\FakeMiddleware;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use Mockery as m;
 use PHPUnit\Framework\Attributes\Test;
@@ -69,5 +70,23 @@ final class MessageHandlerTest extends LaravelKafkaTestCase
         $handler->failed($message, $exception);
 
         $this->assertSame([$message, $exception], $received);
+    }
+
+    #[Test]
+    public function it_resolves_middleware_classes_from_the_container(): void
+    {
+        FakeMiddleware::$messages = [];
+
+        $handled = null;
+        $handler = new MessageHandler(function (ConsumerMessage $message) use (&$handled) {
+            $handled = $message;
+        }, [FakeMiddleware::class]);
+
+        $message = new ConsumedMessage('topic', 0, [], null, null, 0, null);
+
+        $handler->handle($message, m::mock(Consumer::class));
+
+        $this->assertSame([$message], FakeMiddleware::$messages);
+        $this->assertSame($message, $handled);
     }
 }
