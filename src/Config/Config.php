@@ -151,7 +151,8 @@ class Config
         }
 
         return collect(array_merge($options, $this->customOptions, $this->getSaslOptions()))
-            ->reject(fn (string|int $option, string $key) => in_array($key, self::PRODUCER_ONLY_CONFIG_OPTIONS))
+            ->reject(fn (mixed $option, string $key) => in_array($key, self::PRODUCER_ONLY_CONFIG_OPTIONS))
+            ->map($this->normalizeOption(...))
             ->toArray();
     }
 
@@ -165,7 +166,8 @@ class Config
         ];
 
         return collect(array_merge($config, $this->customOptions, $this->getSaslOptions()))
-            ->reject(fn (string|int $option, string $key) => in_array($key, self::CONSUMER_ONLY_CONFIG_OPTIONS))
+            ->reject(fn (mixed $option, string $key) => in_array($key, self::CONSUMER_ONLY_CONFIG_OPTIONS))
+            ->map($this->normalizeOption(...))
             ->toArray();
     }
 
@@ -208,6 +210,12 @@ class Config
     public function getWhenStopConsumingCallback(): ?Closure
     {
         return $this->whenStopConsuming;
+    }
+
+    /** librdkafka expects "true" or "false" for boolean options. */
+    private function normalizeOption(mixed $value): mixed
+    {
+        return is_bool($value) ? var_export($value, true) : $value;
     }
 
     private function getSecurityProtocolOptions(): array

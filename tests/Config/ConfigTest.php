@@ -231,4 +231,17 @@ final class ConfigTest extends LaravelKafkaTestCase
         $this->assertSame('SSL', $config->getProducerOptions()['security.protocol']);
         $this->assertSame('SSL', $config->getConsumerOptions()['security.protocol']);
     }
+
+    #[Test]
+    public function it_converts_boolean_options_to_strings(): void
+    {
+        $config = new Config(
+            broker: 'broker',
+            topics: ['topic'],
+            customOptions: ['enable.idempotence' => true, 'enable.partition.eof' => false],
+        );
+
+        $this->assertSame('true', $config->getProducerOptions()['enable.idempotence']);
+        $this->assertSame('false', $config->getConsumerOptions()['enable.partition.eof']);
+    }
 }
