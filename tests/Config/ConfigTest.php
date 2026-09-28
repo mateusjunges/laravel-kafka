@@ -263,4 +263,19 @@ final class ConfigTest extends LaravelKafkaTestCase
         $this->assertSame('true', $config->getProducerOptions()['enable.idempotence']);
         $this->assertSame('false', $config->getConsumerOptions()['enable.partition.eof']);
     }
+
+    #[Test]
+    public function it_converts_every_option_to_a_string(): void
+    {
+        $config = new Config(
+            broker: 'broker',
+            topics: ['topic'],
+            groupId: 'group',
+            customOptions: ['session.timeout.ms' => 10000, 'queue.buffering.max.ms' => 5],
+        );
+
+        $this->assertSame('10000', $config->getConsumerOptions()['session.timeout.ms']);
+        $this->assertSame('5', $config->getProducerOptions()['queue.buffering.max.ms']);
+        $this->assertInstanceOf(\RdKafka\Conf::class, $config->makeConf($config->getConsumerOptions()));
+    }
 }

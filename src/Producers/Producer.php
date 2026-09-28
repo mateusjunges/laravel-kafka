@@ -103,19 +103,8 @@ class Producer implements ProducerContract
     /** Set the Kafka Configuration. */
     private function getConf(array $options): Conf
     {
-        $conf = new Conf;
-
-        foreach ($options as $key => $value) {
-            $conf->set($key, (string) $value);
-        }
-
-        $callbacks = $this->config->getConfigCallbacks();
-        $deliveryReportCallback = $callbacks['setDrMsgCb'] ?? null;
-        unset($callbacks['setDrMsgCb']);
-
-        foreach ($callbacks as $method => $callback) {
-            $conf->{$method}($callback);
-        }
+        $conf = $this->config->makeConf($options, exceptCallbacks: ['setDrMsgCb']);
+        $deliveryReportCallback = $this->config->getConfigCallbacks()['setDrMsgCb'] ?? null;
 
         // Delivery failures of queued messages are only reported to this callback, so they are dispatched
         // as events, before calling the delivery report callback registered on the connection, if any.

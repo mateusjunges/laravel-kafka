@@ -24,7 +24,6 @@ use Junges\Kafka\Factory;
 use Junges\Kafka\MessageCounter;
 use Junges\Kafka\Support\InfiniteTimer;
 use Junges\Kafka\Support\Timer;
-use RdKafka\Conf;
 use RdKafka\Exception;
 use RdKafka\KafkaConsumer;
 use RdKafka\KafkaConsumerTopic;
@@ -123,7 +122,7 @@ class Consumer implements ConsumerContract
 
         try {
             $this->consumer = app(KafkaConsumer::class, [
-                'conf' => $this->setConf($this->config->getConsumerOptions()),
+                'conf' => $this->config->makeConf($this->config->getConsumerOptions()),
             ]);
             $this->offsetStoreTopics = [];
 
@@ -132,7 +131,7 @@ class Consumer implements ConsumerContract
             // of its own, so it is created only when a dead letter queue is configured.
             if ($this->config->shouldSendToDlq()) {
                 $this->producer = app(KafkaProducer::class, [
-                    'conf' => $this->setConf($this->config->getProducerOptions()),
+                    'conf' => $this->config->makeConf($this->config->getProducerOptions()),
                 ]);
             }
 
@@ -357,22 +356,6 @@ class Consumer implements ConsumerContract
         );
 
         $this->handleMessage($message);
-    }
-
-    /** Set the consumer configuration. */
-    private function setConf(array $options): Conf
-    {
-        $conf = new Conf;
-
-        foreach ($options as $key => $value) {
-            $conf->set($key, $value);
-        }
-
-        foreach ($this->config->getConfigCallbacks() as $method => $callback) {
-            $conf->{$method}($callback);
-        }
-
-        return $conf;
     }
 
     private function logError(?Message $kafkaMessage, Throwable $throwable, string $prefix = 'ERROR'): void

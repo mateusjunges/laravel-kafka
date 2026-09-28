@@ -4,6 +4,7 @@ namespace Junges\Kafka\Config;
 
 use Closure;
 use Junges\Kafka\Consumers\MessageHandler;
+use RdKafka\Conf;
 use RdKafka\TopicPartition;
 
 class Config
@@ -235,10 +236,32 @@ class Config
         return $this->whenStopConsuming;
     }
 
-    /** librdkafka expects "true" or "false" for boolean options. */
-    private function normalizeOption(mixed $value): mixed
+    /**
+     * Create the librdkafka configuration with the given options and the configuration callbacks,
+     * except the ones set by the caller itself.
+     *
+     * @param  array<string, string>  $options
+     * @param  list<string>  $exceptCallbacks
+     */
+    public function makeConf(array $options, array $exceptCallbacks = []): Conf
     {
-        return is_bool($value) ? var_export($value, true) : $value;
+        $conf = new Conf;
+
+        foreach ($options as $key => $value) {
+            $conf->set($key, $value);
+        }
+
+        foreach (array_diff_key($this->callbacks, array_flip($exceptCallbacks)) as $method => $callback) {
+            $conf->{$method}($callback);
+        }
+
+        return $conf;
+    }
+
+    /** librdkafka options are strings, and booleans are written "true" or "false". */
+    private function normalizeOption(mixed $value): string
+    {
+        return is_bool($value) ? var_export($value, true) : (string) $value;
     }
 
     private function getSecurityProtocolOptions(): array
