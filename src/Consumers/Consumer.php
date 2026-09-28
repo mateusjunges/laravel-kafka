@@ -399,7 +399,7 @@ class Consumer implements MessageConsumer
             $this->storeOffsetIfRequired($message);
         }
 
-        $this->autoCommitIfEnabled($message, $success);
+        $this->autoCommitIfEnabled($message);
     }
 
     /** Handle exceptions while consuming messages. */
@@ -504,14 +504,14 @@ class Consumer implements MessageConsumer
     }
 
     /** @throws Throwable */
-    private function autoCommitIfEnabled(Message $message, bool $success): void
+    private function autoCommitIfEnabled(Message $message): void
     {
         if (! $this->config->isAutoCommit()) {
             return;
         }
 
         try {
-            $this->committer->commitMessage($message, $success);
+            $this->committer->commitMessage($message);
         } catch (Throwable $throwable) {
             if ($throwable->getCode() !== RD_KAFKA_RESP_ERR__NO_OFFSET) {
                 $this->logger->error($message, $throwable, 'AUTO_COMMIT');

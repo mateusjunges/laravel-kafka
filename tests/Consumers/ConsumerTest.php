@@ -543,7 +543,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
         {
             public function __construct(private bool &$commitCalledRef, private mixed &$commitParamsRef) {}
 
-            public function commitMessage(Message $message, bool $success): void
+            public function commitMessage(Message $message): void
             {
                 // Not called for manual commits
             }

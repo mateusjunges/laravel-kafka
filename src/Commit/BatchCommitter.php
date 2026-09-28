@@ -16,12 +16,12 @@ class BatchCommitter implements Committer
         private readonly int $batchSize
     ) {}
 
-    public function commitMessage(Message $message, bool $success): void
+    public function commitMessage(Message $message): void
     {
         $this->commits++;
 
         if ($this->maxMessagesLimitReached() || $this->commits >= $this->batchSize) {
-            $this->committer->commitMessage($message, $success);
+            $this->committer->commitMessage($message);
             $this->commits = 0;
         }
     }

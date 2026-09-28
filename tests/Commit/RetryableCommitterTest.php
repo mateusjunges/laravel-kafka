@@ -19,7 +19,7 @@ final class RetryableCommitterTest extends LaravelKafkaTestCase
         $failingCommitter = new FailingCommitter($exception, 3);
         $retryableCommitter = new RetryableCommitter($failingCommitter, new FakeSleeper);
 
-        $retryableCommitter->commitMessage(new Message, false);
+        $retryableCommitter->commitMessage(new Message);
         $retryableCommitter->commitDlq(new Message);
 
         $this->assertEquals(4, $failingCommitter->getTimesTriedToCommitMessage());
@@ -36,7 +36,7 @@ final class RetryableCommitterTest extends LaravelKafkaTestCase
         $commitMessageException = null;
 
         try {
-            $retryableCommitter->commitMessage(new Message, false);
+            $retryableCommitter->commitMessage(new Message);
         } catch (RdKafkaException $exception) {
             $commitMessageException = $exception;
         }
@@ -67,7 +67,7 @@ final class RetryableCommitterTest extends LaravelKafkaTestCase
         $retryableCommitter = new RetryableCommitter($failingCommitter, $sleeper, 6);
 
         try {
-            $retryableCommitter->commitMessage(new Message, true);
+            $retryableCommitter->commitMessage(new Message);
         } catch (RdKafkaException) {
         }
 

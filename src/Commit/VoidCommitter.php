@@ -7,7 +7,7 @@ use RdKafka\Message;
 
 class VoidCommitter implements Committer
 {
-    public function commitMessage(Message $message, bool $success): void {}
+    public function commitMessage(Message $message): void {}
 
     public function commitDlq(Message $message): void {}
 

@@ -79,6 +79,8 @@ The `Junges\Kafka\Producers\Builder` class and the `Junges\Kafka\Contracts\Messa
 
 ### Committers
 
+The `$success` parameter was removed from `Junges\Kafka\Contracts\Committer::commitMessage()`, which is now `commitMessage(Message $message): void`. Custom committers must drop the parameter, or give it a default value (`bool $success = true`) if they also support v2.
+
 The `Junges\Kafka\Commit\SeekToCurrentErrorCommitter` class, deprecated in v2.12.0, was removed. It did not make failed messages be consumed again. Use `retryFailedMessages()` or a dead letter queue instead, see [handling failed messages](/consuming-messages/handling-failed-messages).
 
 ### Manager

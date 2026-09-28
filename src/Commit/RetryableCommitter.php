@@ -25,9 +25,9 @@ class RetryableCommitter implements Committer
     }
 
     /** @throws \Carbon\Exceptions\Exception */
-    public function commitMessage(Message $message, bool $success): void
+    public function commitMessage(Message $message): void
     {
-        $this->retryable->retry(fn () => $this->committer->commitMessage($message, $success));
+        $this->retryable->retry(fn () => $this->committer->commitMessage($message));
     }
 
     /** @throws \Carbon\Exceptions\Exception */

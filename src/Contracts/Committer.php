@@ -6,8 +6,8 @@ use RdKafka\Message;
 
 interface Committer
 {
-    /** Commits the given message.  */
-    public function commitMessage(Message $message, bool $success): void;
+    /** Commits the given message after it is processed, or skipped after failing. */
+    public function commitMessage(Message $message): void;
 
     /** Commits the given message to the Dead Letter Queue. */
     public function commitDlq(Message $message): void;

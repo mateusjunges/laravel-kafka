@@ -42,7 +42,7 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
             'conf' => $conf,
         ]));
 
-        $kafkaCommitter->commitMessage(new Message, true);
+        $kafkaCommitter->commitMessage(new Message);
     }
 
     #[Test]

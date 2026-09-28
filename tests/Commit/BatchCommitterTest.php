@@ -24,7 +24,7 @@ final class BatchCommitterTest extends LaravelKafkaTestCase
         $batchCommitter = new BatchCommitter($committer, $messageCounter, $batchSize);
 
         for ($i = 0; $i < 7; $i++) {
-            $batchCommitter->commitMessage(new Message, true);
+            $batchCommitter->commitMessage(new Message);
         }
     }
 

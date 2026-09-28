@@ -19,7 +19,7 @@ final class FailingCommitter implements Committer
     /**
      * @throws Exception
      */
-    public function commitMessage(?Message $message = null, ?bool $success = null): void
+    public function commitMessage(Message $message): void
     {
         $this->timesTriedToCommitMessage++;
         $this->doCommit();
