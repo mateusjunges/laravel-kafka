@@ -2,6 +2,12 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+##[2026-09-28 v2.12.0](https://github.com/mateusjunges/laravel-kafka/compare/v2.11.5...v2.12.0)
+* Add `stopOnFailure()` to consumers, which stops consuming without committing the offset of a failed message when no dead letter queue is configured, so it is consumed again after a restart instead of being lost ([#394](https://github.com/mateusjunges/laravel-kafka/issues/394)) by [@mateusjunges](https://github.com/mateusjunges) in [#395](https://github.com/mateusjunges/laravel-kafka/pull/395)
+* Add `retryFailedMessages()` to consumers, which calls the handler of a failed message again, with an optional backoff, before handling it as failed by [@mateusjunges](https://github.com/mateusjunges) in [#396](https://github.com/mateusjunges/laravel-kafka/pull/396)
+* Deprecate `SeekToCurrentErrorCommitter`, as it does not make failed messages be consumed again. Use `retryFailedMessages()`, `stopOnFailure()` or a dead letter queue instead, by [@mateusjunges](https://github.com/mateusjunges) in [#396](https://github.com/mateusjunges/laravel-kafka/pull/396)
+* Document that failed messages are not consumed again by default when no dead letter queue is configured by [@mateusjunges](https://github.com/mateusjunges) in [#395](https://github.com/mateusjunges/laravel-kafka/pull/395)
+
 ##[2026-08-25 v2.11.5](https://github.com/mateusjunges/laravel-kafka/compare/v2.11.4...v2.11.5)
 * Restore the host process signal handlers and async signal setting after consuming, fixing graceful shutdown of queue workers that run consumers inside jobs by [@mspasov](https://github.com/mspasov) in [#392](https://github.com/mateusjunges/laravel-kafka/pull/392)
 * Create the dead letter queue producer only when a DLQ is configured, avoiding unnecessary broker connections and threads for every consumer by [@mspasov](https://github.com/mspasov) in [#391](https://github.com/mateusjunges/laravel-kafka/pull/391)
