@@ -34,7 +34,7 @@ final class KafkaConsumerCommandTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
+            securityProtocol: 'PLAINTEXT',
             commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,

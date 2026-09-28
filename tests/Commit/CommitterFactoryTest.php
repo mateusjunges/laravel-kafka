@@ -22,7 +22,7 @@ final class CommitterFactoryTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['topic'],
-            securityProtocol: 'security',
+            securityProtocol: 'PLAINTEXT',
             commit: 1,
             groupId: 'group',
             consumer: $this->createMock(Consumer::class),
@@ -62,7 +62,7 @@ final class CommitterFactoryTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['topic'],
-            securityProtocol: 'security',
+            securityProtocol: 'PLAINTEXT',
             commit: 1,
             groupId: 'group',
             consumer: $this->createMock(Consumer::class),

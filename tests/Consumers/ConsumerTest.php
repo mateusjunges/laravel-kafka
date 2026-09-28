@@ -62,7 +62,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
+            securityProtocol: 'PLAINTEXT',
             commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,
@@ -119,7 +119,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
+            securityProtocol: 'PLAINTEXT',
             commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,
@@ -205,7 +205,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
+            securityProtocol: 'PLAINTEXT',
             commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,
@@ -250,7 +250,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
+            securityProtocol: 'PLAINTEXT',
             commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,
@@ -302,7 +302,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
+            securityProtocol: 'PLAINTEXT',
             commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,
@@ -354,7 +354,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
+            securityProtocol: 'PLAINTEXT',
             commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,
@@ -392,7 +392,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
+            securityProtocol: 'PLAINTEXT',
             commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,
@@ -501,7 +501,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
+            securityProtocol: 'PLAINTEXT',
             commit: 1,
             groupId: 'group',
             consumer: new CallableConsumer($handler, []),
@@ -601,7 +601,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
+            securityProtocol: 'PLAINTEXT',
             commit: 1,
             groupId: 'group',
             consumer: new CallableConsumer($handler, []),
@@ -626,7 +626,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
+            securityProtocol: 'PLAINTEXT',
             commit: 1,
             groupId: 'group',
             consumer: new FakeHandler,
@@ -669,7 +669,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
+            securityProtocol: 'PLAINTEXT',
             commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,
@@ -834,7 +834,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
+            securityProtocol: 'PLAINTEXT',
             commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,
@@ -914,7 +914,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
+            securityProtocol: 'PLAINTEXT',
             commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,
@@ -949,7 +949,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
+            securityProtocol: 'PLAINTEXT',
             commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,

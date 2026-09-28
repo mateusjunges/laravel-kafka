@@ -16,7 +16,7 @@ final class ConfigTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['topic'],
-            securityProtocol: 'security',
+            securityProtocol: 'PLAINTEXT',
             commit: 1,
             groupId: 'group',
             consumer: $this->createMock(Consumer::class),
@@ -30,6 +30,7 @@ final class ConfigTest extends LaravelKafkaTestCase
             'group.id' => 'group',
             'bootstrap.servers' => 'broker',
             'metadata.broker.list' => 'broker',
+            'security.protocol' => 'PLAINTEXT',
         ];
 
         $this->assertEquals(
@@ -44,7 +45,7 @@ final class ConfigTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['topic'],
-            securityProtocol: 'security',
+            securityProtocol: 'PLAINTEXT',
             commit: 1,
             groupId: 'group',
             consumer: $this->createMock(Consumer::class),
@@ -62,6 +63,7 @@ final class ConfigTest extends LaravelKafkaTestCase
             'group.id' => 'group',
             'bootstrap.servers' => 'broker',
             'metadata.broker.list' => 'broker',
+            'security.protocol' => 'PLAINTEXT',
         ];
 
         $this->assertEquals(
@@ -214,5 +216,19 @@ final class ConfigTest extends LaravelKafkaTestCase
             $expectedOptions,
             $config->getProducerOptions()
         );
+    }
+
+    #[Test]
+    public function it_sets_the_security_protocol_when_not_using_sasl(): void
+    {
+        $config = new Config(
+            broker: 'broker',
+            topics: ['topic'],
+            securityProtocol: 'SSL',
+            groupId: 'group',
+        );
+
+        $this->assertSame('SSL', $config->getProducerOptions()['security.protocol']);
+        $this->assertSame('SSL', $config->getConsumerOptions()['security.protocol']);
     }
 }

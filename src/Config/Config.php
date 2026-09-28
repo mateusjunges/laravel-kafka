@@ -143,6 +143,7 @@ class Config
             'enable.auto.commit' => config('kafka.auto_commit', true) === true ? 'true' : 'false',
             'group.id' => $this->groupId,
             'bootstrap.servers' => $this->broker,
+            ...$this->getSecurityProtocolOptions(),
         ];
 
         if (isset($this->autoCommit)) {
@@ -160,6 +161,7 @@ class Config
             'compression.codec' => config('kafka.compression', 'snappy'),
             'bootstrap.servers' => $this->broker,
             'metadata.broker.list' => $this->broker,
+            ...$this->getSecurityProtocolOptions(),
         ];
 
         return collect(array_merge($config, $this->customOptions, $this->getSaslOptions()))
@@ -206,6 +208,11 @@ class Config
     public function getWhenStopConsumingCallback(): ?Closure
     {
         return $this->whenStopConsuming;
+    }
+
+    private function getSecurityProtocolOptions(): array
+    {
+        return $this->securityProtocol === null ? [] : ['security.protocol' => $this->securityProtocol];
     }
 
     #[Pure]

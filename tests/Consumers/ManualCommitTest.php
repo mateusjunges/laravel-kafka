@@ -81,7 +81,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
+            securityProtocol: 'PLAINTEXT',
             commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,
@@ -143,7 +143,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
+            securityProtocol: 'PLAINTEXT',
             commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,
@@ -200,7 +200,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
+            securityProtocol: 'PLAINTEXT',
             commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,
@@ -263,7 +263,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
+            securityProtocol: 'PLAINTEXT',
             commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,
@@ -313,7 +313,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
+            securityProtocol: 'PLAINTEXT',
             commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,
@@ -392,7 +392,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
+            securityProtocol: 'PLAINTEXT',
             commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,
@@ -450,7 +450,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
+            securityProtocol: 'PLAINTEXT',
             commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,
@@ -505,7 +505,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
+            securityProtocol: 'PLAINTEXT',
             commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,
@@ -565,7 +565,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
+            securityProtocol: 'PLAINTEXT',
             commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,
@@ -625,7 +625,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
+            securityProtocol: 'PLAINTEXT',
             commit: 1,
             groupId: 'group',
             consumer: $fakeHandler,
@@ -681,7 +681,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $manualCommitConfig = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
+            securityProtocol: 'PLAINTEXT',
             commit: 1,
             groupId: 'group',
             consumer: $fakeHandlerManualCommit,
@@ -744,7 +744,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $autoCommitConfig = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
+            securityProtocol: 'PLAINTEXT',
             commit: 1,
             groupId: 'group',
             consumer: $autoCommitHandler,
@@ -765,7 +765,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $manualCommitConfig = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
+            securityProtocol: 'PLAINTEXT',
             commit: 1,
             groupId: 'group',
             consumer: $manualCommitHandler,
