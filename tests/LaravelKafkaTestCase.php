@@ -28,14 +28,14 @@ abstract class LaravelKafkaTestCase extends Orchestra
 
     public function getEnvironmentSetUp($app): void
     {
-        $app['config']->set('kafka.brokers', 'localhost:9092');
-        $app['config']->set('kafka.consumer_group_id', 'group');
-        $app['config']->set('kafka.offset_reset', 'latest');
-        $app['config']->set('kafka.auto_commit', true);
-        $app['config']->set('kafka.sleep_on_error', 5);
-        $app['config']->set('kafka.partition', 0);
-        $app['config']->set('kafka.compression', 'snappy');
-        $app['config']->set('kafka.debug', false);
+        $app['config']->set('kafka.connections.default', [
+            'brokers' => 'localhost:9092',
+            'consumer' => [
+                'group_id' => 'group',
+                'auto_commit' => true,
+                'options' => ['auto.offset.reset' => 'latest'],
+            ],
+        ]);
         $app['config']->set('kafka.cache_driver', 'file');
     }
 

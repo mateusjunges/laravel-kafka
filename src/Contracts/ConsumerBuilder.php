@@ -2,12 +2,13 @@
 
 namespace Junges\Kafka\Contracts;
 
+use Junges\Kafka\Config\ConnectionConfig;
 use Junges\Kafka\Config\RebalanceStrategy;
 
 interface ConsumerBuilder extends InteractsWithConfigCallbacks
 {
-    /** Creates a new ConsumerBuilder instance. */
-    public static function create(string $brokers, array $topics = [], ?string $groupId = null): self;
+    /** Creates a new ConsumerBuilder instance for the given connection. */
+    public static function create(ConnectionConfig $connection, array $topics = [], ?string $groupId = null): self;
 
     /** Subscribe to a Kafka topic. */
     public function subscribe(...$topics): self;
@@ -24,8 +25,8 @@ interface ConsumerBuilder extends InteractsWithConfigCallbacks
     /** Set dynamic partition assignment with offset provider callback. */
     public function assignPartitionsWithOffsets(callable $offsetProvider): self;
 
-    /** Set the brokers the kafka consumer should use. */
-    public function withBrokers(?string $brokers): self;
+    /** Set the brokers the kafka consumer should use, instead of the connection brokers. */
+    public function withBrokers(string $brokers): self;
 
     /** Specify the consumer group id. */
     public function withConsumerGroupId(?string $groupId): self;

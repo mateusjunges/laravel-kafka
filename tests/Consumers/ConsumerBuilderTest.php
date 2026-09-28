@@ -6,6 +6,7 @@ use Closure;
 use InvalidArgumentException;
 use Junges\Kafka\Commit\VoidCommitter;
 use Junges\Kafka\Config\Config;
+use Junges\Kafka\Config\ConnectionConfig;
 use Junges\Kafka\Config\RebalanceStrategy;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Consumers\Builder;
@@ -25,7 +26,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_returns_a_consumer_instance(): void
     {
-        $consumer = Builder::create('broker')->build();
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->build();
 
         $this->assertInstanceOf(Consumer::class, $consumer);
     }
@@ -33,7 +34,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_subscribe_to_a_topic(): void
     {
-        $consumer = Builder::create('broker');
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'));
 
         $consumer->subscribe('foo');
 
@@ -45,7 +46,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_does_not_subscribe_to_a_topic_twice(): void
     {
-        $consumer = Builder::create('broker');
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'));
 
         $consumer->subscribe('foo', 'foo');
 
@@ -57,7 +58,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function i_can_change_deserializers_on_the_fly(): void
     {
-        $consumer = Builder::create('broker');
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'));
 
         $consumer->usingDeserializer(new JsonDeserializer);
 
@@ -69,7 +70,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_subscribe_to_more_than_one_topics_at_once(): void
     {
-        $consumer = Builder::create('broker');
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'));
 
         $consumer->subscribe('foo', 'bar');
 
@@ -77,7 +78,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
 
         $this->assertEquals(['foo', 'bar'], $topics);
 
-        $consumer = Builder::create('broker');
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'));
 
         $consumer->subscribe(['foo', 'bar']);
 
@@ -89,7 +90,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_set_consumer_group_id(): void
     {
-        $consumer = Builder::create('broker')->withConsumerGroupId('foo');
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->withConsumerGroupId('foo');
 
         $groupId = $this->getPropertyWithReflection('groupId', $consumer);
 
@@ -101,13 +102,13 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        Builder::create('broker', [1234], 'group');
+        Builder::create(new ConnectionConfig('default', 'broker'), [1234], 'group');
     }
 
     #[Test]
     public function it_can_save_the_commit_batch_size(): void
     {
-        $consumer = Builder::create('broker')
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))
             ->withCommitBatchSize(1);
 
         $commitValue = $this->getPropertyWithReflection('commit', $consumer);
@@ -118,7 +119,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_uses_the_correct_handler(): void
     {
-        $consumer = Builder::create('broker')->withHandler(new FakeConsumer);
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->withHandler(new FakeConsumer);
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
 
@@ -130,7 +131,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_set_max_messages(): void
     {
-        $consumer = Builder::create('broker')->withMaxMessages(2);
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->withMaxMessages(2);
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
 
@@ -142,7 +143,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_set_max_commit_retries(): void
     {
-        $consumer = Builder::create('broker')->withMaxCommitRetries(2);
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->withMaxCommitRetries(2);
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
 
@@ -154,7 +155,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_set_the_dead_letter_queue(): void
     {
-        $consumer = Builder::create('broker')->subscribe('test')->withDlq('test-topic-dlq');
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->subscribe('test')->withDlq('test-topic-dlq');
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
 
@@ -166,7 +167,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_uses_dlq_suffix_if_dlq_is_null(): void
     {
-        $consumer = Builder::create('broker', ['foo'])->withDlq();
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'), ['foo'])->withDlq();
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
 
@@ -178,7 +179,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_set_sasl(): void
     {
-        $consumer = Builder::create('broker')
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))
             ->withSasl('username', 'password', 'mechanisms');
 
         $expectedSaslConfig = new Sasl('username', 'password', 'mechanisms');
@@ -193,7 +194,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_add_middlewares_to_the_handler(): void
     {
-        $consumer = Builder::create('broker', ['foo'], 'group')
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'), ['foo'], 'group')
             ->withMiddleware(function ($message, callable $next) {
                 $next($message);
             });
@@ -210,7 +211,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_add_invokable_classes_as_middleware(): void
     {
-        $consumer = Builder::create('broker', ['foo'], 'group')
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'), ['foo'], 'group')
             ->withMiddleware(new TestMiddleware);
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
@@ -225,7 +226,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_set_security_protocol(): void
     {
-        $consumer = Builder::create('broker', ['foo'], 'group')
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'), ['foo'], 'group')
             ->withSecurityProtocol('security');
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
@@ -238,7 +239,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_set_security_protocol_via_sasl_config(): void
     {
-        $consumer = Builder::create('broker', ['foo'], 'group')
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'), ['foo'], 'group')
             ->withSasl(
                 'username',
                 'password',
@@ -258,7 +259,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_set_auto_commit(): void
     {
-        $consumer = Builder::create('broker')->withAutoCommit();
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->withAutoCommit();
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
 
@@ -266,7 +267,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
 
         $this->assertTrue($autoCommit);
 
-        $consumer = Builder::create('broker')->withAutoCommit(false);
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->withAutoCommit(false);
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
 
@@ -278,7 +279,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_set_stop_after_last_message(): void
     {
-        $consumer = Builder::create('broker')->stopAfterLastMessage();
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->stopAfterLastMessage();
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
 
@@ -286,7 +287,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
 
         $this->assertTrue($autoCommit);
 
-        $consumer = Builder::create('broker')->stopAfterLastMessage(false);
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->stopAfterLastMessage(false);
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
 
@@ -298,7 +299,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_set_consumer_options(): void
     {
-        $consumer = Builder::create('broker')
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))
             ->withOptions([
                 'auto.offset.reset' => 'latest',
                 'enable.auto.commit' => 'false',
@@ -318,7 +319,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_set_rebalance_strategy_with_enum(): void
     {
-        $consumer = Builder::create('broker')
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))
             ->withRebalanceStrategy(RebalanceStrategy::ROUND_ROBIN);
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
@@ -333,7 +334,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_set_rebalance_strategy_with_string(): void
     {
-        $consumer = Builder::create('broker')
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))
             ->withRebalanceStrategy('sticky');
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
@@ -351,14 +352,14 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid rebalance strategy [invalid]. Valid strategies are: range, roundrobin, sticky, cooperative-sticky');
 
-        Builder::create('broker')
+        Builder::create(new ConnectionConfig('default', 'broker'))
             ->withRebalanceStrategy('invalid');
     }
 
     #[Test]
     public function it_can_specify_brokers_using_with_brokers(): void
     {
-        $consumer = Builder::create('broker')->withBrokers('my-test-broker');
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->withBrokers('my-test-broker');
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
 
@@ -377,7 +378,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
                 return new VoidCommitter;
             }
         };
-        $consumer = Builder::create('broker')
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))
             ->usingCommitterFactory($adhocCommitterFactory)
             ->build();
 
@@ -390,7 +391,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     {
         $this->expectException(ConsumerException::class);
 
-        Builder::create('broker')->withDlq();
+        Builder::create(new ConnectionConfig('default', 'broker'))->withDlq();
     }
 
     #[Test]
@@ -399,7 +400,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
         $called = false;
         $receivedPartitions = null;
 
-        $consumer = Builder::create('broker', ['test-topic'], 'group')
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'), ['test-topic'], 'group')
             ->withPartitionAssignmentCallback(function ($partitions) use (&$called, &$receivedPartitions) {
                 $called = true;
                 $receivedPartitions = $partitions;
@@ -422,7 +423,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
         $called = false;
         $receivedPartitions = null;
 
-        $consumer = Builder::create('broker', ['test-topic'], 'group')
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'), ['test-topic'], 'group')
             ->assignPartitionsWithOffsets(function ($partitions) use (&$called, &$receivedPartitions) {
                 $called = true;
                 $receivedPartitions = $partitions;
@@ -442,7 +443,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_set_oauth_bearer_token_refresh_callback(): void
     {
-        $consumer = Builder::create('broker', ['test-topic'], 'group')
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'), ['test-topic'], 'group')
             ->withOAuthBearerTokenRefreshCallback(function ($consumer, string $oauthConfig): void {
                 // Token refresh logic
             });

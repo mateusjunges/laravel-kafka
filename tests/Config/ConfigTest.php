@@ -25,7 +25,6 @@ final class ConfigTest extends LaravelKafkaTestCase
         );
 
         $expectedOptions = [
-            'auto.offset.reset' => 'latest',
             'enable.auto.commit' => 'true',
             'group.id' => 'group',
             'bootstrap.servers' => 'broker',
@@ -129,7 +128,6 @@ final class ConfigTest extends LaravelKafkaTestCase
         );
 
         $expectedOptions = [
-            'compression.codec' => 'snappy',
             'bootstrap.servers' => 'broker',
             'sasl.username' => 'user',
             'sasl.password' => 'pass',
@@ -168,7 +166,6 @@ final class ConfigTest extends LaravelKafkaTestCase
         );
 
         $expectedOptions = [
-            'compression.codec' => 'snappy',
             'bootstrap.servers' => '[REMOTE_ADDRESS]',
             'metadata.broker.list' => '[REMOTE_ADDRESS]',
             'security.protocol' => 'SASL_SSL',
@@ -203,7 +200,6 @@ final class ConfigTest extends LaravelKafkaTestCase
         );
 
         $expectedOptions = [
-            'compression.codec' => 'snappy',
             'bootstrap.servers' => 'broker',
             'metadata.broker.list' => 'broker',
             'security.protocol' => 'ssl_plaintext',

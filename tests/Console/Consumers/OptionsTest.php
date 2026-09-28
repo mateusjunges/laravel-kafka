@@ -18,13 +18,13 @@ class OptionsTest extends LaravelKafkaTestCase
         parent::setUp();
 
         $this->config = [
-            'brokers' => config('kafka.brokers'),
-            'groupId' => config('kafka.group_id'),
-            'securityProtocol' => config('kafka.securityProtocol'),
+            'brokers' => 'localhost:9092',
+            'groupId' => null,
+            'securityProtocol' => 'PLAINTEXT',
             'sasl' => [
-                'mechanisms' => config('kafka.sasl.mechanisms'),
-                'username' => config('kafka.sasl.username'),
-                'password' => config('kafka.sasl.password'),
+                'mechanisms' => null,
+                'username' => null,
+                'password' => null,
             ],
         ];
     }

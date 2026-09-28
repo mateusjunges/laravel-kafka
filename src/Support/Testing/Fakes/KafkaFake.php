@@ -3,65 +3,22 @@
 namespace Junges\Kafka\Support\Testing\Fakes;
 
 use Illuminate\Support\Collection;
-use Illuminate\Support\Traits\ForwardsCalls;
 use JetBrains\PhpStorm\Pure;
+use Junges\Kafka\Config\ConnectionConfig;
+use Junges\Kafka\Connection;
 use Junges\Kafka\Contracts\ConsumerMessage;
-use Junges\Kafka\Contracts\Manager;
 use Junges\Kafka\Contracts\ProducerMessage;
-use Junges\Kafka\Message\Message;
+use Junges\Kafka\Factory;
+use Override;
 use PHPUnit\Framework\Assert as PHPUnit;
 
-class KafkaFake
+class KafkaFake extends Factory
 {
-    use ForwardsCalls;
-
-    private Manager $kafkaManager;
-
+    /** @var list<ProducerMessage> */
     private array $publishedMessages = [];
 
-    /** @var ConsumerMessage[] */
+    /** @var list<ConsumerMessage> */
     private array $messagesToConsume = [];
-
-    public function __construct(?Manager $manager)
-    {
-        $this->kafkaManager = $manager?->shouldFake();
-        $this->makeProducerBuilderFake();
-    }
-
-    /**
-     * Handle dynamic method calls to the kafka manager.
-     *
-     * @return mixed
-     */
-    public function __call(string $method, array $parameters)
-    {
-        $this->kafkaManager->shouldReceiveMessages($this->messagesToConsume);
-
-        return $this->forwardCallTo($this->kafkaManager, $method, $parameters);
-    }
-
-    /** Publish a message in the specified broker/topic. */
-    public function publish(?string $broker = null): ProducerBuilderFake
-    {
-        return $this->makeProducerBuilderFake($broker);
-    }
-
-    public function publishSync(?string $broker = null): ProducerBuilderFake
-    {
-        return $this->publish($broker);
-    }
-
-    /** Return a ConsumerBuilder instance. */
-    public function consumer(array $topics = [], ?string $groupId = null, ?string $brokers = null): BuilderFake
-    {
-        return BuilderFake::create(
-            brokers: $brokers ?? config('kafka.brokers'),
-            topics: $topics,
-            groupId: $groupId ?? config('kafka.consumer_group_id')
-        )->setMessages(
-            $this->messagesToConsume
-        );
-    }
 
     /** Set the messages to consume. */
     public function shouldReceiveMessages(ConsumerMessage|array $messages): void
@@ -122,18 +79,32 @@ class KafkaFake
         PHPUnit::assertEmpty($this->getPublishedMessages(), 'Messages were published unexpectedly.');
     }
 
+    /** Connections that are not configured are allowed, so tests don't need a Kafka configuration. */
+    #[Override]
+    protected function configuration(string $name): ConnectionConfig
+    {
+        $config = config("kafka.connections.{$name}");
+
+        return ConnectionConfig::fromArray($name, [
+            ...(is_array($config) ? $config : []),
+            'brokers' => $config['brokers'] ?? 'localhost:9092',
+        ]);
+    }
+
+    #[Override]
+    protected function makeConnection(ConnectionConfig $config): Connection
+    {
+        return new FakeConnection(
+            $config,
+            fn (ProducerMessage $message) => $this->publishedMessages[] = $message,
+            fn () => $this->messagesToConsume,
+        );
+    }
+
     /** Add a message to array of messages to be consumed. */
     private function addConsumerMessage(ConsumerMessage $message): void
     {
         $this->messagesToConsume[] = $message;
-    }
-
-    private function makeProducerBuilderFake(?string $broker = null): ProducerBuilderFake
-    {
-        return (new ProducerBuilderFake(broker: $broker))
-            ->withProduceCallback(
-                fn (Message $message) => $this->publishedMessages[] = $message
-            );
     }
 
     /*** Get all messages matching a truth-test callback. */
@@ -144,7 +115,7 @@ class KafkaFake
         }
 
         return collect($this->getPublishedMessages())
-            ->filter(function (Message $publishedMessage) use ($topic, $expectedMessage, $callback) {
+            ->filter(function (ProducerMessage $publishedMessage) use ($topic, $expectedMessage, $callback) {
                 if ($topic !== null && $publishedMessage->getTopicName() !== $topic) {
                     return false;
                 }

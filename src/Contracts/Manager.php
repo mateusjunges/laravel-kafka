@@ -2,22 +2,27 @@
 
 namespace Junges\Kafka\Contracts;
 
+use Junges\Kafka\Connection;
+use Junges\Kafka\Consumers\Builder;
+use Junges\Kafka\Producers\PendingMessage;
+
 interface Manager
 {
-    /** Returns a new fresh instance of the Manager. */
-    public function fresh(): self;
+    /** Get a Kafka connection by name, or the default connection when no name is given. */
+    public function connection(?string $name = null): Connection;
 
-    /** Creates a new async ProducerBuilder instance, setting brokers and topic. */
-    public function publish(?string $broker = null): MessageProducer;
+    /** Start a message that is queued on the default connection's producer when sent. */
+    public function publish(?string $topic = null): PendingMessage;
 
-    /** Creates a synchronous ProducerBuilder instance for immediate message flushing. */
-    public function publishSync(?string $broker = null): MessageProducer;
+    /** Start a message that is flushed as soon as it is sent, using the default connection. */
+    public function publishSync(?string $topic = null): PendingMessage;
 
-    /** Return a ConsumerBuilder instance. */
-    public function consumer(array $topics = [], ?string $groupId = null, ?string $brokers = null): ConsumerBuilder;
+    /** Start building a consumer using the default connection. */
+    public function consumer(array $topics = [], ?string $groupId = null): Builder;
 
-    public function shouldFake(): self;
+    /** Wait until every message queued on the resolved connections is delivered. */
+    public function flush(): void;
 
-    /** @param array<int, ConsumerMessage> $messages */
-    public function shouldReceiveMessages(array $messages): self;
+    /** Get the name of the default connection. */
+    public function getDefaultConnection(): string;
 }

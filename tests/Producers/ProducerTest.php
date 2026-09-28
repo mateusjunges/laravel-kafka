@@ -9,6 +9,7 @@ use Junges\Kafka\Message\Serializers\JsonSerializer;
 use Junges\Kafka\Producers\Producer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use PHPUnit\Framework\Attributes\Test;
+use ReflectionProperty;
 
 final class ProducerTest extends LaravelKafkaTestCase
 {
@@ -47,7 +48,7 @@ final class ProducerTest extends LaravelKafkaTestCase
         $producer->produce($message);
 
         // Reflect on pendingMessages to assert it has been cleared after each flush
-        $reflection = new \ReflectionProperty(Producer::class, 'pendingMessages');
+        $reflection = new ReflectionProperty(Producer::class, 'pendingMessages');
         $reflection->setAccessible(true);
 
         $this->assertSame([], $reflection->getValue($producer));
@@ -60,15 +61,11 @@ final class ProducerTest extends LaravelKafkaTestCase
         $callbackCalls = 0;
         $receivedMessages = [];
 
-        $producer = new Producer(
-            new Config('broker', ['test-topic']),
-            new JsonSerializer,
-            false,
-            function (array $messages) use (&$callbackCalls, &$receivedMessages) {
+        $producer = (new Producer(new Config('broker', ['test-topic']), new JsonSerializer))
+            ->withFlushCallback(function (array $messages) use (&$callbackCalls, &$receivedMessages) {
                 $callbackCalls++;
                 $receivedMessages = $messages;
-            }
-        );
+            });
 
         $message = new Message(
             body: ['key' => 'value'],
@@ -76,6 +73,10 @@ final class ProducerTest extends LaravelKafkaTestCase
         $message->onTopic('test-topic');
 
         $producer->produce($message);
+
+        $this->assertSame(0, $callbackCalls);
+
+        $producer->flush();
 
         $this->assertSame(1, $callbackCalls);
         $this->assertCount(1, $receivedMessages);

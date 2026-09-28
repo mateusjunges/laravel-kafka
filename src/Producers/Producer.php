@@ -3,7 +3,6 @@
 namespace Junges\Kafka\Producers;
 
 use Closure;
-use Exception;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Facades\App;
 use Junges\Kafka\Concerns\ManagesTransactions;
@@ -11,12 +10,14 @@ use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\MessageSerializer;
 use Junges\Kafka\Contracts\Producer as ProducerContract;
 use Junges\Kafka\Contracts\ProducerMessage;
+use Junges\Kafka\Events\CouldNotPublishMessage as CouldNotPublishMessageEvent;
 use Junges\Kafka\Events\MessagePublished;
 use Junges\Kafka\Events\PublishingMessage;
 use Junges\Kafka\Exceptions\CouldNotPublishMessage;
 use RdKafka\Conf;
 use RdKafka\Producer as KafkaProducer;
 use RdKafka\ProducerTopic;
+use Throwable;
 
 class Producer implements ProducerContract
 {
@@ -28,93 +29,83 @@ class Producer implements ProducerContract
 
     private readonly Dispatcher $dispatcher;
 
-    private array $pendingMessages;
+    /** @var list<ProducerMessage> */
+    private array $pendingMessages = [];
+
+    private ?Closure $flushCallback = null;
 
     public function __construct(
         private readonly Config $config,
         private readonly MessageSerializer $serializer,
-        private readonly bool $async = false,
-        private readonly ?Closure $flushCallback = null,
     ) {
         $this->producer = app(KafkaProducer::class, [
             'conf' => $this->getConf($this->config->getProducerOptions()),
         ]);
         $this->dispatcher = App::make(Dispatcher::class);
-        $this->pendingMessages = [];
     }
 
+    /**
+     * Messages are usually flushed when the application terminates. This is a last
+     * resort for producers that outlive it, and it can't throw because there is
+     * nothing left to handle the exception, so failures are only dispatched
+     * through the CouldNotPublishMessage event.
+     */
     public function __destruct()
     {
-        if ($this->async) {
+        try {
             $this->flush();
+        } catch (Throwable) {
         }
     }
 
     /** {@inheritDoc} */
-    public function produce(ProducerMessage $message): bool
+    public function produce(ProducerMessage $message, ?MessageSerializer $serializer = null): void
     {
         $this->dispatcher->dispatch(new PublishingMessage($message));
 
         $topic = $this->producer->newTopic($message->getTopicName());
 
-        $message = clone $message;
-
-        $message = $this->serializer->serialize($message);
+        $message = ($serializer ?? $this->serializer)->serialize(clone $message);
 
         $this->produceMessage($topic, $message);
 
-        if ($this->flushCallback) {
+        if ($this->flushCallback instanceof Closure) {
             $this->pendingMessages[] = $message;
         }
 
         $this->producer->poll(0);
-
-        if ($this->async) {
-            return true;
-        }
-
-        return $this->flush();
     }
 
-    /**
-     * @throws CouldNotPublishMessage
-     * @throws Exception
-     */
-    public function flush(): mixed
+    /** {@inheritDoc} */
+    public function flush(): void
     {
-        // Here we define the flush callback that is called shutting down a consumer.
-        // This is called after every single message sent using Producer::send
-        $flush = function () {
-            $sleepMilliseconds = config('kafka.flush_retry_sleep_in_ms', 100);
-            $retries = $this->config->flushRetries ?? config('kafka.flush_retries', 10);
-            $timeout = $this->config->flushTimeoutInMs ?? config('kafka.flush_timeout_in_ms', 1000);
+        try {
+            retry($this->config->flushRetries, function () {
+                $result = $this->producer->flush($this->config->flushTimeoutInMs);
 
-            try {
-                return retry($retries, function () use ($timeout) {
-                    $result = $this->producer->flush($timeout);
+                if ($result !== RD_KAFKA_RESP_ERR_NO_ERROR) {
+                    throw CouldNotPublishMessage::withMessage(rd_kafka_err2str($result), $result);
+                }
+            }, $this->config->flushRetrySleepInMs);
+        } catch (CouldNotPublishMessage $exception) {
+            $this->dispatcher->dispatch(new CouldNotPublishMessageEvent(
+                $exception->getKafkaErrorCode(),
+                $exception->getMessage(),
+                $exception,
+            ));
 
-                    if ($result === RD_KAFKA_RESP_ERR_NO_ERROR) {
-                        $this->runFlushCallback();
+            throw $exception;
+        }
 
-                        return true;
-                    }
+        $this->runFlushCallback();
+    }
 
-                    $message = rd_kafka_err2str($result);
+    /** {@inheritDoc} */
+    public function withFlushCallback(callable $callback): self
+    {
+        $this->flushCallback = $callback(...);
 
-                    throw CouldNotPublishMessage::withMessage($message, $result);
-                }, $sleepMilliseconds);
-            } catch (CouldNotPublishMessage $exception) {
-                $this->dispatcher->dispatch(new \Junges\Kafka\Events\CouldNotPublishMessage(
-                    $exception->getKafkaErrorCode(),
-                    $exception->getMessage(),
-                    $exception,
-                ));
-
-                throw $exception;
-            }
-        };
-
-        return $flush();
+        return $this;
     }
 
     /** Set the Kafka Configuration. */
@@ -152,10 +143,9 @@ class Producer implements ProducerContract
             return;
         }
 
-        if ($this->flushCallback !== null) {
-            ($this->flushCallback)($this->pendingMessages);
-        }
-
+        $pendingMessages = $this->pendingMessages;
         $this->pendingMessages = [];
+
+        ($this->flushCallback)($pendingMessages);
     }
 }

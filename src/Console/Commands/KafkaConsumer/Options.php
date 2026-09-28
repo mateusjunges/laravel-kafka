@@ -25,6 +25,8 @@ final class Options
 
     private ?string $securityProtocol = 'plaintext';
 
+    private ?string $connection = null;
+
     private readonly ?string $saslUsername;
 
     private readonly ?string $saslPassword;

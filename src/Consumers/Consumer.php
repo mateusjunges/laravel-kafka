@@ -319,7 +319,7 @@ class Consumer implements MessageConsumer
      */
     private function doConsume(): void
     {
-        $message = $this->consumer->consume((int) config('kafka.consumer_timeout_ms', 2000));
+        $message = $this->consumer->consume($this->config->consumerTimeoutInMs);
         $this->handleMessage($message);
     }
 

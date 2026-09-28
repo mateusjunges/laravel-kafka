@@ -3,6 +3,7 @@
 namespace Junges\Kafka\Support\Testing\Fakes;
 
 use Junges\Kafka\Config\Config;
+use Junges\Kafka\Config\ConnectionConfig;
 use Junges\Kafka\Consumers\Builder;
 use Junges\Kafka\Consumers\CallableConsumer;
 use Junges\Kafka\Contracts\ConsumerBuilder as ConsumerBuilderContract;
@@ -16,10 +17,10 @@ class BuilderFake extends Builder implements ConsumerBuilderContract
 
     /** {@inheritDoc} */
     #[Override]
-    public static function create(?string $brokers, array $topics = [], ?string $groupId = null): self
+    public static function create(ConnectionConfig $connection, array $topics = [], ?string $groupId = null): self
     {
         return new self(
-            brokers: $brokers,
+            connection: $connection,
             topics: $topics,
             groupId: $groupId
         );

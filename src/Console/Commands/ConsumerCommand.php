@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Console\Commands\KafkaConsumer\Options;
 use Junges\Kafka\Consumers\Consumer;
+use Junges\Kafka\Contracts\Manager;
 use Junges\Kafka\Contracts\MessageDeserializer;
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
 
@@ -21,30 +22,13 @@ class ConsumerCommand extends Command
             {--dlq=? : The Dead Letter Queue} 
             {--maxMessage=? : The max number of messages that should be handled}
             {--maxTime=0 : The max number of seconds that a consumer should run }
-            {--securityProtocol=?}';
+            {--securityProtocol=?}
+            {--connection= : The Kafka connection to use}';
 
     /* @var string $description */
     protected $description = 'A Kafka Consumer for Laravel.';
 
-    private readonly array $config;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->config = [
-            'brokers' => config('kafka.brokers'),
-            'groupId' => config('kafka.consumer_group_id'),
-            'securityProtocol' => config('kafka.securityProtocol'),
-            'sasl' => [
-                'mechanisms' => config('kafka.sasl.mechanisms'),
-                'username' => config('kafka.sasl.username'),
-                'password' => config('kafka.sasl.password'),
-            ],
-        ];
-    }
-
-    public function handle(): int
+    public function handle(Manager $manager): int
     {
         if (empty($this->option('consumer'))) {
             $this->error('The [--consumer] option is required.');
@@ -58,9 +42,20 @@ class ConsumerCommand extends Command
             return SymfonyCommand::SUCCESS;
         }
 
+        $connection = $manager->connection($this->option('connection'))->getConfig();
+
         $parsedOptions = array_map($this->parseOptions(...), $this->options());
 
-        $options = new Options($parsedOptions, $this->config);
+        $options = new Options($parsedOptions, [
+            'brokers' => $connection->brokers,
+            'groupId' => $connection->groupId,
+            'securityProtocol' => $connection->securityProtocol,
+            'sasl' => [
+                'mechanisms' => $connection->sasl?->getMechanisms(),
+                'username' => $connection->sasl?->getUsername(),
+                'password' => $connection->sasl?->getPassword(),
+            ],
+        ]);
 
         $consumer = $options->getConsumer();
         $deserializer = $options->getDeserializer();
@@ -76,6 +71,10 @@ class ConsumerCommand extends Command
             dlq: $options->getDlq(),
             maxMessages: $options->getMaxMessages(),
             maxTime: $options->getMaxTime(),
+            autoCommit: $connection->autoCommit,
+            customOptions: [...$connection->options, ...$connection->consumerOptions],
+            callbacks: $connection->callbacks,
+            consumerTimeoutInMs: $connection->consumerTimeoutInMs,
         );
 
         /** @var Consumer $consumer */

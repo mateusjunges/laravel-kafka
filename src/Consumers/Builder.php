@@ -7,6 +7,7 @@ use Illuminate\Support\Traits\Conditionable;
 use InvalidArgumentException;
 use Junges\Kafka\Concerns\InteractsWithConfigCallbacks;
 use Junges\Kafka\Config\Config;
+use Junges\Kafka\Config\ConnectionConfig;
 use Junges\Kafka\Config\RebalanceStrategy;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Contracts\CommitterFactory;
@@ -68,33 +69,43 @@ class Builder implements ConsumerBuilderContract
 
     protected ?Closure $partitionAssignmentCallback = null;
 
-    protected function __construct(protected ?string $brokers, array $topics = [], protected ?string $groupId = null)
+    protected string $brokers;
+
+    protected ?string $groupId;
+
+    protected int $consumerTimeoutInMs;
+
+    protected function __construct(ConnectionConfig $connection, array $topics = [], ?string $groupId = null)
     {
-        if (count($topics) > 0) {
-            foreach ($topics as $topic) {
-                $this->validateTopic($topic);
-            }
+        foreach ($topics as $topic) {
+            $this->validateTopic($topic);
         }
-        $this->topics = array_unique($topics);
+
+        $this->topics = array_values(array_unique($topics));
+
+        $this->brokers = $connection->brokers;
+        $this->groupId = $groupId ?? $connection->groupId;
+        $this->securityProtocol = $connection->securityProtocol ?? 'PLAINTEXT';
+        $this->saslConfig = $connection->sasl;
+        $this->autoCommit = $connection->autoCommit;
+        $this->options = [...$connection->options, ...$connection->consumerOptions];
+        $this->callbacks = $connection->callbacks;
+        $this->consumerTimeoutInMs = $connection->consumerTimeoutInMs;
 
         $this->commit = 1;
         $this->handler = function () {};
-
         $this->maxMessages = -1;
         $this->maxCommitRetries = 6;
         $this->middlewares = [];
-        $this->securityProtocol = 'PLAINTEXT';
-        $this->autoCommit = config('kafka.auto_commit');
-        $this->options = [];
 
         $this->deserializer = app(MessageDeserializer::class);
     }
 
     /** {@inheritDoc} */
-    public static function create(?string $brokers, array $topics = [], ?string $groupId = null): self
+    public static function create(ConnectionConfig $connection, array $topics = [], ?string $groupId = null): self
     {
         return new self(
-            brokers: $brokers,
+            connection: $connection,
             topics: $topics,
             groupId: $groupId
         );
@@ -119,9 +130,9 @@ class Builder implements ConsumerBuilderContract
     }
 
     /** {@inheritDoc} */
-    public function withBrokers(?string $brokers): self
+    public function withBrokers(string $brokers): self
     {
-        $this->brokers = $brokers ?? config('kafka.brokers');
+        $this->brokers = $brokers;
 
         return $this;
     }
@@ -389,6 +400,7 @@ class Builder implements ConsumerBuilderContract
             maxTime: $this->maxTime,
             partitionAssignment: $this->partitionAssignment,
             whenStopConsuming: $this->onStopConsuming,
+            consumerTimeoutInMs: $this->consumerTimeoutInMs,
         );
 
         return new Consumer($config, $this->deserializer, $this->committerFactory);

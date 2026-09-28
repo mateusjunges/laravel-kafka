@@ -5,7 +5,6 @@ namespace Junges\Kafka\Tests;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Junges\Kafka\Contracts\ConsumerMessage;
-use Junges\Kafka\Contracts\Manager;
 use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\ConsumedMessage;
@@ -26,7 +25,7 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->fake = new KafkaFake(app(Manager::class));
+        $this->fake = new KafkaFake;
     }
 
     #[Test]
@@ -36,7 +35,7 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
             ->onTopic('topic')
             ->withBodyKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
-            ->withKafkaKey(Str::uuid()->toString());
+            ->withKey(Str::uuid()->toString());
 
         $producer->send();
 
@@ -82,7 +81,7 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
             ->onTopic('topic')
             ->withBodyKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
-            ->withKafkaKey(Str::uuid()->toString());
+            ->withKey(Str::uuid()->toString());
         $producer->send();
 
         $this->fake->assertPublished($producer->getMessage());
@@ -101,7 +100,7 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
             ->onTopic('topic')
             ->withBodyKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
-            ->withKafkaKey(Str::uuid()->toString());
+            ->withKey(Str::uuid()->toString());
 
         $producer->send();
 
@@ -125,7 +124,7 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
             ->onTopic('topic')
             ->withBodyKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
-            ->withKafkaKey($uuid = Str::uuid()->toString());
+            ->withKey($uuid = Str::uuid()->toString());
 
         $producer->send();
 
@@ -149,7 +148,7 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
             ->onTopic('topic')
             ->withBodyKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
-            ->withKafkaKey(Str::uuid()->toString());
+            ->withKey(Str::uuid()->toString());
 
         $producer->send();
 
@@ -191,7 +190,7 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
             ->onTopic('topic')
             ->withBodyKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
-            ->withKafkaKey(Str::uuid()->toString());
+            ->withKey(Str::uuid()->toString());
 
         $producer->send();
 
@@ -213,7 +212,7 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
             ->onTopic('topic')
             ->withBodyKey('test', ['test'])
             ->withHeaders(['custom' => 'header'])
-            ->withKafkaKey($uuid = Str::uuid()->toString());
+            ->withKey($uuid = Str::uuid()->toString());
 
         $producer->send();
 

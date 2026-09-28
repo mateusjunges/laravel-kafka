@@ -86,8 +86,10 @@ class Config
         private readonly int $maxTime = 0,
         private readonly array $partitionAssignment = [],
         private readonly ?Closure $whenStopConsuming = null,
-        public readonly ?int $flushRetries = null,
-        public readonly ?int $flushTimeoutInMs = null,
+        public readonly int $flushRetries = 10,
+        public readonly int $flushTimeoutInMs = 1000,
+        public readonly int $flushRetrySleepInMs = 100,
+        public readonly int $consumerTimeoutInMs = 2000,
     ) {}
 
     public function getCommit(): int
@@ -139,16 +141,11 @@ class Config
     {
         $options = [
             'metadata.broker.list' => $this->broker,
-            'auto.offset.reset' => config('kafka.offset_reset', 'latest'),
-            'enable.auto.commit' => config('kafka.auto_commit', true) === true ? 'true' : 'false',
-            'group.id' => $this->groupId,
             'bootstrap.servers' => $this->broker,
+            'group.id' => $this->groupId,
+            'enable.auto.commit' => $this->autoCommit ? 'true' : 'false',
             ...$this->getSecurityProtocolOptions(),
         ];
-
-        if (isset($this->autoCommit)) {
-            $options['enable.auto.commit'] = $this->autoCommit === true ? 'true' : 'false';
-        }
 
         return collect(array_merge($options, $this->customOptions, $this->getSaslOptions()))
             ->reject(fn (mixed $option, string $key) => in_array($key, self::PRODUCER_ONLY_CONFIG_OPTIONS))
@@ -159,7 +156,6 @@ class Config
     public function getProducerOptions(): array
     {
         $config = [
-            'compression.codec' => config('kafka.compression', 'snappy'),
             'bootstrap.servers' => $this->broker,
             'metadata.broker.list' => $this->broker,
             ...$this->getSecurityProtocolOptions(),
