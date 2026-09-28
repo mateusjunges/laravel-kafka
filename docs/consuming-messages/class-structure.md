@@ -70,7 +70,7 @@ Only `topics` and `handle` are required. The other methods have defaults, and ca
 | `connection()` | The [connection](../advanced-usage/connections.md) to consume from. Defaults to `null`, which uses the default connection. |
 | `group()` | The consumer group. Defaults to `null`, which uses the group of the connection. |
 | `retries()` | How many times a failed message is retried before it is handled as failed. Defaults to `0`. See [handling failed messages](handling-failed-messages.md). |
-| `backoff()` | How long to wait before each retry, in milliseconds. Defaults to `0`. |
+| `backoff()` | How long to wait before each retry, in milliseconds. It can also return an array, to wait for a different time before each retry, like `[1000, 5000, 10000]`. Defaults to `0`. |
 | `dlq()` | The dead letter queue topic. When it returns `true`, the name of the first topic followed by `-dlq` is used. Defaults to `null`, which disables the dead letter queue. |
 | `skipFailedMessages()` | Whether failed messages are skipped when there is no dead letter queue, instead of stopping the consumer. Defaults to `false`. |
 

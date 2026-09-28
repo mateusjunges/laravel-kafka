@@ -40,7 +40,7 @@ final class FakeKafkaConsumer extends KafkaConsumer
         return $this->options['retries'] ?? 0;
     }
 
-    public function backoff(): int
+    public function backoff(): int|array
     {
         return $this->options['backoff'] ?? 0;
     }

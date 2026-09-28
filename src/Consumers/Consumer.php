@@ -413,7 +413,7 @@ class Consumer implements ConsumerContract
 
                     $this->config->getHandler()->handle($handledMessage, $this);
                 },
-                $this->config->getFailedMessageRetryBackoff(),
+                $this->config->getFailedMessageRetrySleep(),
                 function (Throwable $throwable) use ($message): bool {
                     $this->logger->error($message, $throwable, 'RETRY');
 

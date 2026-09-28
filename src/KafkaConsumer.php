@@ -53,8 +53,13 @@ abstract class KafkaConsumer
         return 0;
     }
 
-    /** Get how long to wait before each retry, in milliseconds. */
-    public function backoff(): int
+    /**
+     * Get how long to wait before each retry, in milliseconds. An array sets the time to wait before each
+     * retry in order, like [1000, 5000, 10000], and its last value is used for the remaining retries.
+     *
+     * @return int|list<int>
+     */
+    public function backoff(): int|array
     {
         return 0;
     }

@@ -107,7 +107,13 @@ interface ConsumerBuilder extends InteractsWithConfigCallbacks
     public function skipFailedMessages(bool $skipFailedMessages = true): self;
 
     /** Call the handler of a failed message again up to the given number of times before handling it as failed. */
-    public function retryFailedMessages(int $times, int $backoffInMs = 0): self;
+    /**
+     * The backoff is the time to wait before each retry, in milliseconds. An array sets the time to wait before
+     * each retry in order, like [1000, 5000, 10000], and its last value is used for the remaining retries.
+     *
+     * @param  int|list<int>  $backoffInMs
+     */
+    public function retryFailedMessages(int $times, int|array $backoffInMs = 0): self;
 
     /** Build the Kafka consumer. */
     public function build(): Consumer;

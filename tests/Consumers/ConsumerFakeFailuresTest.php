@@ -4,6 +4,7 @@ namespace Junges\Kafka\Tests\Consumers;
 
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Sleep;
+use InvalidArgumentException;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Events\MessageConsumed;
 use Junges\Kafka\Events\MessageSentToDLQ;
@@ -45,6 +46,34 @@ final class ConsumerFakeFailuresTest extends LaravelKafkaTestCase
         $this->assertSame([1, 2, 3], $attempts);
         Sleep::assertSleptTimes(2);
         Event::assertDispatched(MessageConsumed::class, fn (MessageConsumed $event) => $event->message->getAttempts() === 3);
+    }
+
+    #[Test]
+    public function it_waits_for_each_backoff_in_order_and_repeats_the_last_one(): void
+    {
+        Sleep::fake();
+        $this->receive('failing');
+
+        $this->consumer()
+            ->retryFailedMessages(4, backoffInMs: [100, 1000, 5000])
+            ->skipFailedMessages()
+            ->build()
+            ->consume();
+
+        Sleep::assertSequence([
+            Sleep::for(100)->milliseconds(),
+            Sleep::for(1000)->milliseconds(),
+            Sleep::for(5000)->milliseconds(),
+            Sleep::for(5000)->milliseconds(),
+        ]);
+    }
+
+    #[Test]
+    public function it_does_not_accept_negative_backoffs(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        Kafka::consumer(['orders'])->retryFailedMessages(3, backoffInMs: [100, -1]);
     }
 
     #[Test]

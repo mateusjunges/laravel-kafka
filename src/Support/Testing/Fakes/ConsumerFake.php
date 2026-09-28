@@ -142,7 +142,7 @@ class ConsumerFake implements Consumer
 
                     $this->config->getHandler()->handle($handledMessage, $this);
                 },
-                $this->config->getFailedMessageRetryBackoff(),
+                $this->config->getFailedMessageRetrySleep(),
                 fn () => ! $this->stopRequested,
             );
 

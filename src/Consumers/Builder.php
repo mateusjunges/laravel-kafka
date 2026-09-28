@@ -57,7 +57,8 @@ class Builder implements ConsumerBuilderContract
 
     protected int $failedMessageRetries = 0;
 
-    protected int $failedMessageRetryBackoff = 0;
+    /** @var int|list<int> */
+    protected int|array $failedMessageRetryBackoff = 0;
 
     /** @var list<callable> */
     protected array $beforeConsumingCallbacks = [];
@@ -300,10 +301,12 @@ class Builder implements ConsumerBuilderContract
     }
 
     /** {@inheritDoc} */
-    public function retryFailedMessages(int $times, int $backoffInMs = 0): self
+    public function retryFailedMessages(int $times, int|array $backoffInMs = 0): self
     {
-        if ($times < 0 || $backoffInMs < 0) {
-            throw new InvalidArgumentException('The number of retries and the backoff must not be negative.');
+        $backoffs = is_array($backoffInMs) ? $backoffInMs : [$backoffInMs];
+
+        if ($times < 0 || collect($backoffs)->contains(fn (mixed $backoff) => ! is_int($backoff) || $backoff < 0)) {
+            throw new InvalidArgumentException('The number of retries must not be negative, and the backoff must be made of non negative integers.');
         }
 
         $this->failedMessageRetries = $times;

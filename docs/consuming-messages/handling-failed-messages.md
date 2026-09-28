@@ -63,6 +63,15 @@ function (ConsumerMessage $message, Consumer $consumer) {
 ```
  Once all retries are used, the message is handled as failed: the [failure callback](#being-notified-of-failed-messages) is called, and the message is sent to the dead letter queue, stops the consumer, or is skipped, depending on the configuration. Retries also end early when the consumer is asked to stop, for instance by a termination signal.
 
+To wait longer before each retry, pass an array of backoffs instead. Each retry waits for the value at its position, and the last value is used for the remaining retries:
+
+```php
+$consumer = \Junges\Kafka\Facades\Kafka::consumer(['orders'])
+    ->retryFailedMessages(5, backoffInMs: [1000, 5000, 10000])
+    ->withHandler(new OrderHandler)
+    ->build();
+```
+
 The consumer waits during the backoff, so no other message is consumed while a message is being retried. Keep the total time spent retrying a message (the number of retries multiplied by the backoff, plus the time the handler takes) well below the `max.poll.interval.ms` consumer option, 5 minutes by default. A consumer that does not poll Kafka within that interval is removed from the consumer group. Longer outages are better handled by a dead letter queue or by letting the consumer stop.
 
 ## Sending failed messages to a dead letter queue

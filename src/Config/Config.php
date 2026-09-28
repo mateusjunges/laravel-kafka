@@ -90,7 +90,7 @@ class Config
         public readonly int $consumerTimeoutInMs = 2000,
         private readonly bool $skipFailedMessages = false,
         private readonly int $failedMessageRetries = 0,
-        private readonly int $failedMessageRetryBackoff = 0,
+        private readonly int|array $failedMessageRetryBackoff = 0,
     ) {}
 
     public function getTopics(): array
@@ -140,9 +140,25 @@ class Config
     }
 
     /** Get the time to wait before retrying a failed message, in milliseconds. */
-    public function getFailedMessageRetryBackoff(): int
+    /** @return int|list<int> */
+    public function getFailedMessageRetryBackoff(): int|array
     {
         return $this->failedMessageRetryBackoff;
+    }
+
+    /**
+     * Get the time to wait before retrying a failed message, as expected by the retry() helper. With an
+     * array, each retry waits for the value at its position, or the last value when there are more retries.
+     */
+    public function getFailedMessageRetrySleep(): int|Closure
+    {
+        $backoff = $this->failedMessageRetryBackoff;
+
+        if (! is_array($backoff)) {
+            return $backoff;
+        }
+
+        return fn (int $attempt): int => $backoff[$attempt - 1] ?? $backoff[array_key_last($backoff)] ?? 0;
     }
 
     /**
