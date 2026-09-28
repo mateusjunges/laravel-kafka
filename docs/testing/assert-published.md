@@ -7,7 +7,7 @@ When you want to assert that a message was published into kafka, you can make us
 
 ```php
 use Junges\Kafka\Facades\Kafka;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 class MyTest extends TestCase
 {
@@ -30,7 +30,7 @@ You can also use `assertPublished` without passing the message argument:
 
 ```php
 use Junges\Kafka\Facades\Kafka;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 class MyTest extends TestCase
 {
