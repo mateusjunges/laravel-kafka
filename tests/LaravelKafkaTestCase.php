@@ -23,8 +23,6 @@ abstract class LaravelKafkaTestCase extends Orchestra
     {
         parent::setUp();
 
-        (new LaravelKafkaServiceProvider($this->app))->boot();
-
         app()->instance(Logger::class, $this->getMockedLogger());
     }
 
