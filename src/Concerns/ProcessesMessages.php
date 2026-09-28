@@ -4,7 +4,9 @@ namespace Junges\Kafka\Concerns;
 
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Events\MessageConsumed;
+use Junges\Kafka\Events\MessageFailed;
 use Junges\Kafka\Events\MessageSkipped;
+use Junges\Kafka\Events\RetryingMessage;
 use Junges\Kafka\Exceptions\ConsumerException;
 use RdKafka\Message;
 use Throwable;
@@ -43,14 +45,20 @@ trait ProcessesMessages
                     $this->config->getHandler()->handle($handledMessage, $this);
                 },
                 $this->config->getFailedMessageRetrySleep(),
-                function (Throwable $throwable) use ($kafkaMessage): bool {
+                function (Throwable $throwable) use ($kafkaMessage, &$handledMessage): bool {
                     $this->logError($kafkaMessage, $throwable, 'RETRY');
 
-                    return ! $this->stopRequested;
+                    if ($this->stopRequested) {
+                        return false;
+                    }
+
+                    $this->dispatcher->dispatch(new RetryingMessage($handledMessage, $throwable, $this));
+
+                    return true;
                 },
             );
 
-            $this->dispatcher->dispatch(new MessageConsumed($handledMessage));
+            $this->dispatcher->dispatch(new MessageConsumed($handledMessage, $this));
         } catch (Throwable $throwable) {
             // The failed message is the one the handler last received.
             $this->handleFailedMessage($handledMessage ?? $message, $throwable, $kafkaMessage);
@@ -70,6 +78,8 @@ trait ProcessesMessages
         $this->logError($kafkaMessage, $throwable);
         report($throwable);
 
+        $this->dispatcher->dispatch(new MessageFailed($message, $throwable, $this));
+
         try {
             $this->config->getHandler()->failed($message, $throwable);
         } catch (Throwable $callbackException) {
@@ -80,7 +90,7 @@ trait ProcessesMessages
         if ($this->config->shouldSendToDlq()) {
             $this->sendToDeadLetterQueue($message, $throwable, $kafkaMessage);
         } elseif ($this->config->shouldSkipFailedMessages()) {
-            $this->dispatcher->dispatch(new MessageSkipped($message, $throwable));
+            $this->dispatcher->dispatch(new MessageSkipped($message, $throwable, $this));
         } else {
             throw ConsumerException::stoppedOnFailure($message, $throwable);
         }

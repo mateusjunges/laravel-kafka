@@ -70,6 +70,12 @@ Consumers load your application code once, when they start, so they must be rest
 php artisan kafka:restart-consumers
 ```
 
+To restart only some consumers, pass their names. [Consumer classes](../consuming-messages/class-structure.md#naming-consumers) are named after their class by default, and can be given by their name in the `App\Kafka\Consumers` namespace, like with the `kafka:consume` command:
+
+```bash
+php artisan kafka:restart-consumers OrdersConsumer PaymentsConsumer
+```
+
 The command stores the restart time in the cache, and consumers check it every second. All consumers must share the cache store defined by the `cache_driver` key of the `config/kafka.php` file, which defaults to your application's cache store, so it can't be a store local to each server, such as `file` or `array`, when consumers run on several servers.
 
 ## Limiting memory usage

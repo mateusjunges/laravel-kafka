@@ -19,8 +19,16 @@ use Junges\Kafka\Contracts\Logger;
 use Junges\Kafka\Contracts\MessageDeserializer;
 use Junges\Kafka\Contracts\Producer as ProducerContract;
 use Junges\Kafka\Contracts\ProducerMessage;
+use Junges\Kafka\Events\ConsumerStarting;
+use Junges\Kafka\Events\ConsumerStopped;
+use Junges\Kafka\Events\KafkaErrorOccurred;
 use Junges\Kafka\Events\MessageSentToDLQ;
+use Junges\Kafka\Events\OffsetCommitFailed;
+use Junges\Kafka\Events\OffsetsCommitted;
+use Junges\Kafka\Events\PartitionsAssigned;
+use Junges\Kafka\Events\PartitionsRevoked;
 use Junges\Kafka\Events\StartedConsumingMessage;
+use Junges\Kafka\Events\StatisticsReported;
 use Junges\Kafka\Exceptions\ConsumerException;
 use Junges\Kafka\Factory;
 use Junges\Kafka\Message\Serializers\NullSerializer;
@@ -28,6 +36,8 @@ use Junges\Kafka\MessageCounter;
 use Junges\Kafka\Producers\Producer;
 use Junges\Kafka\Support\InfiniteTimer;
 use Junges\Kafka\Support\Timer;
+use LogicException;
+use RdKafka\Conf;
 use RdKafka\Exception;
 use RdKafka\KafkaConsumer;
 use RdKafka\KafkaConsumerTopic;
@@ -41,6 +51,9 @@ class Consumer implements ConsumerContract
 
     /** The cache key where the "kafka:restart-consumers" command stores the time consumers were asked to restart. */
     public const string RESTART_CACHE_KEY = 'laravel-kafka:consumer:restart';
+
+    /** The configuration callbacks the consumer sets itself, calling the ones registered for them. */
+    private const array OWN_CONFIG_CALLBACKS = ['setRebalanceCb', 'setStatsCb', 'setOffsetCommitCb', 'setErrorCb'];
 
     private const array IGNORABLE_CONSUMER_ERRORS = [
         RD_KAFKA_RESP_ERR__PARTITION_EOF,
@@ -85,6 +98,8 @@ class Consumer implements ConsumerContract
 
     private bool $stopRequested = false;
 
+    private ?StopReason $stopReason = null;
+
     /** @var array<int, callable|int> Signal handlers of the host process, captured before consuming and restored afterwards. */
     private array $previousSignalHandlers = [];
 
@@ -115,6 +130,15 @@ class Consumer implements ConsumerContract
     }
 
     /**
+     * Get the key of the cache entry storing the time consumers were asked to restart, either every consumer
+     * or the consumers with the given name.
+     */
+    public static function restartCacheKey(?string $consumer = null): string
+    {
+        return $consumer === null ? self::RESTART_CACHE_KEY : self::RESTART_CACHE_KEY.':'.sha1($consumer);
+    }
+
+    /**
      * Consume messages from a kafka topic in loop.
      *
      * @throws Exception
@@ -129,9 +153,13 @@ class Consumer implements ConsumerContract
             $this->listenForSignals();
         }
 
+        $exception = null;
+
         try {
+            $this->dispatcher->dispatch(new ConsumerStarting($this));
+
             $this->consumer = app(KafkaConsumer::class, [
-                'conf' => $this->config->makeConf($this->config->getConsumerOptions()),
+                'conf' => $this->makeConf(),
             ]);
             $this->offsetStoreTopics = [];
 
@@ -164,26 +192,39 @@ class Consumer implements ConsumerContract
                 $this->checkForRestart();
             } while (! $this->maxMessagesLimitReached() && ! $stopTimer->isTimedOut() && ! $this->stopRequested);
 
+            $this->stopReason ??= $this->maxMessagesLimitReached() ? StopReason::MessageLimit : StopReason::TimeLimit;
+
             $this->config->getWhenStopConsumingCallback()?->__invoke();
+        } catch (Throwable $throwable) {
+            $exception = $throwable;
+
+            throw $throwable;
         } finally {
             $this->closeConsumer();
 
             if ($this->supportAsyncSignals()) {
                 $this->restoreSignalHandlers();
             }
+
+            $this->dispatcher->dispatch(new ConsumerStopped(
+                $this,
+                $exception instanceof Throwable ? StopReason::Failed : $this->stopReason,
+                $exception,
+            ));
         }
     }
 
     /** @inheritdoc  */
     public function stopConsuming(): void
     {
-        $this->stopRequested = true;
+        $this->requestStop(StopReason::Requested);
     }
 
     /** Will cancel the stopConsume request initiated by calling the stopConsume method */
     public function cancelStopConsume(): void
     {
         $this->stopRequested = false;
+        $this->stopReason = null;
     }
 
     /** Count the number of messages consumed by this consumer */
@@ -214,6 +255,46 @@ class Consumer implements ConsumerContract
         return $this->consumer->getAssignment();
     }
 
+    /** {@inheritdoc} */
+    public function pause(?array $partitions = null): void
+    {
+        $consumer = $this->runningConsumer();
+
+        $consumer->pausePartitions($partitions ?? $consumer->getAssignment());
+    }
+
+    /** {@inheritdoc} */
+    public function resume(?array $partitions = null): void
+    {
+        $consumer = $this->runningConsumer();
+
+        $consumer->resumePartitions($partitions ?? $consumer->getAssignment());
+    }
+
+    /** {@inheritdoc} */
+    public function getName(): string
+    {
+        return $this->config->getName();
+    }
+
+    /** {@inheritdoc} */
+    public function getConnectionName(): string
+    {
+        return $this->config->getConnectionName();
+    }
+
+    /** {@inheritdoc} */
+    public function getGroupId(): ?string
+    {
+        return $this->config->getGroupId();
+    }
+
+    /** {@inheritdoc} */
+    public function getTopics(): array
+    {
+        return $this->config->getTopics();
+    }
+
     protected function configureRestartTimer(): void
     {
         $this->lastRestart = $this->getLastRestart();
@@ -230,13 +311,139 @@ class Consumer implements ConsumerContract
         $this->restartTimer->start($this->config->getRestartInterval());
 
         if ($this->lastRestart !== $this->getLastRestart()) {
-            $this->stopRequested = true;
+            $this->requestStop(StopReason::Restart);
         }
     }
 
+    /** Get the last time either every consumer or the consumers with the name of this one were asked to restart. */
     protected function getLastRestart(): int
     {
-        return (int) Cache::driver(config('kafka.cache_driver'))->get(self::RESTART_CACHE_KEY, 0);
+        $restarts = Cache::driver(config('kafka.cache_driver'))->many([
+            self::restartCacheKey(),
+            self::restartCacheKey($this->getName()),
+        ]);
+
+        return (int) max([0, ...array_values($restarts)]);
+    }
+
+    /** Stop consuming once the current message is processed. The first reason to stop is kept. */
+    private function requestStop(StopReason $reason): void
+    {
+        $this->stopRequested = true;
+        $this->stopReason ??= $reason;
+    }
+
+    private function runningConsumer(): KafkaConsumer
+    {
+        if (! $this->consumer instanceof KafkaConsumer) {
+            throw new LogicException('Partitions can only be paused or resumed while the consumer is consuming.');
+        }
+
+        return $this->consumer;
+    }
+
+    /**
+     * The consumer sets the rebalance, statistics, offset commit and error callbacks itself, to dispatch events,
+     * and calls the ones registered for them. Setting an error callback stops librdkafka from logging errors, so
+     * it is only set when there is a callback or a listener for them.
+     */
+    private function makeConf(): Conf
+    {
+        $callbacks = $this->config->getConfigCallbacks();
+        $conf = $this->config->makeConf($this->config->getConsumerOptions(), exceptCallbacks: self::OWN_CONFIG_CALLBACKS);
+
+        $conf->setRebalanceCb(function (KafkaConsumer $consumer, int $error, ?array $partitions = null) use ($callbacks): void {
+            $this->rebalance($consumer, $error, $partitions, $callbacks['setRebalanceCb'] ?? null);
+        });
+
+        $conf->setStatsCb(function (mixed $kafka, string $statistics, int $length) use ($callbacks): void {
+            $this->handleStatistics($kafka, $statistics, $length, $callbacks['setStatsCb'] ?? null);
+        });
+
+        $conf->setOffsetCommitCb(function (mixed $kafka, int $error, ?array $partitions = null) use ($callbacks): void {
+            $this->handleOffsetCommit($kafka, $error, $partitions, $callbacks['setOffsetCommitCb'] ?? null);
+        });
+
+        if (isset($callbacks['setErrorCb']) || $this->dispatcher->hasListeners(KafkaErrorOccurred::class)) {
+            $conf->setErrorCb(function (mixed $kafka, int $error, string $reason) use ($callbacks): void {
+                $this->handleError($kafka, $error, $reason, $callbacks['setErrorCb'] ?? null);
+            });
+        }
+
+        return $conf;
+    }
+
+    private function handleStatistics(mixed $kafka, string $statistics, int $length, ?callable $callback): void
+    {
+        if ($callback !== null) {
+            $callback($kafka, $statistics, $length);
+        }
+
+        $this->dispatcher->dispatch(new StatisticsReported((array) json_decode($statistics, true), $this->getConnectionName(), $this));
+    }
+
+    /** @param list<TopicPartition>|null $partitions */
+    private function handleOffsetCommit(mixed $kafka, int $error, ?array $partitions, ?callable $callback): void
+    {
+        if ($callback !== null) {
+            $callback($kafka, $error, $partitions);
+        }
+
+        // There is nothing to commit when no message was processed since the last commit.
+        match ($error) {
+            RD_KAFKA_RESP_ERR_NO_ERROR => $this->dispatcher->dispatch(new OffsetsCommitted($this, $partitions ?? [])),
+            RD_KAFKA_RESP_ERR__NO_OFFSET => null,
+            default => $this->dispatcher->dispatch(new OffsetCommitFailed($this, $partitions ?? [], $error, rd_kafka_err2str($error))),
+        };
+    }
+
+    private function handleError(mixed $kafka, int $error, string $reason, ?callable $callback): void
+    {
+        if ($callback !== null) {
+            $callback($kafka, $error, $reason);
+        }
+
+        $this->dispatcher->dispatch(new KafkaErrorOccurred($error, $reason, $this->getConnectionName(), $this));
+    }
+
+    /**
+     * A rebalance callback registered for the consumer replaces the default partition assignment. Otherwise,
+     * the offsets of the assigned partitions are resolved, and with cooperative rebalancing, partitions are
+     * added to and removed from the current assignment, instead of replacing the whole assignment.
+     *
+     * @param  list<TopicPartition>|null  $partitions
+     */
+    private function rebalance(KafkaConsumer $consumer, int $error, ?array $partitions, ?callable $callback): void
+    {
+        $cooperative = $this->config->usesCooperativeRebalancing();
+
+        if ($error === RD_KAFKA_RESP_ERR__ASSIGN_PARTITIONS) {
+            if ($callback !== null) {
+                $callback($consumer, $error, $partitions);
+            } else {
+                if ($this->config->getOffsetResolver() instanceof Closure) {
+                    $partitions = ($this->config->getOffsetResolver())($partitions);
+                }
+
+                $cooperative ? $consumer->incrementalAssign($partitions) : $consumer->assign($partitions);
+
+                $this->config->getPartitionsAssignedCallback()?->__invoke($partitions, $this);
+            }
+
+            $this->dispatcher->dispatch(new PartitionsAssigned($this, $partitions ?? []));
+        } elseif ($error === RD_KAFKA_RESP_ERR__REVOKE_PARTITIONS) {
+            if ($callback !== null) {
+                $callback($consumer, $error, $partitions);
+            } else {
+                $this->config->getPartitionsRevokedCallback()?->__invoke($partitions, $this);
+
+                $cooperative ? $consumer->incrementalUnassign($partitions) : $consumer->assign(null);
+            }
+
+            $this->dispatcher->dispatch(new PartitionsRevoked($this, $partitions ?? []));
+        } elseif ($callback !== null) {
+            $callback($consumer, $error, $partitions);
+        }
     }
 
     /**
@@ -322,7 +529,7 @@ class Consumer implements ConsumerContract
             $this->previousSignalHandlers[$signal] = $previousHandler;
 
             pcntl_signal($signal, function (int $signal, mixed $signalInfo = null) use ($previousHandler): void {
-                $this->stopRequested = true;
+                $this->requestStop(StopReason::Signal);
 
                 if (is_callable($previousHandler)) {
                     $previousHandler($signal, $signalInfo);
@@ -382,7 +589,7 @@ class Consumer implements ConsumerContract
 
         // Here we will dispatch an event to inform possible interested listeners that a message
         // was received and will be consumed as soon as a consumer is available to process it.
-        $this->dispatcher->dispatch(new StartedConsumingMessage($consumerMessage));
+        $this->dispatcher->dispatch(new StartedConsumingMessage($consumerMessage, $this));
 
         try {
             $deserializedMessage = $this->deserializer->deserialize($consumerMessage);
@@ -424,22 +631,26 @@ class Consumer implements ConsumerContract
      */
     private function sendToDeadLetterQueue(ConsumerMessage $consumerMessage, Throwable $throwable, ?Message $message): void
     {
+        $headers = $this->buildHeadersForDlq($message, $throwable);
+
         /** @var ProducerMessage $deadLetter */
         $deadLetter = app(ProducerMessage::class)
             ->onTopic($this->config->getDlq())
             ->withBody($message->payload)
             ->withKey($message->key)
-            ->withHeaders($this->buildHeadersForDlq($message, $throwable));
+            ->withHeaders($headers);
 
         $this->deadLetterQueueProducer->produce($deadLetter);
         $this->deadLetterQueueProducer->flush();
 
         $this->dispatcher->dispatch(new MessageSentToDLQ(
+            $consumerMessage,
+            $throwable,
+            $this->config->getDlq(),
             $message->payload,
             $message->key,
-            $message->headers ?? [],
-            $throwable,
-            $message->headers[$this->messageIdKey] ?? null,
+            $headers,
+            $this,
         ));
     }
 
@@ -509,7 +720,7 @@ class Consumer implements ConsumerContract
 
         if ($this->config->shouldStopAfterLastMessage() && in_array($message->err, self::CONSUME_STOP_EOF_ERRORS, true)) {
             if ($message->err !== RD_KAFKA_RESP_ERR__PARTITION_EOF || $this->allAssignedPartitionsReachedEof($message)) {
-                $this->stopConsuming();
+                $this->requestStop(StopReason::Empty);
             }
         }
 

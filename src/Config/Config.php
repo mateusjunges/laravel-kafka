@@ -88,7 +88,40 @@ class Config
         private readonly bool $skipFailedMessages = false,
         private readonly int $failedMessageRetries = 0,
         private readonly int|array $failedMessageRetryBackoff = 0,
+        private readonly ?string $name = null,
+        private readonly string $connection = 'default',
+        private readonly ?Closure $onPartitionsAssigned = null,
+        private readonly ?Closure $onPartitionsRevoked = null,
+        private readonly ?Closure $offsetResolver = null,
     ) {}
+
+    /**
+     * Get the name of the consumer. Consumers without a name are named after the topics
+     * they subscribe to, or the topics of the partitions assigned to them.
+     */
+    public function getName(): string
+    {
+        if ($this->name !== null) {
+            return $this->name;
+        }
+
+        $topics = $this->topics !== []
+            ? $this->topics
+            : array_map(fn (TopicPartition $partition) => $partition->getTopic(), $this->partitionAssignment);
+
+        return implode(',', array_values(array_unique($topics)));
+    }
+
+    /** Get the name of the connection the consumer belongs to. */
+    public function getConnectionName(): string
+    {
+        return $this->connection;
+    }
+
+    public function getGroupId(): ?string
+    {
+        return $this->groupId;
+    }
 
     public function getTopics(): array
     {
@@ -231,6 +264,30 @@ class Config
     public function getWhenStopConsumingCallback(): ?Closure
     {
         return $this->whenStopConsuming;
+    }
+
+    /** Get the callback that receives the partitions assigned to the consumer, on every rebalance. */
+    public function getPartitionsAssignedCallback(): ?Closure
+    {
+        return $this->onPartitionsAssigned;
+    }
+
+    /** Get the callback that receives the partitions revoked from the consumer, on every rebalance. */
+    public function getPartitionsRevokedCallback(): ?Closure
+    {
+        return $this->onPartitionsRevoked;
+    }
+
+    /** Get the callback that returns the assigned partitions with the offsets the consumer should start reading from. */
+    public function getOffsetResolver(): ?Closure
+    {
+        return $this->offsetResolver;
+    }
+
+    /** Determine if partitions are added to and removed from the assignment incrementally on each rebalance. */
+    public function usesCooperativeRebalancing(): bool
+    {
+        return ($this->getConsumerOptions()['partition.assignment.strategy'] ?? null) === RebalanceStrategy::COOPERATIVE_STICKY->value;
     }
 
     /**

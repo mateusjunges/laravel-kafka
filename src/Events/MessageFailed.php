@@ -7,19 +7,15 @@ use Junges\Kafka\Contracts\ConsumerMessage;
 use Throwable;
 
 /**
- * Dispatched when a failed message was sent to the dead letter queue. The message is the one the handler last
- * received, with the topic, partition and offset it was consumed from, while the payload, key and headers are
- * the ones published to the dead letter queue.
+ * Dispatched when a message is handled as failed, once its retries are used, before it is sent to the dead
+ * letter queue, skipped, or stops the consumer. A message that can't be deserialized fails right away, and
+ * is then received with its raw body.
  */
-final readonly class MessageSentToDLQ
+final readonly class MessageFailed
 {
     public function __construct(
         public ConsumerMessage $message,
         public Throwable $throwable,
-        public string $topic,
-        public ?string $payload,
-        public ?string $key,
-        public array $headers,
         public Consumer $consumer,
     ) {}
 

@@ -25,6 +25,7 @@ use PHPUnit\Framework\Attributes\Test;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
 use RdKafka\TopicPartition;
+use ReflectionMethod;
 
 final class ConsumerBuilderTest extends LaravelKafkaTestCase
 {
@@ -199,14 +200,14 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
                 $builder->onPartitionsAssigned($onAssign)->resolveOffsetsUsing($offsetResolver);
             }
 
-            $rebalance = $this->builtConfig($builder)->getConfigCallbacks()['setRebalanceCb'];
+            $consumer = $builder->build();
 
             $kafkaConsumer = m::mock(KafkaConsumer::class);
             $kafkaConsumer->shouldReceive('assign')->once()->with($withOffsets);
             $kafkaConsumer->shouldReceive('assign')->once()->with(null);
 
-            $rebalance($kafkaConsumer, RD_KAFKA_RESP_ERR__ASSIGN_PARTITIONS, $partitions);
-            $rebalance($kafkaConsumer, RD_KAFKA_RESP_ERR__REVOKE_PARTITIONS, $partitions);
+            $this->rebalance($consumer, $kafkaConsumer, RD_KAFKA_RESP_ERR__ASSIGN_PARTITIONS, $partitions);
+            $this->rebalance($consumer, $kafkaConsumer, RD_KAFKA_RESP_ERR__REVOKE_PARTITIONS, $partitions);
 
             $this->assertSame($withOffsets, $notified);
         }
@@ -224,15 +225,15 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
                 $notified = $assigned;
             });
 
-        $rebalance = $this->builtConfig($builder)->getConfigCallbacks()['setRebalanceCb'];
+        $consumer = $builder->build();
 
         $kafkaConsumer = m::mock(KafkaConsumer::class);
         $kafkaConsumer->shouldReceive('incrementalAssign')->once()->with($partitions);
         $kafkaConsumer->shouldReceive('incrementalUnassign')->once()->with($partitions);
         $kafkaConsumer->shouldNotReceive('assign');
 
-        $rebalance($kafkaConsumer, RD_KAFKA_RESP_ERR__ASSIGN_PARTITIONS, $partitions);
-        $rebalance($kafkaConsumer, RD_KAFKA_RESP_ERR__REVOKE_PARTITIONS, $partitions);
+        $this->rebalance($consumer, $kafkaConsumer, RD_KAFKA_RESP_ERR__ASSIGN_PARTITIONS, $partitions);
+        $this->rebalance($consumer, $kafkaConsumer, RD_KAFKA_RESP_ERR__REVOKE_PARTITIONS, $partitions);
 
         $this->assertSame($partitions, $notified);
     }
@@ -560,6 +561,14 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     private function builtConfig(Builder $builder): Config
     {
         return $this->getPropertyWithReflection('config', $builder->build());
+    }
+
+    /** Handle a rebalance the way the consumer does when librdkafka calls its rebalance callback. */
+    private function rebalance(Consumer $consumer, KafkaConsumer $kafkaConsumer, int $error, array $partitions): void
+    {
+        $callback = $this->getPropertyWithReflection('config', $consumer)->getConfigCallbacks()['setRebalanceCb'] ?? null;
+
+        (new ReflectionMethod($consumer, 'rebalance'))->invoke($consumer, $kafkaConsumer, $error, $partitions, $callback);
     }
 }
 

@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Events;
 
+use Junges\Kafka\Contracts\Consumer;
 use Junges\Kafka\Contracts\ConsumerMessage;
 use Throwable;
 
@@ -11,6 +12,7 @@ final readonly class MessageSkipped
     public function __construct(
         public ConsumerMessage $message,
         public Throwable $throwable,
+        public Consumer $consumer,
     ) {}
 
     public function getMessageIdentifier(): string

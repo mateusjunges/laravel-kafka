@@ -135,3 +135,5 @@ $consumer = \Junges\Kafka\Facades\Kafka::consumer(['orders'])
 ```
 
 The callback runs before the message is sent to the dead letter queue, skipped, or stops the consumer, and it can't change what happens to it. An exception thrown by the callback is reported, and the message is handled as usual.
+
+To be notified of the failed messages of every consumer, listen to the `MessageFailed` [event](../advanced-usage/events.md), which is dispatched right before the failure callback is called. The `RetryingMessage` event is dispatched before each retry.

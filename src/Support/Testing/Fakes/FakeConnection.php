@@ -17,9 +17,9 @@ class FakeConnection extends Connection
         ConnectionConfig $config,
         private readonly Closure $recordPublishedMessage,
         private readonly Closure $messagesToConsume,
-        ?Closure $consumerMiddleware = null,
+        ?Closure $configureConsumer = null,
     ) {
-        parent::__construct($config, $consumerMiddleware);
+        parent::__construct($config, $configureConsumer);
     }
 
     protected function newConsumerBuilder(array $topics, ?string $groupId): BuilderFake

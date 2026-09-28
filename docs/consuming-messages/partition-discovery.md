@@ -54,6 +54,23 @@ This callback is particularly useful for:
 - Initializing partition-specific resources
 - Tracking partition assignment changes during rebalancing
 
+To run code when partitions are taken away from your consumer, use the `onPartitionsRevoked` method. Its callback runs before the partitions are removed from the assignment, so a consumer using [manual commits](../advanced-usage/manual-commit.md) can still commit the offsets of the messages it processed. Both callbacks receive the consumer as their second argument:
+
+```php
+use Junges\Kafka\Contracts\Consumer;
+
+$consumer = \Junges\Kafka\Facades\Kafka::consumer(['my-topic'], 'my-group')
+    ->withManualCommit()
+    ->onPartitionsRevoked(function (array $partitions, Consumer $consumer) {
+        $consumer->commit();
+    })
+    ->withHandler(function ($message) {
+        // Handle message
+    });
+```
+
+Every assignment and revocation also dispatches the `PartitionsAssigned` and `PartitionsRevoked` [events](../advanced-usage/events.md).
+
 ## Dynamic Partition Assignment with Offsets
 
 The most powerful feature is the ability to dynamically assign offsets based on discovered partitions:
@@ -158,7 +175,7 @@ $consumer = \Junges\Kafka\Facades\Kafka::consumer(['my-topic'], 'my-group')
 
 2. **Consumer Groups**: If you're using consumer groups, partition assignments are managed by Kafka's partition assignment strategy. Manual assignments override consumer group behavior.
 
-3. **Rebalancing**: When using `onPartitionsAssigned()` or `resolveOffsetsUsing()`, your callbacks will be called every time a rebalance occurs. Both can be used together, in any order: the partitions are assigned with the offsets returned by `resolveOffsetsUsing()`, and then passed to the `onPartitionsAssigned()` callback. They set their own rebalance callback, so they can't be combined with `onRebalance()`. With the cooperative sticky [rebalance strategy](consumer-groups.md#partition-assignment-strategies), partitions are added to and removed from the assignment one rebalance at a time, so the callbacks receive only the partitions that were just assigned.
+3. **Rebalancing**: When using `onPartitionsAssigned()`, `onPartitionsRevoked()` or `resolveOffsetsUsing()`, your callbacks will be called every time a rebalance occurs. They can be used together, in any order: the partitions are assigned with the offsets returned by `resolveOffsetsUsing()`, and then passed to the `onPartitionsAssigned()` callback. They rely on the default partition assignment, which `onRebalance()` replaces, so they can't be combined with it. With the cooperative sticky [rebalance strategy](consumer-groups.md#partition-assignment-strategies), partitions are added to and removed from the assignment one rebalance at a time, so the callbacks receive only the partitions that were just assigned.
 
 4. **Error Handling**: Always handle potential errors in your callbacks, as exceptions can disrupt the rebalancing process.
 

@@ -5,8 +5,11 @@ namespace Junges\Kafka\Support\Testing\Fakes;
 use Illuminate\Contracts\Events\Dispatcher;
 use Junges\Kafka\Concerns\ProcessesMessages;
 use Junges\Kafka\Config\Config;
+use Junges\Kafka\Consumers\StopReason;
 use Junges\Kafka\Contracts\Consumer;
 use Junges\Kafka\Contracts\ConsumerMessage;
+use Junges\Kafka\Events\ConsumerStarting;
+use Junges\Kafka\Events\ConsumerStopped;
 use Junges\Kafka\Events\MessageSentToDLQ;
 use Junges\Kafka\Events\StartedConsumingMessage;
 use Junges\Kafka\MessageCounter;
@@ -21,6 +24,8 @@ class ConsumerFake implements Consumer
 
     private bool $stopRequested = false;
 
+    private ?StopReason $stopReason = null;
+
     private readonly Dispatcher $dispatcher;
 
     /** @param ConsumerMessage[] $messages */
@@ -32,25 +37,49 @@ class ConsumerFake implements Consumer
         $this->dispatcher = app(Dispatcher::class);
     }
 
-    /** Consume the messages given to the fake, in order. */
+    /**
+     * Consume the messages given to the fake, in order. Once there are no messages left, the faked consumer
+     * stops as if it had no messages left in its partitions.
+     */
     public function consume(): void
     {
         $this->cancelStopConsume();
-        $this->doConsume();
 
-        $this->config->getWhenStopConsumingCallback()?->__invoke();
+        $exception = null;
+
+        try {
+            $this->dispatcher->dispatch(new ConsumerStarting($this));
+
+            $this->doConsume();
+
+            $this->stopReason ??= $this->maxMessagesLimitReached() ? StopReason::MessageLimit : StopReason::Empty;
+
+            $this->config->getWhenStopConsumingCallback()?->__invoke();
+        } catch (Throwable $throwable) {
+            $exception = $throwable;
+
+            throw $throwable;
+        } finally {
+            $this->dispatcher->dispatch(new ConsumerStopped(
+                $this,
+                $exception instanceof Throwable ? StopReason::Failed : $this->stopReason,
+                $exception,
+            ));
+        }
     }
 
     /** {@inheritdoc} */
     public function stopConsuming(): void
     {
         $this->stopRequested = true;
+        $this->stopReason ??= StopReason::Requested;
     }
 
     /** Will cancel the stopConsume request initiated by calling the stopConsume method */
     public function cancelStopConsume(): void
     {
         $this->stopRequested = false;
+        $this->stopReason = null;
     }
 
     /** Count the number of messages consumed by this consumer */
@@ -75,6 +104,42 @@ class ConsumerFake implements Consumer
     public function getAssignedPartitions(): array
     {
         return [];
+    }
+
+    /** Faked consumers have no partitions to pause. */
+    public function pause(?array $partitions = null): void
+    {
+        //
+    }
+
+    /** Faked consumers have no partitions to resume. */
+    public function resume(?array $partitions = null): void
+    {
+        //
+    }
+
+    /** {@inheritdoc} */
+    public function getName(): string
+    {
+        return $this->config->getName();
+    }
+
+    /** {@inheritdoc} */
+    public function getConnectionName(): string
+    {
+        return $this->config->getConnectionName();
+    }
+
+    /** {@inheritdoc} */
+    public function getGroupId(): ?string
+    {
+        return $this->config->getGroupId();
+    }
+
+    /** {@inheritdoc} */
+    public function getTopics(): array
+    {
+        return $this->config->getTopics();
     }
 
     private function doConsume(): void
@@ -108,7 +173,7 @@ class ConsumerFake implements Consumer
 
         $this->messageCounter->add();
 
-        $this->dispatcher->dispatch(new StartedConsumingMessage($message));
+        $this->dispatcher->dispatch(new StartedConsumingMessage($message, $this));
 
         $this->processMessage($message);
 
@@ -121,13 +186,16 @@ class ConsumerFake implements Consumer
     private function sendToDeadLetterQueue(ConsumerMessage $message, Throwable $throwable, ?Message $kafkaMessage): void
     {
         $body = $message->getBody();
+        $key = $message->getKey();
 
         $this->dispatcher->dispatch(new MessageSentToDLQ(
-            is_string($body) || $body === null ? $body : json_encode($body),
-            $message->getKey(),
-            $message->getHeaders(),
+            $message,
             $throwable,
-            $message->getHeaders()[config('kafka.message_id_key')] ?? null,
+            $this->config->getDlq(),
+            is_string($body) || $body === null ? $body : json_encode($body),
+            is_string($key) || $key === null ? $key : (string) $key,
+            $message->getHeaders(),
+            $this,
         ));
     }
 }

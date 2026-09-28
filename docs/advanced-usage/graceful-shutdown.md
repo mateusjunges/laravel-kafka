@@ -32,3 +32,5 @@ $consumer = Kafka::consumer(['topic'])
 
 $consumer->consume();
 ```
+
+To run code whenever any consumer stops, including when it stops because of an exception, listen to the `ConsumerStopped` [event](events.md). Its `reason` property tells why the consumer stopped.
