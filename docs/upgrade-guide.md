@@ -101,6 +101,8 @@ With auto commit enabled, every consumer now sets the `enable.auto.offset.store`
 
 See [handling failed messages](/consuming-messages/handling-failed-messages) for details.
 
+The `Junges\Kafka\Contracts\ConsumerMessage` contract has new `getAttempts()` and `withAttempts()` methods, which expose how many times the handler was called with a message when failed messages are retried. Custom implementations of the contract must add them. Custom deserializers that return a new message should create it with the attempts of the original message, or leave the default of `1`, as the consumer sets the attempt number after deserializing.
+
 ### Committers
 
 The `$success` parameter was removed from `Junges\Kafka\Contracts\Committer::commitMessage()`, which is now `commitMessage(Message $message): void`. Failed messages only reach `commitMessage()` when they are skipped or sent to the dead letter queue. Custom committers must drop the parameter, or give it a default value (`bool $success = true`) if they also support v2. To monitor failed messages, listen to the `Junges\Kafka\Events\MessageSkipped` and `Junges\Kafka\Events\MessageSentToDLQ` events.

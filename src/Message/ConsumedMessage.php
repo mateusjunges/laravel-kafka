@@ -15,6 +15,7 @@ class ConsumedMessage extends AbstractMessage implements ConsumerMessage
         protected mixed $key,
         protected ?int $offset,
         protected ?int $timestamp,
+        protected int $attempts = 1,
     ) {
         parent::__construct(
             $this->topicName,
@@ -33,5 +34,18 @@ class ConsumedMessage extends AbstractMessage implements ConsumerMessage
     public function getTimestamp(): ?int
     {
         return $this->timestamp;
+    }
+
+    public function getAttempts(): int
+    {
+        return $this->attempts;
+    }
+
+    public function withAttempts(int $attempts): static
+    {
+        $message = clone $this;
+        $message->attempts = $attempts;
+
+        return $message;
     }
 }

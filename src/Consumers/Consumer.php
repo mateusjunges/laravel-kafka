@@ -400,10 +400,15 @@ class Consumer implements MessageConsumer
             $consumedMessage = $this->deserializer->deserialize($consumedMessage);
 
             // The handler is called again while it fails and has retries left, waiting for the backoff
-            // between attempts. Retries stop early when the consumer is asked to stop consuming.
+            // between attempts, with a copy of the message holding the attempt number. Retries stop
+            // early when the consumer is asked to stop consuming.
             retry(
                 $this->config->getFailedMessageRetries() + 1,
-                fn () => $this->config->getConsumer()->handle($consumedMessage, $this),
+                function (int $attempt) use ($consumedMessage, &$handledMessage): void {
+                    $handledMessage = $consumedMessage->withAttempts($attempt);
+
+                    $this->config->getConsumer()->handle($handledMessage, $this);
+                },
                 $this->config->getFailedMessageRetryBackoff(),
                 function (Throwable $throwable) use ($message): bool {
                     $this->logger->error($message, $throwable, 'RETRY');
@@ -413,7 +418,7 @@ class Consumer implements MessageConsumer
             );
 
             // Dispatch an event informing that a message was consumed.
-            $this->dispatcher->dispatch(new MessageConsumed($consumedMessage));
+            $this->dispatcher->dispatch(new MessageConsumed($handledMessage));
         } catch (Throwable $throwable) {
             $this->logger->error($message, $throwable);
 

@@ -1103,6 +1103,7 @@ final class ConsumerTest extends LaravelKafkaTestCase
         $consumer->consume();
 
         $this->assertSame(3, $config->getConsumer()->attempts);
+        $this->assertSame([1, 2, 3], $config->getConsumer()->receivedAttempts);
         Sleep::assertSequence([Sleep::for(100)->milliseconds(), Sleep::for(100)->milliseconds()]);
     }
 
@@ -1262,10 +1263,15 @@ final class ConsumerTest extends LaravelKafkaTestCase
         {
             public int $attempts = 0;
 
+            /** @var list<int> */
+            public array $receivedAttempts = [];
+
             public function __construct(private readonly int $failures, private readonly bool $stopConsumingOnFailure) {}
 
             public function handle(ConsumerMessage $message, MessageConsumer $consumer): void
             {
+                $this->receivedAttempts[] = $message->getAttempts();
+
                 if ($message->getBody()['body'] !== 'failing' || ++$this->attempts > $this->failures) {
                     return;
                 }

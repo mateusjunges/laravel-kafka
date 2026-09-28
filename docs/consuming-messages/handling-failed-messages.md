@@ -47,7 +47,21 @@ $consumer = \Junges\Kafka\Facades\Kafka::consumer(['orders'])
     ->build();
 ```
 
-When the handler throws an exception, it is called again with the same message, up to the given number of times. Middlewares run again on every attempt. Once all retries are used, the message is handled as failed: the `failed` method of the consumer class is called, and the message is sent to the dead letter queue, stops the consumer, or is skipped, depending on the configuration. Retries also end early when the consumer is asked to stop, for instance by a termination signal.
+When the handler throws an exception, it is called again with the same message, up to the given number of times. Middlewares run again on every attempt. The `getAttempts` method of the message returns how many times the handler was called with it, including the current call:
+
+```php
+use Junges\Kafka\Contracts\ConsumerMessage;
+use Junges\Kafka\Contracts\MessageConsumer;
+
+function (ConsumerMessage $message, MessageConsumer $consumer) {
+    if ($message->getAttempts() > 1) {
+        logger()->info('Retrying message', ['offset' => $message->getOffset()]);
+    }
+
+    // ...
+}
+```
+ Once all retries are used, the message is handled as failed: the `failed` method of the consumer class is called, and the message is sent to the dead letter queue, stops the consumer, or is skipped, depending on the configuration. Retries also end early when the consumer is asked to stop, for instance by a termination signal.
 
 The consumer waits during the backoff, so no other message is consumed while a message is being retried. Keep the total time spent retrying a message (the number of retries multiplied by the backoff, plus the time the handler takes) well below the `max.poll.interval.ms` consumer option, 5 minutes by default. A consumer that does not poll Kafka within that interval is removed from the consumer group. Longer outages are better handled by a dead letter queue or by letting the consumer stop.
 
