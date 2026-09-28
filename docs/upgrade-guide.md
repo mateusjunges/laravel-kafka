@@ -19,6 +19,7 @@ Changes that affect fewer applications:
 - Auto commit no longer commits every message synchronously, and custom committers only handle manual commits, see [committers](#committers).
 - Middleware classes must declare a return type, see [middlewares](#middlewares).
 - Faked consumers handle failed messages like real ones, see [testing](#testing).
+- The `MessageSentToDLQ` event has new properties, and consumer events receive the consumer, see [events](#events).
 
 ### Upgrading with an AI agent
 
@@ -221,7 +222,7 @@ In auto commit mode, the consumer no longer commits the offset of each message s
 
 As a consequence, the following were removed:
 
-- The `commitMessage()` and `commitDlq()` methods of the `Junges\Kafka\Contracts\Committer` contract, which now only handles the commits made by handlers through `commit()` and `commitAsync()`. To monitor failed messages, listen to the `Junges\Kafka\Events\MessageSkipped` and `Junges\Kafka\Events\MessageSentToDLQ` events.
+- The `commitMessage()` and `commitDlq()` methods of the `Junges\Kafka\Contracts\Committer` contract, which now only handles the commits made by handlers through `commit()` and `commitAsync()`. To monitor failed messages, listen to the `Junges\Kafka\Events\MessageFailed` event, see [events](#events).
 - The `withCommitBatchSize()` and `withMaxCommitRetries()` consumer builder methods, and the `--commit` option of the `kafka:consume` command.
 - The `Junges\Kafka\Commit\BatchCommitter` and `Junges\Kafka\Commit\RetryableCommitter` classes. `DefaultCommitterFactory` no longer receives a `MessageCounter`.
 - The `commit` and `maxCommitRetries` arguments of `Junges\Kafka\Config\Config`, with their `getCommit()` and `getMaxCommitRetries()` methods.
@@ -239,9 +240,26 @@ The following classes and methods were removed, as they were no longer used or w
 - `CouldNotPublishMessage::getKafkaErrorCode()` and `CouldNotPublishMessage::flushError()`. The librdkafka error code is available through `getCode()`.
 - `AbstractMessage::setTopicName()`. Use `onTopic()` on messages you publish.
 
+### Events
+
+The `Junges\Kafka\Events\MessageSentToDLQ` event now describes both the consumed message and the one published to the dead letter queue:
+
+- Its new `message` property holds the consumed `ConsumerMessage`, with its topic, partition and offset, its new `topic` property holds the dead letter queue topic, and its new `consumer` property holds the consumer.
+- Its `headers` property now holds the headers published to the dead letter queue, which include the `kafka_throwable_*` headers describing the exception, instead of the headers of the consumed message. Those are available through `$event->message->getHeaders()`.
+- Its `messageIdentifier` property was removed. Use the `getMessageIdentifier()` method, which now always returns a string.
+- Its `throwable` property is no longer nullable.
+
+The `StartedConsumingMessage`, `MessageConsumed` and `MessageSkipped` events have a new `consumer` property, the `Junges\Kafka\Contracts\Consumer` that dispatched them, which their constructor requires. This only affects code creating these events, such as tests dispatching them.
+
+Many events were added, among them `MessageFailed`, dispatched for every failed message whatever happens to it next, `RetryingMessage`, `ConsumerStarting` and `ConsumerStopped`, `PartitionsAssigned` and `PartitionsRevoked`, and `MessageDelivered`. See [events](/advanced-usage/events).
+
+To dispatch the rebalance, offset commit and statistics events, consumers now always set their own rebalance, offset commit and statistics callbacks, which call the ones registered with `onRebalance()`, `onOffsetCommit()` and `onStatistics()`. Without a rebalance callback, the consumer assigns the partitions itself, the way librdkafka does.
+
 ### Manager
 
-The `Junges\Kafka\Factory` is now a singleton, also bound to the `Junges\Kafka\Contracts\Manager` contract. The contract no longer contains the `fresh()`, `shouldFake()` and `shouldReceiveMessages()` methods, and has new `connection()`, `flush()` and `getDefaultConnection()` methods.
+The `Junges\Kafka\Factory` is now a singleton, also bound to the `Junges\Kafka\Contracts\Manager` contract. The contract no longer contains the `fresh()`, `shouldFake()` and `shouldReceiveMessages()` methods, and has new `connection()`, `flush()`, `configureConsumersUsing()` and `getDefaultConnection()` methods.
+
+The `Junges\Kafka\Contracts\Consumer` contract has new `pause()`, `resume()`, `getName()`, `getConnectionName()`, `getGroupId()` and `getTopics()` methods. Custom implementations of the contract must add them. The second argument of the `Junges\Kafka\Connection` constructor, which only matters when extending it, is now a closure configuring the builder of each consumer, instead of a closure returning the global middlewares.
 
 ### Testing
 

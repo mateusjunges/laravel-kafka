@@ -74,6 +74,8 @@ class Builder
 
     protected ?Closure $onPartitionsAssigned = null;
 
+    protected ?Closure $onPartitionsRevoked = null;
+
     protected ?Closure $offsetResolver = null;
 
     protected bool $useDefaultDlq = false;
@@ -85,6 +87,8 @@ class Builder
     protected ?string $groupId;
 
     protected int $consumerTimeoutInMs;
+
+    protected ?string $name = null;
 
     /** The producer settings of the connection, used to publish failed messages to the dead letter queue. */
     protected ConnectionConfig $connection;
@@ -122,6 +126,17 @@ class Builder
             topics: $topics,
             groupId: $groupId
         );
+    }
+
+    /**
+     * Set the name of the consumer, which identifies it in events and when restarting it. Consumer classes
+     * are named after their class, and other consumers after the topics they consume, by default.
+     */
+    public function withName(string $name): self
+    {
+        $this->name = $name;
+
+        return $this;
     }
 
     /** Subscribe to a Kafka topic. */
@@ -392,10 +407,21 @@ class Builder
         return $this;
     }
 
-    /** Set a callback that receives the partitions assigned to this consumer, on every rebalance. */
+    /** Set a callback that receives the partitions assigned to this consumer and the consumer, on every rebalance. */
     public function onPartitionsAssigned(callable $callback): self
     {
         $this->onPartitionsAssigned = $callback(...);
+
+        return $this;
+    }
+
+    /**
+     * Set a callback that receives the partitions revoked from this consumer and the consumer, on every rebalance.
+     * It is called before the partitions are removed from the assignment, so offsets can still be committed.
+     */
+    public function onPartitionsRevoked(callable $callback): self
+    {
+        $this->onPartitionsRevoked = $callback(...);
 
         return $this;
     }
@@ -447,6 +473,11 @@ class Builder
             skipFailedMessages: $this->skipFailedMessages,
             failedMessageRetries: $this->failedMessageRetries,
             failedMessageRetryBackoff: $this->failedMessageRetryBackoff,
+            name: $this->name,
+            connection: $this->connection->name,
+            onPartitionsAssigned: $this->onPartitionsAssigned,
+            onPartitionsRevoked: $this->onPartitionsRevoked,
+            offsetResolver: $this->offsetResolver,
         );
     }
 
@@ -472,41 +503,20 @@ class Builder
     }
 
     /**
-     * Resolve the configuration callbacks, combining the partitions assigned callback and
-     * the offset resolver into a single rebalance callback.
+     * Resolve the configuration callbacks. The consumer assigns partitions itself on every rebalance, calling the
+     * partition callbacks, unless a rebalance callback replaces the default assignment, so they can't be combined.
      */
     protected function resolveCallbacks(): array
     {
-        if (! $this->onPartitionsAssigned instanceof Closure && ! $this->offsetResolver instanceof Closure) {
-            return $this->callbacks;
+        $usesPartitionCallbacks = $this->onPartitionsAssigned instanceof Closure
+            || $this->onPartitionsRevoked instanceof Closure
+            || $this->offsetResolver instanceof Closure;
+
+        if ($usesPartitionCallbacks && isset($this->callbacks['setRebalanceCb'])) {
+            throw new LogicException('A rebalance callback can not be combined with onPartitionsAssigned(), onPartitionsRevoked() or resolveOffsetsUsing(), which rely on the default partition assignment.');
         }
 
-        if (isset($this->callbacks['setRebalanceCb'])) {
-            throw new LogicException('A rebalance callback can not be combined with onPartitionsAssigned() or resolveOffsetsUsing(), which set their own.');
-        }
-
-        $onAssign = $this->onPartitionsAssigned;
-        $offsetResolver = $this->offsetResolver;
-
-        // With cooperative rebalancing, partitions are added to and removed from the current
-        // assignment, instead of replacing the whole assignment on every rebalance.
-        $cooperative = ($this->options['partition.assignment.strategy'] ?? null) === RebalanceStrategy::COOPERATIVE_STICKY->value;
-
-        return [...$this->callbacks, 'setRebalanceCb' => function ($consumer, $err, $partitions = null) use ($onAssign, $offsetResolver, $cooperative): void {
-            if ($err === RD_KAFKA_RESP_ERR__ASSIGN_PARTITIONS) {
-                if ($offsetResolver instanceof Closure) {
-                    $partitions = $offsetResolver($partitions);
-                }
-
-                $cooperative ? $consumer->incrementalAssign($partitions) : $consumer->assign($partitions);
-
-                if ($onAssign instanceof Closure) {
-                    $onAssign($partitions);
-                }
-            } elseif ($err === RD_KAFKA_RESP_ERR__REVOKE_PARTITIONS) {
-                $cooperative ? $consumer->incrementalUnassign($partitions) : $consumer->assign(null);
-            }
-        }];
+        return $this->callbacks;
     }
 
     /** Validates each topic before subscribing. */

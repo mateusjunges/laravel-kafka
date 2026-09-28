@@ -10,9 +10,12 @@ use Junges\Kafka\Contracts\MessageSerializer;
 use Junges\Kafka\Contracts\Producer as ProducerContract;
 use Junges\Kafka\Contracts\ProducerMessage;
 use Junges\Kafka\Events\CouldNotPublishMessage as CouldNotPublishMessageEvent;
+use Junges\Kafka\Events\KafkaErrorOccurred;
+use Junges\Kafka\Events\MessageDelivered;
 use Junges\Kafka\Events\MessageDeliveryFailed;
 use Junges\Kafka\Events\MessagePublished;
 use Junges\Kafka\Events\PublishingMessage;
+use Junges\Kafka\Events\StatisticsReported;
 use Junges\Kafka\Exceptions\CouldNotPublishMessage;
 use RdKafka\Conf;
 use RdKafka\Message;
@@ -42,11 +45,11 @@ class Producer implements ProducerContract
         private readonly Config $config,
         private readonly MessageSerializer $serializer,
     ) {
+        $this->dispatcher = App::make(Dispatcher::class);
+        $this->messageIdKey = config('kafka.message_id_key');
         $this->producer = app(KafkaProducer::class, [
             'conf' => $this->getConf($this->config->getProducerOptions()),
         ]);
-        $this->dispatcher = App::make(Dispatcher::class);
-        $this->messageIdKey = config('kafka.message_id_key');
     }
 
     /**
@@ -106,21 +109,35 @@ class Producer implements ProducerContract
         $this->hasQueuedMessages = false;
     }
 
-    /** Set the Kafka Configuration. */
+    /**
+     * Set the Kafka Configuration. The delivery report, statistics and error callbacks are set by the producer, to
+     * dispatch events, and call the ones registered on the connection. Setting an error callback stops librdkafka
+     * from logging errors, so it is only set when there is a callback or a listener for them.
+     */
     private function getConf(array $options): Conf
     {
-        $conf = $this->config->makeConf($options, exceptCallbacks: ['setDrMsgCb']);
-        $deliveryReportCallback = $this->config->getConfigCallbacks()['setDrMsgCb'] ?? null;
+        $callbacks = $this->config->getConfigCallbacks();
+        $conf = $this->config->makeConf($options, exceptCallbacks: ['setDrMsgCb', 'setStatsCb', 'setErrorCb']);
 
         // Delivery failures of queued messages are only reported to this callback, so they are dispatched
         // as events, before calling the delivery report callback registered on the connection, if any.
-        $conf->setDrMsgCb(function (KafkaProducer $kafka, Message $message) use ($deliveryReportCallback): void {
+        $conf->setDrMsgCb(function (KafkaProducer $kafka, Message $message) use ($callbacks): void {
             $this->handleDeliveryReport($message);
 
-            if ($deliveryReportCallback !== null) {
-                $deliveryReportCallback($kafka, $message);
+            if (isset($callbacks['setDrMsgCb'])) {
+                $callbacks['setDrMsgCb']($kafka, $message);
             }
         });
+
+        $conf->setStatsCb(function (mixed $kafka, string $statistics, int $length) use ($callbacks): void {
+            $this->handleStatistics($kafka, $statistics, $length, $callbacks['setStatsCb'] ?? null);
+        });
+
+        if (isset($callbacks['setErrorCb']) || $this->dispatcher->hasListeners(KafkaErrorOccurred::class)) {
+            $conf->setErrorCb(function (mixed $kafka, int $error, string $reason) use ($callbacks): void {
+                $this->handleError($kafka, $error, $reason, $callbacks['setErrorCb'] ?? null);
+            });
+        }
 
         return $conf;
     }
@@ -141,9 +158,35 @@ class Producer implements ProducerContract
         $this->dispatcher->dispatch(new MessagePublished($message));
     }
 
+    private function handleStatistics(mixed $kafka, string $statistics, int $length, ?callable $callback): void
+    {
+        if ($callback !== null) {
+            $callback($kafka, $statistics, $length);
+        }
+
+        $this->dispatcher->dispatch(new StatisticsReported((array) json_decode($statistics, true), $this->config->getConnectionName()));
+    }
+
+    private function handleError(mixed $kafka, int $error, string $reason, ?callable $callback): void
+    {
+        if ($callback !== null) {
+            $callback($kafka, $error, $reason);
+        }
+
+        $this->dispatcher->dispatch(new KafkaErrorOccurred($error, $reason, $this->config->getConnectionName()));
+    }
+
     private function handleDeliveryReport(Message $message): void
     {
         if ($message->err === RD_KAFKA_RESP_ERR_NO_ERROR) {
+            $this->dispatcher->dispatch(new MessageDelivered(
+                topic: $message->topic_name,
+                partition: $message->partition,
+                offset: $message->offset,
+                key: $message->key,
+                messageIdentifier: $message->opaque ?? $message->headers[$this->messageIdKey] ?? null,
+            ));
+
             return;
         }
 

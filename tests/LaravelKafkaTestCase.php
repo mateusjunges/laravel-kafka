@@ -37,7 +37,7 @@ abstract class LaravelKafkaTestCase extends Orchestra
                 'options' => ['auto.offset.reset' => 'latest'],
             ],
         ]);
-        $app['config']->set('kafka.cache_driver', 'file');
+        $app['config']->set('kafka.cache_driver', 'array');
     }
 
     protected function getPackageProviders($app): array

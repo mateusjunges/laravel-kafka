@@ -110,7 +110,7 @@ class KafkaFake extends Factory
             $config,
             fn (ProducerMessage $message) => $this->publishedMessages[] = $message,
             fn () => $this->messagesToConsume,
-            fn () => $this->consumerMiddleware,
+            $this->configureConsumer(...),
         );
     }
 

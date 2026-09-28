@@ -3,6 +3,7 @@
 namespace Junges\Kafka\Console\Commands;
 
 use Illuminate\Console\Command;
+use Junges\Kafka\Console\Commands\Concerns\ResolvesConsumerClasses;
 use Junges\Kafka\Consumers\Builder;
 use Junges\Kafka\Contracts\Manager;
 use Junges\Kafka\KafkaConsumer;
@@ -10,6 +11,8 @@ use Symfony\Component\Console\Command\Command as SymfonyCommand;
 
 class ConsumerCommand extends Command
 {
+    use ResolvesConsumerClasses;
+
     /* @var string $signature */
     protected $signature = 'kafka:consume
             {consumer : The consumer class, either its fully qualified name or its name in the App\Kafka\Consumers namespace}
@@ -38,19 +41,5 @@ class ConsumerCommand extends Command
             ->consume();
 
         return SymfonyCommand::SUCCESS;
-    }
-
-    /** @return class-string<KafkaConsumer>|null */
-    private function resolveConsumerClass(string $consumer): ?string
-    {
-        $candidates = [$consumer, $this->laravel->getNamespace().'Kafka\\Consumers\\'.$consumer];
-
-        foreach ($candidates as $class) {
-            if (class_exists($class) && is_subclass_of($class, KafkaConsumer::class)) {
-                return $class;
-            }
-        }
-
-        return null;
     }
 }

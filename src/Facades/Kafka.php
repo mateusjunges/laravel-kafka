@@ -14,6 +14,8 @@ use Junges\Kafka\Support\Testing\Fakes\KafkaFake;
  * @method static \Junges\Kafka\Consumers\Builder consumerFor(\Junges\Kafka\KafkaConsumer|string $consumer)
  * @method static void consumerMiddleware(array|\Junges\Kafka\Contracts\Middleware|\Closure|string $middleware)
  * @method static array getConsumerMiddleware()
+ * @method static void configureConsumersUsing(callable $callback)
+ * @method static array getConsumerConfigurationCallbacks()
  * @method static void flush()
  * @method static string getDefaultConnection()
  * @method static void assertPublished(\Junges\Kafka\Contracts\ProducerMessage|callable|null $expected = null, callable|null $callback = null)
@@ -37,9 +39,13 @@ class Kafka extends Facade
 
         static::swap($fake = new KafkaFake);
 
-        // Global middlewares are usually registered by a service provider, so the fake keeps them.
+        // Global middlewares and consumer configuration callbacks are usually registered by a service provider, so the fake keeps them.
         if ($manager instanceof Factory) {
             $fake->consumerMiddleware($manager->getConsumerMiddleware());
+
+            foreach ($manager->getConsumerConfigurationCallbacks() as $callback) {
+                $fake->configureConsumersUsing($callback);
+            }
         }
 
         return $fake;

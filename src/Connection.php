@@ -7,8 +7,8 @@ use Junges\Kafka\Concerns\InteractsWithConfigCallbacks;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\ConnectionConfig;
 use Junges\Kafka\Consumers\Builder as ConsumerBuilder;
+use Junges\Kafka\Consumers\PartitionLag;
 use Junges\Kafka\Contracts\MessageSerializer;
-use Junges\Kafka\Contracts\Middleware;
 use Junges\Kafka\Contracts\Producer as ProducerContract;
 use Junges\Kafka\Exceptions\Transactions\TransactionFatalErrorException;
 use Junges\Kafka\Exceptions\Transactions\TransactionShouldBeAbortedException;
@@ -16,6 +16,9 @@ use Junges\Kafka\Exceptions\Transactions\TransactionShouldBeRetriedException;
 use Junges\Kafka\Producers\PendingMessage;
 use Junges\Kafka\Producers\Producer;
 use LogicException;
+use RdKafka\KafkaConsumer;
+use RdKafka\Metadata\Partition;
+use RdKafka\TopicPartition;
 use Throwable;
 
 class Connection
@@ -27,13 +30,14 @@ class Connection
     private ?ProducerContract $producer = null;
 
     /**
-     * The consumer middleware closure resolves the middlewares every consumer of this connection goes through.
+     * The configure consumer closure applies the configuration every consumer of this connection shares, such as the
+     * global middlewares, to the builder of each consumer.
      *
-     * @param  (Closure(): list<Middleware|callable|class-string<Middleware>>)|null  $consumerMiddleware
+     * @param  (Closure(ConsumerBuilder): void)|null  $configureConsumer
      */
     public function __construct(
         private readonly ConnectionConfig $config,
-        private readonly ?Closure $consumerMiddleware = null,
+        private readonly ?Closure $configureConsumer = null,
     ) {}
 
     public function getName(): string
@@ -67,9 +71,8 @@ class Connection
     {
         $builder = $this->newConsumerBuilder($topics, $groupId);
 
-        // The global middlewares are added first, so they run before the middlewares of each consumer.
-        foreach ($this->consumerMiddleware instanceof Closure ? ($this->consumerMiddleware)() : [] as $middleware) {
-            $builder->withMiddleware($middleware);
+        if ($this->configureConsumer instanceof Closure) {
+            ($this->configureConsumer)($builder);
         }
 
         return $builder;
@@ -134,6 +137,61 @@ class Connection
         }
     }
 
+    /**
+     * Get how far behind a consumer group is on the given topics, for each of their partitions, comparing the offsets
+     * committed by the group with the offsets the next messages published to each partition get. The consumer group
+     * is not joined, so its consumers are not rebalanced.
+     *
+     * @param  list<string>  $topics
+     * @return list<PartitionLag>
+     *
+     * @throws \RdKafka\Exception
+     */
+    public function lag(string $groupId, array $topics, int $timeoutInMs = 10000): array
+    {
+        $consumer = $this->makeGroupConsumer($groupId);
+
+        try {
+            $partitions = [];
+
+            foreach ($topics as $topic) {
+                $metadata = $consumer->getMetadata(false, $consumer->newTopic($topic), $timeoutInMs);
+
+                foreach ($metadata->getTopics() as $topicMetadata) {
+                    foreach ($topicMetadata->getPartitions() as $partition) {
+                        /** @var Partition $partition */
+                        $partitions[] = new TopicPartition($topic, $partition->getId());
+                    }
+                }
+            }
+
+            if ($partitions === []) {
+                return [];
+            }
+
+            usort($partitions, fn (TopicPartition $a, TopicPartition $b) => [$a->getTopic(), $a->getPartition()] <=> [$b->getTopic(), $b->getPartition()]);
+
+            return array_map(function (TopicPartition $partition) use ($consumer, $timeoutInMs): PartitionLag {
+                $low = $high = 0;
+                $consumer->queryWatermarkOffsets($partition->getTopic(), $partition->getPartition(), $low, $high, $timeoutInMs);
+
+                // Partitions without a committed offset have a negative one, such as RD_KAFKA_OFFSET_INVALID.
+                $committed = $partition->getOffset() >= 0 ? $partition->getOffset() : null;
+
+                return new PartitionLag(
+                    topic: $partition->getTopic(),
+                    partition: $partition->getPartition(),
+                    committedOffset: $committed,
+                    lowWatermark: $low,
+                    highWatermark: $high,
+                    lag: $committed === null ? null : max(0, $high - $committed),
+                );
+            }, $consumer->getCommittedOffsets($partitions, $timeoutInMs));
+        } finally {
+            $consumer->close();
+        }
+    }
+
     /** Wait until every message queued on this connection is delivered. */
     public function flush(): void
     {
@@ -183,9 +241,33 @@ class Connection
                 flushRetries: $connection->flushRetries,
                 flushTimeoutInMs: $connection->flushTimeoutInMs,
                 flushRetrySleepInMs: $connection->flushRetrySleepInMs,
+                connection: $connection->name,
             ),
             'serializer' => app($connection->serializer ?? MessageSerializer::class),
         ]);
+    }
+
+    /**
+     * Create a consumer of the given group that only reads offsets. It never subscribes, so it does not join the
+     * group, and only keeps the callback providing tokens to authenticate with OAUTHBEARER.
+     */
+    protected function makeGroupConsumer(string $groupId): KafkaConsumer
+    {
+        $connection = $this->getConfig();
+
+        $config = new Config(
+            broker: $connection->brokers,
+            topics: [],
+            securityProtocol: $connection->securityProtocol,
+            groupId: $groupId,
+            sasl: $connection->sasl,
+            autoCommit: false,
+            customOptions: [...$connection->options, ...$connection->consumerOptions],
+            callbacks: array_intersect_key($connection->callbacks, ['setOauthbearerTokenRefreshCb' => true]),
+            connection: $connection->name,
+        );
+
+        return app(KafkaConsumer::class, ['conf' => $config->makeConf($config->getConsumerOptions())]);
     }
 
     /** Abort the transaction, reporting a failure to do so instead of hiding the exception that caused it. */

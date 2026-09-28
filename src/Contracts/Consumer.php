@@ -46,4 +46,39 @@ interface Consumer
 
     /** Get the current partition assignment for this consumer */
     public function getAssignedPartitions(): array;
+
+    /**
+     * Stop fetching messages from the given partitions, or from every assigned partition, until they are resumed.
+     * Partitions are resumed when they are revoked, and a partition assigned again on a rebalance is not paused.
+     *
+     * @param  list<TopicPartition>|null  $partitions
+     *
+     * @throws \RdKafka\Exception
+     */
+    public function pause(?array $partitions = null): void;
+
+    /**
+     * Resume fetching messages from the given paused partitions, or from every assigned partition.
+     *
+     * @param  list<TopicPartition>|null  $partitions
+     *
+     * @throws \RdKafka\Exception
+     */
+    public function resume(?array $partitions = null): void;
+
+    /** Get the name of this consumer, which identifies it in events and when restarting it. */
+    public function getName(): string;
+
+    /** Get the name of the connection this consumer consumes from. */
+    public function getConnectionName(): string;
+
+    /** Get the consumer group of this consumer. */
+    public function getGroupId(): ?string;
+
+    /**
+     * Get the topics this consumer subscribes to.
+     *
+     * @return list<string>
+     */
+    public function getTopics(): array;
 }

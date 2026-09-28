@@ -76,6 +76,28 @@ Only `topics` and `handle` are required. The other methods have defaults, and ca
 
 To be notified when a message is handled as failed, override the `failed` method. See [handling failed messages](handling-failed-messages.md#being-notified-of-failed-messages).
 
+### Naming consumers
+
+Every consumer has a name, which identifies it in [events](../advanced-usage/events.md) and when [restarting consumers](../advanced-usage/running-consumers-in-production.md#restarting-consumers-after-deployments). Consumer classes are named after their class by default. To use another name, override the `name` method:
+
+```php
+public function name(): string
+{
+    return 'orders';
+}
+```
+
+When building a consumer yourself, use the `withName` method of the consumer builder. Consumers without a name are named after the topics they consume, separated by commas:
+
+```php
+$consumer = \Junges\Kafka\Facades\Kafka::consumer(['orders'])
+    ->withName('orders')
+    ->withHandler(new OrderHandler)
+    ->build();
+```
+
+The consumer passed to handlers, callbacks and events exposes its name, along with its connection, group and topics, through the `getName`, `getConnectionName`, `getGroupId` and `getTopics` methods.
+
 ### Middlewares
 
 The `middleware` method returns the [middlewares](../advanced-usage/middlewares.md) each message goes through before reaching the `handle` method:

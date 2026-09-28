@@ -21,6 +21,9 @@ class Factory implements Manager
     /** @var list<Middleware|callable|class-string<Middleware>> */
     protected array $consumerMiddleware = [];
 
+    /** @var list<callable(ConsumerBuilder): mixed> */
+    protected array $consumerConfigurationCallbacks = [];
+
     /** {@inheritDoc} */
     public function connection(?string $name = null): Connection
     {
@@ -78,6 +81,22 @@ class Factory implements Manager
     }
 
     /** {@inheritDoc} */
+    public function configureConsumersUsing(callable $callback): void
+    {
+        $this->consumerConfigurationCallbacks[] = $callback;
+    }
+
+    /**
+     * Get the callbacks that configure every consumer.
+     *
+     * @return list<callable(ConsumerBuilder): mixed>
+     */
+    public function getConsumerConfigurationCallbacks(): array
+    {
+        return $this->consumerConfigurationCallbacks;
+    }
+
+    /** {@inheritDoc} */
     public function flush(): void
     {
         foreach ($this->connections as $connection) {
@@ -104,8 +123,22 @@ class Factory implements Manager
 
     protected function makeConnection(ConnectionConfig $config): Connection
     {
-        // The middlewares are resolved when each consumer is created, so the ones
-        // registered after a connection is resolved are applied as well.
-        return new Connection($config, fn () => $this->consumerMiddleware);
+        return new Connection($config, $this->configureConsumer(...));
+    }
+
+    /**
+     * Apply the global middlewares and configuration callbacks to a consumer. They are applied when each
+     * consumer is created, so the ones registered after a connection is resolved are applied as well. The
+     * middlewares are added first, so they run before the middlewares of each consumer.
+     */
+    protected function configureConsumer(ConsumerBuilder $builder): void
+    {
+        foreach ($this->consumerMiddleware as $middleware) {
+            $builder->withMiddleware($middleware);
+        }
+
+        foreach ($this->consumerConfigurationCallbacks as $callback) {
+            $callback($builder);
+        }
     }
 }

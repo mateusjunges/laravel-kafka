@@ -4,9 +4,12 @@ namespace Junges\Kafka\Tests\Producers;
 
 use Illuminate\Support\Facades\Event;
 use Junges\Kafka\Config\Config;
+use Junges\Kafka\Events\KafkaErrorOccurred;
+use Junges\Kafka\Events\MessageDelivered;
 use Junges\Kafka\Events\MessageDeliveryFailed;
 use Junges\Kafka\Events\MessagePublished;
 use Junges\Kafka\Events\PublishingMessage;
+use Junges\Kafka\Events\StatisticsReported;
 use Junges\Kafka\Message\Message;
 use Junges\Kafka\Message\Serializers\JsonSerializer;
 use Junges\Kafka\Producers\Producer;
@@ -96,17 +99,64 @@ final class ProducerTest extends LaravelKafkaTestCase
     }
 
     #[Test]
-    public function it_does_not_dispatch_an_event_for_delivered_messages(): void
+    public function it_dispatches_an_event_when_a_message_was_delivered(): void
     {
         Event::fake();
         $this->mockKafkaProducer();
 
         $delivered = new RdKafkaMessage;
         $delivered->err = RD_KAFKA_RESP_ERR_NO_ERROR;
+        $delivered->topic_name = 'orders';
+        $delivered->partition = 2;
+        $delivered->offset = 42;
+        $delivered->key = 'order-1';
+        $delivered->headers = [];
+        $delivered->opaque = 'message-id';
 
         $this->reportDelivery(new Producer(new Config('broker', ['orders']), new JsonSerializer), $delivered);
 
         Event::assertNotDispatched(MessageDeliveryFailed::class);
+        Event::assertDispatched(MessageDelivered::class, fn (MessageDelivered $event) => $event->topic === 'orders'
+            && $event->partition === 2
+            && $event->offset === 42
+            && $event->key === 'order-1'
+            && $event->getMessageIdentifier() === 'message-id');
+    }
+
+    #[Test]
+    public function it_dispatches_statistics_and_calls_the_statistics_callback(): void
+    {
+        Event::fake();
+        $this->mockKafkaProducer();
+
+        $received = null;
+        $callback = function (mixed $kafka, string $json) use (&$received) {
+            $received = $json;
+        };
+
+        $producer = new Producer(new Config('broker', [], callbacks: ['setStatsCb' => $callback], connection: 'analytics'), new JsonSerializer);
+
+        (new ReflectionMethod($producer, 'handleStatistics'))->invoke($producer, null, '{"type":"producer","txmsgs":3}', 30, $callback);
+
+        $this->assertSame('{"type":"producer","txmsgs":3}', $received);
+        Event::assertDispatched(StatisticsReported::class, fn (StatisticsReported $event) => $event->statistics === ['type' => 'producer', 'txmsgs' => 3]
+            && $event->connection === 'analytics'
+            && $event->consumer === null);
+    }
+
+    #[Test]
+    public function it_dispatches_errors_reported_by_librdkafka(): void
+    {
+        Event::fake();
+        $this->mockKafkaProducer();
+
+        $producer = new Producer(new Config('broker', []), new JsonSerializer);
+
+        (new ReflectionMethod($producer, 'handleError'))->invoke($producer, null, RD_KAFKA_RESP_ERR__ALL_BROKERS_DOWN, 'All brokers are down', null);
+
+        Event::assertDispatched(KafkaErrorOccurred::class, fn (KafkaErrorOccurred $event) => $event->errorCode === RD_KAFKA_RESP_ERR__ALL_BROKERS_DOWN
+            && $event->connection === 'default'
+            && $event->consumer === null);
     }
 
     private function reportDelivery(Producer $producer, RdKafkaMessage $message): void

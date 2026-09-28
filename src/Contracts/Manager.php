@@ -36,6 +36,14 @@ interface Manager
      */
     public function consumerMiddleware(array|Middleware|Closure|string $middleware): void;
 
+    /**
+     * Register a callback that configures every consumer, receiving its builder when it is created, before the
+     * consumer itself is configured, so the configuration of each consumer takes precedence.
+     *
+     * @param  callable(Builder): mixed  $callback
+     */
+    public function configureConsumersUsing(callable $callback): void;
+
     /** Wait until every message queued on the resolved connections is delivered. */
     public function flush(): void;
 

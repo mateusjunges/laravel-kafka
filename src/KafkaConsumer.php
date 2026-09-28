@@ -35,6 +35,12 @@ abstract class KafkaConsumer
         //
     }
 
+    /** Get the name of the consumer, which identifies it in events and when restarting it. */
+    public function name(): string
+    {
+        return static::class;
+    }
+
     /** Get the connection to consume from, or null to use the default connection. */
     public function connection(): ?string
     {
@@ -97,6 +103,7 @@ abstract class KafkaConsumer
     {
         $builder = $manager->connection($this->connection())
             ->consumer($this->topics(), $this->group())
+            ->withName($this->name())
             ->withHandler($this->handle(...))
             ->onMessageFailed($this->failed(...))
             ->retryFailedMessages($this->retries(), $this->backoff())

@@ -183,6 +183,18 @@ Search for: `implements Committer`, `CommitterFactory`, `commitMessage(`, `commi
 | `$message->setTopicName($topic)` | `$message->onTopic($topic)` |
 | `Junges\Kafka\Handlers\RetryableHandler` and retry strategies | `retryFailedMessages()` on the builder, or `retries()` and `backoff()` on consumer classes. |
 
+## Events
+
+Search for: `MessageSentToDLQ`, `new StartedConsumingMessage(`, `new MessageConsumed(`, `new MessageSkipped(`, `implements \Junges\Kafka\Contracts\Consumer`, `implements Consumer`.
+
+| v2 | v3 |
+| --- | --- |
+| `$event->messageIdentifier` on `MessageSentToDLQ` | `$event->getMessageIdentifier()` |
+| `$event->headers` on `MessageSentToDLQ`, read as the headers of the consumed message | `$event->message->getHeaders()`. `$event->headers` now holds the headers published to the dead letter queue, including the `kafka_throwable_*` ones. |
+| Listening to `MessageSkipped` and `MessageSentToDLQ` to be notified of failed messages | Optionally, listen to the new `MessageFailed` event, which is dispatched for every failed message. |
+| Creating `StartedConsumingMessage`, `MessageConsumed` or `MessageSkipped`, for instance in tests | Pass the consumer as their last argument. |
+| Custom implementations of `Junges\Kafka\Contracts\Consumer` | Add `pause()`, `resume()`, `getName()`, `getConnectionName()`, `getGroupId()` and `getTopics()`. |
+
 ## Tests
 
 Search for: `Kafka::fake(`, `shouldReceiveMessages(`, `assertPublished`, `new ConsumedMessage(`, `ProducerBuilderFake`, `new KafkaFake(`.
