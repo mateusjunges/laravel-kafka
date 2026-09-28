@@ -77,20 +77,41 @@ Callbacks registered on a connection are applied to its producer and to the cons
 
 ### Transactions
 
-To use transactions, set a `transactional.id` in the producer options of a dedicated connection, and use its producer directly:
+Transactions deliver a group of messages all together, or not at all. To use them, set a `transactional.id` in the producer options of a dedicated connection. Every message published through that connection must then be published inside a transaction:
 
 ```php
-use Junges\Kafka\Facades\Kafka;
-use Junges\Kafka\Message\Message;
-
-$producer = Kafka::connection('transactional')->producer();
-
-$producer->beginTransaction();
-
-$producer->produce(Message::create('orders')->withBody(['order_id' => 1]));
-$producer->produce(Message::create('invoices')->withBody(['order_id' => 1]));
-
-$producer->commitTransaction();
+'connections' => [
+    'payments' => [
+        'brokers' => env('KAFKA_BROKERS'),
+        'producer' => [
+            'options' => [
+                'transactional.id' => 'payments-'.gethostname().'-'.getmypid(),
+            ],
+        ],
+    ],
+],
 ```
+
+Then, publish the messages inside the `transaction` method of the connection:
+
+```php
+use Junges\Kafka\Connection;
+use Junges\Kafka\Facades\Kafka;
+
+Kafka::connection('payments')->transaction(function (Connection $connection) {
+    $connection->publish('ledger')->withBody(['order_id' => 1, 'amount' => 100])->send();
+    $connection->publish('invoices')->withBody(['order_id' => 1])->send();
+});
+```
+
+The transaction is committed once the callback returns, and the value returned by the callback is returned by `transaction`. If the callback throws, the transaction is aborted, none of its messages are delivered, and the exception is rethrown.
+
+Kafka reports some transaction errors as temporary. When committing fails with a retriable error, the commit is retried, and when Kafka requires the transaction to be aborted, it is aborted and the callback runs again. Both happen up to 3 times, which you can change with the `attempts` argument:
+
+```php
+Kafka::connection('payments')->transaction($callback, attempts: 5);
+```
+
+As the callback may run more than once, avoid side effects in it other than publishing messages. Kafka allows a single producer at a time for each `transactional.id`: when a producer starts a transaction, older producers using the same id are fenced off and their transactions fail. Every process publishing transactions, such as each PHP-FPM worker or queue worker, must therefore use its own id, which is why the example includes the host name and the process id.
 
 [rdkafka_config]:https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md

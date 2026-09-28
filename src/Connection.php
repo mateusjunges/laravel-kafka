@@ -11,9 +11,13 @@ use Junges\Kafka\Contracts\InteractsWithConfigCallbacks as InteractsWithConfigCa
 use Junges\Kafka\Contracts\MessageSerializer;
 use Junges\Kafka\Contracts\Middleware;
 use Junges\Kafka\Contracts\Producer as ProducerContract;
+use Junges\Kafka\Exceptions\Transactions\TransactionFatalErrorException;
+use Junges\Kafka\Exceptions\Transactions\TransactionShouldBeAbortedException;
+use Junges\Kafka\Exceptions\Transactions\TransactionShouldBeRetriedException;
 use Junges\Kafka\Producers\PendingMessage;
 use Junges\Kafka\Producers\Producer;
 use LogicException;
+use Throwable;
 
 class Connection implements InteractsWithConfigCallbacksContract
 {
@@ -82,6 +86,55 @@ class Connection implements InteractsWithConfigCallbacksContract
         return $this->producer ??= $this->makeProducer();
     }
 
+    /**
+     * Run the callback in a transaction, so the messages it publishes through this connection are
+     * delivered all together, or not at all. Retriable commit errors are retried, and when Kafka
+     * requires the transaction to be aborted, it is aborted and the callback runs again, up to
+     * the given number of attempts. When the callback throws, the transaction is aborted.
+     *
+     * @template TReturn
+     *
+     * @param  Closure(self): TReturn  $callback
+     * @return TReturn
+     *
+     * @throws Throwable
+     */
+    public function transaction(Closure $callback, int $attempts = 3): mixed
+    {
+        if (! isset([...$this->config->options, ...$this->config->producerOptions]['transactional.id'])) {
+            throw new LogicException(
+                "Transactions require a [transactional.id] in the producer options of the [{$this->getName()}] Kafka connection."
+            );
+        }
+
+        $producer = $this->producer();
+
+        for ($attempt = 1; ; $attempt++) {
+            $producer->beginTransaction();
+
+            try {
+                $result = $callback($this);
+
+                retry(
+                    $attempts,
+                    fn () => $producer->commitTransaction(),
+                    when: fn (Throwable $exception) => $exception instanceof TransactionShouldBeRetriedException,
+                );
+
+                return $result;
+            } catch (TransactionFatalErrorException $exception) {
+                // The producer can't be used anymore, so there is no transaction left to abort.
+                throw $exception;
+            } catch (Throwable $exception) {
+                $this->abortTransaction($producer);
+
+                if (! $exception instanceof TransactionShouldBeAbortedException || $attempt >= $attempts) {
+                    throw $exception;
+                }
+            }
+        }
+    }
+
     /** Wait until every message queued on this connection is delivered. */
     public function flush(): void
     {
@@ -133,5 +186,15 @@ class Connection implements InteractsWithConfigCallbacksContract
             ),
             'serializer' => app(MessageSerializer::class),
         ]);
+    }
+
+    /** Abort the transaction, reporting a failure to do so instead of hiding the exception that caused it. */
+    private function abortTransaction(ProducerContract $producer): void
+    {
+        try {
+            $producer->abortTransaction();
+        } catch (Throwable $exception) {
+            report($exception);
+        }
     }
 }
