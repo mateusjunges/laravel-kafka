@@ -215,6 +215,38 @@ final class KafkaTest extends LaravelKafkaTestCase
     }
 
     #[Test]
+    public function it_does_not_register_connection_callbacks_after_the_producer_is_created(): void
+    {
+        $mockedProducerTopic = m::mock(ProducerTopic::class)
+            ->shouldReceive('producev')->once()
+            ->andReturn(m::self())
+            ->getMock();
+
+        $this->mockRdKafkaProducer($mockedProducerTopic);
+
+        Kafka::connection()->withLogCb(fn () => null);
+
+        Kafka::publishSync('test')->withBody('foo')->send();
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Configuration callbacks must be registered on the [default] Kafka connection before its producer is created');
+
+        Kafka::connection()->withErrorCb(fn () => null);
+    }
+
+    #[Test]
+    public function the_kafka_fake_does_not_register_connection_callbacks_after_publishing_either(): void
+    {
+        Kafka::fake();
+
+        Kafka::publish('test')->withBody('foo')->send();
+
+        $this->expectException(LogicException::class);
+
+        Kafka::connection()->withOAuthBearerTokenRefreshCallback(fn () => null);
+    }
+
+    #[Test]
     public function it_throws_an_exception_when_the_connection_is_not_configured(): void
     {
         $this->expectException(InvalidArgumentException::class);

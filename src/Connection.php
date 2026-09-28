@@ -13,10 +13,13 @@ use Junges\Kafka\Contracts\Middleware;
 use Junges\Kafka\Contracts\Producer as ProducerContract;
 use Junges\Kafka\Producers\PendingMessage;
 use Junges\Kafka\Producers\Producer;
+use LogicException;
 
 class Connection implements InteractsWithConfigCallbacksContract
 {
-    use InteractsWithConfigCallbacks;
+    use InteractsWithConfigCallbacks {
+        setConfigCallback as storeConfigCallback;
+    }
 
     private ?ProducerContract $producer = null;
 
@@ -83,6 +86,22 @@ class Connection implements InteractsWithConfigCallbacksContract
     public function flush(): void
     {
         $this->producer?->flush();
+    }
+
+    /**
+     * The producer is configured when it is created, and librdkafka can't change its configuration
+     * afterwards, so a callback registered later would be silently ignored by the producer.
+     */
+    protected function setConfigCallback(string $method, callable $callback): self
+    {
+        if ($this->producer instanceof ProducerContract) {
+            throw new LogicException(
+                "Configuration callbacks must be registered on the [{$this->getName()}] Kafka connection before its producer is created, "
+                .'when the first message is published. Register them in the boot method of a service provider.'
+            );
+        }
+
+        return $this->storeConfigCallback($method, $callback);
     }
 
     protected function newConsumerBuilder(array $topics, ?string $groupId): ConsumerBuilder

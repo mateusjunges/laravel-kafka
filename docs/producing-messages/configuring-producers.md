@@ -71,7 +71,7 @@ Kafka::connection()
     });
 ```
 
-Callbacks registered on a connection are applied to its producer and to the consumers created using it.
+Callbacks registered on a connection are applied to its producer and to the consumers created using it. Registering a callback after the connection's producer was created throws a `LogicException`, because librdkafka can't change the configuration of an existing producer.
 
 ### Transactions
 
