@@ -30,7 +30,6 @@ Thank you for considering contributing for the Laravel Kafka package! The contri
 
 # Credits
 - [Mateus Junges](https://twitter.com/mateusjungess)
-- [Arquivei](https://github.com/arquivei)
 
 # License
 The Laravel Kafka package is open-sourced software licenced under the [MIT][mit] License. Please see the [License File][license] for more information.

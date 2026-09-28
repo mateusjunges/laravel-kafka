@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Producers;
 
+use Closure;
 use Exception;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Facades\App;
@@ -27,15 +28,19 @@ class Producer implements ProducerContract
 
     private readonly Dispatcher $dispatcher;
 
+    private array $pendingMessages;
+
     public function __construct(
         private readonly Config $config,
         private readonly MessageSerializer $serializer,
         private readonly bool $async = false,
+        private readonly ?Closure $flushCallback = null,
     ) {
         $this->producer = app(KafkaProducer::class, [
             'conf' => $this->getConf($this->config->getProducerOptions()),
         ]);
         $this->dispatcher = App::make(Dispatcher::class);
+        $this->pendingMessages = [];
     }
 
     public function __destruct()
@@ -57,6 +62,10 @@ class Producer implements ProducerContract
         $message = $this->serializer->serialize($message);
 
         $this->produceMessage($topic, $message);
+
+        if ($this->flushCallback) {
+            $this->pendingMessages[] = $message;
+        }
 
         $this->producer->poll(0);
 
@@ -85,6 +94,8 @@ class Producer implements ProducerContract
                     $result = $this->producer->flush($timeout);
 
                     if ($result === RD_KAFKA_RESP_ERR_NO_ERROR) {
+                        $this->runFlushCallback();
+
                         return true;
                     }
 
@@ -133,5 +144,18 @@ class Producer implements ProducerContract
         );
 
         $this->dispatcher->dispatch(new MessagePublished($message));
+    }
+
+    private function runFlushCallback(): void
+    {
+        if ($this->pendingMessages === []) {
+            return;
+        }
+
+        if ($this->flushCallback !== null) {
+            ($this->flushCallback)($this->pendingMessages);
+        }
+
+        $this->pendingMessages = [];
     }
 }

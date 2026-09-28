@@ -117,21 +117,6 @@ class ConsumerFake implements MessageConsumer
         $this->messageCounter->add();
     }
 
-    private function getRdKafkaMessage(ConsumerMessage $message): Message
-    {
-        $rdKafkaMessage = new Message;
-        $rdKafkaMessage->err = 0;
-        $rdKafkaMessage->topic_name = $message->getTopicName();
-        $rdKafkaMessage->partition = $message->getPartition();
-        $rdKafkaMessage->headers = $message->getHeaders() ?? [];
-        $rdKafkaMessage->payload = serialize($message->getBody());
-        $rdKafkaMessage->key = $message->getKey();
-        $rdKafkaMessage->offset = $message->getOffset();
-        $rdKafkaMessage->timestamp = $message->getTimestamp();
-
-        return $rdKafkaMessage;
-    }
-
     private function getConsumerMessage(Message $message): ConsumerMessage
     {
         return app(ConsumerMessage::class, [

@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Producers;
 
+use Closure;
 use Exception;
 use Illuminate\Support\Traits\Conditionable;
 use Junges\Kafka\Concerns\InteractsWithConfigCallbacks;
@@ -37,6 +38,8 @@ class Builder implements MessageProducer
     private ?int $flushRetries = null;
 
     private ?int $flushTimeoutInMs = null;
+
+    private ?Closure $flushCallback = null;
 
     public function __construct(
         ?string $broker = null,
@@ -116,6 +119,13 @@ class Builder implements MessageProducer
     public function withBody(mixed $body): self
     {
         $this->message->withBody($body);
+
+        return $this;
+    }
+
+    public function withFlushCallback(callable $callback): self
+    {
+        $this->flushCallback = Closure::fromCallable($callback);
 
         return $this;
     }
@@ -230,6 +240,7 @@ class Builder implements MessageProducer
             'config' => $conf,
             'serializer' => $this->serializer,
             'async' => $this->asyncProducer,
+            'flushCallback' => $this->flushCallback,
         ]);
 
         if ($this->asyncProducer) {

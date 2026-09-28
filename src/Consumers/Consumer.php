@@ -13,6 +13,7 @@ use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\Committer;
 use Junges\Kafka\Contracts\CommitterFactory;
 use Junges\Kafka\Contracts\ConsumerMessage;
+use Junges\Kafka\Contracts\ContextAware;
 use Junges\Kafka\Contracts\Logger;
 use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Contracts\MessageDeserializer;
@@ -29,6 +30,7 @@ use RdKafka\Exception;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
 use RdKafka\Producer as KafkaProducer;
+use RdKafka\TopicPartition;
 use Throwable;
 
 class Consumer implements MessageConsumer
@@ -38,6 +40,7 @@ class Consumer implements MessageConsumer
         RD_KAFKA_RESP_ERR__TRANSPORT,
         RD_KAFKA_RESP_ERR_REQUEST_TIMED_OUT,
         RD_KAFKA_RESP_ERR__TIMED_OUT,
+        RD_KAFKA_RESP_ERR_UNKNOWN_TOPIC_OR_PART,
     ];
 
     private const array CONSUME_STOP_EOF_ERRORS = [
@@ -73,6 +76,15 @@ class Consumer implements MessageConsumer
 
     private bool $stopRequested = false;
 
+    /** @var array<int, callable|int> Signal handlers of the host process, captured before consuming and restored afterwards. */
+    private array $previousSignalHandlers = [];
+
+    /** Whether the host process had async signals enabled, captured before consuming and restored afterwards. */
+    private bool $previousAsyncSignals = false;
+
+    /** @var array<string, true> Partitions that have reached EOF, keyed by "topic-partition". */
+    private array $partitionsAtEof = [];
+
     private readonly ?Closure $whenStopConsuming;
 
     private readonly Dispatcher $dispatcher;
@@ -103,35 +115,47 @@ class Consumer implements MessageConsumer
             $this->listenForSignals();
         }
 
-        $this->consumer = app(KafkaConsumer::class, [
-            'conf' => $this->setConf($this->config->getConsumerOptions()),
-        ]);
-        $this->producer = app(KafkaProducer::class, [
-            'conf' => $this->setConf($this->config->getProducerOptions()),
-        ]);
+        try {
+            $this->consumer = app(KafkaConsumer::class, [
+                'conf' => $this->setConf($this->config->getConsumerOptions()),
+            ]);
 
-        $this->committer = $this->committerFactory->make($this->consumer, $this->config);
+            // The producer is only needed to forward failed messages to the dead letter
+            // queue, and creating one opens broker connections and background threads
+            // of its own, so it is created only when a dead letter queue is configured.
+            if ($this->config->shouldSendToDlq()) {
+                $this->producer = app(KafkaProducer::class, [
+                    'conf' => $this->setConf($this->config->getProducerOptions()),
+                ]);
+            }
 
-        // Calling `subscribe` overrides the assigned topic partitions, so we
-        // should check if there are any assignment defined before calling
-        // the subscribe method on the consumer. Partition assignment
-        // have precedence over topic subscriptions.
-        if ($this->config->shouldAssignTopicPartitions()) {
-            $this->consumer->assign($this->config->getPartitionAssigment());
-        } else {
-            $this->consumer->subscribe($this->config->getTopics());
-        }
+            $this->committer = $this->committerFactory->make($this->consumer, $this->config);
 
-        do {
-            $this->runBeforeCallbacks();
-            $this->retryable->retry(fn () => $this->doConsume());
-            $this->runAfterConsumingCallbacks();
-            $this->checkForRestart();
-        } while (! $this->maxMessagesLimitReached() && ! $stopTimer->isTimedOut() && ! $this->stopRequested);
+            // Calling `subscribe` overrides the assigned topic partitions, so we
+            // should check if there are any assignment defined before calling
+            // the subscribe method on the consumer. Partition assignment
+            // have precedence over topic subscriptions.
+            if ($this->config->shouldAssignTopicPartitions()) {
+                $this->consumer->assign($this->config->getPartitionAssigment());
+            } else {
+                $this->consumer->subscribe($this->config->getTopics());
+            }
 
-        if ($this->shouldRunStopConsumingCallback()) {
-            $callback = $this->whenStopConsuming;
-            $callback(...)();
+            do {
+                $this->runBeforeCallbacks();
+                $this->retryable->retry(fn () => $this->doConsume());
+                $this->runAfterConsumingCallbacks();
+                $this->checkForRestart();
+            } while (! $this->maxMessagesLimitReached() && ! $stopTimer->isTimedOut() && ! $this->stopRequested);
+
+            if ($this->shouldRunStopConsumingCallback()) {
+                $callback = $this->whenStopConsuming;
+                $callback(...)();
+            }
+        } finally {
+            if ($this->supportAsyncSignals()) {
+                $this->restoreSignalHandlers();
+            }
         }
     }
 
@@ -248,15 +272,38 @@ class Consumer implements MessageConsumer
         return $this->whenStopConsuming !== null;
     }
 
+    /**
+     * Stop consuming on termination signals without taking the signals away from the host
+     * process: a handler that was registered before (e.g. by a Laravel queue worker running
+     * this consumer inside a job) is still invoked, and it is restored once consuming ends.
+     */
     private function listenForSignals(): void
     {
-        assert(extension_loaded('pcntl'));
+        $this->previousAsyncSignals = pcntl_async_signals(true);
 
-        pcntl_async_signals(true);
+        foreach ([SIGQUIT, SIGTERM, SIGINT] as $signal) {
+            $previousHandler = pcntl_signal_get_handler($signal);
+            $this->previousSignalHandlers[$signal] = $previousHandler;
 
-        pcntl_signal(SIGQUIT, fn () => $this->stopRequested = true);
-        pcntl_signal(SIGTERM, fn () => $this->stopRequested = true);
-        pcntl_signal(SIGINT, fn () => $this->stopRequested = true);
+            pcntl_signal($signal, function (int $signal, mixed $signalInfo = null) use ($previousHandler): void {
+                $this->stopRequested = true;
+
+                if (is_callable($previousHandler)) {
+                    $previousHandler($signal, $signalInfo);
+                }
+            });
+        }
+    }
+
+    private function restoreSignalHandlers(): void
+    {
+        foreach ($this->previousSignalHandlers as $signal => $previousHandler) {
+            pcntl_signal($signal, $previousHandler);
+        }
+
+        pcntl_async_signals($this->previousAsyncSignals);
+
+        $this->previousSignalHandlers = [];
     }
 
     private function supportAsyncSignals(): bool
@@ -392,7 +439,11 @@ class Consumer implements MessageConsumer
         $throwableHeaders['kafka_throwable_code'] = $throwable->getCode();
         $throwableHeaders['kafka_throwable_class_name'] = $throwable::class;
 
-        return array_merge($message->headers ?? [], $throwableHeaders);
+        if ($throwable instanceof ContextAware) {
+            $contextHeaders = $this->normalizeContext($throwable->getContext());
+        }
+
+        return array_merge($message->headers ?? [], $throwableHeaders, $contextHeaders ?? []);
     }
 
     /** @throws Throwable */
@@ -428,6 +479,10 @@ class Consumer implements MessageConsumer
     private function handleMessage(Message $message): void
     {
         if ($message->err === RD_KAFKA_RESP_ERR_NO_ERROR) {
+            // Receiving a message from a partition that previously reached
+            // EOF means the partition is no longer drained.
+            unset($this->partitionsAtEof[$this->partitionKey($message->topic_name, $message->partition)]);
+
             $this->messageCounter->add();
 
             $this->executeMessage($message);
@@ -436,7 +491,9 @@ class Consumer implements MessageConsumer
         }
 
         if ($this->config->shouldStopAfterLastMessage() && in_array($message->err, self::CONSUME_STOP_EOF_ERRORS, true)) {
-            $this->stopConsuming();
+            if ($message->err !== RD_KAFKA_RESP_ERR__PARTITION_EOF || $this->allAssignedPartitionsReachedEof($message)) {
+                $this->stopConsuming();
+            }
         }
 
         if (! in_array($message->err, self::IGNORABLE_CONSUMER_ERRORS, true)) {
@@ -446,12 +503,31 @@ class Consumer implements MessageConsumer
         }
     }
 
+    /**
+     * Marks the partition which emitted the given EOF message as drained and
+     * checks whether all partitions currently assigned to this consumer
+     * have reached EOF, meaning there are no more messages to read.
+     */
+    private function allAssignedPartitionsReachedEof(Message $message): bool
+    {
+        $this->partitionsAtEof[$this->partitionKey($message->topic_name, $message->partition)] = true;
+
+        return collect($this->consumer->getAssignment())->every(
+            fn (TopicPartition $partition) => isset($this->partitionsAtEof[$this->partitionKey($partition->getTopic(), $partition->getPartition())])
+        );
+    }
+
+    private function partitionKey(string $topic, int $partition): string
+    {
+        return $topic.'-'.$partition;
+    }
+
     private function getConsumerMessage(Message $message): ConsumerMessage
     {
         // First, we set a new unique id that allows us to identify this message. Then
         // we create a new consumer message instance that will be passed as an arg
         // to the consumer class/closure responsible for consuming this message.
-        if (! array_key_exists(config('kafka.message_id_key'), $message->headers)) {
+        if (! array_key_exists(config('kafka.message_id_key'), $message->headers ?? [])) {
             $message->headers[config('kafka.message_id_key')] = Str::uuid()->toString();
         }
 
@@ -464,5 +540,18 @@ class Consumer implements MessageConsumer
             'offset' => $message->offset,
             'timestamp' => $message->timestamp,
         ]);
+    }
+
+    /**
+     * Normalizes context array to key => value pairs for headers.
+     * Ignores entries with empty keys and non string keys or values.
+     */
+    private function normalizeContext(array $context): array
+    {
+        return array_filter(
+            $context,
+            fn (mixed $value, string $key) => $key !== '' && is_string($value),
+            ARRAY_FILTER_USE_BOTH
+        );
     }
 }

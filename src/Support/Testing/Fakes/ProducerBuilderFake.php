@@ -25,7 +25,9 @@ class ProducerBuilderFake implements MessageProducer
 
     private string $topic = '';
 
-    private ?Closure $producerCallback = null;
+    private ?Closure $produceCallback = null;
+
+    private ?Closure $flushCallback = null;
 
     private ?int $flushRetries = null;
 
@@ -59,9 +61,16 @@ class ProducerBuilderFake implements MessageProducer
         return $this;
     }
 
-    public function withProducerCallback(callable $callback): self
+    public function withProduceCallback(callable $callback): self
     {
-        $this->producerCallback = $callback;
+        $this->produceCallback = Closure::fromCallable($callback);
+
+        return $this;
+    }
+
+    public function withFlushCallback(callable $callback): self
+    {
+        $this->flushCallback = Closure::fromCallable($callback);
 
         return $this;
     }
@@ -222,8 +231,12 @@ class ProducerBuilderFake implements MessageProducer
             'config' => $config,
         ]);
 
-        if ($this->producerCallback) {
-            $producerFake->withProduceCallback($this->producerCallback);
+        if ($this->produceCallback) {
+            $producerFake->withProduceCallback($this->produceCallback);
+        }
+
+        if ($this->flushCallback) {
+            $producerFake->withFlushCallback($this->flushCallback);
         }
 
         return $producerFake;

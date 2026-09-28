@@ -13,6 +13,7 @@ use RdKafka\Conf;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
 use RdKafka\Producer as KafkaProducer;
+use RdKafka\ProducerTopic;
 use ReflectionClass;
 
 abstract class LaravelKafkaTestCase extends Orchestra
@@ -78,6 +79,38 @@ abstract class LaravelKafkaTestCase extends Orchestra
             ->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
             ->shouldReceive('newTopic')
             ->andReturn($topic)
+            ->shouldReceive('poll')
+            ->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
+            ->getMock();
+
+        $this->app->bind(KafkaProducer::class, fn () => $mockedKafkaProducer);
+    }
+
+    /**
+     * Mock Kafka producer specifically for DLQ tests so we can capture and acssess headers.
+     */
+    protected function mockKafkaProducerForDlq(array $expectedHeaders): void
+    {
+        $mockedTopic = m::mock(ProducerTopic::class)
+            ->shouldReceive('producev')
+            ->withArgs(function ($partition, $msgflags, $payload, $key, $headers) use ($expectedHeaders) {
+                // check that all expected headers are present
+                foreach ($expectedHeaders as $headerKey => $headerValue) {
+                    if (! array_key_exists($headerKey, $headers) || $headers[$headerKey] !== $headerValue) {
+                        return false;
+                    }
+                }
+
+                return true;
+            })
+            ->andReturn()
+            ->getMock();
+
+        $mockedKafkaProducer = m::mock(KafkaProducer::class)
+            ->shouldReceive('flush')
+            ->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
+            ->shouldReceive('newTopic')
+            ->andReturn($mockedTopic)
             ->shouldReceive('poll')
             ->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
             ->getMock();

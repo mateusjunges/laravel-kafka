@@ -13,7 +13,7 @@ final class JsonDeserializerTest extends TestCase
     #[Test]
     public function deserialize(): void
     {
-        $message = $this->getMockForAbstractClass(ConsumerMessage::class);
+        $message = $this->createMock(ConsumerMessage::class);
         $message->expects($this->exactly(2))->method('getBody')->willReturn('{"name":"foo"}');
         $deserializer = new JsonDeserializer;
         $result = $deserializer->deserialize($message);
@@ -25,7 +25,7 @@ final class JsonDeserializerTest extends TestCase
     #[Test]
     public function deserialize_non_json(): void
     {
-        $message = $this->getMockForAbstractClass(ConsumerMessage::class);
+        $message = $this->createMock(ConsumerMessage::class);
         $message->expects($this->exactly(2))->method('getBody')->willReturn('test');
         $deserializer = new JsonDeserializer;
 

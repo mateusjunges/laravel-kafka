@@ -3,19 +3,18 @@ title: Upgrade guide
 weight: 6
 ---
 
-## Upgrade to v3.0 from v2.9
+## Upgrade to v3.0 from v2.11
 
 ### Breaking Changes
 
 - `publish()` is now asynchronous by default. Messages are queued and flushed when the application terminates for better performance
 -  Removed `asyncPublish()` and `publishAsync()` methods - use `publish()` for async behavior (default) or `publishSync()` for immediate flushing
 -  Minimum PHP version raised to 8.3
--  Minimum Laravel version raised to 11.0
 - **NEW**: Added `publishSync()` method for synchronous message publishing with immediate flush
 
 ### Migration Guide
 
-**Before (v2.9):**
+**Before (v2.11):**
 ```php
 // Async publishing
 Kafka::asyncPublish()->onTopic('topic')->withBody(['data' => 'value'])->send();
@@ -32,6 +31,18 @@ Kafka::publish()->onTopic('topic')->withBody(['data' => 'value'])->send();
 // Sync publishing (immediate flush)
 Kafka::publishSync()->onTopic('topic')->withBody(['data' => 'value'])->send();
 ```
+
+## Upgrade to v2.11 from v2.10
+
+- **BREAKING CHANGE**: Dropped support for Laravel 10 and Laravel 11. The minimum supported Laravel version is now 12.0
+
+## Upgrade to v2.10 from v2.9
+
+No breaking changes. Notable additions:
+
+- **ContextAware exceptions**: Exceptions implementing `Junges\Kafka\Contracts\ContextAware` will now have their context forwarded as headers when messages are sent to the DLQ. See the [configuring consumer options](/consuming-messages/configuring-consumer-options) docs for details.
+- **Async producer flush callback**: You can now pass a callback via `withFlushCallback()` on the producer builder to be notified when async messages are flushed.
+- **Removed `@internal` annotations** from public interfaces and traits, making them safe to implement/use in userland code.
 
 ## Upgrade to v2.9 from v2.8
 
