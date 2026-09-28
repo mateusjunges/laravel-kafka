@@ -14,7 +14,6 @@ use Junges\Kafka\Config\SaslMechanism;
 use Junges\Kafka\Config\SecurityProtocol;
 use Junges\Kafka\Contracts\CommitterFactory;
 use Junges\Kafka\Contracts\Consumer as ConsumerContract;
-use Junges\Kafka\Contracts\ConsumerBuilder as ConsumerBuilderContract;
 use Junges\Kafka\Contracts\Handler;
 use Junges\Kafka\Contracts\MessageDeserializer;
 use Junges\Kafka\Contracts\Middleware;
@@ -22,7 +21,7 @@ use Junges\Kafka\Exceptions\ConsumerException;
 use LogicException;
 use RdKafka\TopicPartition;
 
-class Builder implements ConsumerBuilderContract
+class Builder
 {
     use Conditionable;
     use InteractsWithConfigCallbacks;
@@ -111,7 +110,7 @@ class Builder implements ConsumerBuilderContract
         $this->deserializer = app($connection->deserializer ?? MessageDeserializer::class);
     }
 
-    /** {@inheritDoc} */
+    /** Creates a new ConsumerBuilder instance for the given connection. */
     public static function create(ConnectionConfig $connection, array $topics = [], ?string $groupId = null): self
     {
         return new self(
@@ -121,7 +120,7 @@ class Builder implements ConsumerBuilderContract
         );
     }
 
-    /** {@inheritDoc} */
+    /** Subscribe to a Kafka topic. */
     public function subscribe(...$topics): self
     {
         if (is_array($topics[0])) {
@@ -139,7 +138,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** {@inheritDoc} */
+    /** Set the brokers the kafka consumer should use, instead of the connection brokers. */
     public function withBrokers(string $brokers): self
     {
         $this->brokers = $brokers;
@@ -147,7 +146,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** {@inheritDoc} */
+    /** Set the consumer group, instead of the group of the connection. */
     public function withGroupId(string $groupId): self
     {
         $this->groupId = $groupId;
@@ -155,7 +154,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** {@inheritDoc} */
+    /** Specify the handler of the consumed messages, a callable receiving the message and the consumer. */
     public function withHandler(callable|Handler $handler): self
     {
         $this->handler = $handler instanceof Handler
@@ -165,7 +164,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** {@inheritDoc} */
+    /** Specify the class that should be used to deserialize messages. */
     public function usingDeserializer(MessageDeserializer $deserializer): self
     {
         $this->deserializer = $deserializer;
@@ -173,7 +172,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** {@inheritDoc} */
+    /** Specify the factory that should be used to build the committer. */
     public function usingCommitterFactory(CommitterFactory $committerFactory): self
     {
         $this->committerFactory = $committerFactory;
@@ -181,7 +180,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** {@inheritDoc} */
+    /** Stop consuming after handling the given number of messages. */
     public function stopAfterMessages(int $messages): self
     {
         $this->maxMessages = $messages;
@@ -189,7 +188,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** {@inheritDoc} */
+    /** Stop consuming after the given number of seconds. */
     public function stopAfterSeconds(int $seconds): self
     {
         $this->maxTime = $seconds;
@@ -197,7 +196,10 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Set the Dead Letter Queue to be used. When no topic is given, it is named after the first
+     * consumed topic, followed by "-dlq", when the consumer is built.
+     */
     public function withDlq(?string $dlqTopic = null): self
     {
         $this->dlq = $dlqTopic;
@@ -206,7 +208,11 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Authenticate this consumer with SASL, using the given credentials instead of the ones of the connection.
+     * The security protocol must be SASL_PLAINTEXT or SASL_SSL. When it is not given, SASL_SSL is used if
+     * the connection is encrypted, and SASL_PLAINTEXT otherwise.
+     */
     public function withSasl(
         string $username,
         string $password,
@@ -223,7 +229,13 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Add a middleware the messages go through before being handled. Middlewares run in the order they are added,
+     * and receive the message and the next step of the pipeline. Middleware classes given by name are resolved
+     * from the service container.
+     *
+     * @param  Middleware|callable(ConsumerMessage, callable): mixed|class-string<Middleware>  $middleware
+     */
     public function withMiddleware(Middleware|callable|string $middleware): self
     {
         $this->middlewares[] = $middleware;
@@ -231,7 +243,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** {@inheritDoc} */
+    /** Enable or disable consumer auto commit option. */
     public function withAutoCommit(bool $autoCommit = true): self
     {
         $this->autoCommit = $autoCommit;
@@ -239,6 +251,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
+    /** Enables manual commit. */
     public function withManualCommit(): self
     {
         $this->autoCommit = false;
@@ -246,7 +259,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** {@inheritDoc} */
+    /** Set the partition assignment (rebalance) strategy for consumer groups. */
     public function withRebalanceStrategy(RebalanceStrategy|string $strategy): self
     {
         if (is_string($strategy)) {
@@ -264,7 +277,7 @@ class Builder implements ConsumerBuilderContract
         return $this->withOption('partition.assignment.strategy', $strategy->value);
     }
 
-    /** {@inheritDoc} */
+    /** Set the configuration options. */
     public function withOptions(array $options): self
     {
         foreach ($options as $name => $value) {
@@ -274,7 +287,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** {@inheritDoc} */
+    /** Set a specific configuration option. */
     public function withOption(string $name, mixed $value): self
     {
         $this->options[$name] = $value;
@@ -282,7 +295,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** {@inheritDoc} */
+    /** Stop consuming once there are no messages left in the assigned partitions. */
     public function stopWhenEmpty(bool $stopWhenEmpty = true): self
     {
         $this->stopWhenEmpty = $stopWhenEmpty;
@@ -290,7 +303,10 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Skip messages that fail when there is no dead letter queue, committing their offsets.
+     * By default, the consumer stops without committing the offset of the failed message.
+     */
     public function skipFailedMessages(bool $skipFailedMessages = true): self
     {
         $this->skipFailedMessages = $skipFailedMessages;
@@ -298,7 +314,13 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Call the handler of a failed message again, up to the given number of times, before handling it as failed.
+     * The backoff is the time to wait before each retry, in milliseconds. An array sets the time to wait before
+     * each retry in order, like [1000, 5000, 10000], and its last value is used for the remaining retries.
+     *
+     * @param  int|list<int>  $backoffInMs
+     */
     public function retryFailedMessages(int $times, int|array $backoffInMs = 0): self
     {
         $backoffs = is_array($backoffInMs) ? $backoffInMs : [$backoffInMs];
@@ -313,6 +335,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
+    /** Defines a callback that runs before consuming the message. */
     public function beforeConsuming(callable $callable): self
     {
         $this->beforeConsumingCallbacks[] = $callable(...);
@@ -320,6 +343,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
+    /** Defines a callback that runs after consuming the message. */
     public function afterConsuming(callable $callable): self
     {
         $this->afterConsumingCallbacks[] = $callable(...);
@@ -327,6 +351,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
+    /** Assigns a set of partitions this consumer should consume from. */
     public function assignPartitions(array $partitionAssignment): self
     {
         foreach ($partitionAssignment as $assigment) {
@@ -340,6 +365,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
+    /** Defines a callback to be executed when consumer stops consuming messages. */
     public function onStopConsuming(callable $onStopConsuming): self
     {
         $this->onStopConsuming = $onStopConsuming(...);
@@ -347,7 +373,10 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Defines a callback to be executed when a message is handled as failed, once its retries are used, before
+     * it is sent to the dead letter queue, skipped, or stops the consumer. It receives the message and the exception.
+     */
     public function onMessageFailed(callable $callback): self
     {
         $this->onMessageFailed = $callback(...);
@@ -355,7 +384,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** {@inheritDoc} */
+    /** Set a callback that receives the partitions assigned to this consumer, on every rebalance. */
     public function onPartitionsAssigned(callable $callback): self
     {
         $this->onPartitionsAssigned = $callback(...);
@@ -363,7 +392,10 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Set a callback that receives the partitions assigned to this consumer, on every rebalance,
+     * and returns them with the offsets the consumer should start reading from.
+     */
     public function resolveOffsetsUsing(callable $resolver): self
     {
         $this->offsetResolver = $resolver(...);
@@ -371,7 +403,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** {@inheritDoc} */
+    /** Build the Kafka consumer. */
     public function build(): ConsumerContract
     {
         $config = new Config(

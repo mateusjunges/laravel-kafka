@@ -7,10 +7,9 @@ use Junges\Kafka\Config\ConnectionConfig;
 use Junges\Kafka\Consumers\Builder;
 use Junges\Kafka\Consumers\MessageHandler;
 use Junges\Kafka\Contracts\Consumer as ConsumerContract;
-use Junges\Kafka\Contracts\ConsumerBuilder as ConsumerBuilderContract;
 use Override;
 
-class BuilderFake extends Builder implements ConsumerBuilderContract
+class BuilderFake extends Builder
 {
     /** @var \Junges\Kafka\Contracts\ConsumerMessage[] */
     private array $messages = [];

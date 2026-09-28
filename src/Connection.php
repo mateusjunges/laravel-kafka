@@ -7,7 +7,6 @@ use Junges\Kafka\Concerns\InteractsWithConfigCallbacks;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\ConnectionConfig;
 use Junges\Kafka\Consumers\Builder as ConsumerBuilder;
-use Junges\Kafka\Contracts\InteractsWithConfigCallbacks as InteractsWithConfigCallbacksContract;
 use Junges\Kafka\Contracts\MessageSerializer;
 use Junges\Kafka\Contracts\Middleware;
 use Junges\Kafka\Contracts\Producer as ProducerContract;
@@ -19,7 +18,7 @@ use Junges\Kafka\Producers\Producer;
 use LogicException;
 use Throwable;
 
-class Connection implements InteractsWithConfigCallbacksContract
+class Connection
 {
     use InteractsWithConfigCallbacks {
         setConfigCallback as storeConfigCallback;
