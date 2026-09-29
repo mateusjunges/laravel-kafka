@@ -548,7 +548,10 @@ class Consumer implements MessageConsumer
         }
 
         if ($this->config->shouldStopAfterLastMessage() && in_array($message->err, self::CONSUME_STOP_EOF_ERRORS, true)) {
-            if ($message->err !== RD_KAFKA_RESP_ERR__PARTITION_EOF || $this->allAssignedPartitionsReachedEof($message)) {
+            if ($message->err === RD_KAFKA_RESP_ERR__PARTITION_EOF
+                ? $this->allAssignedPartitionsReachedEof($message)
+                : $this->hasAssignedPartitions()
+            ) {
                 $this->stopConsuming();
             }
         }
@@ -572,6 +575,16 @@ class Consumer implements MessageConsumer
         return collect($this->consumer->getAssignment())->every(
             fn (TopicPartition $partition) => isset($this->partitionsAtEof[$this->partitionKey($partition->getTopic(), $partition->getPartition())])
         );
+    }
+
+    /**
+     * Joining a consumer group and getting partitions assigned may take longer than the
+     * consumer timeout, so a timeout received before that only means the consumer is
+     * not reading from any partition yet, and not that there are no messages left.
+     */
+    private function hasAssignedPartitions(): bool
+    {
+        return $this->consumer->getAssignment() !== [];
     }
 
     private function partitionKey(string $topic, int $partition): string

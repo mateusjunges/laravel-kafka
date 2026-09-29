@@ -33,6 +33,8 @@ $consumer = \Junges\Kafka\Facades\Kafka::consumer(['topic'])
     ->build();
 ```
 
+Timeouts received before the consumer has any partition assigned are ignored, because joining a consumer group may take longer than the consumer timeout. This means a consumer that never gets a partition assigned (for example, when the group has more consumers than the topic has partitions) keeps waiting for one. If that can happen in your setup, use `withMaxTime` to limit how long the consumer runs.
+
 ```+parse
 <x-sponsors.request-sponsor/>
 ```
