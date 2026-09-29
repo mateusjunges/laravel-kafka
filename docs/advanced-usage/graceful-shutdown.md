@@ -11,7 +11,7 @@ Consumers listen to the `SIGTERM`, `SIGINT` and `SIGQUIT` signals. When one of t
 <x-sponsors.request-sponsor/>
 ```
 
-If the process running the consumer had already registered a handler for one of these signals, for example a Laravel queue worker running a consumer inside a queued job, that handler is still invoked, and the original handlers are restored once `consume()` returns. A queue worker therefore keeps honouring the graceful shutdown of `queue:work` after it has run a consumer.
+If the process running the consumer had already registered a handler for one of these signals, for example a Laravel queue worker running a consumer inside a queued job, that handler is still invoked, once the consumer has closed and the original handlers are restored, right before `consume()` returns. A queue worker therefore keeps honouring the graceful shutdown of `queue:work` after it has run a consumer, and a handler that exits the process, like the one of a Symfony console application dispatching signal events, only exits once the offsets are committed and the consumer left its group.
 
 When a signal arrives while a failed message is being [retried](../consuming-messages/handling-failed-messages.md), the remaining retries are skipped and the message is handled as failed right away.
 

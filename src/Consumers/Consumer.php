@@ -106,6 +106,9 @@ class Consumer implements ConsumerContract
     /** Whether the host process had async signals enabled, captured before consuming and restored afterwards. */
     private bool $previousAsyncSignals = false;
 
+    /** @var array<int, mixed> The signals received while consuming, with their info, passed to the host process handlers once the consumer is closed. */
+    private array $receivedSignals = [];
+
     /** @var array<string, true> Partitions that have reached EOF, keyed by "topic-partition". */
     private array $partitionsAtEof = [];
 
@@ -202,6 +205,8 @@ class Consumer implements ConsumerContract
         } finally {
             $this->closeConsumer();
 
+            $previousSignalHandlers = $this->previousSignalHandlers;
+
             if ($this->supportAsyncSignals()) {
                 $this->restoreSignalHandlers();
             }
@@ -211,6 +216,8 @@ class Consumer implements ConsumerContract
                 $exception instanceof Throwable ? StopReason::Failed : $this->stopReason,
                 $exception,
             ));
+
+            $this->forwardReceivedSignals($previousSignalHandlers);
         }
     }
 
@@ -518,23 +525,40 @@ class Consumer implements ConsumerContract
     /**
      * Stop consuming on termination signals without taking the signals away from the host
      * process: a handler that was registered before (e.g. by a Laravel queue worker running
-     * this consumer inside a job) is still invoked, and it is restored once consuming ends.
+     * this consumer inside a job) is restored once consuming ends, and receives the signal
+     * then. It is not invoked right away, as some handlers exit, which would kill the
+     * consumer in the middle of a message, without committing its offsets or leaving
+     * the consumer group.
      */
     private function listenForSignals(): void
     {
         $this->previousAsyncSignals = pcntl_async_signals(true);
+        $this->receivedSignals = [];
 
         foreach ([SIGQUIT, SIGTERM, SIGINT] as $signal) {
-            $previousHandler = pcntl_signal_get_handler($signal);
-            $this->previousSignalHandlers[$signal] = $previousHandler;
+            $this->previousSignalHandlers[$signal] = pcntl_signal_get_handler($signal);
 
-            pcntl_signal($signal, function (int $signal, mixed $signalInfo = null) use ($previousHandler): void {
+            pcntl_signal($signal, function (int $signal, mixed $signalInfo = null): void {
                 $this->requestStop(StopReason::Signal);
-
-                if (is_callable($previousHandler)) {
-                    $previousHandler($signal, $signalInfo);
-                }
+                $this->receivedSignals[$signal] ??= $signalInfo;
             });
+        }
+    }
+
+    /**
+     * Pass the signals received while consuming to the handlers the host process had registered for them.
+     *
+     * @param  array<int, callable|int>  $handlers
+     */
+    private function forwardReceivedSignals(array $handlers): void
+    {
+        $signals = $this->receivedSignals;
+        $this->receivedSignals = [];
+
+        foreach ($signals as $signal => $signalInfo) {
+            if (is_callable($handlers[$signal] ?? null)) {
+                $handlers[$signal]($signal, $signalInfo);
+            }
         }
     }
 
