@@ -2,102 +2,143 @@
 
 namespace Junges\Kafka;
 
+use Closure;
 use Illuminate\Support\Traits\Macroable;
+use InvalidArgumentException;
+use Junges\Kafka\Config\ConnectionConfig;
 use Junges\Kafka\Consumers\Builder as ConsumerBuilder;
-use Junges\Kafka\Contracts\ConsumerMessage;
 use Junges\Kafka\Contracts\Manager;
-use Junges\Kafka\Contracts\MessageProducer;
-use Junges\Kafka\Facades\Kafka;
-use Junges\Kafka\Producers\Builder as ProducerBuilder;
+use Junges\Kafka\Contracts\Middleware;
+use Junges\Kafka\Producers\PendingMessage;
 
 class Factory implements Manager
 {
     use Macroable;
 
-    private bool $shouldFake = false;
+    /** @var array<string, Connection> */
+    protected array $connections = [];
 
-    /** @var array<int, ConsumerMessage> This array is passed to the underlying consumer when faking macroed consumers. */
-    private array $fakeMessages = [];
+    /** @var list<Middleware|callable|class-string<Middleware>> */
+    protected array $consumerMiddleware = [];
 
-    private ?ProducerBuilder $builder = null;
+    /** @var list<callable(ConsumerBuilder): mixed> */
+    protected array $consumerConfigurationCallbacks = [];
 
-    /** Creates a new ProducerBuilder instance, setting brokers and topic. */
-    public function publish(?string $broker = null): MessageProducer
+    /** {@inheritDoc} */
+    public function connection(?string $name = null): Connection
     {
-        if ($this->shouldFake) {
-            return Kafka::fake()->publish($broker);
-        }
+        $name ??= $this->getDefaultConnection();
 
-        return new ProducerBuilder(
-            broker: $broker ?? config('kafka.brokers')
-        );
+        return $this->connections[$name] ??= $this->makeConnection($this->configuration($name));
     }
 
-    /** Returns a fresh factory instance. */
-    public function fresh(): self
+    /** {@inheritDoc} */
+    public function publish(?string $topic = null): PendingMessage
     {
-        return new self;
+        return $this->connection()->publish($topic);
+    }
+
+    /** {@inheritDoc} */
+    public function publishSync(?string $topic = null): PendingMessage
+    {
+        return $this->connection()->publishSync($topic);
+    }
+
+    /** {@inheritDoc} */
+    public function consumer(array $topics = [], ?string $groupId = null): ConsumerBuilder
+    {
+        return $this->connection()->consumer($topics, $groupId);
+    }
+
+    /** {@inheritDoc} */
+    public function consumerFor(KafkaConsumer|string $consumer): ConsumerBuilder
+    {
+        if (is_string($consumer)) {
+            if (! is_subclass_of($consumer, KafkaConsumer::class)) {
+                throw new InvalidArgumentException("The consumer [{$consumer}] must extend [".KafkaConsumer::class.'].');
+            }
+
+            $consumer = app($consumer);
+        }
+
+        return $consumer->toBuilder($this);
+    }
+
+    /** {@inheritDoc} */
+    public function consumerMiddleware(array|Middleware|Closure|string $middleware): void
+    {
+        array_push($this->consumerMiddleware, ...(is_array($middleware) ? $middleware : [$middleware]));
     }
 
     /**
-     * Creates a new ProducerBuilder instance, optionally setting the brokers.
-     * The producer will be flushed only when the application terminates,
-     * and doing SEND does not mean that the message was flushed!
+     * Get the middlewares every consumer goes through.
+     *
+     * @return list<Middleware|callable|class-string<Middleware>>
      */
-    public function asyncPublish(?string $broker = null): MessageProducer
+    public function getConsumerMiddleware(): array
     {
-        if ($this->shouldFake) {
-            return Kafka::fake()->publish($broker);
+        return $this->consumerMiddleware;
+    }
+
+    /** {@inheritDoc} */
+    public function configureConsumersUsing(callable $callback): void
+    {
+        $this->consumerConfigurationCallbacks[] = $callback;
+    }
+
+    /**
+     * Get the callbacks that configure every consumer.
+     *
+     * @return list<callable(ConsumerBuilder): mixed>
+     */
+    public function getConsumerConfigurationCallbacks(): array
+    {
+        return $this->consumerConfigurationCallbacks;
+    }
+
+    /** {@inheritDoc} */
+    public function flush(): void
+    {
+        foreach ($this->connections as $connection) {
+            $connection->flush();
+        }
+    }
+
+    /** {@inheritDoc} */
+    public function getDefaultConnection(): string
+    {
+        return config('kafka.default', 'default');
+    }
+
+    protected function configuration(string $name): ConnectionConfig
+    {
+        $config = config("kafka.connections.{$name}");
+
+        if (! is_array($config)) {
+            throw new InvalidArgumentException("The Kafka connection [{$name}] is not configured.");
         }
 
-        if ($this->builder instanceof ProducerBuilder) {
-            return $this->builder;
+        return ConnectionConfig::fromArray($name, $config);
+    }
+
+    protected function makeConnection(ConnectionConfig $config): Connection
+    {
+        return new Connection($config, $this->configureConsumer(...));
+    }
+
+    /**
+     * Apply the global middlewares and configuration callbacks to a consumer. They are applied when each
+     * consumer is created, so the ones registered after a connection is resolved are applied as well. The
+     * middlewares are added first, so they run before the middlewares of each consumer.
+     */
+    protected function configureConsumer(ConsumerBuilder $builder): void
+    {
+        foreach ($this->consumerMiddleware as $middleware) {
+            $builder->withMiddleware($middleware);
         }
 
-        $this->builder = new ProducerBuilder(
-            broker: $broker ?? config('kafka.brokers'),
-            asyncProducer: true
-        );
-
-        return $this->builder;
-    }
-
-    /** This is an alias for the asyncPublish method. */
-    public function publishAsync(?string $broker = null): MessageProducer
-    {
-        return $this->asyncPublish($broker);
-    }
-
-    /** Return a ConsumerBuilder instance.  */
-    public function consumer(array $topics = [], ?string $groupId = null, ?string $brokers = null): ConsumerBuilder
-    {
-        if ($this->shouldFake) {
-            return Kafka::fake()->consumer(
-                $topics,
-                $groupId,
-                $brokers
-            )->setMessages($this->fakeMessages);
+        foreach ($this->consumerConfigurationCallbacks as $callback) {
+            $callback($builder);
         }
-
-        return ConsumerBuilder::create(
-            brokers: $brokers ?? config('kafka.brokers'),
-            topics: $topics,
-            groupId: $groupId ?? config('kafka.consumer_group_id')
-        );
-    }
-
-    public function shouldFake(): self
-    {
-        $this->shouldFake = true;
-
-        return $this;
-    }
-
-    /** @param array<int, ConsumerMessage> $messages */
-    public function shouldReceiveMessages(array $messages): self
-    {
-        $this->fakeMessages = $messages;
-
-        return $this;
     }
 }

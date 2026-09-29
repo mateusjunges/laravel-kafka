@@ -12,45 +12,34 @@ class Committer implements CommitterContract
 {
     public function __construct(private readonly KafkaConsumer $consumer) {}
 
-    /** @throws \RdKafka\Exception  */
-    public function commitMessage(Message $message, bool $success): void
+    /** @throws \RdKafka\Exception */
+    public function commit(ConsumerMessage|Message|array|null $messageOrOffsets = null): void
     {
-        $this->consumer->commit($message);
+        $this->consumer->commit($this->toOffsets($messageOrOffsets));
     }
 
     /** @throws \RdKafka\Exception */
-    public function commitDlq(Message $message): void
+    public function commitAsync(ConsumerMessage|Message|array|null $messageOrOffsets = null): void
     {
-        $this->consumer->commit($message);
+        $this->consumer->commitAsync($this->toOffsets($messageOrOffsets));
     }
 
-    /** @throws \RdKafka\Exception */
-    public function commit(mixed $messageOrOffsets = null): void
+    /**
+     * librdkafka commits raw messages and topic partitions. A consumed message is committed as
+     * the offset right after it, the next message the consumer group should read.
+     *
+     * @return Message|list<TopicPartition>|null
+     */
+    private function toOffsets(ConsumerMessage|Message|array|null $messageOrOffsets): Message|array|null
     {
-        if ($messageOrOffsets instanceof ConsumerMessage) {
-            $topicPartition = new TopicPartition(
-                $messageOrOffsets->getTopicName(),
-                $messageOrOffsets->getPartition(),
-                $messageOrOffsets->getOffset() + 1
-            );
-            $messageOrOffsets = [$topicPartition];
+        if (! $messageOrOffsets instanceof ConsumerMessage) {
+            return $messageOrOffsets;
         }
 
-        $this->consumer->commit($messageOrOffsets);
-    }
-
-    /** @throws \RdKafka\Exception */
-    public function commitAsync(mixed $messageOrOffsets = null): void
-    {
-        if ($messageOrOffsets instanceof ConsumerMessage) {
-            $topicPartition = new TopicPartition(
-                $messageOrOffsets->getTopicName(),
-                $messageOrOffsets->getPartition(),
-                $messageOrOffsets->getOffset() + 1
-            );
-            $messageOrOffsets = [$topicPartition];
-        }
-
-        $this->consumer->commitAsync($messageOrOffsets);
+        return [new TopicPartition(
+            $messageOrOffsets->getTopicName(),
+            $messageOrOffsets->getPartition(),
+            $messageOrOffsets->getOffset() + 1,
+        )];
     }
 }

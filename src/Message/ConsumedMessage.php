@@ -8,21 +8,16 @@ use Junges\Kafka\Contracts\ConsumerMessage;
 class ConsumedMessage extends AbstractMessage implements ConsumerMessage
 {
     public function __construct(
-        protected ?string $topicName,
-        protected ?int $partition,
-        protected ?array $headers,
-        protected mixed $body,
-        protected mixed $key,
-        protected ?int $offset,
-        protected ?int $timestamp,
+        ?string $topicName = null,
+        ?int $partition = 0,
+        ?array $headers = [],
+        mixed $body = null,
+        mixed $key = null,
+        protected ?int $offset = 0,
+        protected ?int $timestamp = null,
+        protected int $attempts = 1,
     ) {
-        parent::__construct(
-            $this->topicName,
-            $this->partition,
-            $this->headers,
-            $this->body,
-            $this->key
-        );
+        parent::__construct($topicName, $partition, $headers, $body, $key);
     }
 
     public function getOffset(): ?int
@@ -33,5 +28,18 @@ class ConsumedMessage extends AbstractMessage implements ConsumerMessage
     public function getTimestamp(): ?int
     {
         return $this->timestamp;
+    }
+
+    public function getAttempts(): int
+    {
+        return $this->attempts;
+    }
+
+    public function withAttempts(int $attempts): static
+    {
+        $message = clone $this;
+        $message->attempts = $attempts;
+
+        return $message;
     }
 }

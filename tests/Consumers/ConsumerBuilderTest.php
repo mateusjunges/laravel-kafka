@@ -6,8 +6,11 @@ use Closure;
 use InvalidArgumentException;
 use Junges\Kafka\Commit\VoidCommitter;
 use Junges\Kafka\Config\Config;
+use Junges\Kafka\Config\ConnectionConfig;
 use Junges\Kafka\Config\RebalanceStrategy;
 use Junges\Kafka\Config\Sasl;
+use Junges\Kafka\Config\SaslMechanism;
+use Junges\Kafka\Config\SecurityProtocol;
 use Junges\Kafka\Consumers\Builder;
 use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Contracts\Committer;
@@ -16,16 +19,20 @@ use Junges\Kafka\Exceptions\ConsumerException;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
 use Junges\Kafka\Tests\Fakes\FakeConsumer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
+use LogicException;
+use Mockery as m;
 use PHPUnit\Framework\Attributes\Test;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
+use RdKafka\TopicPartition;
+use ReflectionMethod;
 
 final class ConsumerBuilderTest extends LaravelKafkaTestCase
 {
     #[Test]
     public function it_returns_a_consumer_instance(): void
     {
-        $consumer = Builder::create('broker')->build();
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->build();
 
         $this->assertInstanceOf(Consumer::class, $consumer);
     }
@@ -33,7 +40,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_subscribe_to_a_topic(): void
     {
-        $consumer = Builder::create('broker');
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'));
 
         $consumer->subscribe('foo');
 
@@ -45,7 +52,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_does_not_subscribe_to_a_topic_twice(): void
     {
-        $consumer = Builder::create('broker');
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'));
 
         $consumer->subscribe('foo', 'foo');
 
@@ -57,7 +64,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function i_can_change_deserializers_on_the_fly(): void
     {
-        $consumer = Builder::create('broker');
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'));
 
         $consumer->usingDeserializer(new JsonDeserializer);
 
@@ -69,7 +76,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_subscribe_to_more_than_one_topics_at_once(): void
     {
-        $consumer = Builder::create('broker');
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'));
 
         $consumer->subscribe('foo', 'bar');
 
@@ -77,7 +84,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
 
         $this->assertEquals(['foo', 'bar'], $topics);
 
-        $consumer = Builder::create('broker');
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'));
 
         $consumer->subscribe(['foo', 'bar']);
 
@@ -89,7 +96,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_set_consumer_group_id(): void
     {
-        $consumer = Builder::create('broker')->withConsumerGroupId('foo');
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->withGroupId('foo');
 
         $groupId = $this->getPropertyWithReflection('groupId', $consumer);
 
@@ -101,24 +108,13 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        Builder::create('broker', [1234], 'group');
-    }
-
-    #[Test]
-    public function it_can_save_the_commit_batch_size(): void
-    {
-        $consumer = Builder::create('broker')
-            ->withCommitBatchSize(1);
-
-        $commitValue = $this->getPropertyWithReflection('commit', $consumer);
-
-        $this->assertEquals(1, $commitValue);
+        Builder::create(new ConnectionConfig('default', 'broker'), [1234], 'group');
     }
 
     #[Test]
     public function it_uses_the_correct_handler(): void
     {
-        $consumer = Builder::create('broker')->withHandler(new FakeConsumer);
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->withHandler(new FakeConsumer);
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
 
@@ -130,7 +126,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_set_max_messages(): void
     {
-        $consumer = Builder::create('broker')->withMaxMessages(2);
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->stopAfterMessages(2);
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
 
@@ -140,45 +136,133 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     }
 
     #[Test]
-    public function it_can_set_max_commit_retries(): void
-    {
-        $consumer = Builder::create('broker')->withMaxCommitRetries(2);
-
-        $this->assertInstanceOf(Consumer::class, $consumer->build());
-
-        $maxCommitRetries = $this->getPropertyWithReflection('maxCommitRetries', $consumer);
-
-        $this->assertEquals(2, $maxCommitRetries);
-    }
-
-    #[Test]
     public function it_can_set_the_dead_letter_queue(): void
     {
-        $consumer = Builder::create('broker')->subscribe('test')->withDlq('test-topic-dlq');
+        $builder = Builder::create(new ConnectionConfig('default', 'broker'))->subscribe('test')->withDlq('test-topic-dlq');
 
-        $this->assertInstanceOf(Consumer::class, $consumer->build());
-
-        $dlq = $this->getPropertyWithReflection('dlq', $consumer);
-
-        $this->assertEquals('test-topic-dlq', $dlq);
+        $this->assertSame('test-topic-dlq', $this->builtConfig($builder)->getDlq());
     }
 
     #[Test]
-    public function it_uses_dlq_suffix_if_dlq_is_null(): void
+    public function it_names_the_dead_letter_queue_after_the_first_topic_when_no_name_is_given(): void
     {
-        $consumer = Builder::create('broker', ['foo'])->withDlq();
+        $builder = Builder::create(new ConnectionConfig('default', 'broker'), ['foo'])->withDlq();
 
-        $this->assertInstanceOf(Consumer::class, $consumer->build());
+        $this->assertSame('foo-dlq', $this->builtConfig($builder)->getDlq());
+    }
 
-        $dlq = $this->getPropertyWithReflection('dlq', $consumer);
+    #[Test]
+    public function it_names_the_dead_letter_queue_after_topics_subscribed_after_calling_with_dlq(): void
+    {
+        $builder = Builder::create(new ConnectionConfig('default', 'broker'))->withDlq()->subscribe('orders');
 
-        $this->assertEquals('foo-dlq', $dlq);
+        $this->assertSame('orders-dlq', $this->builtConfig($builder)->getDlq());
+    }
+
+    #[Test]
+    public function it_names_the_dead_letter_queue_after_the_assigned_partitions_when_not_subscribing(): void
+    {
+        $builder = Builder::create(new ConnectionConfig('default', 'broker'))
+            ->withDlq()
+            ->assignPartitions([new TopicPartition('payments', 0)]);
+
+        $this->assertSame('payments-dlq', $this->builtConfig($builder)->getDlq());
+    }
+
+    #[Test]
+    public function it_cant_build_a_consumer_with_an_unnamed_dlq_without_any_topics(): void
+    {
+        $builder = Builder::create(new ConnectionConfig('default', 'broker'))->withDlq();
+
+        $this->expectException(ConsumerException::class);
+
+        $builder->build();
+    }
+
+    #[Test]
+    public function it_combines_the_partitions_assigned_callback_and_the_offset_resolver_in_any_order(): void
+    {
+        $partitions = [new TopicPartition('test-topic', 0)];
+        $withOffsets = [new TopicPartition('test-topic', 0, 42)];
+
+        foreach ([true, false] as $offsetsFirst) {
+            $notified = null;
+
+            $builder = Builder::create(new ConnectionConfig('default', 'broker'), ['test-topic'], 'group');
+            $onAssign = function (array $assigned) use (&$notified) {
+                $notified = $assigned;
+            };
+            $offsetResolver = fn (array $assigned) => $withOffsets;
+
+            if ($offsetsFirst) {
+                $builder->resolveOffsetsUsing($offsetResolver)->onPartitionsAssigned($onAssign);
+            } else {
+                $builder->onPartitionsAssigned($onAssign)->resolveOffsetsUsing($offsetResolver);
+            }
+
+            $consumer = $builder->build();
+
+            $kafkaConsumer = m::mock(KafkaConsumer::class);
+            $kafkaConsumer->shouldReceive('assign')->once()->with($withOffsets);
+            $kafkaConsumer->shouldReceive('assign')->once()->with(null);
+
+            $this->rebalance($consumer, $kafkaConsumer, RD_KAFKA_RESP_ERR__ASSIGN_PARTITIONS, $partitions);
+            $this->rebalance($consumer, $kafkaConsumer, RD_KAFKA_RESP_ERR__REVOKE_PARTITIONS, $partitions);
+
+            $this->assertSame($withOffsets, $notified);
+        }
+    }
+
+    #[Test]
+    public function it_assigns_partitions_incrementally_with_cooperative_rebalancing(): void
+    {
+        $partitions = [new TopicPartition('test-topic', 0)];
+        $notified = null;
+
+        $builder = Builder::create(new ConnectionConfig('default', 'broker'), ['test-topic'])
+            ->withRebalanceStrategy(RebalanceStrategy::COOPERATIVE_STICKY)
+            ->onPartitionsAssigned(function (array $assigned) use (&$notified) {
+                $notified = $assigned;
+            });
+
+        $consumer = $builder->build();
+
+        $kafkaConsumer = m::mock(KafkaConsumer::class);
+        $kafkaConsumer->shouldReceive('incrementalAssign')->once()->with($partitions);
+        $kafkaConsumer->shouldReceive('incrementalUnassign')->once()->with($partitions);
+        $kafkaConsumer->shouldNotReceive('assign');
+
+        $this->rebalance($consumer, $kafkaConsumer, RD_KAFKA_RESP_ERR__ASSIGN_PARTITIONS, $partitions);
+        $this->rebalance($consumer, $kafkaConsumer, RD_KAFKA_RESP_ERR__REVOKE_PARTITIONS, $partitions);
+
+        $this->assertSame($partitions, $notified);
+    }
+
+    #[Test]
+    public function it_does_not_combine_a_rebalance_callback_with_the_partitions_assigned_callback(): void
+    {
+        $builder = Builder::create(new ConnectionConfig('default', 'broker'), ['test-topic'])
+            ->onPartitionsAssigned(fn () => null)
+            ->onRebalance(fn () => null);
+
+        $this->expectException(LogicException::class);
+
+        $builder->build();
+    }
+
+    #[Test]
+    public function it_keeps_a_rebalance_callback_when_no_partitions_assigned_callback_is_set(): void
+    {
+        $builder = Builder::create(new ConnectionConfig('default', 'broker'), ['test-topic'])
+            ->onRebalance($callback = fn () => null);
+
+        $this->assertSame($callback, $this->builtConfig($builder)->getConfigCallbacks()['setRebalanceCb']);
     }
 
     #[Test]
     public function it_can_set_sasl(): void
     {
-        $consumer = Builder::create('broker')
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))
             ->withSasl('username', 'password', 'mechanisms');
 
         $expectedSaslConfig = new Sasl('username', 'password', 'mechanisms');
@@ -193,7 +277,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_add_middlewares_to_the_handler(): void
     {
-        $consumer = Builder::create('broker', ['foo'], 'group')
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'), ['foo'], 'group')
             ->withMiddleware(function ($message, callable $next) {
                 $next($message);
             });
@@ -210,7 +294,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_add_invokable_classes_as_middleware(): void
     {
-        $consumer = Builder::create('broker', ['foo'], 'group')
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'), ['foo'], 'group')
             ->withMiddleware(new TestMiddleware);
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
@@ -223,22 +307,9 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     }
 
     #[Test]
-    public function it_can_set_security_protocol(): void
-    {
-        $consumer = Builder::create('broker', ['foo'], 'group')
-            ->withSecurityProtocol('security');
-
-        $this->assertInstanceOf(Consumer::class, $consumer->build());
-
-        $securityProtocol = $this->getPropertyWithReflection('securityProtocol', $consumer);
-
-        $this->assertEquals('security', $securityProtocol);
-    }
-
-    #[Test]
     public function it_can_set_security_protocol_via_sasl_config(): void
     {
-        $consumer = Builder::create('broker', ['foo'], 'group')
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'), ['foo'], 'group')
             ->withSasl(
                 'username',
                 'password',
@@ -256,9 +327,64 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     }
 
     #[Test]
+    public function it_accepts_enums_for_the_sasl_mechanism_and_the_security_protocol(): void
+    {
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'), ['foo'], 'group')
+            ->withSasl(
+                username: 'username',
+                password: 'password',
+                mechanism: SaslMechanism::SCRAM_SHA_512,
+                securityProtocol: SecurityProtocol::SASL_SSL,
+            );
+
+        $options = $this->getPropertyWithReflection('config', $consumer->build())->getConsumerOptions();
+
+        $this->assertSame('SCRAM-SHA-512', $options['sasl.mechanisms']);
+        $this->assertSame('SASL_SSL', $options['security.protocol']);
+        $this->assertSame('username', $options['sasl.username']);
+    }
+
+    #[Test]
+    public function sasl_keeps_the_encryption_of_the_connection_by_default(): void
+    {
+        $protocols = [
+            'PLAINTEXT' => 'SASL_PLAINTEXT',
+            'SASL_PLAINTEXT' => 'SASL_PLAINTEXT',
+            'SSL' => 'SASL_SSL',
+            'SASL_SSL' => 'SASL_SSL',
+        ];
+
+        foreach ($protocols as $connectionProtocol => $expected) {
+            $consumer = Builder::create(new ConnectionConfig('default', 'broker', securityProtocol: $connectionProtocol), ['foo'])
+                ->withSasl('username', 'password', SaslMechanism::PLAIN);
+
+            $options = $this->getPropertyWithReflection('config', $consumer->build())->getConsumerOptions();
+
+            $this->assertSame($expected, $options['security.protocol'], "Connection using {$connectionProtocol}");
+        }
+    }
+
+    #[Test]
+    public function the_dead_letter_queue_uses_the_producer_options_of_the_connection_without_transactions(): void
+    {
+        $connection = new ConnectionConfig(
+            'default',
+            'broker',
+            producerOptions: ['linger.ms' => 5, 'transactional.id' => 'app'],
+            flushRetries: 3,
+        );
+
+        $config = $this->builtConfig(Builder::create($connection, ['orders'])->withDlq());
+
+        $this->assertSame('5', $config->getProducerOptions()['linger.ms']);
+        $this->assertArrayNotHasKey('transactional.id', $config->getProducerOptions());
+        $this->assertSame(3, $config->flushRetries);
+    }
+
+    #[Test]
     public function it_can_set_auto_commit(): void
     {
-        $consumer = Builder::create('broker')->withAutoCommit();
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->withAutoCommit();
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
 
@@ -266,7 +392,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
 
         $this->assertTrue($autoCommit);
 
-        $consumer = Builder::create('broker')->withAutoCommit(false);
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->withAutoCommit(false);
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
 
@@ -278,41 +404,41 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_set_stop_after_last_message(): void
     {
-        $consumer = Builder::create('broker')->stopAfterLastMessage();
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->stopWhenEmpty();
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
 
-        $autoCommit = $this->getPropertyWithReflection('stopAfterLastMessage', $consumer);
+        $autoCommit = $this->getPropertyWithReflection('stopWhenEmpty', $consumer);
 
         $this->assertTrue($autoCommit);
 
-        $consumer = Builder::create('broker')->stopAfterLastMessage(false);
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->stopWhenEmpty(false);
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
 
-        $autoCommit = $this->getPropertyWithReflection('stopAfterLastMessage', $consumer);
+        $autoCommit = $this->getPropertyWithReflection('stopWhenEmpty', $consumer);
 
         $this->assertFalse($autoCommit);
     }
 
     #[Test]
-    public function it_can_set_stop_on_failure(): void
+    public function it_can_skip_failed_messages(): void
     {
-        $consumer = Builder::create('broker')->stopOnFailure();
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->skipFailedMessages();
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
-        $this->assertTrue($this->getPropertyWithReflection('stopOnFailure', $consumer));
+        $this->assertTrue($this->getPropertyWithReflection('skipFailedMessages', $consumer));
 
-        $consumer = Builder::create('broker')->stopOnFailure(false);
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->skipFailedMessages(false);
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
-        $this->assertFalse($this->getPropertyWithReflection('stopOnFailure', $consumer));
+        $this->assertFalse($this->getPropertyWithReflection('skipFailedMessages', $consumer));
     }
 
     #[Test]
     public function it_can_set_failed_message_retries(): void
     {
-        $consumer = Builder::create('broker')->retryFailedMessages(3, backoffInMs: 500);
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->retryFailedMessages(3, backoffInMs: 500);
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
         $this->assertSame(3, $this->getPropertyWithReflection('failedMessageRetries', $consumer));
@@ -324,13 +450,13 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        Builder::create('broker')->retryFailedMessages(-1);
+        Builder::create(new ConnectionConfig('default', 'broker'))->retryFailedMessages(-1);
     }
 
     #[Test]
     public function it_can_set_consumer_options(): void
     {
-        $consumer = Builder::create('broker')
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))
             ->withOptions([
                 'auto.offset.reset' => 'latest',
                 'enable.auto.commit' => 'false',
@@ -350,7 +476,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_set_rebalance_strategy_with_enum(): void
     {
-        $consumer = Builder::create('broker')
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))
             ->withRebalanceStrategy(RebalanceStrategy::ROUND_ROBIN);
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
@@ -365,7 +491,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_set_rebalance_strategy_with_string(): void
     {
-        $consumer = Builder::create('broker')
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))
             ->withRebalanceStrategy('sticky');
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
@@ -383,14 +509,14 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid rebalance strategy [invalid]. Valid strategies are: range, roundrobin, sticky, cooperative-sticky');
 
-        Builder::create('broker')
+        Builder::create(new ConnectionConfig('default', 'broker'))
             ->withRebalanceStrategy('invalid');
     }
 
     #[Test]
     public function it_can_specify_brokers_using_with_brokers(): void
     {
-        $consumer = Builder::create('broker')->withBrokers('my-test-broker');
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->withBrokers('my-test-broker');
 
         $this->assertInstanceOf(Consumer::class, $consumer->build());
 
@@ -409,7 +535,7 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
                 return new VoidCommitter;
             }
         };
-        $consumer = Builder::create('broker')
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))
             ->usingCommitterFactory($adhocCommitterFactory)
             ->build();
 
@@ -418,64 +544,10 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     }
 
     #[Test]
-    public function it_cant_create_a_consumer_with_dlq_without_subscribing_to_any_topics(): void
-    {
-        $this->expectException(ConsumerException::class);
-
-        Builder::create('broker')->withDlq();
-    }
-
-    #[Test]
-    public function it_can_set_partition_assignment_callback(): void
-    {
-        $called = false;
-        $receivedPartitions = null;
-
-        $consumer = Builder::create('broker', ['test-topic'], 'group')
-            ->withPartitionAssignmentCallback(function ($partitions) use (&$called, &$receivedPartitions) {
-                $called = true;
-                $receivedPartitions = $partitions;
-            });
-
-        $this->assertInstanceOf(Consumer::class, $consumer->build());
-
-        $partitionAssignmentCallback = $this->getPropertyWithReflection('partitionAssignmentCallback', $consumer);
-        $this->assertInstanceOf(Closure::class, $partitionAssignmentCallback);
-
-        // Verify that a rebalance callback was set
-        $callbacks = $this->getPropertyWithReflection('callbacks', $consumer);
-        $this->assertArrayHasKey('setRebalanceCb', $callbacks);
-        $this->assertIsCallable($callbacks['setRebalanceCb']);
-    }
-
-    #[Test]
-    public function it_can_set_assign_partitions_with_offsets_callback(): void
-    {
-        $called = false;
-        $receivedPartitions = null;
-
-        $consumer = Builder::create('broker', ['test-topic'], 'group')
-            ->assignPartitionsWithOffsets(function ($partitions) use (&$called, &$receivedPartitions) {
-                $called = true;
-                $receivedPartitions = $partitions;
-
-                // Return the same partitions for testing
-                return $partitions;
-            });
-
-        $this->assertInstanceOf(Consumer::class, $consumer->build());
-
-        // Verify that a rebalance callback was set
-        $callbacks = $this->getPropertyWithReflection('callbacks', $consumer);
-        $this->assertArrayHasKey('setRebalanceCb', $callbacks);
-        $this->assertIsCallable($callbacks['setRebalanceCb']);
-    }
-
-    #[Test]
     public function it_can_set_oauth_bearer_token_refresh_callback(): void
     {
-        $consumer = Builder::create('broker', ['test-topic'], 'group')
-            ->withOAuthBearerTokenRefreshCallback(function ($consumer, string $oauthConfig): void {
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'), ['test-topic'], 'group')
+            ->onOAuthBearerTokenRefresh(function ($consumer, string $oauthConfig): void {
                 // Token refresh logic
             });
 
@@ -484,6 +556,19 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
         $callbacks = $this->getPropertyWithReflection('callbacks', $consumer);
         $this->assertArrayHasKey('setOauthbearerTokenRefreshCb', $callbacks);
         $this->assertIsCallable($callbacks['setOauthbearerTokenRefreshCb']);
+    }
+
+    private function builtConfig(Builder $builder): Config
+    {
+        return $this->getPropertyWithReflection('config', $builder->build());
+    }
+
+    /** Handle a rebalance the way the consumer does when librdkafka calls its rebalance callback. */
+    private function rebalance(Consumer $consumer, KafkaConsumer $kafkaConsumer, int $error, array $partitions): void
+    {
+        $callback = $this->getPropertyWithReflection('config', $consumer)->getConfigCallbacks()['setRebalanceCb'] ?? null;
+
+        (new ReflectionMethod($consumer, 'rebalance'))->invoke($consumer, $kafkaConsumer, $error, $partitions, $callback);
     }
 }
 

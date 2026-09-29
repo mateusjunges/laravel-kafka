@@ -3,39 +3,56 @@
 namespace Junges\Kafka\Facades;
 
 use Illuminate\Support\Facades\Facade;
-use Junges\Kafka\Contracts\ProducerMessage;
+use Junges\Kafka\Factory;
 use Junges\Kafka\Support\Testing\Fakes\KafkaFake;
 
 /**
- * @method static \Junges\Kafka\Contracts\MessageProducer publish(string $broker = null)
- * @method static \Junges\Kafka\Contracts\MessageProducer asyncPublish(string $broker = null)
- * @method static \Junges\Kafka\Factory fresh(string $broker = null)
- * @method static \Junges\Kafka\Consumers\Builder consumer(array $topics = [], string $groupId = null, string $brokers = null)
- * @method static void assertPublished(ProducerMessage $expectedMessage = null, callable $callback = null)
- * @method static void assertPublishedTimes(int $times = 1, ProducerMessage $expectedMessage = null, callable $callback = null)
- * @method static void assertPublishedOn(string $topic, ProducerMessage $expectedMessage = null, callable $callback = null)
- * @method static void assertPublishedOnTimes(string $topic, int $times = 1, ProducerMessage $expectedMessage = null, callable $callback = null)
+ * @method static \Junges\Kafka\Connection connection(string|null $name = null)
+ * @method static \Junges\Kafka\Producers\PendingMessage publish(string|null $topic = null)
+ * @method static \Junges\Kafka\Producers\PendingMessage publishSync(string|null $topic = null)
+ * @method static \Junges\Kafka\Consumers\Builder consumer(array $topics = [], string|null $groupId = null)
+ * @method static \Junges\Kafka\Consumers\Builder consumerFor(\Junges\Kafka\KafkaConsumer|string $consumer)
+ * @method static void consumerMiddleware(array|\Junges\Kafka\Contracts\Middleware|\Closure|string $middleware)
+ * @method static array getConsumerMiddleware()
+ * @method static void configureConsumersUsing(callable $callback)
+ * @method static array getConsumerConfigurationCallbacks()
+ * @method static void flush()
+ * @method static string getDefaultConnection()
+ * @method static void assertPublished(\Junges\Kafka\Contracts\ProducerMessage|callable|null $expected = null, callable|null $callback = null)
+ * @method static void assertPublishedTimes(int $times = 1, \Junges\Kafka\Contracts\ProducerMessage|callable|null $expected = null, callable|null $callback = null)
+ * @method static void assertPublishedOn(string $topic, \Junges\Kafka\Contracts\ProducerMessage|callable|null $expected = null, callable|null $callback = null)
+ * @method static void assertPublishedOnTimes(string $topic, int $times = 1, \Junges\Kafka\Contracts\ProducerMessage|callable|null $expected = null, callable|null $callback = null)
+ * @method static void assertNotPublished(\Junges\Kafka\Contracts\ProducerMessage|callable $expected, callable|null $callback = null)
  * @method static void assertNothingPublished()
+ * @method static void assertNothingPublishedOn(string $topic)
  * @method static void shouldReceiveMessages(\Junges\Kafka\Contracts\ConsumerMessage|\Junges\Kafka\Contracts\ConsumerMessage[] $messages)
  *
- * @mixin \Junges\Kafka\Factory
- *
- * @see \Junges\Kafka\Factory
+ * @see Factory
+ * @see KafkaFake
  */
 class Kafka extends Facade
 {
     /** Replace the bound instance with a fake. */
     public static function fake(): KafkaFake
     {
-        static::swap($fake = new KafkaFake(
-            (static::getFacadeRoot())->shouldFake()
-        ));
+        $manager = static::getFacadeRoot();
+
+        static::swap($fake = new KafkaFake);
+
+        // Global middlewares and consumer configuration callbacks are usually registered by a service provider, so the fake keeps them.
+        if ($manager instanceof Factory) {
+            $fake->consumerMiddleware($manager->getConsumerMiddleware());
+
+            foreach ($manager->getConsumerConfigurationCallbacks() as $callback) {
+                $fake->configureConsumersUsing($callback);
+            }
+        }
 
         return $fake;
     }
 
-    public static function getFacadeAccessor(): string
+    protected static function getFacadeAccessor(): string
     {
-        return \Junges\Kafka\Factory::class;
+        return Factory::class;
     }
 }

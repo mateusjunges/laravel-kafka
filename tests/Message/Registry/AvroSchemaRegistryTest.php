@@ -25,7 +25,6 @@ final class AvroSchemaRegistryTest extends LaravelKafkaTestCase
         $registry->addBodySchemaMappingForTopic('test', $schema);
 
         $reflectionProperty = new ReflectionProperty($registry, 'schemaMapping');
-        $reflectionProperty->setAccessible(true);
 
         $schemaMapping = $reflectionProperty->getValue($registry);
 
@@ -46,7 +45,6 @@ final class AvroSchemaRegistryTest extends LaravelKafkaTestCase
         $registry->addKeySchemaMappingForTopic('test2', $schema);
 
         $reflectionProperty = new ReflectionProperty($registry, 'schemaMapping');
-        $reflectionProperty->setAccessible(true);
 
         $schemaMapping = $reflectionProperty->getValue($registry);
 

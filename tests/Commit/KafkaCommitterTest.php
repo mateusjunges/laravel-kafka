@@ -4,29 +4,33 @@ namespace Junges\Kafka\Tests\Commit;
 
 use Junges\Kafka\Commit\Committer;
 use Junges\Kafka\Config\Config;
-use Junges\Kafka\Consumers\CallableConsumer;
 use Junges\Kafka\Consumers\Consumer;
+use Junges\Kafka\Consumers\MessageHandler;
 use Junges\Kafka\Contracts\ConsumerMessage;
+use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use Mockery as m;
 use PHPUnit\Framework\Attributes\Test;
 use RdKafka\Conf;
 use RdKafka\KafkaConsumer;
+use RdKafka\KafkaConsumerTopic;
 use RdKafka\Message;
 
 final class KafkaCommitterTest extends LaravelKafkaTestCase
 {
     #[Test]
-    public function it_can_commit(): void
+    public function it_commits_the_offset_after_a_consumer_message(): void
     {
-        $kafkaConsumer = m::mock(KafkaConsumer::class)
+        $kafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('commit')->once()
+            ->with(m::on(fn (array $offsets) => count($offsets) === 1
+                && $offsets[0]->getTopic() === 'topic'
+                && $offsets[0]->getPartition() === 1
+                && $offsets[0]->getOffset() === 11))
             ->andReturnSelf();
 
-        $this->app->bind(KafkaConsumer::class, function () use ($kafkaConsumer) {
-            return $kafkaConsumer->getMock();
-        });
+        $this->app->bind(KafkaConsumer::class, fn () => $kafkaConsumer->getMock());
 
         $config = new Config(
             broker: 'broker',
@@ -44,37 +48,7 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
             'conf' => $conf,
         ]));
 
-        $kafkaCommitter->commitMessage(new Message, true);
-    }
-
-    #[Test]
-    public function it_can_commit_to_dlq(): void
-    {
-        $kafkaConsumer = m::mock(KafkaConsumer::class)
-            ->shouldReceive('commit')->once()
-            ->andReturnSelf();
-
-        $this->app->bind(KafkaConsumer::class, function () use ($kafkaConsumer) {
-            return $kafkaConsumer->getMock();
-        });
-
-        $config = new Config(
-            broker: 'broker',
-            topics: ['topic'],
-            groupId: 'groupId'
-        );
-
-        $conf = new Conf;
-
-        foreach ($config->getConsumerOptions() as $key => $value) {
-            $conf->set($key, $value);
-        }
-
-        $kafkaCommitter = new Committer(app(KafkaConsumer::class, [
-            'conf' => $conf,
-        ]));
-
-        $kafkaCommitter->commitDlq(new Message);
+        $kafkaCommitter->commit(new ConsumedMessage('topic', 1, [], null, null, 10, null));
     }
 
     #[Test]
@@ -91,7 +65,7 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
 
         $commitCalled = false;
 
-        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')
@@ -110,7 +84,7 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
 
         $handlerCalled = false;
 
-        $fakeHandler = new CallableConsumer(
+        $fakeHandler = new MessageHandler(
             function (ConsumerMessage $message, Consumer $consumer) use (&$handlerCalled) {
                 $handlerCalled = true;
                 // This should actually commit now!
@@ -122,10 +96,9 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
-            commit: 1,
+            securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: $fakeHandler,
             maxMessages: 1,
             autoCommit: false
         );
@@ -149,7 +122,7 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
         $message->partition = 1;
         $message->headers = [];
 
-        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')
@@ -164,7 +137,7 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
 
         $handlerCalled = false;
 
-        $fakeHandler = new CallableConsumer(
+        $fakeHandler = new MessageHandler(
             function (ConsumerMessage $message, Consumer $consumer) use (&$handlerCalled) {
                 $handlerCalled = true;
                 // Don't manually commit, should result in no commits
@@ -175,10 +148,9 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
-            commit: 1,
+            securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: $fakeHandler,
             maxMessages: 1,
             autoCommit: false
         );
@@ -190,7 +162,7 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
     }
 
     #[Test]
-    public function it_enables_auto_commits_in_auto_commit_mode(): void
+    public function it_stores_offsets_for_the_background_commit_in_auto_commit_mode(): void
     {
         $message = new Message;
         $message->err = 0;
@@ -201,20 +173,19 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
         $message->partition = 1;
         $message->headers = [];
 
-        $autoCommitCalled = false;
+        $mockedTopic = m::mock(KafkaConsumerTopic::class);
+        $mockedTopic->shouldReceive('offsetStore')->once()->with(1, 5);
 
-        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')
             ->withAnyArgs()
             ->andReturn($message)
+            ->shouldReceive('newTopic')
+            ->andReturn($mockedTopic)
             ->shouldReceive('commit')
-            ->andReturnUsing(function () use (&$autoCommitCalled) {
-                $autoCommitCalled = true;
-
-                return null;
-            })
+            ->never()
             ->getMock();
 
         $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
@@ -222,7 +193,7 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
 
         $handlerCalled = false;
 
-        $fakeHandler = new CallableConsumer(
+        $fakeHandler = new MessageHandler(
             function (ConsumerMessage $message, Consumer $consumer) use (&$handlerCalled) {
                 $handlerCalled = true;
                 // Don't manually commit, auto-commit should handle it
@@ -233,10 +204,9 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
-            commit: 1,
+            securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: $fakeHandler,
             maxMessages: 1,
             autoCommit: true
         );
@@ -245,6 +215,5 @@ final class KafkaCommitterTest extends LaravelKafkaTestCase
         $consumer->consume();
 
         $this->assertTrue($handlerCalled);
-        $this->assertTrue($autoCommitCalled, 'Auto-commit should work in auto-commit mode');
     }
 }

@@ -2,20 +2,30 @@
 
 namespace Junges\Kafka\Tests;
 
+use Closure;
+use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Contracts\Queue\Job;
+use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Consumers\Builder as ConsumerBuilder;
+use Junges\Kafka\Contracts\MessageSerializer;
 use Junges\Kafka\Contracts\ProducerMessage;
 use Junges\Kafka\Events\CouldNotPublishMessage as CouldNotPublishMessageEvent;
 use Junges\Kafka\Events\MessagePublished;
 use Junges\Kafka\Exceptions\CouldNotPublishMessage;
 use Junges\Kafka\Facades\Kafka;
+use Junges\Kafka\Message\Deserializers\JsonDeserializer;
 use Junges\Kafka\Message\Message;
-use Junges\Kafka\Message\Serializers\JsonSerializer;
-use Junges\Kafka\Producers\Builder as ProducerBuilder;
+use Junges\Kafka\Producers\PendingMessage;
+use Junges\Kafka\Tests\Fakes\FakeDeserializer;
+use Junges\Kafka\Tests\Fakes\FakeSerializer;
+use LogicException;
 use Mockery as m;
 use PHPUnit\Framework\Attributes\Test;
+use RdKafka\Conf;
 use RdKafka\Producer;
 use RdKafka\ProducerTopic;
 
@@ -25,86 +35,301 @@ final class KafkaTest extends LaravelKafkaTestCase
     public function it_can_publish_messages_to_kafka(): void
     {
         Event::fake();
+
         $mockedProducerTopic = m::mock(ProducerTopic::class)
             ->shouldReceive('producev')->once()
             ->andReturn(m::self())
             ->getMock();
 
-        $mockedProducer = m::mock(Producer::class)
-            ->shouldReceive('newTopic')
-            ->andReturn($mockedProducerTopic)
-            ->shouldReceive('poll')
-            ->shouldReceive('flush')
-            ->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
-            ->getMock();
+        $this->mockRdKafkaProducer($mockedProducerTopic);
 
-        $this->app->bind(Producer::class, fn () => $mockedProducer);
-
-        $test = Kafka::publish()
-            ->onTopic('test')
-            ->withConfigOptions([
-                'metadata.broker.list' => 'broker',
-            ])
-            ->withKafkaKey(Str::uuid()->toString())
-            ->withBodyKey('test', ['test'])
+        Kafka::publish('test')
+            ->withKey(Str::uuid()->toString())
+            ->withBody(['test' => ['test']])
             ->withHeaders(['custom' => 'header'])
-            ->withDebugEnabled()
             ->send();
 
         Event::assertDispatched(MessagePublished::class);
-
-        $this->assertTrue($test);
     }
 
     #[Test]
-    public function it_can_publish_messages_asynchronously(): void
+    public function it_can_publish_messages_synchronously(): void
     {
-        Event::fake();
-
         $mockedProducerTopic = m::mock(ProducerTopic::class)
             ->shouldReceive('producev')->twice()
             ->andReturn(m::self())
             ->getMock();
 
         $mockedProducer = m::mock(Producer::class)
-            ->shouldReceive('newTopic')->with('test')->twice()->andReturn($mockedProducerTopic)
+            ->shouldReceive('newTopic')->with('test')->once()->andReturn($mockedProducerTopic)
             ->shouldReceive('poll')->twice()
-            ->shouldReceive('flush')->once()
-            ->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
+            ->shouldReceive('flush')->twice()->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
             ->getMock();
 
         $this->app->bind(Producer::class, fn () => $mockedProducer);
 
-        $test1 = Kafka::asyncPublish()
-            ->onTopic('test')
-            ->withConfigOptions([
-                'metadata.broker.list' => 'broker',
-            ])
-            ->withKafkaKey(Str::uuid()->toString())
-            ->withBodyKey('test', ['test'])
-            ->withHeaders(['custom' => 'header'])
-            ->withDebugEnabled()
-            ->send();
+        Kafka::publishSync('test')->withBody(['test' => ['test']])->send();
+        Kafka::publishSync('test')->withBody(['test' => ['test']])->send();
+    }
 
-        $test2 = Kafka::asyncPublish()
-            ->onTopic('test')
-            ->withConfigOptions([
-                'metadata.broker.list' => 'broker',
-            ])
-            ->withKafkaKey(Str::uuid()->toString())
-            ->withBodyKey('test', ['test'])
-            ->withHeaders(['custom' => 'header'])
-            ->withDebugEnabled()
-            ->send();
+    #[Test]
+    public function it_publishes_messages_asynchronously_using_a_single_producer_per_connection(): void
+    {
+        $mockedProducerTopic = m::mock(ProducerTopic::class)
+            ->shouldReceive('producev')->twice()
+            ->andReturn(m::self())
+            ->getMock();
 
-        Event::assertDispatched(MessagePublished::class);
+        $mockedProducer = m::mock(Producer::class)
+            ->shouldReceive('newTopic')->with('test')->once()->andReturn($mockedProducerTopic)
+            ->shouldReceive('poll')->twice()
+            ->shouldReceive('flush')->once()->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
+            ->getMock();
 
-        $this->assertTrue($test1);
-        $this->assertTrue($test2);
+        $producersCreated = 0;
 
-        Kafka::clearResolvedInstances();
+        $this->app->bind(Producer::class, function () use ($mockedProducer, &$producersCreated) {
+            $producersCreated++;
 
-        Event::assertDispatched(MessagePublished::class);
+            return $mockedProducer;
+        });
+
+        Kafka::publish('test')->withBody(['test' => ['test']])->send();
+        Kafka::publish('test')->withBody(['test' => ['test']])->send();
+
+        $this->assertSame(1, $producersCreated);
+
+        Kafka::flush();
+    }
+
+    #[Test]
+    public function it_flushes_queued_messages_when_the_application_terminates(): void
+    {
+        $mockedProducerTopic = m::mock(ProducerTopic::class)
+            ->shouldReceive('producev')->once()
+            ->andReturn(m::self())
+            ->getMock();
+
+        $mockedProducer = m::mock(Producer::class)
+            ->shouldReceive('newTopic')->andReturn($mockedProducerTopic)
+            ->shouldReceive('poll')
+            ->shouldReceive('flush')->once()->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
+            ->getMock();
+
+        $this->app->bind(Producer::class, fn () => $mockedProducer);
+
+        Kafka::publish('test')->withBody('foo')->send();
+
+        $this->app->terminate();
+    }
+
+    #[Test]
+    public function it_flushes_queued_messages_after_each_queued_job(): void
+    {
+        $mockedProducerTopic = m::mock(ProducerTopic::class)
+            ->shouldReceive('producev')->once()
+            ->andReturn(m::self())
+            ->getMock();
+
+        $mockedProducer = m::mock(Producer::class)
+            ->shouldReceive('newTopic')->andReturn($mockedProducerTopic)
+            ->shouldReceive('poll')
+            ->shouldReceive('flush')->once()->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
+            ->getMock();
+
+        $this->app->bind(Producer::class, fn () => $mockedProducer);
+
+        Kafka::publish('test')->withBody('foo')->send();
+
+        event(new JobProcessed('redis', m::mock(Job::class)));
+    }
+
+    #[Test]
+    public function it_reports_flush_failures_instead_of_throwing_them_when_the_application_terminates(): void
+    {
+        $handler = m::mock(ExceptionHandler::class);
+        $handler->shouldReceive('report')->once()->with(m::type(CouldNotPublishMessage::class));
+        $this->app->instance(ExceptionHandler::class, $handler);
+
+        $mockedProducerTopic = m::mock(ProducerTopic::class)
+            ->shouldReceive('producev')->once()
+            ->andReturn(m::self())
+            ->getMock();
+
+        $mockedProducer = m::mock(Producer::class)
+            ->shouldReceive('newTopic')->andReturn($mockedProducerTopic)
+            ->shouldReceive('poll')
+            ->shouldReceive('flush')->andReturn(RD_KAFKA_RESP_ERR__FAIL)
+            ->getMock();
+
+        $this->app->bind(Producer::class, fn () => $mockedProducer);
+
+        config(['kafka.connections.default.producer.flush_retries' => 1]);
+
+        Kafka::publish('test')->withBody('foo')->send();
+
+        $this->app->terminate();
+    }
+
+    #[Test]
+    public function it_publishes_using_the_given_connection(): void
+    {
+        config(['kafka.connections.analytics' => [
+            'brokers' => 'analytics:9092',
+            'options' => ['client.id' => 'analytics-client'],
+            'producer' => ['options' => ['batch.num.messages' => 500, 'enable.idempotence' => true]],
+            'consumer' => ['options' => ['session.timeout.ms' => 10000]],
+        ]]);
+
+        $mockedProducerTopic = m::mock(ProducerTopic::class)
+            ->shouldReceive('producev')->once()
+            ->andReturn(m::self())
+            ->getMock();
+
+        $conf = $this->mockRdKafkaProducer($mockedProducerTopic);
+
+        Kafka::connection('analytics')->publishSync('test')->withBody('foo')->send();
+
+        $options = $conf()->dump();
+
+        $this->assertSame('analytics:9092', $options['metadata.broker.list']);
+        $this->assertSame('analytics-client', $options['client.id']);
+        $this->assertSame('500', $options['batch.num.messages']);
+        $this->assertSame('true', $options['enable.idempotence']);
+        $this->assertNotSame('10000', $options['session.timeout.ms'] ?? null);
+    }
+
+    #[Test]
+    public function it_applies_the_connection_callbacks_to_the_producer(): void
+    {
+        $mockedProducerTopic = m::mock(ProducerTopic::class)
+            ->shouldReceive('producev')->once()
+            ->andReturn(m::self())
+            ->getMock();
+
+        $conf = $this->mockRdKafkaProducer($mockedProducerTopic);
+
+        Kafka::connection()->onError($callback = function () {});
+
+        Kafka::publishSync('test')->withBody('foo')->send();
+
+        $this->assertSame(['setErrorCb' => $callback], Kafka::connection()->getConfig()->callbacks);
+        $this->assertInstanceOf(Conf::class, $conf());
+    }
+
+    #[Test]
+    public function it_registers_delivery_report_callbacks_on_connections(): void
+    {
+        Kafka::connection()->onDeliveryReport($callback = fn () => null);
+
+        $this->assertSame($callback, Kafka::connection()->getConfig()->callbacks['setDrMsgCb']);
+    }
+
+    #[Test]
+    public function it_does_not_register_connection_callbacks_after_the_producer_is_created(): void
+    {
+        $mockedProducerTopic = m::mock(ProducerTopic::class)
+            ->shouldReceive('producev')->once()
+            ->andReturn(m::self())
+            ->getMock();
+
+        $this->mockRdKafkaProducer($mockedProducerTopic);
+
+        Kafka::connection()->onLog(fn () => null);
+
+        Kafka::publishSync('test')->withBody('foo')->send();
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Configuration callbacks must be registered on the [default] Kafka connection before its producer is created');
+
+        Kafka::connection()->onError(fn () => null);
+    }
+
+    #[Test]
+    public function the_kafka_fake_does_not_register_connection_callbacks_after_publishing_either(): void
+    {
+        Kafka::fake();
+
+        Kafka::publish('test')->withBody('foo')->send();
+
+        $this->expectException(LogicException::class);
+
+        Kafka::connection()->onOAuthBearerTokenRefresh(fn () => null);
+    }
+
+    #[Test]
+    public function it_uses_the_serializer_and_deserializer_of_the_connection(): void
+    {
+        config(['kafka.connections.avro' => [
+            'brokers' => 'avro:9092',
+            'producer' => ['serializer' => FakeSerializer::class],
+            'consumer' => ['deserializer' => FakeDeserializer::class],
+        ]]);
+
+        $mockedProducerTopic = m::mock(ProducerTopic::class)
+            ->shouldReceive('producev')->once()
+            ->withArgs(fn ($partition, $flags, $payload) => $payload === 'serialized by '.FakeSerializer::class)
+            ->andReturn(m::self())
+            ->getMock();
+
+        $this->mockRdKafkaProducer($mockedProducerTopic);
+
+        Kafka::connection('avro')->publishSync('test')->withBody(['foo' => 'bar'])->send();
+
+        $this->assertInstanceOf(FakeDeserializer::class, $this->getPropertyWithReflection('deserializer', Kafka::connection('avro')->consumer()));
+        $this->assertInstanceOf(JsonDeserializer::class, $this->getPropertyWithReflection('deserializer', Kafka::consumer()));
+    }
+
+    #[Test]
+    public function the_producer_authenticates_with_the_sasl_credentials_of_the_connection(): void
+    {
+        config(['kafka.connections.default' => [
+            'brokers' => 'broker',
+            'sasl' => ['username' => 'user', 'password' => 'secret', 'mechanism' => 'SCRAM-SHA-512'],
+        ]]);
+
+        $mockedProducerTopic = m::mock(ProducerTopic::class)
+            ->shouldReceive('producev')->once()
+            ->andReturn(m::self())
+            ->getMock();
+
+        $conf = $this->mockRdKafkaProducer($mockedProducerTopic);
+
+        Kafka::publishSync('test')->withBody('foo')->send();
+
+        $options = $conf()->dump();
+
+        $this->assertSame('sasl_plaintext', mb_strtolower($options['security.protocol']));
+        $this->assertSame('user', $options['sasl.username']);
+    }
+
+    #[Test]
+    public function it_throws_an_exception_when_the_connection_is_not_configured(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The Kafka connection [missing] is not configured.');
+
+        Kafka::connection('missing');
+    }
+
+    #[Test]
+    public function it_uses_the_configured_default_connection(): void
+    {
+        config([
+            'kafka.default' => 'analytics',
+            'kafka.connections.analytics' => ['brokers' => 'analytics:9092'],
+        ]);
+
+        $this->assertSame('analytics', Kafka::connection()->getName());
+        $this->assertSame('analytics:9092', Kafka::connection()->getConfig()->brokers);
+    }
+
+    #[Test]
+    public function it_can_not_publish_a_message_without_a_topic(): void
+    {
+        $this->expectException(LogicException::class);
+
+        Kafka::publish()->withBody('foo')->send();
     }
 
     #[Test]
@@ -112,36 +337,21 @@ final class KafkaTest extends LaravelKafkaTestCase
     {
         $mockedProducerTopic = m::mock(ProducerTopic::class)
             ->shouldReceive('producev')->once()
+            ->withArgs(fn ($partition, $flags, $payload) => $payload === 'serialized')
             ->andReturn(m::self())
             ->getMock();
 
-        $mockedProducer = m::mock(Producer::class)
-            ->shouldReceive('newTopic')
-            ->andReturn($mockedProducerTopic)
-            ->shouldReceive('poll')
-            ->shouldReceive('flush')
-            ->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
+        $this->mockRdKafkaProducer($mockedProducerTopic);
+
+        $serializer = m::mock(MessageSerializer::class)
+            ->shouldReceive('serialize')->once()
+            ->andReturnUsing(fn (ProducerMessage $message) => $message->withBody('serialized'))
             ->getMock();
 
-        $this->app->bind(Producer::class, fn () => $mockedProducer);
-
-        $producer = Kafka::publish()->onTopic('test-topic')
-            ->withConfigOptions([
-                'metadata.broker.list' => 'broker',
-            ])
-            ->withKafkaKey(Str::uuid()->toString())
-            ->usingSerializer(new JsonSerializer)
-            ->withBodyKey('test', ['test'])
-            ->withHeaders(['custom' => 'header'])
-            ->withDebugEnabled();
-
-        $test = $producer->send();
-
-        $this->assertTrue($test);
-
-        $serializer = $this->getPropertyWithReflection('serializer', $producer);
-
-        $this->assertInstanceOf(JsonSerializer::class, $serializer);
+        Kafka::publishSync('test-topic')
+            ->usingSerializer($serializer)
+            ->withBody(['test' => ['test']])
+            ->send();
     }
 
     #[Test]
@@ -158,18 +368,13 @@ final class KafkaTest extends LaravelKafkaTestCase
 
         Kafka::fake();
 
-        $test = Kafka::publish()
-            ->onTopic('test-topic')
-            ->withConfigOptions([
-                'metadata.broker.list' => 'broker',
-            ])
-            ->withKafkaKey(Str::uuid()->toString())
-            ->withBodyKey('test', ['test'])
+        Kafka::publish('test-topic')
+            ->withKey(Str::uuid()->toString())
+            ->withBody(['test' => ['test']])
             ->withHeaders(['custom' => 'header'])
-            ->withDebugEnabled()
             ->send();
 
-        $this->assertTrue($test);
+        Kafka::assertPublishedOn('test-topic');
     }
 
     #[Test]
@@ -180,110 +385,23 @@ final class KafkaTest extends LaravelKafkaTestCase
             ->andReturn(m::self())
             ->getMock();
 
-        $mockedProducer = m::mock(Producer::class)
-            ->shouldReceive('newTopic')
-            ->andReturn($mockedProducerTopic)
-            ->shouldReceive('poll')
-            ->shouldReceive('flush')
-            ->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
-            ->getMock();
-
-        $this->app->bind(Producer::class, function () use ($mockedProducer) {
-            return $mockedProducer;
-        });
+        $this->mockRdKafkaProducer($mockedProducerTopic);
 
         $message = Message::create()
             ->withHeaders(['foo' => 'bar'])
             ->onTopic('test')
             ->withKey('message-key')
-            ->onTopic('test')
             ->withBody(['foo' => 'bar']);
 
-        $test = Kafka::publish()
-            ->withConfigOptions([
-                'metadata.broker.list' => 'broker',
-            ])
-            ->withMessage($message)
-            ->withDebugEnabled()
-            ->send();
+        Kafka::publish()->withMessage($message)->send();
 
-        $this->assertTrue($test);
-
-        $test = Kafka::publish()
-            ->onTopic('test')
-            ->withConfigOptions([
-                'metadata.broker.list' => 'broker',
-            ])
+        Kafka::publish('test')
             ->withMessage(new Message(
                 headers: ['foo' => 'bar'],
                 body: ['foo' => 'bar'],
                 key: 'message-key',
             ))
-            ->withDebugEnabled(false)
             ->send();
-
-        $this->assertTrue($test);
-    }
-
-    #[Test]
-    public function i_can_disable_debug_using_with_debug_disabled_method(): void
-    {
-        $mockedProducerTopic = m::mock(ProducerTopic::class)
-            ->shouldReceive('producev')->once()
-            ->andReturn(m::self())
-            ->getMock();
-
-        $mockedProducer = m::mock(Producer::class)
-            ->shouldReceive('newTopic')
-            ->andReturn($mockedProducerTopic)
-            ->shouldReceive('poll')
-            ->shouldReceive('flush')
-            ->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
-            ->getMock();
-
-        $this->app->bind(Producer::class, function () use ($mockedProducer) {
-            return $mockedProducer;
-        });
-
-        /** @var ProducerBuilder $producer */
-        $producer = Kafka::publish()
-            ->withConfigOptions([
-                'metadata.broker.list' => 'broker',
-            ])
-            ->withKafkaKey(Str::uuid()->toString())
-            ->withBodyKey('test', ['test'])
-            ->onTopic('test')
-            ->withHeaders(['custom' => 'header'])
-            ->withDebugDisabled();
-
-        $test = $producer->send();
-
-        $this->assertTrue($test);
-
-        $message = $this->getPropertyWithReflection('message', $producer);
-
-        $this->assertInstanceOf(ProducerMessage::class, $message);
-
-        $this->assertArrayNotHasKey('log_level', $message->getHeaders());
-        $this->assertArrayNotHasKey('debug', $message->getHeaders());
-    }
-
-    #[Test]
-    public function i_can_use_custom_options_for_producer_config(): void
-    {
-        $producer = Kafka::publish()
-            ->withConfigOptions($expectedOptions = [
-                'bootstrap.servers' => '[REMOTE_ADDRESS]',
-                'metadata.broker.list' => '[REMOTE_ADDRESS]',
-                'security.protocol' => 'SASL_SSL',
-                'sasl.mechanisms' => 'PLAIN',
-                'sasl.username' => '[API_KEY]',
-                'sasl.password' => '[API_KEY]',
-            ]);
-
-        $options = $this->getPropertyWithReflection('options', $producer);
-
-        $this->assertEquals($expectedOptions, $options);
     }
 
     #[Test]
@@ -306,6 +424,40 @@ final class KafkaTest extends LaravelKafkaTestCase
     }
 
     #[Test]
+    public function it_creates_consumers_using_the_connection_configuration(): void
+    {
+        config(['kafka.connections.analytics' => [
+            'brokers' => 'analytics:9092',
+            'security_protocol' => 'SASL_SSL',
+            'sasl' => ['username' => 'user', 'password' => 'secret', 'mechanism' => 'SCRAM-SHA-512'],
+            'options' => ['client.id' => 'analytics-client'],
+            'consumer' => [
+                'group_id' => 'analytics-group',
+                'auto_commit' => false,
+                'timeout_ms' => 500,
+                'options' => ['auto.offset.reset' => 'earliest'],
+            ],
+        ]]);
+
+        $consumer = Kafka::connection('analytics')->consumer(['topic']);
+
+        $this->assertSame('analytics:9092', $this->getPropertyWithReflection('brokers', $consumer));
+        $this->assertSame('analytics-group', $this->getPropertyWithReflection('groupId', $consumer));
+        $this->assertFalse($this->getPropertyWithReflection('autoCommit', $consumer));
+        $this->assertSame(500, $this->getPropertyWithReflection('consumerTimeoutInMs', $consumer));
+        $this->assertSame(
+            ['client.id' => 'analytics-client', 'auto.offset.reset' => 'earliest'],
+            $this->getPropertyWithReflection('options', $consumer)
+        );
+        $this->assertEquals(
+            new Sasl('user', 'secret', 'SCRAM-SHA-512'),
+            $this->getPropertyWithReflection('saslConfig', $consumer)
+        );
+
+        $this->assertSame('other-group', $this->getPropertyWithReflection('groupId', Kafka::connection('analytics')->consumer([], 'other-group')));
+    }
+
+    #[Test]
     public function producer_throws_exception_if_message_could_not_be_published(): void
     {
         Event::fake();
@@ -325,55 +477,71 @@ final class KafkaTest extends LaravelKafkaTestCase
             ->shouldReceive('poll')
             ->shouldReceive('flush')
             ->andReturn(RD_KAFKA_RESP_ERR__FAIL)
-            ->times(10)
             ->getMock();
 
         $this->app->bind(Producer::class, fn () => $mockedProducer);
 
-        Kafka::publish()->onTopic('test')->withBodyKey('foo', 'bar')->send();
-
-        Event::assertDispatched(CouldNotPublishMessageEvent::class, function (CouldNotPublishMessageEvent $event) use ($expectedMessage) {
-            return $event->throwable instanceof CouldNotPublishMessage
+        try {
+            Kafka::publishSync('test')->withBody(['foo' => 'bar'])->send();
+        } finally {
+            Event::assertDispatched(CouldNotPublishMessageEvent::class, fn (CouldNotPublishMessageEvent $event) => $event->throwable instanceof CouldNotPublishMessage
                 && $event->errorCode === RD_KAFKA_RESP_ERR__FAIL
-                && $event->message === $expectedMessage;
-        });
+                && $event->message === $expectedMessage
+                && $event->connection === config('kafka.default'));
+        }
     }
 
     #[Test]
     public function macro(): void
     {
-        $sasl = new Sasl(username: 'username', password: 'password', mechanisms: 'mechanisms');
+        Kafka::macro('ordersProducer', fn () => $this->publish('orders')->withHeaders(['source' => 'macro']));
 
-        Kafka::macro('defaultProducer', function () {
-            return $this->publish()->withSasl(
-                username: 'username',
-                password: 'password',
-                mechanisms: 'mechanisms',
-            );
-        });
+        $producer = Kafka::ordersProducer();
 
-        $producer = Kafka::defaultProducer();
-
-        $this->assertInstanceOf(ProducerBuilder::class, $producer);
-        $this->assertEquals($sasl, $this->getPropertyWithReflection('saslConfig', $producer));
+        $this->assertInstanceOf(PendingMessage::class, $producer);
+        $this->assertSame('orders', $producer->getMessage()->getTopicName());
     }
 
     #[Test]
     public function it_stores_published_messages_when_using_macros(): void
     {
         $expectedMessage = (new Message)
-            ->withBodyKey('test', ['test'])
+            ->withBody(['test' => ['test']])
             ->withHeaders(['custom' => 'header'])
             ->onTopic('topic')
-            ->withKey($uuid = Str::uuid()->toString());
+            ->withKey(Str::uuid()->toString());
 
-        Kafka::macro('testProducer', function () use ($expectedMessage) {
-            return $this->publish()->withMessage($expectedMessage);
-        });
+        Kafka::macro('testProducer', fn () => $this->publish()->withMessage($expectedMessage));
 
         Kafka::fake();
         Kafka::testProducer()->send();
 
         Kafka::assertPublished($expectedMessage);
+    }
+
+    /**
+     * Bind a mocked rdkafka producer and return a closure resolving the configuration it was created with.
+     *
+     * @return Closure(): Conf
+     */
+    private function mockRdKafkaProducer(ProducerTopic $topic): Closure
+    {
+        $mockedProducer = m::mock(Producer::class)
+            ->shouldReceive('newTopic')->andReturn($topic)
+            ->shouldReceive('poll')
+            ->shouldReceive('flush')->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR)
+            ->getMock();
+
+        $conf = null;
+
+        $this->app->bind(Producer::class, function ($app, array $parameters) use ($mockedProducer, &$conf) {
+            $conf = $parameters['conf'];
+
+            return $mockedProducer;
+        });
+
+        return function () use (&$conf): Conf {
+            return $conf;
+        };
     }
 }

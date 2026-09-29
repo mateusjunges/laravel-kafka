@@ -2,28 +2,17 @@
 
 namespace Junges\Kafka\Support\Testing\Fakes;
 
-use Junges\Kafka\Config\Config;
 use Junges\Kafka\Consumers\Builder;
-use Junges\Kafka\Consumers\CallableConsumer;
-use Junges\Kafka\Contracts\ConsumerBuilder as ConsumerBuilderContract;
-use Junges\Kafka\Contracts\MessageConsumer;
+use Junges\Kafka\Contracts\Consumer as ConsumerContract;
+use Junges\Kafka\Contracts\ConsumerMessage;
+use Override;
 
-class BuilderFake extends Builder implements ConsumerBuilderContract
+class BuilderFake extends Builder
 {
-    /** @var \Junges\Kafka\Contracts\ConsumerMessage[] */
+    /** @var list<ConsumerMessage> */
     private array $messages = [];
 
-    /** {@inheritDoc} */
-    public static function create(?string $brokers, array $topics = [], ?string $groupId = null): self
-    {
-        return new self(
-            brokers: $brokers,
-            topics: $topics,
-            groupId: $groupId
-        );
-    }
-
-    /** Set fake messages to the consumer.  */
+    /** Set the messages the faked consumer receives. */
     public function setMessages(array $messages): self
     {
         $this->messages = $messages;
@@ -31,33 +20,10 @@ class BuilderFake extends Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** Build the Kafka consumer. */
-    public function build(): MessageConsumer
+    /** Build a consumer that handles the given messages instead of consuming from Kafka. */
+    #[Override]
+    public function build(): ConsumerContract
     {
-        $config = new Config(
-            broker: $this->brokers,
-            topics: $this->topics,
-            securityProtocol: $this->getSecurityProtocol(),
-            commit: $this->commit,
-            groupId: $this->groupId,
-            consumer: new CallableConsumer($this->handler, $this->middlewares),
-            sasl: $this->saslConfig,
-            dlq: $this->dlq,
-            maxMessages: $this->maxMessages,
-            maxCommitRetries: $this->maxCommitRetries,
-            autoCommit: $this->autoCommit,
-            customOptions: $this->options,
-            stopAfterLastMessage: $this->stopAfterLastMessage,
-            callbacks: $this->callbacks,
-            whenStopConsuming: $this->onStopConsuming,
-            stopOnFailure: $this->stopOnFailure,
-            failedMessageRetries: $this->failedMessageRetries,
-            failedMessageRetryBackoff: $this->failedMessageRetryBackoff,
-        );
-
-        return new ConsumerFake(
-            $config,
-            $this->messages
-        );
+        return new ConsumerFake($this->makeConfig(), $this->messages);
     }
 }

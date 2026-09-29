@@ -3,17 +3,13 @@
 namespace Junges\Kafka\Config;
 
 use Closure;
-use JetBrains\PhpStorm\Pure;
-use Junges\Kafka\Contracts\Consumer;
+use Junges\Kafka\Consumers\MessageHandler;
+use RdKafka\Conf;
 use RdKafka\TopicPartition;
 
 class Config
 {
-    final public const SASL_PLAINTEXT = 'SASL_PLAINTEXT';
-
-    final public const SASL_SSL = 'SASL_SSL';
-
-    final public const PRODUCER_ONLY_CONFIG_OPTIONS = [
+    final public const array PRODUCER_ONLY_CONFIG_OPTIONS = [
         'transactional.id',
         'transaction.timeout.ms',
         'enable.idempotence',
@@ -36,7 +32,7 @@ class Config
         'sticky.partitioning.linger.ms',
     ];
 
-    final public const CONSUMER_ONLY_CONFIG_OPTIONS = [
+    final public const array CONSUMER_ONLY_CONFIG_OPTIONS = [
         'partition.assignment.strategy',
         'session.timeout.ms',
         'heartbeat.interval.ms',
@@ -69,15 +65,14 @@ class Config
         private readonly string $broker,
         private readonly array $topics,
         private readonly ?string $securityProtocol = null,
-        private readonly int $commit = 1,
         private readonly ?string $groupId = null,
-        private readonly ?Consumer $consumer = null,
+        private readonly ?MessageHandler $handler = null,
         private readonly ?Sasl $sasl = null,
         private readonly ?string $dlq = null,
         private readonly int $maxMessages = -1,
-        private readonly int $maxCommitRetries = 6,
         private readonly bool $autoCommit = true,
         private readonly array $customOptions = [],
+        private readonly array $producerOptions = [],
         private readonly bool $stopAfterLastMessage = false,
         private readonly int $restartInterval = 1000,
         private readonly array $callbacks = [],
@@ -86,21 +81,46 @@ class Config
         private readonly int $maxTime = 0,
         private readonly array $partitionAssignment = [],
         private readonly ?Closure $whenStopConsuming = null,
-        public readonly ?int $flushRetries = null,
-        public readonly ?int $flushTimeoutInMs = null,
-        private readonly bool $stopOnFailure = false,
+        public readonly int $flushRetries = 10,
+        public readonly int $flushTimeoutInMs = 1000,
+        public readonly int $flushRetrySleepInMs = 100,
+        public readonly int $consumerTimeoutInMs = 2000,
+        private readonly bool $skipFailedMessages = false,
         private readonly int $failedMessageRetries = 0,
-        private readonly int $failedMessageRetryBackoff = 0,
+        private readonly int|array $failedMessageRetryBackoff = 0,
+        private readonly ?string $name = null,
+        private readonly string $connection = 'default',
+        private readonly ?Closure $onPartitionsAssigned = null,
+        private readonly ?Closure $onPartitionsRevoked = null,
+        private readonly ?Closure $offsetResolver = null,
     ) {}
 
-    public function getCommit(): int
+    /**
+     * Get the name of the consumer. Consumers without a name are named after the topics
+     * they subscribe to, or the topics of the partitions assigned to them.
+     */
+    public function getName(): string
     {
-        return $this->commit;
+        if ($this->name !== null) {
+            return $this->name;
+        }
+
+        $topics = $this->topics !== []
+            ? $this->topics
+            : array_map(fn (TopicPartition $partition) => $partition->getTopic(), $this->partitionAssignment);
+
+        return implode(',', array_values(array_unique($topics)));
     }
 
-    public function getMaxCommitRetries(): int
+    /** Get the name of the connection the consumer belongs to. */
+    public function getConnectionName(): string
     {
-        return $this->maxCommitRetries;
+        return $this->connection;
+    }
+
+    public function getGroupId(): ?string
+    {
+        return $this->groupId;
     }
 
     public function getTopics(): array
@@ -108,9 +128,9 @@ class Config
         return $this->topics;
     }
 
-    public function getConsumer(): Consumer
+    public function getHandler(): MessageHandler
     {
-        return $this->consumer;
+        return $this->handler;
     }
 
     public function getDlq(): ?string
@@ -128,19 +148,15 @@ class Config
         return $this->maxTime;
     }
 
-    public function isAutoCommit(): bool
-    {
-        return $this->autoCommit;
-    }
-
     public function shouldStopAfterLastMessage(): bool
     {
         return $this->stopAfterLastMessage;
     }
 
-    public function shouldStopOnFailure(): bool
+    /** Determine if failed messages are skipped when there is no dead letter queue, instead of stopping the consumer. */
+    public function shouldSkipFailedMessages(): bool
     {
-        return $this->stopOnFailure;
+        return $this->skipFailedMessages;
     }
 
     public function getFailedMessageRetries(): int
@@ -148,10 +164,19 @@ class Config
         return $this->failedMessageRetries;
     }
 
-    /** Get the time to wait before retrying a failed message, in milliseconds. */
-    public function getFailedMessageRetryBackoff(): int
+    /**
+     * Get the time to wait before retrying a failed message, as expected by the retry() helper. With an
+     * array, each retry waits for the value at its position, or the last value when there are more retries.
+     */
+    public function getFailedMessageRetrySleep(): int|Closure
     {
-        return $this->failedMessageRetryBackoff;
+        $backoff = $this->failedMessageRetryBackoff;
+
+        if (! is_array($backoff)) {
+            return $backoff;
+        }
+
+        return fn (int $attempt): int => $backoff[$attempt - 1] ?? $backoff[array_key_last($backoff)] ?? 0;
     }
 
     /**
@@ -160,45 +185,43 @@ class Config
      */
     public function shouldStoreOffsetsAfterProcessing(): bool
     {
-        return $this->autoCommit && ($this->stopOnFailure || $this->failedMessageRetries > 0);
+        return $this->autoCommit;
     }
 
     public function getConsumerOptions(): array
     {
         $options = [
             'metadata.broker.list' => $this->broker,
-            'auto.offset.reset' => config('kafka.offset_reset', 'latest'),
-            'enable.auto.commit' => config('kafka.auto_commit', true) === true ? 'true' : 'false',
-            'group.id' => $this->groupId,
             'bootstrap.servers' => $this->broker,
+            'group.id' => $this->groupId,
+            'enable.auto.commit' => $this->autoCommit ? 'true' : 'false',
+            ...$this->getSecurityProtocolOptions(),
         ];
 
-        if (isset($this->autoCommit)) {
-            $options['enable.auto.commit'] = $this->autoCommit === true ? 'true' : 'false';
-        }
-
-        // With auto commit enabled, librdkafka stores the offset of each message as soon as it is
-        // fetched and commits it in the background, even when the handler fails. When failed messages
-        // are retried or stop the consumer, offsets are stored only after the message is processed.
+        // By default, librdkafka stores the offset of each message as soon as it is fetched and commits
+        // it in the background, even when the handler fails. With auto commit enabled, offsets are
+        // stored by the consumer instead, only after each message is processed or skipped.
         $overrides = $this->shouldStoreOffsetsAfterProcessing()
             ? ['enable.auto.offset.store' => 'false']
             : [];
 
         return collect(array_merge($options, $this->customOptions, $this->getSaslOptions(), $overrides))
-            ->reject(fn (string|int $option, string $key) => in_array($key, self::PRODUCER_ONLY_CONFIG_OPTIONS))
+            ->reject(fn (mixed $option, string $key) => in_array($key, self::PRODUCER_ONLY_CONFIG_OPTIONS))
+            ->map($this->normalizeOption(...))
             ->toArray();
     }
 
     public function getProducerOptions(): array
     {
         $config = [
-            'compression.codec' => config('kafka.compression', 'snappy'),
             'bootstrap.servers' => $this->broker,
             'metadata.broker.list' => $this->broker,
+            ...$this->getSecurityProtocolOptions(),
         ];
 
-        return collect(array_merge($config, $this->customOptions, $this->getSaslOptions()))
-            ->reject(fn (string|int $option, string $key) => in_array($key, self::CONSUMER_ONLY_CONFIG_OPTIONS))
+        return collect(array_merge($config, $this->customOptions, $this->producerOptions, $this->getSaslOptions()))
+            ->reject(fn (mixed $option, string $key) => in_array($key, self::CONSUMER_ONLY_CONFIG_OPTIONS))
+            ->map($this->normalizeOption(...))
             ->toArray();
     }
 
@@ -229,11 +252,11 @@ class Config
 
     public function shouldAssignTopicPartitions(): bool
     {
-        return $this->getPartitionAssigment() !== [];
+        return $this->getPartitionAssignment() !== [];
     }
 
     /** @return array<int, TopicPartition> */
-    public function getPartitionAssigment(): array
+    public function getPartitionAssignment(): array
     {
         return $this->partitionAssignment;
     }
@@ -243,25 +266,73 @@ class Config
         return $this->whenStopConsuming;
     }
 
-    #[Pure]
-    private function getSaslOptions(): array
+    /** Get the callback that receives the partitions assigned to the consumer, on every rebalance. */
+    public function getPartitionsAssignedCallback(): ?Closure
     {
-        if ($this->usingSasl() && $this->sasl !== null) {
-            return [
-                'sasl.username' => $this->sasl->getUsername(),
-                'sasl.password' => $this->sasl->getPassword(),
-                'sasl.mechanisms' => $this->sasl->getMechanisms(),
-                'security.protocol' => $this->sasl->getSecurityProtocol(),
-            ];
-        }
-
-        return [];
+        return $this->onPartitionsAssigned;
     }
 
-    private function usingSasl(): bool
+    /** Get the callback that receives the partitions revoked from the consumer, on every rebalance. */
+    public function getPartitionsRevokedCallback(): ?Closure
     {
-        return ! is_null($this->securityProtocol)
-            && (mb_strtoupper($this->securityProtocol) === static::SASL_PLAINTEXT
-                || mb_strtoupper($this->securityProtocol) === static::SASL_SSL);
+        return $this->onPartitionsRevoked;
+    }
+
+    /** Get the callback that returns the assigned partitions with the offsets the consumer should start reading from. */
+    public function getOffsetResolver(): ?Closure
+    {
+        return $this->offsetResolver;
+    }
+
+    /** Determine if partitions are added to and removed from the assignment incrementally on each rebalance. */
+    public function usesCooperativeRebalancing(): bool
+    {
+        return ($this->getConsumerOptions()['partition.assignment.strategy'] ?? null) === RebalanceStrategy::COOPERATIVE_STICKY->value;
+    }
+
+    /**
+     * Create the librdkafka configuration with the given options and the configuration callbacks,
+     * except the ones set by the caller itself.
+     *
+     * @param  array<string, string>  $options
+     * @param  list<string>  $exceptCallbacks
+     */
+    public function makeConf(array $options, array $exceptCallbacks = []): Conf
+    {
+        $conf = new Conf;
+
+        foreach ($options as $key => $value) {
+            $conf->set($key, $value);
+        }
+
+        foreach (array_diff_key($this->callbacks, array_flip($exceptCallbacks)) as $method => $callback) {
+            $conf->{$method}($callback);
+        }
+
+        return $conf;
+    }
+
+    /** librdkafka options are strings, and booleans are written "true" or "false". */
+    private function normalizeOption(mixed $value): string
+    {
+        return is_bool($value) ? var_export($value, true) : (string) $value;
+    }
+
+    private function getSecurityProtocolOptions(): array
+    {
+        return $this->securityProtocol === null ? [] : ['security.protocol' => $this->securityProtocol];
+    }
+
+    private function getSaslOptions(): array
+    {
+        if (! $this->sasl instanceof Sasl) {
+            return [];
+        }
+
+        return [
+            'sasl.username' => $this->sasl->getUsername(),
+            'sasl.password' => $this->sasl->getPassword(),
+            'sasl.mechanisms' => $this->sasl->getMechanism(),
+        ];
     }
 }

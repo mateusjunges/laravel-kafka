@@ -6,66 +6,46 @@ trait InteractsWithConfigCallbacks
 {
     protected array $callbacks = [];
 
-    /** Set the configuration error callback. */
-    public function withErrorCb(callable $callback): self
+    /** Set a callback for errors reported by librdkafka. */
+    public function onError(callable $callback): self
     {
-        $this->callbacks['setErrorCb'] = $callback;
-
-        return $this;
+        return $this->setConfigCallback('setErrorCb', $callback);
     }
 
-    /** Sets the delivery report callback. */
-    public function withDrMsgCb(callable $callback): self
+    /** Set a callback for the log messages of librdkafka. */
+    public function onLog(callable $callback): self
     {
-        $this->callbacks['setDrMsgCb'] = $callback;
-
-        return $this;
+        return $this->setConfigCallback('setLogCb', $callback);
     }
 
-    /** Set consume callback to use with poll. */
-    public function withConsumeCb(callable $callback): self
+    /** Set a callback for the statistics emitted by librdkafka every "statistics.interval.ms". */
+    public function onStatistics(callable $callback): self
     {
-        $this->callbacks['setConsumeCb'] = $callback;
-
-        return $this;
+        return $this->setConfigCallback('setStatsCb', $callback);
     }
 
-    /** Set the log callback. */
-    public function withLogCb(callable $callback): self
+    /** Set a callback for consumer group rebalances, which replaces the default partition assignment. */
+    public function onRebalance(callable $callback): self
     {
-        $this->callbacks['setLogCb'] = $callback;
-
-        return $this;
+        return $this->setConfigCallback('setRebalanceCb', $callback);
     }
 
-    /** Set offset commit callback to use with consumer groups. */
-    public function withOffsetCommitCb(callable $callback): self
+    /** Set a callback for the result of offset commits. */
+    public function onOffsetCommit(callable $callback): self
     {
-        $this->callbacks['setOffsetCommitCb'] = $callback;
-
-        return $this;
+        return $this->setConfigCallback('setOffsetCommitCb', $callback);
     }
 
-    /** Set rebalance callback for  use with coordinated consumer group balancing. */
-    public function withRebalanceCb(callable $callback): self
+    /** Set a callback that provides a new token when OAUTHBEARER authentication needs one. */
+    public function onOAuthBearerTokenRefresh(callable $callback): self
     {
-        $this->callbacks['setRebalanceCb'] = $callback;
-
-        return $this;
+        return $this->setConfigCallback('setOauthbearerTokenRefreshCb', $callback);
     }
 
-    /** Set statistics callback. */
-    public function withStatsCb(callable $callback): self
+    /** Set a configuration callback, keyed by the \RdKafka\Conf method that sets it. */
+    protected function setConfigCallback(string $method, callable $callback): self
     {
-        $this->callbacks['setStatsCb'] = $callback;
-
-        return $this;
-    }
-
-    /** Set the OAUTHBEARER token refresh callback. */
-    public function withOAuthBearerTokenRefreshCallback(callable $callback): self
-    {
-        $this->callbacks['setOauthbearerTokenRefreshCb'] = $callback;
+        $this->callbacks[$method] = $callback;
 
         return $this;
     }

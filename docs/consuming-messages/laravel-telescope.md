@@ -1,6 +1,6 @@
 ---
 title: Using consumers with Laravel Telescope
-weight: 12
+weight: 11
 ---
 
 If your application uses [Laravel Telescope](https://laravel.com/docs/telescope), you should disable Telescope for your Kafka consumers.
@@ -11,7 +11,7 @@ If your application uses [Laravel Telescope](https://laravel.com/docs/telescope)
 
 Telescope keeps the entries it records during an Artisan command in memory, and only stores them once the command terminates. Kafka consumers are long running processes that never terminate on their own, so every event, query and log entry recorded while consuming messages stays in memory. On a busy topic, this makes the consumer memory usage grow until the process crashes with an `Allowed memory size exhausted` error. Telescope ignores the `queue:work` and `horizon` commands by default for the same reason.
 
-To disable Telescope for your consumers, add their command names to the `ignore_commands` option of your `config/telescope.php` file. This includes the `kafka:consume` command shipped with this package and any consumer command you have written yourself:
+To disable Telescope for your consumers, add their command names to the `ignore_commands` option of your `config/telescope.php` file. This includes the `kafka:consume` command, which runs your [consumer classes](class-structure.md), and any command you have written yourself to run a consumer:
 
 ```php
 'ignore_commands' => [

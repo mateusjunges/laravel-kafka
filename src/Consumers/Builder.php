@@ -7,18 +7,21 @@ use Illuminate\Support\Traits\Conditionable;
 use InvalidArgumentException;
 use Junges\Kafka\Concerns\InteractsWithConfigCallbacks;
 use Junges\Kafka\Config\Config;
+use Junges\Kafka\Config\ConnectionConfig;
 use Junges\Kafka\Config\RebalanceStrategy;
 use Junges\Kafka\Config\Sasl;
+use Junges\Kafka\Config\SaslMechanism;
+use Junges\Kafka\Config\SecurityProtocol;
 use Junges\Kafka\Contracts\CommitterFactory;
-use Junges\Kafka\Contracts\ConsumerBuilder as ConsumerBuilderContract;
+use Junges\Kafka\Contracts\Consumer as ConsumerContract;
 use Junges\Kafka\Contracts\Handler;
-use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Contracts\MessageDeserializer;
 use Junges\Kafka\Contracts\Middleware;
 use Junges\Kafka\Exceptions\ConsumerException;
+use LogicException;
 use RdKafka\TopicPartition;
 
-class Builder implements ConsumerBuilderContract
+class Builder
 {
     use Conditionable;
     use InteractsWithConfigCallbacks;
@@ -26,15 +29,11 @@ class Builder implements ConsumerBuilderContract
     /** @var list<string> */
     protected array $topics;
 
-    protected int $commit;
-
     protected Closure|Handler $handler;
 
     protected int $maxMessages;
 
     protected int $maxTime = 0;
-
-    protected int $maxCommitRetries;
 
     /** @var list<callable> */
     protected array $middlewares;
@@ -53,13 +52,14 @@ class Builder implements ConsumerBuilderContract
 
     protected ?CommitterFactory $committerFactory = null;
 
-    protected bool $stopAfterLastMessage = false;
+    protected bool $stopWhenEmpty = false;
 
-    protected bool $stopOnFailure = false;
+    protected bool $skipFailedMessages = false;
 
     protected int $failedMessageRetries = 0;
 
-    protected int $failedMessageRetryBackoff = 0;
+    /** @var int|list<int> */
+    protected int|array $failedMessageRetryBackoff = 0;
 
     /** @var list<callable> */
     protected array $beforeConsumingCallbacks = [];
@@ -72,41 +72,74 @@ class Builder implements ConsumerBuilderContract
 
     protected ?Closure $onStopConsuming = null;
 
-    protected ?Closure $partitionAssignmentCallback = null;
+    protected ?Closure $onPartitionsAssigned = null;
 
-    protected function __construct(protected ?string $brokers, array $topics = [], protected ?string $groupId = null)
+    protected ?Closure $onPartitionsRevoked = null;
+
+    protected ?Closure $offsetResolver = null;
+
+    protected bool $useDefaultDlq = false;
+
+    protected ?Closure $onMessageFailed = null;
+
+    protected string $brokers;
+
+    protected ?string $groupId;
+
+    protected int $consumerTimeoutInMs;
+
+    protected ?string $name = null;
+
+    /** The producer settings of the connection, used to publish failed messages to the dead letter queue. */
+    protected ConnectionConfig $connection;
+
+    protected function __construct(ConnectionConfig $connection, array $topics = [], ?string $groupId = null)
     {
-        if (count($topics) > 0) {
-            foreach ($topics as $topic) {
-                $this->validateTopic($topic);
-            }
+        foreach ($topics as $topic) {
+            $this->validateTopic($topic);
         }
-        $this->topics = array_unique($topics);
 
-        $this->commit = 1;
+        $this->topics = array_values(array_unique($topics));
+
+        $this->brokers = $connection->brokers;
+        $this->groupId = $groupId ?? $connection->groupId;
+        $this->securityProtocol = $connection->securityProtocol ?? 'PLAINTEXT';
+        $this->saslConfig = $connection->sasl;
+        $this->autoCommit = $connection->autoCommit;
+        $this->options = [...$connection->options, ...$connection->consumerOptions];
+        $this->callbacks = $connection->callbacks;
+        $this->consumerTimeoutInMs = $connection->consumerTimeoutInMs;
+        $this->connection = $connection;
+
         $this->handler = function () {};
-
         $this->maxMessages = -1;
-        $this->maxCommitRetries = 6;
         $this->middlewares = [];
-        $this->securityProtocol = 'PLAINTEXT';
-        $this->autoCommit = config('kafka.auto_commit');
-        $this->options = [];
 
-        $this->deserializer = app(MessageDeserializer::class);
+        $this->deserializer = app($connection->deserializer ?? MessageDeserializer::class);
     }
 
-    /** {@inheritDoc} */
-    public static function create(?string $brokers, array $topics = [], ?string $groupId = null): self
+    /** Creates a new ConsumerBuilder instance for the given connection. */
+    public static function create(ConnectionConfig $connection, array $topics = [], ?string $groupId = null): static
     {
-        return new self(
-            brokers: $brokers,
+        return new static(
+            connection: $connection,
             topics: $topics,
             groupId: $groupId
         );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Set the name of the consumer, which identifies it in events and when restarting it. Consumer classes
+     * are named after their class, and other consumers after the topics they consume, by default.
+     */
+    public function withName(string $name): self
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
+    /** Subscribe to a Kafka topic. */
     public function subscribe(...$topics): self
     {
         if (is_array($topics[0])) {
@@ -124,31 +157,23 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** {@inheritDoc} */
-    public function withBrokers(?string $brokers): self
+    /** Set the brokers the kafka consumer should use, instead of the connection brokers. */
+    public function withBrokers(string $brokers): self
     {
-        $this->brokers = $brokers ?? config('kafka.brokers');
+        $this->brokers = $brokers;
 
         return $this;
     }
 
-    /** {@inheritDoc} */
-    public function withConsumerGroupId(?string $groupId): self
+    /** Set the consumer group, instead of the group of the connection. */
+    public function withGroupId(string $groupId): self
     {
         $this->groupId = $groupId;
 
         return $this;
     }
 
-    /** {@inheritDoc} */
-    public function withCommitBatchSize(int $size): self
-    {
-        $this->commit = $size;
-
-        return $this;
-    }
-
-    /** {@inheritDoc} */
+    /** Specify the handler of the consumed messages, a callable receiving the message and the consumer. */
     public function withHandler(callable|Handler $handler): self
     {
         $this->handler = $handler instanceof Handler
@@ -158,7 +183,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** {@inheritDoc} */
+    /** Specify the class that should be used to deserialize messages. */
     public function usingDeserializer(MessageDeserializer $deserializer): self
     {
         $this->deserializer = $deserializer;
@@ -166,7 +191,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** {@inheritDoc} */
+    /** Specify the factory that should be used to build the committer. */
     public function usingCommitterFactory(CommitterFactory $committerFactory): self
     {
         $this->committerFactory = $committerFactory;
@@ -174,62 +199,66 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** {@inheritDoc} */
-    public function withMaxMessages(int $maxMessages): self
+    /** Stop consuming after handling the given number of messages. */
+    public function stopAfterMessages(int $messages): self
     {
-        $this->maxMessages = $maxMessages;
+        $this->maxMessages = $messages;
+
+        return $this;
+    }
+
+    /** Stop consuming after the given number of seconds. */
+    public function stopAfterSeconds(int $seconds): self
+    {
+        $this->maxTime = $seconds;
 
         return $this;
     }
 
     /**
-     * {@inheritDoc}
+     * Set the Dead Letter Queue to be used. When no topic is given, it is named after the first
+     * consumed topic, followed by "-dlq", when the consumer is built.
      */
-    public function withMaxTime(int $maxTime): self
-    {
-        $this->maxTime = $maxTime;
-
-        return $this;
-    }
-
-    /** {@inheritDoc} */
-    public function withMaxCommitRetries(int $maxCommitRetries): self
-    {
-        $this->maxCommitRetries = $maxCommitRetries;
-
-        return $this;
-    }
-
-    /** {@inheritDoc} */
     public function withDlq(?string $dlqTopic = null): self
     {
-        if (! isset($this->topics[0])) {
-            throw ConsumerException::dlqCanNotBeSetWithoutSubscribingToAnyTopics();
-        }
-
-        if ($dlqTopic === null) {
-            $dlqTopic = $this->topics[0].'-dlq';
-        }
-
         $this->dlq = $dlqTopic;
+        $this->useDefaultDlq = $dlqTopic === null;
 
         return $this;
     }
 
-    /** Set Sasl configuration. */
-    public function withSasl(string $username, string $password, string $mechanisms, string $securityProtocol = 'SASL_PLAINTEXT'): self
-    {
+    /**
+     * Authenticate this consumer with SASL, using the given credentials instead of the ones of the connection.
+     * The security protocol must be SASL_PLAINTEXT or SASL_SSL. When it is not given, SASL_SSL is used if
+     * the connection is encrypted, and SASL_PLAINTEXT otherwise.
+     */
+    public function withSasl(
+        string $username,
+        string $password,
+        SaslMechanism|string $mechanism,
+        SecurityProtocol|string|null $securityProtocol = null,
+    ): self {
         $this->saslConfig = new Sasl(
             username: $username,
             password: $password,
-            mechanisms: $mechanisms,
-            securityProtocol: $securityProtocol
+            mechanism: $mechanism instanceof SaslMechanism ? $mechanism->value : $mechanism,
         );
+
+        // Without a given protocol, the encryption of the connection is kept.
+        $this->securityProtocol = $securityProtocol === null
+            ? SecurityProtocol::forSasl($this->securityProtocol)->value
+            : ($securityProtocol instanceof SecurityProtocol ? $securityProtocol->value : $securityProtocol);
 
         return $this;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Add a middleware the messages go through before being handled. Middlewares run in the order they are added,
+     * and receive the message and the next step of the pipeline. Middleware classes given by name are resolved
+     * from the service container.
+     *
+     * @param  Middleware|callable(ConsumerMessage, callable): mixed|class-string<Middleware>  $middleware
+     */
     public function withMiddleware(Middleware|callable|string $middleware): self
     {
         $this->middlewares[] = $middleware;
@@ -237,15 +266,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** {@inheritDoc} */
-    public function withSecurityProtocol(string $securityProtocol): self
-    {
-        $this->securityProtocol = $securityProtocol;
-
-        return $this;
-    }
-
-    /** {@inheritDoc} */
+    /** Enable or disable consumer auto commit option. */
     public function withAutoCommit(bool $autoCommit = true): self
     {
         $this->autoCommit = $autoCommit;
@@ -253,6 +274,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
+    /** Enables manual commit. */
     public function withManualCommit(): self
     {
         $this->autoCommit = false;
@@ -260,7 +282,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** {@inheritDoc} */
+    /** Set the partition assignment (rebalance) strategy for consumer groups. */
     public function withRebalanceStrategy(RebalanceStrategy|string $strategy): self
     {
         if (is_string($strategy)) {
@@ -278,7 +300,7 @@ class Builder implements ConsumerBuilderContract
         return $this->withOption('partition.assignment.strategy', $strategy->value);
     }
 
-    /** {@inheritDoc} */
+    /** Set the configuration options. */
     public function withOptions(array $options): self
     {
         foreach ($options as $name => $value) {
@@ -288,7 +310,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** {@inheritDoc} */
+    /** Set a specific configuration option. */
     public function withOption(string $name, mixed $value): self
     {
         $this->options[$name] = $value;
@@ -296,27 +318,38 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    /** {@inheritDoc} */
-    public function stopAfterLastMessage(bool $stopAfterLastMessage = true): self
+    /** Stop consuming once there are no messages left in the assigned partitions. */
+    public function stopWhenEmpty(bool $stopWhenEmpty = true): self
     {
-        $this->stopAfterLastMessage = $stopAfterLastMessage;
+        $this->stopWhenEmpty = $stopWhenEmpty;
 
         return $this;
     }
 
-    /** {@inheritDoc} */
-    public function stopOnFailure(bool $stopOnFailure = true): self
+    /**
+     * Skip messages that fail when there is no dead letter queue, committing their offsets.
+     * By default, the consumer stops without committing the offset of the failed message.
+     */
+    public function skipFailedMessages(bool $skipFailedMessages = true): self
     {
-        $this->stopOnFailure = $stopOnFailure;
+        $this->skipFailedMessages = $skipFailedMessages;
 
         return $this;
     }
 
-    /** {@inheritDoc} */
-    public function retryFailedMessages(int $times, int $backoffInMs = 0): self
+    /**
+     * Call the handler of a failed message again, up to the given number of times, before handling it as failed.
+     * The backoff is the time to wait before each retry, in milliseconds. An array sets the time to wait before
+     * each retry in order, like [1000, 5000, 10000], and its last value is used for the remaining retries.
+     *
+     * @param  int|list<int>  $backoffInMs
+     */
+    public function retryFailedMessages(int $times, int|array $backoffInMs = 0): self
     {
-        if ($times < 0 || $backoffInMs < 0) {
-            throw new InvalidArgumentException('The number of retries and the backoff must not be negative.');
+        $backoffs = is_array($backoffInMs) ? $backoffInMs : [$backoffInMs];
+
+        if ($times < 0 || collect($backoffs)->contains(fn (mixed $backoff) => ! is_int($backoff) || $backoff < 0)) {
+            throw new InvalidArgumentException('The number of retries must not be negative, and the backoff must be made of non negative integers.');
         }
 
         $this->failedMessageRetries = $times;
@@ -325,6 +358,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
+    /** Defines a callback that runs before consuming the message. */
     public function beforeConsuming(callable $callable): self
     {
         $this->beforeConsumingCallbacks[] = $callable(...);
@@ -332,6 +366,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
+    /** Defines a callback that runs after consuming the message. */
     public function afterConsuming(callable $callable): self
     {
         $this->afterConsumingCallbacks[] = $callable(...);
@@ -339,6 +374,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
+    /** Assigns a set of partitions this consumer should consume from. */
     public function assignPartitions(array $partitionAssignment): self
     {
         foreach ($partitionAssignment as $assigment) {
@@ -352,6 +388,7 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
+    /** Defines a callback to be executed when consumer stops consuming messages. */
     public function onStopConsuming(callable $onStopConsuming): self
     {
         $this->onStopConsuming = $onStopConsuming(...);
@@ -359,69 +396,127 @@ class Builder implements ConsumerBuilderContract
         return $this;
     }
 
-    public function withPartitionAssignmentCallback(callable $callback): self
+    /**
+     * Defines a callback to be executed when a message is handled as failed, once its retries are used, before
+     * it is sent to the dead letter queue, skipped, or stops the consumer. It receives the message and the exception.
+     */
+    public function onMessageFailed(callable $callback): self
     {
-        $this->partitionAssignmentCallback = $callback(...);
-
-        $this->withRebalanceCb(function ($consumer, $err, $partitions = null) use ($callback) {
-            if ($err === RD_KAFKA_RESP_ERR__ASSIGN_PARTITIONS) {
-                $consumer->assign($partitions);
-                $callback($partitions);
-            } elseif ($err === RD_KAFKA_RESP_ERR__REVOKE_PARTITIONS) {
-                $consumer->assign(null);
-            }
-        });
+        $this->onMessageFailed = $callback(...);
 
         return $this;
     }
 
-    public function assignPartitionsWithOffsets(callable $offsetProvider): self
+    /** Set a callback that receives the partitions assigned to this consumer and the consumer, on every rebalance. */
+    public function onPartitionsAssigned(callable $callback): self
     {
-        // Set up the rebalance callback to handle dynamic partition assignment with offsets
-        $this->withRebalanceCb(function ($consumer, $err, $partitions = null) use ($offsetProvider) {
-            if ($err === RD_KAFKA_RESP_ERR__ASSIGN_PARTITIONS) {
-                // Get offset assignments from the provided callback
-                $partitionsWithOffsets = $offsetProvider($partitions);
-
-                // Assign the partitions with their offsets
-                $consumer->assign($partitionsWithOffsets);
-            } elseif ($err === RD_KAFKA_RESP_ERR__REVOKE_PARTITIONS) {
-                $consumer->assign(null);
-            }
-        });
+        $this->onPartitionsAssigned = $callback(...);
 
         return $this;
     }
 
-    /** {@inheritDoc} */
-    public function build(): MessageConsumer
+    /**
+     * Set a callback that receives the partitions revoked from this consumer and the consumer, on every rebalance.
+     * It is called before the partitions are removed from the assignment, so offsets can still be committed.
+     */
+    public function onPartitionsRevoked(callable $callback): self
     {
-        $config = new Config(
+        $this->onPartitionsRevoked = $callback(...);
+
+        return $this;
+    }
+
+    /**
+     * Set a callback that receives the partitions assigned to this consumer, on every rebalance,
+     * and returns them with the offsets the consumer should start reading from.
+     */
+    public function resolveOffsetsUsing(callable $resolver): self
+    {
+        $this->offsetResolver = $resolver(...);
+
+        return $this;
+    }
+
+    /** Build the Kafka consumer. */
+    public function build(): ConsumerContract
+    {
+        return new Consumer($this->makeConfig(), $this->deserializer, $this->committerFactory);
+    }
+
+    /** Create the configuration of the consumer. */
+    protected function makeConfig(): Config
+    {
+        return new Config(
             broker: $this->brokers,
             topics: $this->topics,
-            securityProtocol: $this->getSecurityProtocol(),
-            commit: $this->commit,
+            securityProtocol: $this->securityProtocol,
             groupId: $this->groupId,
-            consumer: new CallableConsumer($this->handler, $this->middlewares),
+            handler: new MessageHandler($this->handler, $this->middlewares, $this->onMessageFailed),
             sasl: $this->saslConfig,
-            dlq: $this->dlq,
+            dlq: $this->resolveDlq(),
             maxMessages: $this->maxMessages,
-            maxCommitRetries: $this->maxCommitRetries,
             autoCommit: $this->autoCommit,
             customOptions: $this->options,
-            stopAfterLastMessage: $this->stopAfterLastMessage,
-            callbacks: $this->callbacks,
+            // Failed messages are published to the dead letter queue outside of any transaction.
+            producerOptions: array_diff_key($this->connection->producerOptions, ['transactional.id' => true]),
+            flushRetries: $this->connection->flushRetries,
+            flushTimeoutInMs: $this->connection->flushTimeoutInMs,
+            flushRetrySleepInMs: $this->connection->flushRetrySleepInMs,
+            stopAfterLastMessage: $this->stopWhenEmpty,
+            callbacks: $this->resolveCallbacks(),
             beforeConsumingCallbacks: $this->beforeConsumingCallbacks,
             afterConsumingCallbacks: $this->afterConsumingCallbacks,
             maxTime: $this->maxTime,
             partitionAssignment: $this->partitionAssignment,
             whenStopConsuming: $this->onStopConsuming,
-            stopOnFailure: $this->stopOnFailure,
+            consumerTimeoutInMs: $this->consumerTimeoutInMs,
+            skipFailedMessages: $this->skipFailedMessages,
             failedMessageRetries: $this->failedMessageRetries,
             failedMessageRetryBackoff: $this->failedMessageRetryBackoff,
+            name: $this->name,
+            connection: $this->connection->name,
+            onPartitionsAssigned: $this->onPartitionsAssigned,
+            onPartitionsRevoked: $this->onPartitionsRevoked,
+            offsetResolver: $this->offsetResolver,
         );
+    }
 
-        return new Consumer($config, $this->deserializer, $this->committerFactory);
+    /**
+     * Resolve the dead letter queue topic. When no name is given, it is named after the first
+     * subscribed topic, or the topic of the first assigned partition.
+     *
+     * @throws ConsumerException
+     */
+    protected function resolveDlq(): ?string
+    {
+        if (! $this->useDefaultDlq) {
+            return $this->dlq;
+        }
+
+        $topic = $this->topics[0] ?? ($this->partitionAssignment[0] ?? null)?->getTopic();
+
+        if ($topic === null) {
+            throw ConsumerException::dlqCanNotBeSetWithoutSubscribingToAnyTopics();
+        }
+
+        return $topic.'-dlq';
+    }
+
+    /**
+     * Resolve the configuration callbacks. The consumer assigns partitions itself on every rebalance, calling the
+     * partition callbacks, unless a rebalance callback replaces the default assignment, so they can't be combined.
+     */
+    protected function resolveCallbacks(): array
+    {
+        $usesPartitionCallbacks = $this->onPartitionsAssigned instanceof Closure
+            || $this->onPartitionsRevoked instanceof Closure
+            || $this->offsetResolver instanceof Closure;
+
+        if ($usesPartitionCallbacks && isset($this->callbacks['setRebalanceCb'])) {
+            throw new LogicException('A rebalance callback can not be combined with onPartitionsAssigned(), onPartitionsRevoked() or resolveOffsetsUsing(), which rely on the default partition assignment.');
+        }
+
+        return $this->callbacks;
     }
 
     /** Validates each topic before subscribing. */
@@ -432,13 +527,5 @@ class Builder implements ConsumerBuilderContract
 
             throw new InvalidArgumentException("The topic name should be a string value. [{$type}] given.");
         }
-    }
-
-    /** Get security protocol depending on whether sasl is set or not. */
-    protected function getSecurityProtocol(): string
-    {
-        return $this->saslConfig !== null
-            ? $this->saslConfig->getSecurityProtocol()
-            : $this->securityProtocol;
     }
 }

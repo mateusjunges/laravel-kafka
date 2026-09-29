@@ -9,13 +9,15 @@ Kafka consumers belonging to the same consumer group share a group id. The consu
 <x-sponsors.request-sponsor/>
 ```
 
-To attach your consumer to a consumer group, you can use the method `withConsumerGroupId` to specify the consumer group id:
+To attach your consumer to a consumer group, you can use the method `withGroupId` to specify the consumer group id:
 
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-$consumer = Kafka::consumer()->withConsumerGroupId('foo');
+$consumer = Kafka::consumer()->withGroupId('foo');
 ```
+
+When no group is given, consumers use the group of their [connection](../advanced-usage/connections.md), defined by the `consumer.group_id` key of its configuration. By default, it is named after your application, from the `APP_NAME` environment variable, so different applications consuming from the same cluster don't join the same group by accident.
 
 ### Kafka Consumer Group Rebalancing
 
@@ -34,7 +36,7 @@ use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Config\RebalanceStrategy;
 
 $consumer = Kafka::consumer()
-    ->withConsumerGroupId('my-group')
+    ->withGroupId('my-group')
     ->withRebalanceStrategy(RebalanceStrategy::ROUND_ROBIN);
 ```
 
@@ -50,22 +52,22 @@ $consumer = Kafka::consumer()
 ```php
 // Using Range strategy (default)
 $consumer = Kafka::consumer()
-    ->withConsumerGroupId('my-group')
+    ->withGroupId('my-group')
     ->withRebalanceStrategy(RebalanceStrategy::RANGE);
 
 // Using Round Robin for better distribution
 $consumer = Kafka::consumer()
-    ->withConsumerGroupId('my-group')
+    ->withGroupId('my-group')
     ->withRebalanceStrategy(RebalanceStrategy::ROUND_ROBIN);
 
 // Using Sticky for minimal disruption during rebalancing
 $consumer = Kafka::consumer()
-    ->withConsumerGroupId('my-group')
+    ->withGroupId('my-group')
     ->withRebalanceStrategy(RebalanceStrategy::STICKY);
 
 // Using Cooperative Sticky for minimal downtime
 $consumer = Kafka::consumer()
-    ->withConsumerGroupId('my-group')
+    ->withGroupId('my-group')
     ->withRebalanceStrategy(RebalanceStrategy::COOPERATIVE_STICKY);
 ```
 
@@ -73,7 +75,7 @@ You can also pass strategy names as strings:
 
 ```php
 $consumer = Kafka::consumer()
-    ->withConsumerGroupId('my-group')
+    ->withGroupId('my-group')
     ->withRebalanceStrategy('sticky');
 ```
 
@@ -81,6 +83,6 @@ Or set the strategy using raw options:
 
 ```php
 $consumer = Kafka::consumer()
-    ->withConsumerGroupId('my-group')
+    ->withGroupId('my-group')
     ->withOption('partition.assignment.strategy', 'sticky');
 ```

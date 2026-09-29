@@ -7,7 +7,7 @@ use RdKafka\KafkaErrorException;
 
 final class TransactionShouldBeRetriedException extends LaravelKafkaException
 {
-    private const RETRIABLE_EXCEPTION_MESSAGE = 'This transaction failed, but can be retried. [%s]';
+    private const string RETRIABLE_EXCEPTION_MESSAGE = 'This transaction failed, but can be retried. [%s]';
 
     public static function new(KafkaErrorException $baseException): self
     {

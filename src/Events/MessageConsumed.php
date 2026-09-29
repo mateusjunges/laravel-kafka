@@ -2,12 +2,15 @@
 
 namespace Junges\Kafka\Events;
 
+use Junges\Kafka\Contracts\Consumer;
 use Junges\Kafka\Contracts\ConsumerMessage;
 
-final class MessageConsumed
+/** Dispatched when the handler processed a message. The message holds the number of the attempt that succeeded. */
+final readonly class MessageConsumed
 {
     public function __construct(
-        public readonly ConsumerMessage $message
+        public ConsumerMessage $message,
+        public Consumer $consumer,
     ) {}
 
     public function getMessageIdentifier(): string
