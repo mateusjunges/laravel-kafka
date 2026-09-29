@@ -69,7 +69,7 @@ class Producer implements ProducerContract
     /** {@inheritDoc} */
     public function produce(ProducerMessage $message, ?MessageSerializer $serializer = null): void
     {
-        $this->dispatcher->dispatch(new PublishingMessage($message));
+        $this->dispatcher->dispatch(new PublishingMessage($message, $this->config->getConnectionName()));
 
         $topic = $this->topics[$message->getTopicName()] ??= $this->producer->newTopic($message->getTopicName());
 
@@ -101,6 +101,7 @@ class Producer implements ProducerContract
                 $exception->getCode(),
                 $exception->getMessage(),
                 $exception,
+                $this->config->getConnectionName(),
             ));
 
             throw $exception;
@@ -155,7 +156,7 @@ class Producer implements ProducerContract
             msg_opaque: $headers[$this->messageIdKey] ?? null,
         );
 
-        $this->dispatcher->dispatch(new MessagePublished($message));
+        $this->dispatcher->dispatch(new MessagePublished($message, $this->config->getConnectionName()));
     }
 
     private function handleStatistics(mixed $kafka, string $statistics, int $length, ?callable $callback): void
@@ -185,6 +186,7 @@ class Producer implements ProducerContract
                 offset: $message->offset,
                 key: $message->key,
                 messageIdentifier: $message->opaque ?? $message->headers[$this->messageIdKey] ?? null,
+                connection: $this->config->getConnectionName(),
             ));
 
             return;
@@ -199,6 +201,7 @@ class Producer implements ProducerContract
             errorCode: $message->err,
             error: $message->errstr(),
             messageIdentifier: $message->opaque ?? $message->headers[$this->messageIdKey] ?? null,
+            connection: $this->config->getConnectionName(),
         ));
     }
 }

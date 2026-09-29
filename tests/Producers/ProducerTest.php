@@ -63,13 +63,13 @@ final class ProducerTest extends LaravelKafkaTestCase
 
         $message = Message::create('test-topic')->withBody(['key' => 'value']);
 
-        (new Producer(new Config('broker', ['test-topic']), new JsonSerializer))->produce($message);
+        (new Producer(new Config('broker', ['test-topic'], connection: 'orders'), new JsonSerializer))->produce($message);
 
         $id = $sentHeaders[config('kafka.message_id_key')];
 
         $this->assertSame($message->getMessageIdentifier(), $id);
-        Event::assertDispatched(MessagePublished::class, fn (MessagePublished $event) => $event->message->getMessageIdentifier() === $id);
-        Event::assertDispatched(PublishingMessage::class, fn (PublishingMessage $event) => $event->message->getMessageIdentifier() === $id);
+        Event::assertDispatched(MessagePublished::class, fn (MessagePublished $event) => $event->message->getMessageIdentifier() === $id && $event->connection === 'orders');
+        Event::assertDispatched(PublishingMessage::class, fn (PublishingMessage $event) => $event->message->getMessageIdentifier() === $id && $event->connection === 'orders');
     }
 
     #[Test]
@@ -95,7 +95,8 @@ final class ProducerTest extends LaravelKafkaTestCase
             && $event->payload === '{"id":1}'
             && $event->errorCode === RD_KAFKA_RESP_ERR__MSG_TIMED_OUT
             && $event->error === rd_kafka_err2str(RD_KAFKA_RESP_ERR__MSG_TIMED_OUT)
-            && $event->getMessageIdentifier() === 'message-id');
+            && $event->getMessageIdentifier() === 'message-id'
+            && $event->connection === 'default');
     }
 
     #[Test]
@@ -120,7 +121,8 @@ final class ProducerTest extends LaravelKafkaTestCase
             && $event->partition === 2
             && $event->offset === 42
             && $event->key === 'order-1'
-            && $event->getMessageIdentifier() === 'message-id');
+            && $event->getMessageIdentifier() === 'message-id'
+            && $event->connection === 'default');
     }
 
     #[Test]

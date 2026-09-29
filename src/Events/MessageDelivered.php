@@ -11,6 +11,8 @@ final readonly class MessageDelivered
         public int $offset,
         public ?string $key,
         public ?string $messageIdentifier,
+        /** The name of the connection the message was published on. */
+        public ?string $connection = null,
     ) {}
 
     public function getMessageIdentifier(): ?string

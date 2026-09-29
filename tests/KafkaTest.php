@@ -486,7 +486,8 @@ final class KafkaTest extends LaravelKafkaTestCase
         } finally {
             Event::assertDispatched(CouldNotPublishMessageEvent::class, fn (CouldNotPublishMessageEvent $event) => $event->throwable instanceof CouldNotPublishMessage
                 && $event->errorCode === RD_KAFKA_RESP_ERR__FAIL
-                && $event->message === $expectedMessage);
+                && $event->message === $expectedMessage
+                && $event->connection === config('kafka.default'));
         }
     }
 

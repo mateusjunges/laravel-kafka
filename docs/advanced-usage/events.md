@@ -29,11 +29,13 @@ Every event about a single message has a `getMessageIdentifier()` method, return
 
 | Event | Dispatched when | Properties |
 | --- | --- | --- |
-| `PublishingMessage` | A message is about to be queued on the producer. | `message`, the `ProducerMessage` being published. |
-| `MessagePublished` | A message was queued on the producer. It is delivered in the background, so this does not mean Kafka received it. | `message`, the published `ProducerMessage`, with its serialized body. |
-| `MessageDelivered` | Kafka acknowledged a queued message. | `topic`, `partition`, `offset`, `key` and `messageIdentifier`. |
-| `MessageDeliveryFailed` | A queued message could not be delivered, for instance because its topic does not exist or it was not acknowledged within `message.timeout.ms`. | `topic`, `partition`, `key`, `payload`, `headers`, `errorCode`, `error` and `messageIdentifier`. |
-| `CouldNotPublishMessage` | Flushing the producer failed, after its retries. The exception is also thrown, or reported when the flush happens as the application terminates. | `errorCode`, `message` and `throwable`. |
+| `PublishingMessage` | A message is about to be queued on the producer. | `message`, the `ProducerMessage` being published, and `connection`. |
+| `MessagePublished` | A message was queued on the producer. It is delivered in the background, so this does not mean Kafka received it. | `message`, the published `ProducerMessage`, with its serialized body, and `connection`. |
+| `MessageDelivered` | Kafka acknowledged a queued message. | `topic`, `partition`, `offset`, `key`, `messageIdentifier` and `connection`. |
+| `MessageDeliveryFailed` | A queued message could not be delivered, for instance because its topic does not exist or it was not acknowledged within `message.timeout.ms`. | `topic`, `partition`, `key`, `payload`, `headers`, `errorCode`, `error`, `messageIdentifier` and `connection`. |
+| `CouldNotPublishMessage` | Flushing the producer failed, after its retries. The exception is also thrown, or reported when the flush happens as the application terminates. | `errorCode`, `message`, `throwable` and `connection`. |
+
+The `connection` of the producer events is the name of the connection the message was published on, as configured in `config/kafka.php`, so listeners can tell the clusters of an application apart, or publish a message again on the same one.
 
 Delivery reports are received while the producer publishes or flushes messages, so `MessageDelivered` and `MessageDeliveryFailed` are usually dispatched when the messages are flushed. See [producing messages](../producing-messages/producing-messages.md) for when queued messages are flushed.
 
