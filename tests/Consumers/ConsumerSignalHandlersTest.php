@@ -3,7 +3,9 @@
 namespace Junges\Kafka\Tests\Consumers;
 
 use Closure;
+use Illuminate\Support\Facades\Event;
 use Junges\Kafka\Contracts\Consumer as ConsumerContract;
+use Junges\Kafka\Events\ConsumerStopped;
 use Junges\Kafka\Exceptions\ConsumerException;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
@@ -61,6 +63,41 @@ final class ConsumerSignalHandlersTest extends LaravelKafkaTestCase
     public function it_invokes_the_handler_registered_by_the_host_process_when_a_signal_arrives_while_consuming(): void
     {
         $this->mockConsumerRaisingSignalWhileConsuming(SIGTERM);
+        $this->mockProducer();
+
+        $this->buildConsumer()->consume();
+
+        $this->assertSame([SIGTERM], $this->signalsReceivedByHostHandler);
+    }
+
+    #[Test]
+    public function it_invokes_the_handler_of_the_host_process_only_once_the_consumer_is_closed(): void
+    {
+        $events = [];
+
+        Event::listen(ConsumerStopped::class, function () use (&$events) {
+            $events[] = 'stopped';
+        });
+
+        $this->hostHandler = function (int $signal) use (&$events): void {
+            $events[] = "host handler received {$signal}";
+        };
+        pcntl_signal(SIGTERM, $this->hostHandler);
+
+        $this->mockConsumerRaisingSignalWhileConsuming(SIGTERM, onClose: function () use (&$events) {
+            $events[] = 'closed';
+        });
+        $this->mockProducer();
+
+        $this->buildConsumer()->consume();
+
+        $this->assertSame(['closed', 'stopped', 'host handler received '.SIGTERM], $events);
+    }
+
+    #[Test]
+    public function it_invokes_the_handler_of_the_host_process_once_per_signal(): void
+    {
+        $this->mockConsumerRaisingSignalWhileConsuming(SIGTERM, raiseTwice: true);
         $this->mockProducer();
 
         $this->buildConsumer()->consume();
@@ -172,21 +209,29 @@ final class ConsumerSignalHandlersTest extends LaravelKafkaTestCase
             ->build();
     }
 
-    private function mockConsumerRaisingSignalWhileConsuming(int $signal, ?Message $message = null): void
+    private function mockConsumerRaisingSignalWhileConsuming(int $signal, ?Message $message = null, ?Closure $onClose = null, bool $raiseTwice = false): void
     {
         $mockedKafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')
             ->withAnyArgs()
-            ->andReturnUsing(function () use ($signal, $message): Message {
+            ->andReturnUsing(function () use ($signal, $message, $raiseTwice): Message {
                 posix_kill(posix_getpid(), $signal);
+
+                if ($raiseTwice) {
+                    posix_kill(posix_getpid(), $signal);
+                }
 
                 return $message ?? $this->timedOutMessage();
             })
             ->shouldReceive('commit')
             ->andReturn()
             ->getMock();
+
+        if ($onClose instanceof Closure) {
+            $mockedKafkaConsumer->shouldReceive('close')->once()->andReturnUsing($onClose);
+        }
 
         $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
     }
