@@ -743,7 +743,13 @@ class Consumer implements ConsumerContract
         }
 
         if ($this->config->shouldStopAfterLastMessage() && in_array($message->err, self::CONSUME_STOP_EOF_ERRORS, true)) {
-            if ($message->err !== RD_KAFKA_RESP_ERR__PARTITION_EOF || $this->allAssignedPartitionsReachedEof($message)) {
+            // Joining a consumer group and getting partitions assigned may take longer than the
+            // consumer timeout, so a timeout received before that only means the consumer is
+            // not reading from any partition yet, and not that there are no messages left.
+            if ($message->err === RD_KAFKA_RESP_ERR__PARTITION_EOF
+                ? $this->allAssignedPartitionsReachedEof($message)
+                : $this->getAssignedPartitions() !== []
+            ) {
                 $this->requestStop(StopReason::Empty);
             }
         }

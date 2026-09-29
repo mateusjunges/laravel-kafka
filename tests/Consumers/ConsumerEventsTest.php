@@ -407,7 +407,7 @@ final class ConsumerEventsTest extends LaravelKafkaTestCase
     {
         $mockedKafkaConsumer = $this->mockKafkaConsumer();
         $mockedKafkaConsumer->shouldReceive('subscribe');
-        $mockedKafkaConsumer->shouldReceive('getAssignment')->andReturn([]);
+        $mockedKafkaConsumer->shouldReceive('getAssignment')->andReturn([new TopicPartition('test-topic', 0)]);
         $mockedKafkaConsumer->shouldReceive('consume')->andReturnUsing(function () use (&$messages) {
             return array_shift($messages) ?? $this->makeMessage('ok', offset: 99);
         });

@@ -227,6 +227,8 @@ final class ConsumerSignalHandlersTest extends LaravelKafkaTestCase
             })
             ->shouldReceive('commit')
             ->andReturn()
+            ->shouldReceive('getAssignment')
+            ->andReturn([])
             ->getMock();
 
         if ($onClose instanceof Closure) {
