@@ -18,6 +18,8 @@ final readonly class MessageDeliveryFailed
         public int $errorCode,
         public string $error,
         public ?string $messageIdentifier,
+        /** The name of the connection the message was published on. */
+        public ?string $connection = null,
     ) {}
 
     public function getMessageIdentifier(): ?string

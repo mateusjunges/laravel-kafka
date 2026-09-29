@@ -8,6 +8,8 @@ final readonly class MessagePublished
 {
     public function __construct(
         public ProducerMessage $message,
+        /** The name of the connection the message was published on. */
+        public ?string $connection = null,
     ) {}
 
     public function getMessageIdentifier(): string

@@ -10,5 +10,7 @@ final readonly class CouldNotPublishMessage
         public int $errorCode,
         public string $message,
         public Throwable $throwable,
+        /** The name of the connection of the producer that could not flush its messages. */
+        public ?string $connection = null,
     ) {}
 }
