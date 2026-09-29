@@ -2,6 +2,9 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+##[2026-09-29 v2.12.1](https://github.com/mateusjunges/laravel-kafka/compare/v2.12.0...v2.12.1)
+* Wait for partitions to be assigned before stopping on a consumer timeout when using `stopAfterLastMessage()`, so consumers no longer stop before consuming any message while joining the consumer group ([#301](https://github.com/mateusjunges/laravel-kafka/issues/301)) by [@mateusjunges](https://github.com/mateusjunges) in [#399](https://github.com/mateusjunges/laravel-kafka/pull/399)
+
 ##[2026-09-28 v2.12.0](https://github.com/mateusjunges/laravel-kafka/compare/v2.11.5...v2.12.0)
 * Add `stopOnFailure()` to consumers, which stops consuming without committing the offset of a failed message when no dead letter queue is configured, so it is consumed again after a restart instead of being lost ([#394](https://github.com/mateusjunges/laravel-kafka/issues/394)) by [@mateusjunges](https://github.com/mateusjunges) in [#395](https://github.com/mateusjunges/laravel-kafka/pull/395)
 * Add `retryFailedMessages()` to consumers, which calls the handler of a failed message again, with an optional backoff, before handling it as failed by [@mateusjunges](https://github.com/mateusjunges) in [#396](https://github.com/mateusjunges/laravel-kafka/pull/396)
