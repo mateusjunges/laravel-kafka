@@ -1000,6 +1000,53 @@ final class ConsumerTest extends LaravelKafkaTestCase
     }
 
     #[Test]
+    public function it_does_not_stop_consuming_on_timeout_before_partitions_are_assigned(): void
+    {
+        $fakeHandler = new FakeHandler;
+
+        $timedOutWhileJoining = new Message;
+        $timedOutWhileJoining->err = RD_KAFKA_RESP_ERR__TIMED_OUT;
+
+        $timedOut = new Message;
+        $timedOut->err = RD_KAFKA_RESP_ERR__TIMED_OUT;
+
+        $messages = [$timedOutWhileJoining, $this->makeMessage('ok', offset: 0), $timedOut];
+        $assignments = [[], [new TopicPartition('test-topic', 0)]];
+
+        $mockedKafkaConsumer = m::mock(KafkaConsumer::class);
+        $mockedKafkaConsumer->shouldReceive('subscribe')->andReturnSelf();
+        $mockedKafkaConsumer->shouldReceive('consume')->times(3)->andReturnUsing(function () use (&$messages) {
+            return array_shift($messages);
+        });
+        $mockedKafkaConsumer->shouldReceive('commit');
+        $mockedKafkaConsumer->shouldReceive('getAssignment')->twice()->andReturnUsing(function () use (&$assignments) {
+            return array_shift($assignments);
+        });
+
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
+
+        $config = new Config(
+            broker: 'broker',
+            topics: ['test-topic'],
+            securityProtocol: 'security',
+            commit: 1,
+            groupId: 'group',
+            consumer: $fakeHandler,
+            sasl: null,
+            dlq: null,
+            maxMessages: -1,
+            maxCommitRetries: 1,
+            stopAfterLastMessage: true,
+        );
+
+        $consumer = new Consumer($config, new JsonDeserializer);
+        $consumer->consume();
+
+        $this->assertSame(1, $consumer->consumedMessagesCount());
+        $this->assertInstanceOf(ConsumedMessage::class, $fakeHandler->lastMessage());
+    }
+
+    #[Test]
     public function it_commits_failed_messages_by_default_when_no_dlq_is_configured(): void
     {
         $message = $this->makeMessage('failing', offset: 0);

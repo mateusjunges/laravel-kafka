@@ -186,6 +186,8 @@ final class ConsumerSignalHandlersTest extends LaravelKafkaTestCase
             })
             ->shouldReceive('commit')
             ->andReturn()
+            ->shouldReceive('getAssignment')
+            ->andReturn([])
             ->getMock();
 
         $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
