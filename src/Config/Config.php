@@ -6,6 +6,7 @@ use Closure;
 use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\Contracts\Consumer;
 use RdKafka\TopicPartition;
+use Throwable;
 
 class Config
 {
@@ -88,9 +89,10 @@ class Config
         private readonly ?Closure $whenStopConsuming = null,
         public readonly ?int $flushRetries = null,
         public readonly ?int $flushTimeoutInMs = null,
-        private readonly bool $stopOnFailure = false,
+        private readonly bool|Closure $stopOnFailure = false,
         private readonly int $failedMessageRetries = 0,
         private readonly int $failedMessageRetryBackoff = 0,
+        private readonly ?Closure $failedMessageRetryWhen = null,
     ) {}
 
     public function getCommit(): int
@@ -138,8 +140,16 @@ class Config
         return $this->stopAfterLastMessage;
     }
 
-    public function shouldStopOnFailure(): bool
+    /**
+     * Determine if the consumer must stop when a message fails with the given exception.
+     * Without an exception, it determines if stopping on failure is enabled at all.
+     */
+    public function shouldStopOnFailure(?Throwable $throwable = null): bool
     {
+        if ($this->stopOnFailure instanceof Closure) {
+            return $throwable === null || (bool) ($this->stopOnFailure)($throwable);
+        }
+
         return $this->stopOnFailure;
     }
 
@@ -154,13 +164,19 @@ class Config
         return $this->failedMessageRetryBackoff;
     }
 
+    /** Determine if a message that failed with the given exception must be retried. */
+    public function shouldRetryFailedMessage(Throwable $throwable): bool
+    {
+        return $this->failedMessageRetryWhen === null || (bool) ($this->failedMessageRetryWhen)($throwable);
+    }
+
     /**
      * Determine if offsets must be stored by the consumer after each message is processed,
      * instead of being stored by librdkafka as soon as each message is fetched.
      */
     public function shouldStoreOffsetsAfterProcessing(): bool
     {
-        return $this->autoCommit && ($this->stopOnFailure || $this->failedMessageRetries > 0);
+        return $this->autoCommit && ($this->stopOnFailure !== false || $this->failedMessageRetries > 0);
     }
 
     public function getConsumerOptions(): array

@@ -2,6 +2,7 @@
 
 namespace Junges\Kafka\Contracts;
 
+use Closure;
 use Junges\Kafka\Config\RebalanceStrategy;
 
 interface ConsumerBuilder extends InteractsWithConfigCallbacks
@@ -108,11 +109,17 @@ interface ConsumerBuilder extends InteractsWithConfigCallbacks
     /** Enable or disable the read to end option. */
     public function stopAfterLastMessage(bool $stopAfterLastMessage = true): self;
 
-    /** Stop consuming when a message fails and there is no dead letter queue, without committing its offset. */
-    public function stopOnFailure(bool $stopOnFailure = true): self;
+    /**
+     * Stop consuming when a message fails and there is no dead letter queue, without committing its offset.
+     * A closure receives the exception that made the message fail and determines if the consumer stops.
+     */
+    public function stopOnFailure(bool|Closure $stopOnFailure = true): self;
 
-    /** Call the handler of a failed message again up to the given number of times before handling it as failed. */
-    public function retryFailedMessages(int $times, int $backoffInMs = 0): self;
+    /**
+     * Call the handler of a failed message again up to the given number of times before handling it as failed.
+     * The "when" closure receives the exception of each failed attempt and determines if the message is retried.
+     */
+    public function retryFailedMessages(int $times, int $backoffInMs = 0, ?Closure $when = null): self;
 
     /** Build the Kafka consumer. */
     public function build(): MessageConsumer;

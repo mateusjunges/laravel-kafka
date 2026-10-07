@@ -6,7 +6,10 @@ use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Contracts\Consumer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
+use LogicException;
 use PHPUnit\Framework\Attributes\Test;
+use RuntimeException;
+use Throwable;
 
 final class ConfigTest extends LaravelKafkaTestCase
 {
@@ -57,6 +60,28 @@ final class ConfigTest extends LaravelKafkaTestCase
 
         $this->assertTrue($config->shouldStoreOffsetsAfterProcessing());
         $this->assertSame('false', $config->getConsumerOptions()['enable.auto.offset.store']);
+    }
+
+    #[Test]
+    public function it_disables_automatic_offset_store_when_stopping_on_failure_conditionally_with_auto_commit(): void
+    {
+        $config = new Config(
+            broker: 'broker',
+            topics: ['topic'],
+            securityProtocol: 'security',
+            commit: 1,
+            groupId: 'group',
+            consumer: $this->createStub(Consumer::class),
+            sasl: null,
+            dlq: null,
+            autoCommit: true,
+            stopOnFailure: fn (Throwable $throwable) => $throwable instanceof RuntimeException,
+        );
+
+        $this->assertTrue($config->shouldStoreOffsetsAfterProcessing());
+        $this->assertSame('false', $config->getConsumerOptions()['enable.auto.offset.store']);
+        $this->assertTrue($config->shouldStopOnFailure(new RuntimeException));
+        $this->assertFalse($config->shouldStopOnFailure(new LogicException));
     }
 
     #[Test]
