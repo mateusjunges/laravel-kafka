@@ -2,5 +2,5 @@
 title: v2.11
 slogan: Use Kafka Producers and Consumers in your laravel app with ease!
 githubUrl: https://github.com/mateusjunges/laravel-kafka
-branch: master
+branch: v2.11
 ---
