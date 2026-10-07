@@ -366,15 +366,20 @@ class Consumer implements MessageConsumer
             $consumedMessage = $this->deserializer->deserialize($consumedMessage);
 
             // The handler is called again while it fails and has retries left, waiting for the backoff
-            // between attempts. Retries stop early when the consumer is asked to stop consuming.
+            // between attempts. Retries stop early when the consumer is asked to stop consuming, or
+            // when the exception does not match the retry condition given to the consumer builder.
             retry(
                 $this->config->getFailedMessageRetries() + 1,
                 fn () => $this->config->getConsumer()->handle($consumedMessage, $this),
                 $this->config->getFailedMessageRetryBackoff(),
                 function (Throwable $throwable) use ($message): bool {
+                    if ($this->stopRequested || ! $this->config->shouldRetryFailedMessage($throwable)) {
+                        return false;
+                    }
+
                     $this->logger->error($message, $throwable, 'RETRY');
 
-                    return ! $this->stopRequested;
+                    return true;
                 },
             );
             $success = true;
@@ -388,7 +393,7 @@ class Consumer implements MessageConsumer
             // Without a dead letter queue, the offset of the failed message is left uncommitted,
             // so it is consumed again once a consumer resumes from this partition. Closing the
             // consumer commits the offsets stored so far and leaves the group right away.
-            if (! $success && $this->config->shouldStopOnFailure()) {
+            if (! $success && $this->config->shouldStopOnFailure($throwable)) {
                 $this->consumer->close();
 
                 throw ConsumerException::stoppedOnFailure($message, $throwable);

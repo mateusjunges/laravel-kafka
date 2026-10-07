@@ -32,6 +32,20 @@ $consumer = \Junges\Kafka\Facades\Kafka::consumer(['orders'])
 
 When the handler throws an exception, it is called again with the same message, up to the given number of times. Middlewares run again on every attempt. Once all retries are used, the message is handled as failed: the `failed` method of the consumer class is called, and the message is sent to the dead letter queue, stops the consumer, or is skipped, depending on the configuration. Retries also end early when the consumer is asked to stop, for instance by a termination signal.
 
+Some failures will never succeed no matter how many times the handler is called, such as a validation error or a database constraint violation. To retry only some of them, pass a closure to the `when` argument. It receives the exception thrown by the handler, and the message is retried only when the closure returns `true`:
+
+```php
+use Illuminate\Http\Client\ConnectionException;
+
+$consumer = \Junges\Kafka\Facades\Kafka::consumer(['orders'])
+    ->withConsumerGroupId('orders-group')
+    ->retryFailedMessages(3, backoffInMs: 1000, when: fn (Throwable $e) => $e instanceof ConnectionException)
+    ->withHandler(new OrderHandler)
+    ->build();
+```
+
+The closure is called after each failed attempt. When it returns `false`, the remaining retries are skipped and the message is handled as failed right away.
+
 The consumer waits during the backoff, so no other message is consumed while a message is being retried. Keep the total time spent retrying a message (the number of retries multiplied by the backoff, plus the time the handler takes) well below the `max.poll.interval.ms` consumer option, 5 minutes by default. A consumer that does not poll Kafka within that interval is removed from the consumer group. Longer outages are better handled by a dead letter queue or by stopping the consumer.
 
 The `SeekToCurrentErrorCommitter` committer is deprecated in favor of this method, as it does not make failed messages be consumed again.
@@ -62,6 +76,21 @@ The consumer process is expected to exit, and to be restarted by a process monit
 - A message that always fails stops the consumer every time it is consumed, blocking its partition until the cause is fixed.
 - Make sure your process monitor keeps restarting the consumer. Supervisor, for instance, considers a process that exits within `startsecs` seconds of starting as a failed start, and gives up after `startretries` failed starts.
 - When a dead letter queue is also configured, failed messages are sent to it and the consumer does not stop. Stopping only happens for failures that can not be sent anywhere else.
+
+Stopping the consumer is useful when a failure is temporary, like a database or a cache that is down, because the message can succeed once the consumer is restarted. A failure that is not temporary, like a message that can not be deserialized, would stop the consumer every time it is restarted. To stop only for some failures, pass a closure to the `stopOnFailure` method. It receives the exception that made the message fail, and the consumer stops only when the closure returns `true`:
+
+```php
+use Illuminate\Database\QueryException;
+use Illuminate\Http\Client\ConnectionException;
+
+$consumer = \Junges\Kafka\Facades\Kafka::consumer(['orders'])
+    ->withConsumerGroupId('orders-group')
+    ->stopOnFailure(fn (Throwable $e) => $e instanceof QueryException || $e instanceof ConnectionException)
+    ->withHandler(new OrderHandler)
+    ->build();
+```
+
+When the closure returns `false`, the failed message is skipped, as it would be without `stopOnFailure`, and the consumer moves on to the next message. The closure receives the exception thrown while processing the message, not an exception thrown by the `failed` method of the consumer class, and it is not called when the message is sent to a dead letter queue.
 
 With auto commit enabled, both `stopOnFailure` and `retryFailedMessages` set the `enable.auto.offset.store` option to `false`, and the consumer stores the offset of each message only after it is processed. This is what keeps librdkafka from committing the offset of a failed message in the background.
 
