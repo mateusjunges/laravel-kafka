@@ -2,6 +2,10 @@
 
 All relevant changes to `mateusjunges/laravel-kafka` will be documented here.
 
+##[2026-10-07 v2.13.0](https://github.com/mateusjunges/laravel-kafka/compare/v2.12.1...v2.13.0)
+* Accept a closure in `stopOnFailure()` and a `when` closure in `retryFailedMessages()`, so consumers stop or retry only for the exceptions that match them, instead of stopping again on every restart for failures that will never succeed ([#402](https://github.com/mateusjunges/laravel-kafka/issues/402)) by [@mateusjunges](https://github.com/mateusjunges) in [#403](https://github.com/mateusjunges/laravel-kafka/pull/403)
+* Document disabling Laravel Telescope for Kafka consumer commands, as it keeps every recorded entry in memory until the long running consumer crashes by [@mateusjunges](https://github.com/mateusjunges) in [#400](https://github.com/mateusjunges/laravel-kafka/pull/400)
+
 ##[2026-09-29 v2.12.1](https://github.com/mateusjunges/laravel-kafka/compare/v2.12.0...v2.12.1)
 * Wait for partitions to be assigned before stopping on a consumer timeout when using `stopAfterLastMessage()`, so consumers no longer stop before consuming any message while joining the consumer group ([#301](https://github.com/mateusjunges/laravel-kafka/issues/301)) by [@mateusjunges](https://github.com/mateusjunges) in [#399](https://github.com/mateusjunges/laravel-kafka/pull/399)
 

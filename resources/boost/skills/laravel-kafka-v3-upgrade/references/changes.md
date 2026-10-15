@@ -76,6 +76,7 @@ Search for: `Kafka::consumer(`, `withConsumerGroupId(`, `withMaxMessages(`, `wit
 | `->withSasl(username: ..., password: ..., mechanisms: ...)` | `->withSasl(username: ..., password: ..., mechanism: ...)`. It also accepts the `Junges\Kafka\Config\SaslMechanism` and `SecurityProtocol` enums. |
 | `->withCommitBatchSize()`, `->withMaxCommitRetries()` | Remove them. Offsets are committed in the background, tune it with the `auto.commit.interval.ms` option. |
 | `->stopOnFailure()` | Remove it, it is the default. |
+| `->stopOnFailure(fn (Throwable $e) => ...)` | `->skipFailedMessages(fn (Throwable $e) => ! (...))`, negating the condition, as the closure now tells which failed messages are skipped. |
 | No dead letter queue, relying on failed messages being skipped | `->skipFailedMessages()`, if the user wants to keep the v2 behavior. |
 | `->withPartitionAssignmentCallback(fn ($partitions) => ...)` | `->onPartitionsAssigned(fn ($partitions) => ...)` |
 | `->assignPartitionsWithOffsets(fn ($partitions) => ...)` | `->resolveOffsetsUsing(fn ($partitions) => ...)` |

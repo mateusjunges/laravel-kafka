@@ -5,7 +5,10 @@ namespace Junges\Kafka\Tests\Config;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Config\Sasl;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
+use LogicException;
 use PHPUnit\Framework\Attributes\Test;
+use RuntimeException;
+use Throwable;
 
 final class ConfigTest extends LaravelKafkaTestCase
 {
@@ -52,6 +55,41 @@ final class ConfigTest extends LaravelKafkaTestCase
 
         $this->assertTrue($config->shouldStoreOffsetsAfterProcessing());
         $this->assertSame('false', $config->getConsumerOptions()['enable.auto.offset.store']);
+    }
+
+    #[Test]
+    public function it_skips_failed_messages_matching_the_skip_condition(): void
+    {
+        $config = new Config(
+            broker: 'broker',
+            topics: ['topic'],
+            securityProtocol: 'PLAINTEXT',
+            groupId: 'group',
+            sasl: null,
+            dlq: null,
+            skipFailedMessages: fn (Throwable $throwable) => $throwable instanceof RuntimeException,
+        );
+
+        $this->assertTrue($config->shouldSkipFailedMessage(new RuntimeException));
+        $this->assertFalse($config->shouldSkipFailedMessage(new LogicException));
+    }
+
+    #[Test]
+    public function it_retries_failed_messages_matching_the_retry_condition(): void
+    {
+        $config = new Config(
+            broker: 'broker',
+            topics: ['topic'],
+            securityProtocol: 'PLAINTEXT',
+            groupId: 'group',
+            sasl: null,
+            dlq: null,
+            failedMessageRetries: 3,
+            failedMessageRetryWhen: fn (Throwable $throwable) => $throwable instanceof RuntimeException,
+        );
+
+        $this->assertTrue($config->shouldRetryFailedMessage(new RuntimeException));
+        $this->assertFalse($config->shouldRetryFailedMessage(new LogicException));
     }
 
     #[Test]

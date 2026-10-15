@@ -204,6 +204,16 @@ Kafka::consumer(['page-views'])->withHandler($handler);
 Kafka::consumer(['page-views'])->skipFailedMessages()->withHandler($handler);
 ```
 
+A closure given to `stopOnFailure()` in v2.13 becomes a closure given to `skipFailedMessages()`, with the condition negated, as it now tells which failed messages are skipped instead of which ones stop the consumer:
+
+```php
+// v2.13
+Kafka::consumer(['orders'])->stopOnFailure(fn (Throwable $e) => $e instanceof QueryException);
+
+// v3.0
+Kafka::consumer(['orders'])->skipFailedMessages(fn (Throwable $e) => ! $e instanceof QueryException);
+```
+
 The `kafka:consume` command follows the new default as well.
 
 With auto commit enabled, every consumer now sets the `enable.auto.offset.store` option to `false` and stores the offset of each message only after it is processed or skipped, even when set to `true` through `withOptions()`. In v2, this only happened when `stopOnFailure()` or `retryFailedMessages()` were used.

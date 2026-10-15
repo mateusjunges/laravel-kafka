@@ -6,6 +6,7 @@ use Closure;
 use Junges\Kafka\Consumers\MessageHandler;
 use RdKafka\Conf;
 use RdKafka\TopicPartition;
+use Throwable;
 
 class Config
 {
@@ -85,9 +86,10 @@ class Config
         public readonly int $flushTimeoutInMs = 1000,
         public readonly int $flushRetrySleepInMs = 100,
         public readonly int $consumerTimeoutInMs = 2000,
-        private readonly bool $skipFailedMessages = false,
+        private readonly bool|Closure $skipFailedMessages = false,
         private readonly int $failedMessageRetries = 0,
         private readonly int|array $failedMessageRetryBackoff = 0,
+        private readonly ?Closure $failedMessageRetryWhen = null,
         private readonly ?string $name = null,
         private readonly string $connection = 'default',
         private readonly ?Closure $onPartitionsAssigned = null,
@@ -153,9 +155,16 @@ class Config
         return $this->stopAfterLastMessage;
     }
 
-    /** Determine if failed messages are skipped when there is no dead letter queue, instead of stopping the consumer. */
-    public function shouldSkipFailedMessages(): bool
+    /**
+     * Determine if a message that failed with the given exception is skipped when there is no dead letter
+     * queue, instead of stopping the consumer. A closure receives the exception and determines it.
+     */
+    public function shouldSkipFailedMessage(Throwable $throwable): bool
     {
+        if ($this->skipFailedMessages instanceof Closure) {
+            return (bool) ($this->skipFailedMessages)($throwable);
+        }
+
         return $this->skipFailedMessages;
     }
 
@@ -177,6 +186,12 @@ class Config
         }
 
         return fn (int $attempt): int => $backoff[$attempt - 1] ?? $backoff[array_key_last($backoff)] ?? 0;
+    }
+
+    /** Determine if a message that failed with the given exception must be retried. */
+    public function shouldRetryFailedMessage(Throwable $throwable): bool
+    {
+        return $this->failedMessageRetryWhen === null || (bool) ($this->failedMessageRetryWhen)($throwable);
     }
 
     /**

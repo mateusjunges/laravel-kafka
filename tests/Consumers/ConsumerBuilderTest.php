@@ -26,6 +26,8 @@ use RdKafka\KafkaConsumer;
 use RdKafka\Message;
 use RdKafka\TopicPartition;
 use ReflectionMethod;
+use RuntimeException;
+use Throwable;
 
 final class ConsumerBuilderTest extends LaravelKafkaTestCase
 {
@@ -436,6 +438,17 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
     }
 
     #[Test]
+    public function it_can_set_a_skip_failed_messages_condition(): void
+    {
+        $condition = fn (Throwable $throwable) => $throwable instanceof RuntimeException;
+
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->skipFailedMessages($condition);
+
+        $this->assertInstanceOf(Consumer::class, $consumer->build());
+        $this->assertSame($condition, $this->getPropertyWithReflection('skipFailedMessages', $consumer));
+    }
+
+    #[Test]
     public function it_can_set_failed_message_retries(): void
     {
         $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->retryFailedMessages(3, backoffInMs: 500);
@@ -443,6 +456,17 @@ final class ConsumerBuilderTest extends LaravelKafkaTestCase
         $this->assertInstanceOf(Consumer::class, $consumer->build());
         $this->assertSame(3, $this->getPropertyWithReflection('failedMessageRetries', $consumer));
         $this->assertSame(500, $this->getPropertyWithReflection('failedMessageRetryBackoff', $consumer));
+    }
+
+    #[Test]
+    public function it_can_set_a_failed_message_retry_condition(): void
+    {
+        $condition = fn (Throwable $throwable) => $throwable instanceof RuntimeException;
+
+        $consumer = Builder::create(new ConnectionConfig('default', 'broker'))->retryFailedMessages(3, when: $condition);
+
+        $this->assertInstanceOf(Consumer::class, $consumer->build());
+        $this->assertSame($condition, $this->getPropertyWithReflection('failedMessageRetryWhen', $consumer));
     }
 
     #[Test]

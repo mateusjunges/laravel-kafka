@@ -61,7 +61,22 @@ function (ConsumerMessage $message, Consumer $consumer) {
     // ...
 }
 ```
- Once all retries are used, the message is handled as failed: the [failure callback](#being-notified-of-failed-messages) is called, and the message is sent to the dead letter queue, stops the consumer, or is skipped, depending on the configuration. Retries also end early when the consumer is asked to stop, for instance by a termination signal.
+
+Once all retries are used, the message is handled as failed: the [failure callback](#being-notified-of-failed-messages) is called, and the message is sent to the dead letter queue, stops the consumer, or is skipped, depending on the configuration. Retries also end early when the consumer is asked to stop, for instance by a termination signal.
+
+Some failures will never succeed no matter how many times the handler is called, such as a validation error or a database constraint violation. To retry only some of them, pass a closure to the `when` argument. It receives the exception thrown by the handler, and the message is retried only when the closure returns `true`:
+
+```php
+use Illuminate\Http\Client\ConnectionException;
+
+$consumer = \Junges\Kafka\Facades\Kafka::consumer(['orders'])
+    ->withGroupId('orders-group')
+    ->retryFailedMessages(3, backoffInMs: 1000, when: fn (Throwable $e) => $e instanceof ConnectionException)
+    ->withHandler(new OrderHandler)
+    ->build();
+```
+
+The closure is called after each failed attempt. When it returns `false`, the remaining retries are skipped and the message is handled as failed right away.
 
 To wait longer before each retry, pass an array of backoffs instead. Each retry waits for the value at its position, and the last value is used for the remaining retries:
 
@@ -106,6 +121,20 @@ Event::listen(function (MessageSkipped $event) {
 ```
 
 When a dead letter queue is also configured, failed messages are sent to it instead of being skipped.
+
+Skipping is useful when a failure is permanent, like a message that can not be deserialized, which would stop the consumer every time it is restarted. A failure that is temporary, like a database or a cache that is down, is better handled by stopping the consumer, because the message can succeed once the consumer is restarted. To skip only some failures, pass a closure to the `skipFailedMessages` method. It receives the exception that made the message fail, and the message is skipped only when the closure returns `true`:
+
+```php
+use Illuminate\Validation\ValidationException;
+
+$consumer = \Junges\Kafka\Facades\Kafka::consumer(['orders'])
+    ->withGroupId('orders-group')
+    ->skipFailedMessages(fn (Throwable $e) => $e instanceof ValidationException)
+    ->withHandler(new OrderHandler)
+    ->build();
+```
+
+When the closure returns `false`, the consumer stops, as it would without `skipFailedMessages`. The closure receives the exception thrown while processing the message, not an exception thrown by the failure callback, and it is not called when the message is sent to a dead letter queue.
 
 ## Being notified of failed messages
 

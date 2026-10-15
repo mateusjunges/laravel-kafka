@@ -54,12 +54,14 @@ class Builder
 
     protected bool $stopWhenEmpty = false;
 
-    protected bool $skipFailedMessages = false;
+    protected bool|Closure $skipFailedMessages = false;
 
     protected int $failedMessageRetries = 0;
 
     /** @var int|list<int> */
     protected int|array $failedMessageRetryBackoff = 0;
+
+    protected ?Closure $failedMessageRetryWhen = null;
 
     /** @var list<callable> */
     protected array $beforeConsumingCallbacks = [];
@@ -329,8 +331,9 @@ class Builder
     /**
      * Skip messages that fail when there is no dead letter queue, committing their offsets.
      * By default, the consumer stops without committing the offset of the failed message.
+     * A closure receives the exception that made the message fail and determines if it is skipped.
      */
-    public function skipFailedMessages(bool $skipFailedMessages = true): self
+    public function skipFailedMessages(bool|Closure $skipFailedMessages = true): self
     {
         $this->skipFailedMessages = $skipFailedMessages;
 
@@ -341,10 +344,11 @@ class Builder
      * Call the handler of a failed message again, up to the given number of times, before handling it as failed.
      * The backoff is the time to wait before each retry, in milliseconds. An array sets the time to wait before
      * each retry in order, like [1000, 5000, 10000], and its last value is used for the remaining retries.
+     * The "when" closure receives the exception of each failed attempt and determines if the message is retried.
      *
      * @param  int|list<int>  $backoffInMs
      */
-    public function retryFailedMessages(int $times, int|array $backoffInMs = 0): self
+    public function retryFailedMessages(int $times, int|array $backoffInMs = 0, ?Closure $when = null): self
     {
         $backoffs = is_array($backoffInMs) ? $backoffInMs : [$backoffInMs];
 
@@ -354,6 +358,7 @@ class Builder
 
         $this->failedMessageRetries = $times;
         $this->failedMessageRetryBackoff = $backoffInMs;
+        $this->failedMessageRetryWhen = $when;
 
         return $this;
     }
@@ -473,6 +478,7 @@ class Builder
             skipFailedMessages: $this->skipFailedMessages,
             failedMessageRetries: $this->failedMessageRetries,
             failedMessageRetryBackoff: $this->failedMessageRetryBackoff,
+            failedMessageRetryWhen: $this->failedMessageRetryWhen,
             name: $this->name,
             connection: $this->connection->name,
             onPartitionsAssigned: $this->onPartitionsAssigned,

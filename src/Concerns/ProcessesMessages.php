@@ -28,7 +28,8 @@ trait ProcessesMessages
     /**
      * The handler is called again while it fails and has retries left, waiting for the backoff between
      * attempts, with a copy of the message holding the attempt number. Retries stop early when the
-     * consumer is asked to stop consuming.
+     * consumer is asked to stop consuming, or when the exception does not match the retry condition
+     * given to the consumer builder.
      *
      * @throws ConsumerException
      */
@@ -46,11 +47,11 @@ trait ProcessesMessages
                 },
                 $this->config->getFailedMessageRetrySleep(),
                 function (Throwable $throwable) use ($kafkaMessage, &$handledMessage): bool {
-                    $this->logError($kafkaMessage, $throwable, 'RETRY');
-
-                    if ($this->stopRequested) {
+                    if ($this->stopRequested || ! $this->config->shouldRetryFailedMessage($throwable)) {
                         return false;
                     }
+
+                    $this->logError($kafkaMessage, $throwable, 'RETRY');
 
                     $this->dispatcher->dispatch(new RetryingMessage($handledMessage, $throwable, $this));
 
@@ -89,7 +90,7 @@ trait ProcessesMessages
 
         if ($this->config->shouldSendToDlq()) {
             $this->sendToDeadLetterQueue($message, $throwable, $kafkaMessage);
-        } elseif ($this->config->shouldSkipFailedMessages()) {
+        } elseif ($this->config->shouldSkipFailedMessage($throwable)) {
             $this->dispatcher->dispatch(new MessageSkipped($message, $throwable, $this));
         } else {
             throw ConsumerException::stoppedOnFailure($message, $throwable);
