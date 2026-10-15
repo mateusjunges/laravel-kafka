@@ -3,31 +3,23 @@ title: Assert nothing published
 weight: 4
 ---
 
-You can assert that nothing was published at all, using the `assertNothingPublished`:
+You can assert that nothing was published at all, using the `assertNothingPublished` method:
 
 ```php
-use PHPUnit\Framework\TestCase;
 use Junges\Kafka\Facades\Kafka;
-use Junges\Kafka\Message\Message;
+use Tests\TestCase;
 
 class MyTest extends TestCase
 {
-    public function testWithSpecificTopic()
+    public function testNothingIsPublishedForInvalidOrders()
     {
         Kafka::fake();
-        
-        if (false) {
-            $producer = Kafka::publish('broker')
-                ->onTopic('some-kafka-topic')
-                ->withHeaders(['key' => 'value'])
-                ->withBodyKey('key', 'value');
-                
-            $producer->send();
-        }
-        
+
+        $this->post('/orders', ['product' => null]);
+
         Kafka::assertNothingPublished();
     }
-} 
+}
 ```
 
 ```+parse

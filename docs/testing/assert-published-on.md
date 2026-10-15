@@ -10,7 +10,7 @@ weight: 3
 If you want to assert that a message was published in a specific kafka topic, you can use the `assertPublishedOn` method:
 
 ```php
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 use Junges\Kafka\Facades\Kafka;
 
 class MyTest extends TestCase
@@ -19,10 +19,9 @@ class MyTest extends TestCase
     {
         Kafka::fake();
         
-        $producer = Kafka::publish('broker')
-            ->onTopic('some-kafka-topic')
+        $producer = Kafka::publish('some-kafka-topic')
             ->withHeaders(['key' => 'value'])
-            ->withBodyKey('key', 'value');
+            ->withBody(['key' => 'value']);
             
         $producer->send();
         
@@ -35,11 +34,10 @@ class MyTest extends TestCase
 }
 ```
 
-You can also use a callback function to perform assertions within the message using a callback in which the argument is the published message
-itself.
+You can also pass a callback, which receives each message published on the topic and returns whether it matches:
 
 ```php
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\Message;
 
@@ -49,19 +47,18 @@ class MyTest extends TestCase
     {
         Kafka::fake();
         
-        $producer = Kafka::publish('broker')
-            ->onTopic('some-kafka-topic')
+        $producer = Kafka::publish('some-kafka-topic')
             ->withHeaders(['key' => 'value'])
-            ->withBodyKey('key', 'value');
+            ->withBody(['key' => 'value']);
             
         $producer->send();
         
-        Kafka::assertPublishedOn('some-kafka-topic', $producer->getMessage(), function(Message $message) {
+        Kafka::assertPublishedOn('some-kafka-topic', function (Message $message) {
             return $message->getHeaders()['key'] === 'value';
         });
-        
-        // Or:
-        Kafka::assertPublishedOn('some-kafka-topic', null, function(Message $message) {
+
+        // The expected message and a callback can also be combined, a message must match both:
+        Kafka::assertPublishedOn('some-kafka-topic', $producer->getMessage(), function (Message $message) {
             return $message->getHeaders()['key'] === 'value';
         });
     }

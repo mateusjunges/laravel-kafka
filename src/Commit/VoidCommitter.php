@@ -3,15 +3,12 @@
 namespace Junges\Kafka\Commit;
 
 use Junges\Kafka\Contracts\Committer;
+use Junges\Kafka\Contracts\ConsumerMessage;
 use RdKafka\Message;
 
 class VoidCommitter implements Committer
 {
-    public function commitMessage(Message $message, bool $success): void {}
+    public function commit(ConsumerMessage|Message|array|null $messageOrOffsets = null): void {}
 
-    public function commitDlq(Message $message): void {}
-
-    public function commit(mixed $messageOrOffsets = null): void {}
-
-    public function commitAsync(mixed $messageOrOffsets = null): void {}
+    public function commitAsync(ConsumerMessage|Message|array|null $messageOrOffsets = null): void {}
 }

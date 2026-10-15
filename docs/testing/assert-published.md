@@ -7,7 +7,7 @@ When you want to assert that a message was published into kafka, you can make us
 
 ```php
 use Junges\Kafka\Facades\Kafka;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 class MyTest extends TestCase
 {
@@ -15,10 +15,9 @@ class MyTest extends TestCase
      {
          Kafka::fake();
          
-         $producer = Kafka::publish('broker')
-             ->onTopic('topic')
+         $producer = Kafka::publish('topic')
              ->withHeaders(['key' => 'value'])
-             ->withBodyKey('foo', 'bar');
+             ->withBody(['foo' => 'bar']);
              
          $producer->send();
              
@@ -31,7 +30,7 @@ You can also use `assertPublished` without passing the message argument:
 
 ```php
 use Junges\Kafka\Facades\Kafka;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 class MyTest extends TestCase
 {
@@ -39,16 +38,27 @@ class MyTest extends TestCase
      {
          Kafka::fake();
          
-         Kafka::publish('broker')
-             ->onTopic('topic')
+         Kafka::publish('topic')
              ->withHeaders(['key' => 'value'])
-             ->withBodyKey('foo', 'bar');
-             
-             
+             ->withBody(['foo' => 'bar'])
+             ->send();
+
          Kafka::assertPublished();       
      }
 }
 ```
+
+To check the published message yourself, pass a callback receiving each published message and returning whether it matches:
+
+```php
+use Junges\Kafka\Contracts\ProducerMessage;
+
+Kafka::assertPublished(function (ProducerMessage $message) {
+    return $message->getBody()['foo'] === 'bar';
+});
+```
+
+When you pass both an expected message and a callback, a published message must match both.
 
 ```+parse
 <x-sponsors.request-sponsor/>

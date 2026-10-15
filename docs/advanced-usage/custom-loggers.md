@@ -3,20 +3,18 @@ title: Writing custom loggers
 weight: 7
 ---
 
-Sometimes you need more control over your logging setup. From `v1.10.1` of this package, you can define your own `Logger` implementation. This means that you have the flexibility to log to different types of storage, such as file or cloud-based logging service. 
+Consumers log the errors that happen while consuming messages, such as failed messages and commit errors. By default, they are written to the standard output, as JSON. You can replace the logger with your own implementation, to log to a different storage, or to redact information from the logs.
 
 ```+parse
 <x-sponsors.request-sponsor/>
 ```
 
-This can be useful for organizations that need to comply with data privacy regulations, such as the General Data Protection Regulation (GDPR). For example, if an exception occurs and gets logged, it might contain sensitive information such as personally identifiable information (PII). Implementing a custom logger, you can now configure it to automatically redact this information before it gets written to the log.
+This can be useful for organizations that need to comply with data privacy regulations, such as the General Data Protection Regulation (GDPR). For example, if an exception occurs and gets logged, it might contain personally identifiable information (PII). A custom logger can redact this information before it gets written to the log.
 
-A `Logger` is any class that implements the `\Junges\Kafka\Contracts\Logger` interface, and it only require that you define a `error` method.
+A logger is any class that implements the `\Junges\Kafka\Contracts\Logger` interface, which requires an `error` method receiving the Kafka message, the exception, and a prefix describing where the error happened.
 
-After creating your Logger, you need to [bind it to the Laravel container](https://laravel.com/docs/9.x/container#binding-basics):
+After creating your logger, [bind it in the service container](https://laravel.com/docs/container#binding-basics), in the `register` method of a service provider:
 
 ```php
-$this->app->bind(Logger::class, function ($app) {
-    return new MyCustomLogger();
-});
+$this->app->singleton(\Junges\Kafka\Contracts\Logger::class, MyCustomLogger::class);
 ```

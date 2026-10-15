@@ -4,40 +4,39 @@ namespace Junges\Kafka\Message;
 
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Str;
-use JetBrains\PhpStorm\ArrayShape;
-use JetBrains\PhpStorm\Pure;
 use Junges\Kafka\AbstractMessage;
 use Junges\Kafka\Contracts\ProducerMessage;
 
 class Message extends AbstractMessage implements Arrayable, ProducerMessage
 {
+    /**
+     * The message id header is set when the message is created, unless it is given, so the id stays the
+     * same for the whole life of the message, including in the events dispatched while it is published.
+     */
+    public function __construct(
+        ?string $topicName = null,
+        ?int $partition = RD_KAFKA_PARTITION_UA,
+        ?array $headers = [],
+        mixed $body = [],
+        mixed $key = null,
+    ) {
+        parent::__construct($topicName, $partition, $headers, $body, $key);
+
+        $this->headers[config('kafka.message_id_key')] ??= Str::uuid()->toString();
+    }
+
     /** Creates a new message instance.*/
-    #[Pure]
-    public static function create(?string $topicName = null, int $partition = RD_KAFKA_PARTITION_UA): ProducerMessage
+    public static function create(?string $topicName = null, int $partition = RD_KAFKA_PARTITION_UA): self
     {
         return new self($topicName, $partition);
     }
 
-    /** Set a key in the message array. */
-    public function withBodyKey(string $key, mixed $message): self
-    {
-        $this->body[$key] = $message;
-
-        return $this;
-    }
-
-    /** Unset a key in the message array. */
-    public function forgetBodyKey(string $key): self
-    {
-        unset($this->body[$key]);
-
-        return $this;
-    }
-
-    /** Set the message headers. */
+    /** Set the message headers. The message id is kept, unless the given headers contain one. */
     public function withHeaders(array $headers = []): self
     {
-        $this->headers = $headers;
+        $idKey = config('kafka.message_id_key');
+
+        $this->headers = [$idKey => $this->headers[$idKey], ...$headers];
 
         return $this;
     }
@@ -57,7 +56,6 @@ class Message extends AbstractMessage implements Arrayable, ProducerMessage
         return $this;
     }
 
-    #[ArrayShape(['payload' => 'array', 'key' => 'null|string', 'headers' => 'array'])]
     public function toArray(): array
     {
         return [
@@ -67,27 +65,17 @@ class Message extends AbstractMessage implements Arrayable, ProducerMessage
         ];
     }
 
-    public function withBody(mixed $body): ProducerMessage
+    public function withBody(mixed $body): self
     {
         $this->body = $body;
 
         return $this;
     }
 
-    public function withHeader(string $key, string|int|float $value): ProducerMessage
+    public function withHeader(string $key, string|int|float $value): self
     {
         $this->headers[$key] = $value;
 
         return $this;
-    }
-
-    public function getHeaders(): ?array
-    {
-        // Here we insert an uuid to be used to uniquely identify this message. If the
-        // id is already set, then array_merge will override it. It's safe to do it
-        // here because this class is used only when we produce a new message.
-        return array_merge(parent::getHeaders(), [
-            config('kafka.message_id_key') => Str::uuid()->toString(),
-        ]);
     }
 }

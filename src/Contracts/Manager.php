@@ -2,19 +2,51 @@
 
 namespace Junges\Kafka\Contracts;
 
+use Closure;
+use Junges\Kafka\Connection;
+use Junges\Kafka\Consumers\Builder;
+use Junges\Kafka\KafkaConsumer;
+use Junges\Kafka\Producers\PendingMessage;
+
 interface Manager
 {
-    /** Returns a new fresh instance of the Manager. */
-    public function fresh(): self;
+    /** Get a Kafka connection by name, or the default connection when no name is given. */
+    public function connection(?string $name = null): Connection;
 
-    /** Creates a new ProducerBuilder instance, setting brokers and topic. */
-    public function publish(?string $broker = null): MessageProducer;
+    /** Start a message that is queued on the default connection's producer when sent. */
+    public function publish(?string $topic = null): PendingMessage;
 
-    /** Return a ConsumerBuilder instance. */
-    public function consumer(array $topics = [], ?string $groupId = null, ?string $brokers = null): ConsumerBuilder;
+    /** Start a message that is flushed as soon as it is sent, using the default connection. */
+    public function publishSync(?string $topic = null): PendingMessage;
 
-    public function shouldFake(): self;
+    /** Start building a consumer using the default connection. */
+    public function consumer(array $topics = [], ?string $groupId = null): Builder;
 
-    /** @param array<int, ConsumerMessage> $messages */
-    public function shouldReceiveMessages(array $messages): self;
+    /**
+     * Create the builder of the given consumer class.
+     *
+     * @param  KafkaConsumer|class-string<KafkaConsumer>  $consumer
+     */
+    public function consumerFor(KafkaConsumer|string $consumer): Builder;
+
+    /**
+     * Register middlewares every consumer goes through, before the middlewares of each consumer.
+     *
+     * @param  list<Middleware|callable|class-string<Middleware>>|Middleware|Closure|class-string<Middleware>  $middleware
+     */
+    public function consumerMiddleware(array|Middleware|Closure|string $middleware): void;
+
+    /**
+     * Register a callback that configures every consumer, receiving its builder when it is created, before the
+     * consumer itself is configured, so the configuration of each consumer takes precedence.
+     *
+     * @param  callable(Builder): mixed  $callback
+     */
+    public function configureConsumersUsing(callable $callback): void;
+
+    /** Wait until every message queued on the resolved connections is delivered. */
+    public function flush(): void;
+
+    /** Get the name of the default connection. */
+    public function getDefaultConnection(): string;
 }

@@ -3,41 +3,38 @@ title: Custom serializers
 weight: 4
 ---
 
-Serialization is the process of converting messages to bytes. Deserialization is the inverse process - converting a stream of bytes into and object. In a nutshell, it transforms the content into readable and interpretable information.
+Serialization is the process of converting messages to bytes, and deserialization is the inverse process, converting bytes back into data your application can use. Producers use serializers to prepare messages for transmission, and consumers use deserializers to read them.
 
 ```+parse
 <x-sponsors.request-sponsor/>
 ```
 
-Basically, in order to prepare the message for transmission from the producer we use serializers. This package supports three serializers out of the box:
+This package provides two serializers and deserializers out of the box:
 
-- NullSerializer / NullDeserializer
-- JsonSerializer / JsonDeserializer
-- AvroSerializer / JsonDeserializer
+- `JsonSerializer` and `JsonDeserializer`, used by default.
+- `AvroSerializer` and `AvroDeserializer`, which use a schema registry.
 
-If the default `JsonSerializer` does not fulfill your needs, you can make use of custom serializers.
-
-To create a custom serializer, you need to create a class that implements the `\Junges\Kafka\Contracts\MessageSerializer` contract. This interface force you to declare the serialize method.
-
-You can inform your producer which serializer should be used with the `usingSerializer` method:
+To create a custom serializer, create a class that implements the `\Junges\Kafka\Contracts\MessageSerializer` contract, which requires a `serialize` method. Then tell the producer to use it with the `usingSerializer` method:
 
 ```php
-$producer = \Junges\Kafka\Facades\Kafka::publish('broker')->onTopic('topic')->usingSerializer(new MyCustomSerializer());
+\Junges\Kafka\Facades\Kafka::publish('topic')->usingSerializer(new MyCustomSerializer());
 ```
 
-To create a custom serializer, you need to create a class that implements the `\Junges\Kafka\Contracts\MessageSerializer` contract.
-This interface force you to declare the `serialize` method.
+To change the serializer used by default, for every connection or for a single one, see [replacing the default serializer](../advanced-usage/replacing-default-serializer.md).
 
-### Using AVRO serializer
-To use the AVRO serializer, add the AVRO serializer:
+### Using the AVRO serializer
+To use the AVRO serializer, create a schema registry and map the schemas of each topic:
 
 ```php
 use FlixTech\AvroSerializer\Objects\RecordSerializer;
-use FlixTech\SchemaRegistryApi\Registry\CachedRegistry;
 use FlixTech\SchemaRegistryApi\Registry\BlockingRegistry;
-use FlixTech\SchemaRegistryApi\Registry\PromisingRegistry;
 use FlixTech\SchemaRegistryApi\Registry\Cache\AvroObjectCacheAdapter;
+use FlixTech\SchemaRegistryApi\Registry\CachedRegistry;
+use FlixTech\SchemaRegistryApi\Registry\PromisingRegistry;
 use GuzzleHttp\Client;
+use Junges\Kafka\Message\KafkaAvroSchema;
+use Junges\Kafka\Message\Registry\AvroSchemaRegistry;
+use Junges\Kafka\Message\Serializers\AvroSerializer;
 
 $cachedRegistry = new CachedRegistry(
     new BlockingRegistry(
@@ -51,18 +48,18 @@ $cachedRegistry = new CachedRegistry(
 $registry = new AvroSchemaRegistry($cachedRegistry);
 $recordSerializer = new RecordSerializer($cachedRegistry);
 
-//if no version is defined, latest version will be used
-//if no schema definition is defined, the appropriate version will be fetched form the registry
+// If no version is defined, the latest version is used.
+// If no schema definition is defined, the appropriate version is fetched from the registry.
 $registry->addBodySchemaMappingForTopic(
     'test-topic',
-    new \Junges\Kafka\Message\KafkaAvroSchema('bodySchemaName' /*, int $version, AvroSchema $definition */)
+    new KafkaAvroSchema('bodySchemaName' /*, int $version, AvroSchema $definition */)
 );
 $registry->addKeySchemaMappingForTopic(
     'test-topic',
-    new \Junges\Kafka\Message\KafkaAvroSchema('keySchemaName' /*, int $version, AvroSchema $definition */)
+    new KafkaAvroSchema('keySchemaName' /*, int $version, AvroSchema $definition */)
 );
 
-$serializer = new \Junges\Kafka\Message\Serializers\AvroSerializer($registry, $recordSerializer /*, AvroEncoderInterface::ENCODE_BODY */);
+$serializer = new AvroSerializer($registry, $recordSerializer /*, AvroEncoderInterface::ENCODE_BODY */);
 
-$producer = \Junges\Kafka\Facades\Kafka::publish('broker')->onTopic('topic')->usingSerializer($serializer);
+\Junges\Kafka\Facades\Kafka::publish('test-topic')->usingSerializer($serializer);
 ```

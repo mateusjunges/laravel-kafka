@@ -10,7 +10,7 @@ jobs:
 
     strategy:
       matrix:
-        php: [8.5, 8.4, 8.3, 8.2]
+        php: [8.5, 8.4, 8.3]
         laravel: ['12.*', '13.*']
         dependency-version: [prefer-stable]
         include:
@@ -18,9 +18,6 @@ jobs:
             testbench: 10.*
           - laravel: 13.*
             testbench: 11.*
-        exclude:
-          - laravel: 13.*
-            php: 8.2
 
     name: CI - PHP ${{ matrix.php }}  - Laravel ${{ matrix.laravel }} - Testbench ${{ matrix.testbench }} (${{ matrix.dependency-version }})
 

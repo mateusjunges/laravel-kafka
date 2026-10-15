@@ -3,21 +3,17 @@ title: Sending multiple messages with the same producer
 weight: 9
 ---
 
-Sometimes you may want to send multiple messages without having to create the consumer
-
+Every connection has a single producer, created the first time you publish a message and shared by every message published through that connection afterwards. You don't need to do anything to reuse it:
 
 ```php
-// In a service provider:
+use Junges\Kafka\Facades\Kafka;
 
-\Junges\Kafka\Facades\Kafka::macro('myProducer', function () {
-    return $this->publish('broker')
-        ->onTopic('my-awesome-topic')
-        ->withConfigOption('key', 'value');
-});
+foreach ($orders as $order) {
+    Kafka::publish('orders')->withKey((string) $order->id)->withBody($order->toArray())->send();
+}
 ```
 
-Now, you can call `\Junges\Kafka\Facades\Kafka::myProducer()`, which will always apply the configs you defined in your service provider.
-
+The messages are delivered in the background and flushed when the application terminates. If you need to wait until all of them are delivered before moving on, call `Kafka::flush()`.
 
 ```+parse
 <x-sponsors.request-sponsor/>
