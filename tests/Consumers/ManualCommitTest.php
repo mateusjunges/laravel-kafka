@@ -11,6 +11,7 @@ use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use Mockery as m;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
@@ -19,6 +20,41 @@ use Throwable;
 
 final class ManualCommitTest extends LaravelKafkaTestCase
 {
+    public static function commitArgumentsProvider(): array
+    {
+        $message = new Message;
+        $message->topic_name = 'test-topic';
+        $message->partition = 1;
+        $message->offset = 0;
+
+        $consumerMessage = new ConsumedMessage(
+            topicName: 'test-topic',
+            partition: 1,
+            headers: [],
+            body: 'test message',
+            key: 'test-key',
+            offset: 0,
+            timestamp: time()
+        );
+
+        $arguments = [
+            'null' => null,
+            'rdkafka message' => $message,
+            'consumer message' => $consumerMessage,
+            'topic partitions' => [new TopicPartition('test-topic', 1, 1)],
+        ];
+
+        $cases = [];
+
+        foreach (['commit', 'commitAsync'] as $method) {
+            foreach ($arguments as $label => $argument) {
+                $cases["{$method} with {$label}"] = [$method, $argument];
+            }
+        }
+
+        return $cases;
+    }
+
     #[Test]
     public function it_can_commit_manually_with_consumer_message(): void
     {
@@ -518,6 +554,64 @@ final class ManualCommitTest extends LaravelKafkaTestCase
 
         // RD_KAFKA_RESP_ERR__NO_OFFSET errors should be ignored
         $this->assertTrue($noExceptionThrown);
+    }
+
+    #[Test]
+    #[DataProvider('commitArgumentsProvider')]
+    public function it_rethrows_the_original_commit_exception(string $method, mixed $messageOrOffsets): void
+    {
+        $message = new Message;
+        $message->err = 0;
+        $message->key = 'key';
+        $message->topic_name = 'test-topic';
+        $message->payload = '{"body": "message payload"}';
+        $message->offset = 0;
+        $message->partition = 1;
+        $message->headers = [];
+
+        $commitFailure = new \RdKafka\Exception('Broker: Unknown member', RD_KAFKA_RESP_ERR_UNKNOWN_MEMBER_ID);
+
+        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+            ->shouldReceive('subscribe')
+            ->andReturn(m::self())
+            ->shouldReceive('consume')
+            ->withAnyArgs()
+            ->andReturn($message)
+            ->shouldReceive($method)
+            ->andThrow($commitFailure)
+            ->getMock();
+
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
+        $this->mockProducer();
+
+        $caught = null;
+
+        $fakeHandler = new CallableConsumer(
+            function (ConsumerMessage $message, Consumer $consumer) use ($method, $messageOrOffsets, &$caught) {
+                try {
+                    $consumer->{$method}($messageOrOffsets);
+                } catch (Throwable $e) {
+                    $caught = $e;
+                }
+            },
+            []
+        );
+
+        $config = new Config(
+            broker: 'broker',
+            topics: ['test-topic'],
+            securityProtocol: 'security',
+            commit: 1,
+            groupId: 'group',
+            consumer: $fakeHandler,
+            maxMessages: 1,
+            autoCommit: false
+        );
+
+        $consumer = new Consumer($config, new JsonDeserializer);
+        $consumer->consume();
+
+        $this->assertSame($commitFailure, $caught);
     }
 
     #[Test]
