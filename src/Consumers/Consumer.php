@@ -194,7 +194,7 @@ class Consumer implements MessageConsumer
             $this->committer->commit($messageOrOffsets);
         } catch (Throwable $throwable) {
             if ($throwable->getCode() !== RD_KAFKA_RESP_ERR__NO_OFFSET) {
-                $this->logger->error($messageOrOffsets, $throwable, 'COMMIT_ERROR');
+                $this->logCommitError($messageOrOffsets, $throwable);
 
                 throw $throwable;
             }
@@ -208,7 +208,7 @@ class Consumer implements MessageConsumer
             $this->committer->commitAsync($message_or_offsets);
         } catch (Throwable $throwable) {
             if ($throwable->getCode() !== RD_KAFKA_RESP_ERR__NO_OFFSET) {
-                $this->logger->error($message_or_offsets, $throwable, 'COMMIT_ERROR');
+                $this->logCommitError($message_or_offsets, $throwable);
 
                 throw $throwable;
             }
@@ -261,6 +261,17 @@ class Consumer implements MessageConsumer
     protected function getLastRestart(): int
     {
         return (int) Cache::driver(config('kafka.cache_driver'))->get('laravel-kafka:consumer:restart', 0);
+    }
+
+    /**
+     * The logger contract only accepts RdKafka messages, so commits made with
+     * a ConsumerMessage, TopicPartition[] or null are rethrown without logging.
+     */
+    private function logCommitError(mixed $messageOrOffsets, Throwable $throwable): void
+    {
+        if ($messageOrOffsets instanceof Message) {
+            $this->logger->error($messageOrOffsets, $throwable, 'COMMIT_ERROR');
+        }
     }
 
     private function runBeforeCallbacks(): void
