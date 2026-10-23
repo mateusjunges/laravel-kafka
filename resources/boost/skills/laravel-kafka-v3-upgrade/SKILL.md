@@ -31,7 +31,7 @@ Then list the usages of APIs that no longer exist, which must all be gone at the
 grep -rnE "withKafkaKey|withBodyKey|forgetBodyKey|asyncPublish|publishAsync|Kafka::fresh|Kafka::publish\((config|['\"][^'\"]*:[0-9]+)|MessageConsumer|extends +(\\\\?Junges\\\\Kafka\\\\Contracts\\\\)?Consumer\b|CallableConsumer|producerKey\(|withConsumerGroupId|withMaxMessages|withMaxTime|stopAfterLastMessage|stopOnFailure|withCommitBatchSize|withMaxCommitRetries|withSecurityProtocol|with(Error|Log|Stats|Rebalance|OffsetCommit|DrMsg|Consume)Cb|withOAuthBearerTokenRefreshCallback|withPartitionAssignmentCallback|assignPartitionsWithOffsets|withConfigOptions?\(|withDebug(En|Dis)abled|withFlush(Retries|Timeout|Callback)|withTransactionalId|kafka:consume +--|kafka\.(brokers|securityProtocol|sasl|consumer_group_id|consumer_timeout_ms|offset_reset|auto_commit|compression|debug|flush_|partition|sleep_on_error)|KAFKA_(ERROR_SLEEP|PARTITION)" . --exclude-dir=vendor --exclude-dir=node_modules --exclude-dir=.git --include='*.php' --include='*.conf' --include='*.ini' --include='*.yml' --include='*.yaml' --include='*.sh' --include='Procfile' --include='Dockerfile*' --include='.env*'
 ```
 
-Summarize the findings for the user, grouped by area: configuration, publishing, consumers, consumer commands and deployment files, custom committers or messages, and tests.
+Summarize the findings for the user, grouped by area: configuration, publishing, consumers, consumer commands and deployment files, custom committers, loggers or messages, and tests.
 
 ## 3. Ask the user about the behavior changes
 
@@ -104,7 +104,7 @@ Apply the changes of [references/changes.md](references/changes.md), area by are
 - `kafka:consume` invocations: create a consumer class for each one with `php artisan make:kafka-consumer`, move the topics, group, dead letter queue and handler into it, and run it with `php artisan kafka:consume OrdersConsumer`. The argument is the class name in `App\Kafka\Consumers`, or a fully qualified class name for classes in other namespaces. Update the deployment files found in step 2.
 - Custom commands wrapping `Kafka::consumer()`: apply the builder renames, and keep their process monitor entries up to date.
 - Middleware classes: add the `mixed` return type to `__invoke()`.
-- Custom committers, messages, deserializers and serializers: update them to the new contracts.
+- Custom committers, loggers, messages, deserializers and serializers: update them to the new contracts.
 - Tests: update the expectations of failing handlers, since a failing handler now makes the consumer throw. The fake records published messages when `send()` is called, with both `publish()` and `publishSync()`, so the publishing assertions keep working. Simplifying the `assertPublishedOn('topic', null, fn ...)` calls is optional.
 
 Keep each change minimal and don't refactor unrelated code.

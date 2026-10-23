@@ -455,8 +455,7 @@ class Consumer implements ConsumerContract
 
     /**
      * Messages published by the handler are flushed before committing, and a commit without any
-     * offset to commit is not an error. The logger only logs Kafka messages, so errors committing
-     * other offsets are only thrown.
+     * offset to commit is not an error. Other errors are logged and thrown.
      */
     private function runCommit(Closure $commit, ConsumerMessage|Message|array|null $messageOrOffsets): void
     {
@@ -469,9 +468,7 @@ class Consumer implements ConsumerContract
                 return;
             }
 
-            if ($messageOrOffsets instanceof Message) {
-                $this->logger->error($messageOrOffsets, $throwable, 'COMMIT_ERROR');
-            }
+            $this->logger->commitError($messageOrOffsets, $throwable);
 
             throw $throwable;
         }

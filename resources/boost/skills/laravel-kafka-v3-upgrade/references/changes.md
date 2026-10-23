@@ -172,11 +172,12 @@ Search for: `implements Middleware`, `withMiddleware(`.
 
 ## Committers, messages and serializers
 
-Search for: `implements Committer`, `CommitterFactory`, `commitMessage(`, `commitDlq(`, `BatchCommitter`, `RetryableCommitter`, `SeekToCurrentErrorCommitter`, `implements ConsumerMessage`, `implements ProducerMessage`, `implements KafkaMessage`, `implements MessageDeserializer`, `getKafkaErrorCode(`, `setTopicName(`, `RetryableHandler`, `RetryStrategy`, `Retryable`, `Sleeper`.
+Search for: `implements Committer`, `CommitterFactory`, `implements Logger`, `Contracts\Logger`, `commitMessage(`, `commitDlq(`, `BatchCommitter`, `RetryableCommitter`, `SeekToCurrentErrorCommitter`, `implements ConsumerMessage`, `implements ProducerMessage`, `implements KafkaMessage`, `implements MessageDeserializer`, `getKafkaErrorCode(`, `setTopicName(`, `RetryableHandler`, `RetryStrategy`, `Retryable`, `Sleeper`.
 
 | v2 | v3 |
 | --- | --- |
 | `commitMessage()` and `commitDlq()` on custom committers | Remove them. Committers only handle `commit()` and `commitAsync()`, typed `ConsumerMessage\|Message\|array\|null $messageOrOffsets = null`. |
+| Custom `Junges\Kafka\Contracts\Logger` implementations | Add `commitError(ConsumerMessage\|Message\|array\|null $messageOrOffsets, Throwable $e): void`. Commit errors are no longer given to `error()` with the `COMMIT_ERROR` prefix. |
 | `BatchCommitter`, `RetryableCommitter`, `SeekToCurrentErrorCommitter` | Removed. Use `retryFailedMessages()` or a dead letter queue for failures. |
 | Custom `KafkaMessage` implementations | `getHeaders(): array` and `getBody(): mixed`. |
 | Custom `ConsumerMessage` implementations | Add `getAttempts(): int` and `withAttempts(int $attempts): static`. |
