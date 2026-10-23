@@ -2,16 +2,19 @@
 
 namespace Junges\Kafka\Tests\Consumers;
 
+use Closure;
 use Exception;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Consumers\MessageHandler;
 use Junges\Kafka\Contracts\ConsumerMessage;
+use Junges\Kafka\Contracts\Logger;
 use Junges\Kafka\Exceptions\ConsumerException;
 use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use Mockery as m;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use RdKafka\KafkaConsumer;
 use RdKafka\KafkaConsumerTopic;
@@ -21,6 +24,16 @@ use Throwable;
 
 final class ManualCommitTest extends LaravelKafkaTestCase
 {
+    public static function commitFailures(): iterable
+    {
+        foreach (['commit', 'commitAsync'] as $method) {
+            yield "{$method} the current assignment" => [$method, fn (): null => null];
+            yield "{$method} a Kafka message" => [$method, fn (ConsumerMessage $consumed, Message $message): Message => $message];
+            yield "{$method} a consumer message" => [$method, fn (ConsumerMessage $consumed): ConsumerMessage => $consumed];
+            yield "{$method} topic partitions" => [$method, fn (): array => [new TopicPartition('test-topic', 1, 1)]];
+        }
+    }
+
     #[Test]
     public function it_can_commit_manually_with_consumer_message(): void
     {
@@ -807,5 +820,73 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         } catch (ConsumerException $exception) {
             $this->assertSame($commitFailure, $exception->getPrevious());
         }
+    }
+
+    /** @param  Closure(ConsumerMessage, Message): (ConsumerMessage|Message|list<TopicPartition>|null)  $offsets */
+    #[Test]
+    #[DataProvider('commitFailures')]
+    public function it_logs_and_rethrows_the_original_exception_when_committing_fails(string $method, Closure $offsets): void
+    {
+        $message = new Message;
+        $message->err = 0;
+        $message->key = 'key';
+        $message->topic_name = 'test-topic';
+        $message->payload = '{"body": "message payload"}';
+        $message->offset = 0;
+        $message->partition = 1;
+        $message->headers = [];
+
+        $commitFailure = new \RdKafka\Exception('Commit failed', RD_KAFKA_RESP_ERR__FAIL);
+
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
+            ->shouldReceive('subscribe')->andReturn(m::self())
+            ->shouldReceive('consume')->andReturn($message)
+            ->shouldReceive($method)->andThrow($commitFailure)
+            ->getMock();
+
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
+
+        $logger = new class implements Logger
+        {
+            public array $commitErrors = [];
+
+            public function error(Message $message, ?Throwable $e = null, string $prefix = 'ERROR'): void {}
+
+            public function commitError(ConsumerMessage|Message|array|null $messageOrOffsets, Throwable $e): void
+            {
+                $this->commitErrors[] = [$messageOrOffsets, $e];
+            }
+        };
+
+        $this->app->instance(Logger::class, $logger);
+
+        $committed = null;
+        $thrown = null;
+
+        $handler = new MessageHandler(function (ConsumerMessage $consumed, Consumer $consumer) use ($method, $offsets, $message, &$committed, &$thrown) {
+            $committed = $offsets($consumed, $message);
+
+            try {
+                $consumer->{$method}($committed);
+            } catch (Throwable $exception) {
+                $thrown = $exception;
+            }
+        });
+
+        $config = new Config(
+            broker: 'broker',
+            topics: ['test-topic'],
+            groupId: 'group',
+            handler: $handler,
+            maxMessages: 1,
+            autoCommit: false,
+        );
+
+        (new Consumer($config, new JsonDeserializer))->consume();
+
+        $this->assertSame($commitFailure, $thrown);
+        $this->assertCount(1, $logger->commitErrors);
+        $this->assertSame($committed, $logger->commitErrors[0][0]);
+        $this->assertSame($commitFailure, $logger->commitErrors[0][1]);
     }
 }

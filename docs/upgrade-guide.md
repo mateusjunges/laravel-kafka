@@ -18,6 +18,7 @@ Changes that affect fewer applications:
 - Several consumer builder methods were renamed, see [stopping consumers](#stopping-consumers), [configuration callbacks](#configuration-callbacks) and [consuming messages](#consuming-messages).
 - Auto commit no longer commits every message synchronously, and custom committers only handle manual commits, see [committers](#committers).
 - Middleware classes must declare a return type, see [middlewares](#middlewares).
+- Custom loggers must implement the new `commitError()` method, see [loggers](#loggers).
 - Faked consumers handle failed messages like real ones, see [testing](#testing).
 - The `MessageSentToDLQ` event has new properties, and consumer events receive the consumer, see [events](#events).
 
@@ -240,6 +241,10 @@ As a consequence, the following were removed:
 The `commit()` and `commitAsync()` methods of the `Junges\Kafka\Contracts\Consumer` and `Junges\Kafka\Contracts\Committer` contracts now declare the values they accept, `ConsumerMessage|Message|array|null`, instead of `mixed`, and the parameter of `Consumer::commitAsync()` was renamed from `$message_or_offsets` to `$messageOrOffsets`, like the other ones. Custom committers must update their signatures.
 
 The `Junges\Kafka\Commit\SeekToCurrentErrorCommitter` class, deprecated in v2.12.0, was removed. It did not make failed messages be consumed again. Use `retryFailedMessages()` or a dead letter queue instead, see [handling failed messages](/consuming-messages/handling-failed-messages).
+
+### Loggers
+
+The `Junges\Kafka\Contracts\Logger` contract has a new `commitError(ConsumerMessage|Message|array|null $messageOrOffsets, Throwable $e): void` method, which logs the errors committing offsets with `commit()` and `commitAsync()`. Custom loggers must add it, see [writing custom loggers](/advanced-usage/custom-loggers). In v2, these errors were given to `error()` with the `COMMIT_ERROR` prefix, which only accepts an `RdKafka\Message`, so errors committing a `ConsumerMessage`, topic partitions or the current assignment could not be logged. Now, every commit error is given to `commitError()`, and the consumer throws the original exception afterwards.
 
 ### Removed classes and methods
 
