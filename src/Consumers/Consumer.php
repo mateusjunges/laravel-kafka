@@ -243,13 +243,13 @@ class Consumer implements ConsumerContract
     /** {@inheritdoc} */
     public function commit(ConsumerMessage|Message|array|null $messageOrOffsets = null): void
     {
-        $this->runCommit(fn () => $this->committer->commit($messageOrOffsets), $messageOrOffsets);
+        $this->runCommit(fn () => $this->committer->commit($messageOrOffsets));
     }
 
     /** {@inheritdoc} */
     public function commitAsync(ConsumerMessage|Message|array|null $messageOrOffsets = null): void
     {
-        $this->runCommit(fn () => $this->committer->commitAsync($messageOrOffsets), $messageOrOffsets);
+        $this->runCommit(fn () => $this->committer->commitAsync($messageOrOffsets));
     }
 
     /** Get the current partition assignment for this consumer */
@@ -455,22 +455,19 @@ class Consumer implements ConsumerContract
 
     /**
      * Messages published by the handler are flushed before committing, and a commit without any
-     * offset to commit is not an error. Other errors are logged and thrown.
+     * offset to commit is not an error. Other errors are thrown to the handler without being
+     * logged here: one it does not catch fails the message, which is logged and reported.
      */
-    private function runCommit(Closure $commit, ConsumerMessage|Message|array|null $messageOrOffsets): void
+    private function runCommit(Closure $commit): void
     {
         $this->flushProducers();
 
         try {
             $commit();
         } catch (Throwable $throwable) {
-            if ($throwable->getCode() === RD_KAFKA_RESP_ERR__NO_OFFSET) {
-                return;
+            if ($throwable->getCode() !== RD_KAFKA_RESP_ERR__NO_OFFSET) {
+                throw $throwable;
             }
-
-            $this->logger->commitError($messageOrOffsets, $throwable);
-
-            throw $throwable;
         }
     }
 

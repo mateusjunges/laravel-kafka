@@ -189,7 +189,7 @@ abstract class LaravelKafkaTestCase extends Orchestra
     private function getMockedLogger(): m\MockInterface|m\LegacyMockInterface|null
     {
         return m::mock(Logger::class)
-            ->shouldReceive('error', 'commitError')
+            ->shouldReceive('error')
             ->withAnyArgs()
             ->andReturn()
             ->getMock();

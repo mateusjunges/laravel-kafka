@@ -2,7 +2,6 @@
 
 namespace Junges\Kafka\Tests\Consumers;
 
-use Closure;
 use Exception;
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Consumers\Consumer;
@@ -24,14 +23,39 @@ use Throwable;
 
 final class ManualCommitTest extends LaravelKafkaTestCase
 {
-    public static function commitFailures(): iterable
+    public static function commitArgumentsProvider(): array
     {
+        $message = new Message;
+        $message->topic_name = 'test-topic';
+        $message->partition = 1;
+        $message->offset = 0;
+
+        $consumerMessage = new ConsumedMessage(
+            topicName: 'test-topic',
+            partition: 1,
+            headers: [],
+            body: 'test message',
+            key: 'test-key',
+            offset: 0,
+            timestamp: time()
+        );
+
+        $arguments = [
+            'null' => null,
+            'rdkafka message' => $message,
+            'consumer message' => $consumerMessage,
+            'topic partitions' => [new TopicPartition('test-topic', 1, 1)],
+        ];
+
+        $cases = [];
+
         foreach (['commit', 'commitAsync'] as $method) {
-            yield "{$method} the current assignment" => [$method, fn (): null => null];
-            yield "{$method} a Kafka message" => [$method, fn (ConsumerMessage $consumed, Message $message): Message => $message];
-            yield "{$method} a consumer message" => [$method, fn (ConsumerMessage $consumed): ConsumerMessage => $consumed];
-            yield "{$method} topic partitions" => [$method, fn (): array => [new TopicPartition('test-topic', 1, 1)]];
+            foreach ($arguments as $label => $argument) {
+                $cases["{$method} with {$label}"] = [$method, $argument];
+            }
         }
+
+        return $cases;
     }
 
     #[Test]
@@ -530,6 +554,67 @@ final class ManualCommitTest extends LaravelKafkaTestCase
     }
 
     #[Test]
+    #[DataProvider('commitArgumentsProvider')]
+    public function it_rethrows_the_original_commit_exception_without_logging_it(string $method, mixed $messageOrOffsets): void
+    {
+        $message = new Message;
+        $message->err = 0;
+        $message->key = 'key';
+        $message->topic_name = 'test-topic';
+        $message->payload = '{"body": "message payload"}';
+        $message->offset = 0;
+        $message->partition = 1;
+        $message->headers = [];
+
+        $commitFailure = new \RdKafka\Exception('Broker: Unknown member', RD_KAFKA_RESP_ERR_UNKNOWN_MEMBER_ID);
+
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
+            ->shouldReceive('subscribe')
+            ->andReturn(m::self())
+            ->shouldReceive('consume')
+            ->withAnyArgs()
+            ->andReturn($message)
+            ->shouldReceive($method)
+            ->andThrow($commitFailure)
+            ->getMock();
+
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
+        $this->mockProducer();
+
+        $logger = m::spy(Logger::class);
+        $this->app->instance(Logger::class, $logger);
+
+        $caught = null;
+
+        $fakeHandler = new MessageHandler(
+            function (ConsumerMessage $message, Consumer $consumer) use ($method, $messageOrOffsets, &$caught) {
+                try {
+                    $consumer->{$method}($messageOrOffsets);
+                } catch (Throwable $e) {
+                    $caught = $e;
+                }
+            },
+            []
+        );
+
+        $config = new Config(
+            broker: 'broker',
+            topics: ['test-topic'],
+            securityProtocol: 'PLAINTEXT',
+            groupId: 'group',
+            handler: $fakeHandler,
+            maxMessages: 1,
+            autoCommit: false
+        );
+
+        $consumer = new Consumer($config, new JsonDeserializer);
+        $consumer->consume();
+
+        $this->assertSame($commitFailure, $caught);
+        $logger->shouldNotHaveReceived('error');
+    }
+
+    #[Test]
     public function it_stores_offsets_instead_of_committing_each_message_when_auto_commit_is_enabled(): void
     {
         $message = new Message;
@@ -783,7 +868,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
     }
 
     #[Test]
-    public function it_throws_the_kafka_error_when_committing_a_consumer_message_fails(): void
+    public function it_throws_and_logs_the_kafka_error_once_when_a_commit_failure_is_not_caught(): void
     {
         $message = new Message;
         $message->err = 0;
@@ -804,6 +889,9 @@ final class ManualCommitTest extends LaravelKafkaTestCase
 
         $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
 
+        $logger = m::spy(Logger::class);
+        $this->app->instance(Logger::class, $logger);
+
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
@@ -820,73 +908,8 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         } catch (ConsumerException $exception) {
             $this->assertSame($commitFailure, $exception->getPrevious());
         }
-    }
 
-    /** @param  Closure(ConsumerMessage, Message): (ConsumerMessage|Message|list<TopicPartition>|null)  $offsets */
-    #[Test]
-    #[DataProvider('commitFailures')]
-    public function it_logs_and_rethrows_the_original_exception_when_committing_fails(string $method, Closure $offsets): void
-    {
-        $message = new Message;
-        $message->err = 0;
-        $message->key = 'key';
-        $message->topic_name = 'test-topic';
-        $message->payload = '{"body": "message payload"}';
-        $message->offset = 0;
-        $message->partition = 1;
-        $message->headers = [];
-
-        $commitFailure = new \RdKafka\Exception('Commit failed', RD_KAFKA_RESP_ERR__FAIL);
-
-        $mockedKafkaConsumer = $this->mockKafkaConsumer()
-            ->shouldReceive('subscribe')->andReturn(m::self())
-            ->shouldReceive('consume')->andReturn($message)
-            ->shouldReceive($method)->andThrow($commitFailure)
-            ->getMock();
-
-        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
-
-        $logger = new class implements Logger
-        {
-            public array $commitErrors = [];
-
-            public function error(Message $message, ?Throwable $e = null, string $prefix = 'ERROR'): void {}
-
-            public function commitError(ConsumerMessage|Message|array|null $messageOrOffsets, Throwable $e): void
-            {
-                $this->commitErrors[] = [$messageOrOffsets, $e];
-            }
-        };
-
-        $this->app->instance(Logger::class, $logger);
-
-        $committed = null;
-        $thrown = null;
-
-        $handler = new MessageHandler(function (ConsumerMessage $consumed, Consumer $consumer) use ($method, $offsets, $message, &$committed, &$thrown) {
-            $committed = $offsets($consumed, $message);
-
-            try {
-                $consumer->{$method}($committed);
-            } catch (Throwable $exception) {
-                $thrown = $exception;
-            }
-        });
-
-        $config = new Config(
-            broker: 'broker',
-            topics: ['test-topic'],
-            groupId: 'group',
-            handler: $handler,
-            maxMessages: 1,
-            autoCommit: false,
-        );
-
-        (new Consumer($config, new JsonDeserializer))->consume();
-
-        $this->assertSame($commitFailure, $thrown);
-        $this->assertCount(1, $logger->commitErrors);
-        $this->assertSame($committed, $logger->commitErrors[0][0]);
-        $this->assertSame($commitFailure, $logger->commitErrors[0][1]);
+        // The commit error is logged once, as the failure of the message being handled.
+        $logger->shouldHaveReceived('error')->once()->with($message, $commitFailure, 'ERROR');
     }
 }
