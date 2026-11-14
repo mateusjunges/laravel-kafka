@@ -4,10 +4,10 @@ weight: 6
 ---
 
 To assert that messages were published on a given topic a given number of times, you can use the `assertPublishedOnTimes` method:
+
 ```php
-use PHPUnit\Framework\TestCase;
 use Junges\Kafka\Facades\Kafka;
-use Junges\Kafka\Message\Message;
+use Tests\TestCase;
 
 class MyTest extends TestCase
 {
@@ -15,19 +15,19 @@ class MyTest extends TestCase
     {
         Kafka::fake();
 
-        Kafka::publish('broker')
-            ->onTopic('topic')
+        Kafka::publish('some-kafka-topic')
             ->withHeaders(['key' => 'value'])
-            ->withBodyKey('key', 'value');
+            ->withBody(['key' => 'value'])
+            ->send();
 
-        Kafka::publish('broker')
-            ->onTopic('topic')
+        Kafka::publish('some-kafka-topic')
             ->withHeaders(['key' => 'value'])
-            ->withBodyKey('key', 'value');
+            ->withBody(['key' => 'value'])
+            ->send();
 
         Kafka::assertPublishedOnTimes('some-kafka-topic', 2);
     }
-} 
+}
 ```
 
 ```+parse

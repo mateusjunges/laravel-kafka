@@ -3,34 +3,27 @@
 namespace Junges\Kafka\Contracts;
 
 use RdKafka\Message;
+use RdKafka\TopicPartition;
 
+/**
+ * Commits offsets when handlers call the commit methods of the consumer. In auto commit mode, offsets are
+ * stored after each message is processed and committed by librdkafka in the background instead.
+ */
 interface Committer
 {
-    /** Commits the given message.  */
-    public function commitMessage(Message $message, bool $success): void;
-
-    /** Commits the given message to the Dead Letter Queue. */
-    public function commitDlq(Message $message): void;
+    /**
+     * Commit offsets synchronously. Without arguments, it commits the offsets of the current assignment.
+     * Given a message, it commits the offset right after it, in its partition, and given an array of
+     * topic partitions, it commits their offsets.
+     *
+     * @param  ConsumerMessage|Message|list<TopicPartition>|null  $messageOrOffsets
+     */
+    public function commit(ConsumerMessage|Message|array|null $messageOrOffsets = null): void;
 
     /**
-     * Commit offsets synchronously.
+     * Commit offsets asynchronously. It accepts the same arguments as commit().
      *
-     * @param  mixed  $messageOrOffsets  Can be:
-     *                                   - null: Commit offsets for current assignment
-     *                                   - \RdKafka\Message: Commit offset for a single topic+partition
-     *                                   - \Junges\Kafka\Contracts\ConsumerMessage: Commit offset for a single topic+partition
-     *                                   - array of \RdKafka\TopicPartition: Commit offsets for provided partitions
+     * @param  ConsumerMessage|Message|list<TopicPartition>|null  $messageOrOffsets
      */
-    public function commit(mixed $messageOrOffsets = null): void;
-
-    /**
-     * Commit offsets asynchronously.
-     *
-     * @param  mixed  $messageOrOffsets  Can be:
-     *                                   - null: Commit offsets for current assignment
-     *                                   - \RdKafka\Message: Commit offset for a single topic+partition
-     *                                   - \Junges\Kafka\Contracts\ConsumerMessage: Commit offset for a single topic+partition
-     *                                   - array of \RdKafka\TopicPartition: Commit offsets for provided partitions
-     */
-    public function commitAsync(mixed $messageOrOffsets = null): void;
+    public function commitAsync(ConsumerMessage|Message|array|null $messageOrOffsets = null): void;
 }

@@ -7,7 +7,7 @@ use RdKafka\KafkaErrorException;
 
 final class TransactionShouldBeAbortedException extends LaravelKafkaException
 {
-    private const ABORTABLE_EXCEPTION_MESSAGE = 'Transaction failed. You must abort your current transaction and start a new one. [%s]';
+    private const string ABORTABLE_EXCEPTION_MESSAGE = 'Transaction failed. You must abort your current transaction and start a new one. [%s]';
 
     public static function new(KafkaErrorException $baseException): self
     {

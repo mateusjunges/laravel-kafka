@@ -4,13 +4,13 @@ namespace Junges\Kafka\Tests;
 
 use Carbon\Carbon;
 use Illuminate\Support\Str;
+use Junges\Kafka\Contracts\Consumer as ConsumerContract;
 use Junges\Kafka\Contracts\ConsumerMessage;
-use Junges\Kafka\Contracts\Manager;
-use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\Message\Message;
 use Junges\Kafka\Support\Testing\Fakes\KafkaFake;
+use Override;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Constraint\ExceptionMessageIsOrContains;
 use PHPUnit\Framework\ExpectationFailedException;
@@ -19,12 +19,13 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
 {
     private KafkaFake $fake;
 
-    private MessageConsumer $consumer;
+    private ConsumerContract $consumer;
 
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
-        $this->fake = new KafkaFake(app(Manager::class));
+        $this->fake = new KafkaFake;
     }
 
     #[Test]
@@ -32,9 +33,9 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
     {
         $producer = $this->fake->publish()
             ->onTopic('topic')
-            ->withBodyKey('test', ['test'])
+            ->withBody(['test' => ['test']])
             ->withHeaders(['custom' => 'header'])
-            ->withKafkaKey(Str::uuid()->toString());
+            ->withKey(Str::uuid()->toString());
 
         $producer->send();
 
@@ -58,7 +59,7 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
     public function it_stores_multiple_messages_when_publishing_async(): void
     {
         for ($i = 0; $i < 3; $i++) {
-            $this->fake->asyncPublish()
+            $this->fake->publish()
                 ->onTopic('topic')
                 ->withBody('test')
                 ->send();
@@ -78,9 +79,9 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
 
         $producer = $this->fake->publish()
             ->onTopic('topic')
-            ->withBodyKey('test', ['test'])
+            ->withBody(['test' => ['test']])
             ->withHeaders(['custom' => 'header'])
-            ->withKafkaKey(Str::uuid()->toString());
+            ->withKey(Str::uuid()->toString());
         $producer->send();
 
         $this->fake->assertPublished($producer->getMessage());
@@ -97,9 +98,9 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
 
         $producer = $this->fake->publish()
             ->onTopic('topic')
-            ->withBodyKey('test', ['test'])
+            ->withBody(['test' => ['test']])
             ->withHeaders(['custom' => 'header'])
-            ->withKafkaKey(Str::uuid()->toString());
+            ->withKey(Str::uuid()->toString());
 
         $producer->send();
 
@@ -121,26 +122,20 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
     {
         $producer = $this->fake->publish()
             ->onTopic('topic')
-            ->withBodyKey('test', ['test'])
+            ->withBody(['test' => ['test']])
             ->withHeaders(['custom' => 'header'])
-            ->withKafkaKey($uuid = Str::uuid()->toString());
+            ->withKey($uuid = Str::uuid()->toString());
 
         $producer->send();
 
         $this->fake->assertPublished($producer->getMessage());
 
-        $this->fake->assertPublished($producer->getMessage(), function ($message) use ($uuid) {
-            return $message->getKey() === $uuid;
-        });
+        $this->fake->assertPublished($producer->getMessage(), fn ($message) => $message->getKey() === $uuid);
 
-        $this->fake->assertPublished($message = $producer->getMessage(), function () use ($message, $uuid) {
-            return $message->getKey() === $uuid;
-        });
+        $this->fake->assertPublished($message = $producer->getMessage(), fn () => $message->getKey() === $uuid);
 
         try {
-            $this->fake->assertPublished($message = $producer->getMessage(), function () use ($message) {
-                return $message->getKey() === 'not-published-uuid';
-            });
+            $this->fake->assertPublished($message = $producer->getMessage(), fn () => $message->getKey() === 'not-published-uuid');
         } catch (ExpectationFailedException $exception) {
             $this->assertThat($exception, new ExceptionMessageIsOrContains('The expected message was not published.'));
         }
@@ -151,9 +146,9 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
     {
         $producer = $this->fake->publish()
             ->onTopic('topic')
-            ->withBodyKey('test', ['test'])
+            ->withBody(['test' => ['test']])
             ->withHeaders(['custom' => 'header'])
-            ->withKafkaKey(Str::uuid()->toString());
+            ->withKey(Str::uuid()->toString());
 
         $producer->send();
 
@@ -163,8 +158,10 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
 
         try {
             $this->fake->assertPublishedOn('not-published-on-this-topic', $producer->getMessage());
+
+            $this->fail('The assertion should fail.');
         } catch (ExpectationFailedException $exception) {
-            $this->assertThat($exception, new ExceptionMessageIsOrContains('The expected message was not published.'));
+            $this->assertThat($exception, new ExceptionMessageIsOrContains('The expected message was not published on the [not-published-on-this-topic] topic.'));
         }
     }
 
@@ -183,8 +180,10 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
 
         try {
             $this->fake->assertPublishedOn('not-published-on-this-topic', $producer->getMessage());
+
+            $this->fail('The assertion should fail.');
         } catch (ExpectationFailedException $exception) {
-            $this->assertThat($exception, new ExceptionMessageIsOrContains('The expected message was not published.'));
+            $this->assertThat($exception, new ExceptionMessageIsOrContains('The expected message was not published on the [not-published-on-this-topic] topic.'));
         }
     }
 
@@ -193,9 +192,9 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
     {
         $producer = $this->fake->publish()
             ->onTopic('topic')
-            ->withBodyKey('test', ['test'])
+            ->withBody(['test' => ['test']])
             ->withHeaders(['custom' => 'header'])
-            ->withKafkaKey(Str::uuid()->toString());
+            ->withKey(Str::uuid()->toString());
 
         $producer->send();
 
@@ -205,8 +204,10 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
 
         try {
             $this->fake->assertPublishedOnTimes('topic', 4, $producer->getMessage());
+
+            $this->fail('The assertion should fail.');
         } catch (ExpectationFailedException $exception) {
-            $this->assertThat($exception, new ExceptionMessageIsOrContains('Kafka published 1 messages instead of 4.'));
+            $this->assertThat($exception, new ExceptionMessageIsOrContains('Kafka published 1 messages on the [topic] topic instead of 4.'));
         }
     }
 
@@ -215,9 +216,9 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
     {
         $producer = $this->fake->publish()
             ->onTopic('topic')
-            ->withBodyKey('test', ['test'])
+            ->withBody(['test' => ['test']])
             ->withHeaders(['custom' => 'header'])
-            ->withKafkaKey($uuid = Str::uuid()->toString());
+            ->withKey($uuid = Str::uuid()->toString());
 
         $producer->send();
 
@@ -226,16 +227,14 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         $this->fake->assertPublishedOn('topic', $producer->getMessage());
 
         try {
-            $this->fake->assertPublishedOn('topic', $producer->getMessage(), function ($message) {
-                return $message->getKey() === 'different-key';
-            });
+            $this->fake->assertPublishedOn('topic', $producer->getMessage(), fn ($message) => $message->getKey() === 'different-key');
+
+            $this->fail('The assertion should fail.');
         } catch (ExpectationFailedException $exception) {
-            $this->assertThat($exception, new ExceptionMessageIsOrContains('The expected message was not published.'));
+            $this->assertThat($exception, new ExceptionMessageIsOrContains('The expected message was not published on the [topic] topic.'));
         }
 
-        $this->fake->assertPublishedOn('topic', $producer->getMessage(), function ($message) use ($uuid) {
-            return $message->getKey() === $uuid;
-        });
+        $this->fake->assertPublishedOn('topic', $producer->getMessage(), fn ($message) => $message->getKey() === $uuid);
     }
 
     #[Test]
@@ -243,7 +242,7 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
     {
         $this->fake->assertNothingPublished();
 
-        $this->fake->publish('broker')->withMessage(new Message('foo'))->send();
+        $this->fake->publish()->withMessage(new Message('foo'))->send();
 
         try {
             $this->fake->assertNothingPublished();
@@ -272,8 +271,7 @@ final class KafkaFakeTest extends LaravelKafkaTestCase
         $consumer = Kafka::consumer()
             ->subscribe(['test-topic'])
             ->withBrokers('localhost:9092')
-            ->withConsumerGroupId('group')
-            ->withCommitBatchSize(1)
+            ->withGroupId('group')
             ->withHandler(fn (ConsumerMessage $message) => $this->assertEquals($message, $message))
             ->build();
 

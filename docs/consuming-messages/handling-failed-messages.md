@@ -3,7 +3,7 @@ title: Handling failed messages
 weight: 6
 ---
 
-When a message handler throws an exception, the consumer first calls the `failed` method of the consumer class. By default, it rethrows the exception, which is then logged and reported through the Laravel exception handler. What happens to the message next depends on how the consumer is configured.
+When a message handler throws an exception, the exception is logged and reported through the Laravel exception handler. What happens to the message next depends on how the consumer is configured.
 
 ```+parse
 <x-sponsors.request-sponsor/>
@@ -11,11 +11,28 @@ When a message handler throws an exception, the consumer first calls the `failed
 
 ## Default behavior
 
-Without a dead letter queue, the consumer moves on to the next message and the offset of the failed message is committed. **The failed message is not consumed again**, so the default behavior is at most once delivery for messages whose handler fails.
+Without a dead letter queue, the consumer stops when a message fails, and **the offset of the failed message is not committed**. The consumer is closed, leaving the consumer group, and `consume()` throws a `Junges\Kafka\Exceptions\ConsumerException`. The original exception is available through the `getPrevious` method. The next consumer of the partition, including the same consumer once it is restarted, starts from the failed message, so failed messages are not lost.
 
-This is not limited to auto commit mode. Kafka does not acknowledge messages individually: a committed offset is the position a consumer group resumes from in a partition. Skipping the commit of a failed message is not enough to consume it again, because committing any later message of the same partition moves that position past it. With auto commit enabled, librdkafka also commits the offset of every fetched message in the background, whether the handler succeeded or not.
+```php
+use Junges\Kafka\Exceptions\ConsumerException;
 
-Failed messages can be retried before they are handled as failed. After that, there are two ways to keep them from being lost: sending them to a dead letter queue, or stopping the consumer.
+$consumer = \Junges\Kafka\Facades\Kafka::consumer(['orders'])
+    ->withGroupId('orders-group')
+    ->withHandler(new OrderHandler)
+    ->build();
+
+$consumer->consume(); // Throws a ConsumerException when a message fails
+```
+
+The consumer process is expected to exit, and to be restarted by a process monitor such as Supervisor. Keep in mind that:
+
+- Messages are delivered at least once. A message can be processed again after a restart, so handlers should be idempotent.
+- A message that always fails stops the consumer every time it is consumed, blocking its partition until the cause is fixed. Use a dead letter queue to move such messages out of the way.
+- Make sure your process monitor keeps restarting the consumer. Supervisor, for instance, considers a process that exits within `startsecs` seconds of starting as a failed start, and gives up after `startretries` failed starts.
+
+This works both in auto commit mode and in [manual commit](../advanced-usage/manual-commit.md) mode. In auto commit mode, the consumer sets the `enable.auto.offset.store` option to `false` and stores the offset of each message only after it is processed. This keeps librdkafka from committing the offset of a failed message in the background, which it would otherwise do as soon as the message is fetched.
+
+Failed messages can be retried before they are handled as failed. After that, they can also be sent to a dead letter queue, or skipped.
 
 ## Retrying failed messages
 
@@ -23,14 +40,29 @@ Failures caused by a temporary problem, such as a dependency that is briefly una
 
 ```php
 $consumer = \Junges\Kafka\Facades\Kafka::consumer(['orders'])
-    ->withConsumerGroupId('orders-group')
+    ->withGroupId('orders-group')
     ->retryFailedMessages(3, backoffInMs: 1000)
     ->withDlq()
     ->withHandler(new OrderHandler)
     ->build();
 ```
 
-When the handler throws an exception, it is called again with the same message, up to the given number of times. Middlewares run again on every attempt. Once all retries are used, the message is handled as failed: the `failed` method of the consumer class is called, and the message is sent to the dead letter queue, stops the consumer, or is skipped, depending on the configuration. Retries also end early when the consumer is asked to stop, for instance by a termination signal.
+When the handler throws an exception, it is called again with the same message, up to the given number of times. Middlewares run again on every attempt. The `getAttempts` method of the message returns how many times the handler was called with it, including the current call:
+
+```php
+use Junges\Kafka\Contracts\ConsumerMessage;
+use Junges\Kafka\Contracts\Consumer;
+
+function (ConsumerMessage $message, Consumer $consumer) {
+    if ($message->getAttempts() > 1) {
+        logger()->info('Retrying message', ['offset' => $message->getOffset()]);
+    }
+
+    // ...
+}
+```
+
+Once all retries are used, the message is handled as failed: the [failure callback](#being-notified-of-failed-messages) is called, and the message is sent to the dead letter queue, stops the consumer, or is skipped, depending on the configuration. Retries also end early when the consumer is asked to stop, for instance by a termination signal.
 
 Some failures will never succeed no matter how many times the handler is called, such as a validation error or a database constraint violation. To retry only some of them, pass a closure to the `when` argument. It receives the exception thrown by the handler, and the message is retried only when the closure returns `true`:
 
@@ -38,7 +70,7 @@ Some failures will never succeed no matter how many times the handler is called,
 use Illuminate\Http\Client\ConnectionException;
 
 $consumer = \Junges\Kafka\Facades\Kafka::consumer(['orders'])
-    ->withConsumerGroupId('orders-group')
+    ->withGroupId('orders-group')
     ->retryFailedMessages(3, backoffInMs: 1000, when: fn (Throwable $e) => $e instanceof ConnectionException)
     ->withHandler(new OrderHandler)
     ->build();
@@ -46,52 +78,91 @@ $consumer = \Junges\Kafka\Facades\Kafka::consumer(['orders'])
 
 The closure is called after each failed attempt. When it returns `false`, the remaining retries are skipped and the message is handled as failed right away.
 
-The consumer waits during the backoff, so no other message is consumed while a message is being retried. Keep the total time spent retrying a message (the number of retries multiplied by the backoff, plus the time the handler takes) well below the `max.poll.interval.ms` consumer option, 5 minutes by default. A consumer that does not poll Kafka within that interval is removed from the consumer group. Longer outages are better handled by a dead letter queue or by stopping the consumer.
+To wait longer before each retry, pass an array of backoffs instead. Each retry waits for the value at its position, and the last value is used for the remaining retries:
 
-The `SeekToCurrentErrorCommitter` committer is deprecated in favor of this method, as it does not make failed messages be consumed again.
+```php
+$consumer = \Junges\Kafka\Facades\Kafka::consumer(['orders'])
+    ->retryFailedMessages(5, backoffInMs: [1000, 5000, 10000])
+    ->withHandler(new OrderHandler)
+    ->build();
+```
+
+The consumer waits during the backoff, so no other message is consumed while a message is being retried. Keep the total time spent retrying a message (the number of retries multiplied by the backoff, plus the time the handler takes) well below the `max.poll.interval.ms` consumer option, 5 minutes by default. A consumer that does not poll Kafka within that interval is removed from the consumer group. Longer outages are better handled by a dead letter queue or by letting the consumer stop.
 
 ## Sending failed messages to a dead letter queue
 
-When a dead letter queue is configured with `withDlq`, failed messages are published to the dead letter queue topic before their offsets are committed, and the consumer moves on to the next message. See [configuring a dead letter queue](configuring-consumer-options.md) for details.
+When a dead letter queue is configured with `withDlq`, failed messages are published to the dead letter queue topic before their offsets are committed, and the consumer moves on to the next message instead of stopping. See [configuring a dead letter queue](configuring-consumer-options.md) for details.
 
-## Stopping the consumer on failure
+## Skipping failed messages
 
-If a failed message must be processed before any later message of the same partition, use the `stopOnFailure` method:
-
-```php
-$consumer = \Junges\Kafka\Facades\Kafka::consumer(['orders'])
-    ->withConsumerGroupId('orders-group')
-    ->stopOnFailure()
-    ->withHandler(new OrderHandler)
-    ->build();
-
-$consumer->consume();
-```
-
-When a message fails and there is no dead letter queue, the consumer is closed, leaving the consumer group, and throws a `Junges\Kafka\Exceptions\ConsumerException`. The original exception is available through the `getPrevious` method. The offset of the failed message is not committed, so the next consumer of its partition starts from the failed message. This works both in auto commit mode, where the offsets of the messages processed before the failure are committed when the consumer is closed, and in [manual commit](../advanced-usage/manual-commit.md) mode.
-
-The consumer process is expected to exit, and to be restarted by a process monitor such as Supervisor. Keep in mind that:
-
-- Messages are delivered at least once. A message can be processed again after a restart, so handlers should be idempotent.
-- A message that always fails stops the consumer every time it is consumed, blocking its partition until the cause is fixed.
-- Make sure your process monitor keeps restarting the consumer. Supervisor, for instance, considers a process that exits within `startsecs` seconds of starting as a failed start, and gives up after `startretries` failed starts.
-- When a dead letter queue is also configured, failed messages are sent to it and the consumer does not stop. Stopping only happens for failures that can not be sent anywhere else.
-
-Stopping the consumer is useful when a failure is temporary, like a database or a cache that is down, because the message can succeed once the consumer is restarted. A failure that is not temporary, like a message that can not be deserialized, would stop the consumer every time it is restarted. To stop only for some failures, pass a closure to the `stopOnFailure` method. It receives the exception that made the message fail, and the consumer stops only when the closure returns `true`:
+If losing a failed message is acceptable, use the `skipFailedMessages` method. The consumer then commits the offset of the failed message and moves on to the next one, so **the failed message is not consumed again**:
 
 ```php
-use Illuminate\Database\QueryException;
-use Illuminate\Http\Client\ConnectionException;
-
-$consumer = \Junges\Kafka\Facades\Kafka::consumer(['orders'])
-    ->withConsumerGroupId('orders-group')
-    ->stopOnFailure(fn (Throwable $e) => $e instanceof QueryException || $e instanceof ConnectionException)
-    ->withHandler(new OrderHandler)
+$consumer = \Junges\Kafka\Facades\Kafka::consumer(['page-views'])
+    ->withGroupId('analytics')
+    ->skipFailedMessages()
+    ->withHandler(new PageViewHandler)
     ->build();
 ```
 
-When the closure returns `false`, the failed message is skipped, as it would be without `stopOnFailure`, and the consumer moves on to the next message. The closure receives the exception thrown while processing the message, not an exception thrown by the `failed` method of the consumer class, and it is not called when the message is sent to a dead letter queue.
+A `Junges\Kafka\Events\MessageSkipped` event is dispatched for every skipped message, with the message and the exception that made it fail, so you can monitor them:
 
-With auto commit enabled, both `stopOnFailure` and `retryFailedMessages` set the `enable.auto.offset.store` option to `false`, and the consumer stores the offset of each message only after it is processed. This is what keeps librdkafka from committing the offset of a failed message in the background.
+```php
+use Illuminate\Support\Facades\Event;
+use Junges\Kafka\Events\MessageSkipped;
 
-Messages consumed by [queueable handlers](queueable-handlers.md) are processed by the queue worker, so their failures are handled by the queue instead.
+Event::listen(function (MessageSkipped $event) {
+    logger()->warning('Kafka message skipped', [
+        'topic' => $event->message->getTopicName(),
+        'offset' => $event->message->getOffset(),
+        'exception' => $event->throwable->getMessage(),
+    ]);
+});
+```
+
+When a dead letter queue is also configured, failed messages are sent to it instead of being skipped.
+
+Skipping is useful when a failure is permanent, like a message that can not be deserialized, which would stop the consumer every time it is restarted. A failure that is temporary, like a database or a cache that is down, is better handled by stopping the consumer, because the message can succeed once the consumer is restarted. To skip only some failures, pass a closure to the `skipFailedMessages` method. It receives the exception that made the message fail, and the message is skipped only when the closure returns `true`:
+
+```php
+use Illuminate\Validation\ValidationException;
+
+$consumer = \Junges\Kafka\Facades\Kafka::consumer(['orders'])
+    ->withGroupId('orders-group')
+    ->skipFailedMessages(fn (Throwable $e) => $e instanceof ValidationException)
+    ->withHandler(new OrderHandler)
+    ->build();
+```
+
+When the closure returns `false`, the consumer stops, as it would without `skipFailedMessages`. The closure receives the exception thrown while processing the message, not an exception thrown by the failure callback, and it is not called when the message is sent to a dead letter queue.
+
+## Being notified of failed messages
+
+To run some code when a message is handled as failed, once its retries are used, override the `failed` method of a [consumer class](class-structure.md):
+
+```php
+use Illuminate\Support\Facades\Notification;
+use Junges\Kafka\Contracts\ConsumerMessage;
+use Throwable;
+
+public function failed(ConsumerMessage $message, Throwable $exception): void
+{
+    Notification::route('slack', config('services.slack.alerts'))
+        ->notify(new KafkaMessageFailed($message, $exception));
+}
+```
+
+When building a consumer yourself, use the `onMessageFailed` method of the consumer builder:
+
+```php
+$consumer = \Junges\Kafka\Facades\Kafka::consumer(['orders'])
+    ->onMessageFailed(function (ConsumerMessage $message, Throwable $exception) {
+        // ...
+    })
+    ->withHandler(new OrderHandler)
+    ->build();
+```
+
+The callback runs before the message is sent to the dead letter queue, skipped, or stops the consumer, and it can't change what happens to it. An exception thrown by the callback is reported, and the message is handled as usual.
+
+To be notified of the failed messages of every consumer, listen to the `MessageFailed` [event](../advanced-usage/events.md), which is dispatched right before the failure callback is called. The `RetryingMessage` event is dispatched before each retry.

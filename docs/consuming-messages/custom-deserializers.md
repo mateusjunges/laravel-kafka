@@ -4,7 +4,7 @@ weight: 7
 ---
 
 To create a custom deserializer, you need to create a class that implements the `\Junges\Kafka\Contracts\MessageDeserializer` contract.
-This interface force you to declare the `deserialize` method.
+This interface requires a `deserialize` method, which receives the consumed message and returns a new message with the deserialized body.
 
 ```+parse
 <x-sponsors.request-sponsor/>
@@ -47,8 +47,8 @@ $cachedRegistry = new CachedRegistry(
 $registry = new \Junges\Kafka\Message\Registry\AvroSchemaRegistry($cachedRegistry);
 $recordSerializer = new RecordSerializer($cachedRegistry);
 
-//if no version is defined, latest version will be used
-//if no schema definition is defined, the appropriate version will be fetched form the registry
+// If no version is defined, the latest version is used.
+// If no schema definition is defined, the appropriate version is fetched from the registry.
 $registry->addBodySchemaMappingForTopic(
     'test-topic',
     new \Junges\Kafka\Message\KafkaAvroSchema('bodySchema' , 9 /* , AvroSchema $definition */)
@@ -58,8 +58,8 @@ $registry->addKeySchemaMappingForTopic(
     new \Junges\Kafka\Message\KafkaAvroSchema('keySchema' , 9 /* , AvroSchema $definition */)
 );
 
-// if you are only decoding key or value, you can pass that mode as additional third argument
-// per default both key and body will get decoded
+// If you are only decoding the key or the body, pass that mode as the third argument.
+// By default, both the key and the body are decoded.
 $deserializer = new \Junges\Kafka\Message\Deserializers\AvroDeserializer($registry, $recordSerializer /*, AvroDecoderInterface::DECODE_BODY */);
 
 $consumer = \Junges\Kafka\Facades\Kafka::consumer()->usingDeserializer($deserializer);

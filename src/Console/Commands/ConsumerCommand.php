@@ -3,102 +3,43 @@
 namespace Junges\Kafka\Console\Commands;
 
 use Illuminate\Console\Command;
-use Junges\Kafka\Config\Config;
-use Junges\Kafka\Console\Commands\KafkaConsumer\Options;
-use Junges\Kafka\Consumers\Consumer;
-use Junges\Kafka\Contracts\MessageDeserializer;
+use Junges\Kafka\Console\Commands\Concerns\ResolvesConsumerClasses;
+use Junges\Kafka\Consumers\Builder;
+use Junges\Kafka\Contracts\Manager;
+use Junges\Kafka\KafkaConsumer;
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
 
 class ConsumerCommand extends Command
 {
+    use ResolvesConsumerClasses;
+
     /* @var string $signature */
-    protected $signature = 'kafka:consume 
-            {--topics= : The topics to listen for messages (topic1,topic2,...,topicN)} 
-            {--consumer= : The consumer which will consume messages in the specified topic} 
-            {--deserializer= : The deserializer class to use when consuming message}
-            {--groupId=anonymous : The consumer group id} 
-            {--commit=1} 
-            {--dlq=? : The Dead Letter Queue} 
-            {--maxMessage=? : The max number of messages that should be handled}
-            {--maxTime=0 : The max number of seconds that a consumer should run }
-            {--securityProtocol=?}';
+    protected $signature = 'kafka:consume
+            {consumer : The consumer class, either its fully qualified name or its name in the App\Kafka\Consumers namespace}
+            {--max-messages= : Stop after handling the given number of messages}
+            {--max-time= : Stop after the given number of seconds}
+            {--stop-when-empty : Stop once there are no messages left in the assigned partitions}';
 
     /* @var string $description */
-    protected $description = 'A Kafka Consumer for Laravel.';
+    protected $description = 'Consume Kafka messages using a consumer class.';
 
-    private readonly array $config;
-
-    public function __construct()
+    public function handle(Manager $kafka): int
     {
-        parent::__construct();
+        $consumer = $this->resolveConsumerClass($this->argument('consumer'));
 
-        $this->config = [
-            'brokers' => config('kafka.brokers'),
-            'groupId' => config('kafka.consumer_group_id'),
-            'securityProtocol' => config('kafka.securityProtocol'),
-            'sasl' => [
-                'mechanisms' => config('kafka.sasl.mechanisms'),
-                'username' => config('kafka.sasl.username'),
-                'password' => config('kafka.sasl.password'),
-            ],
-        ];
-    }
+        if ($consumer === null) {
+            $this->components->error("The consumer [{$this->argument('consumer')}] does not exist or does not extend [".KafkaConsumer::class.'].');
 
-    public function handle(): int
-    {
-        if (empty($this->option('consumer'))) {
-            $this->error('The [--consumer] option is required.');
-
-            return SymfonyCommand::SUCCESS;
+            return SymfonyCommand::FAILURE;
         }
 
-        if (empty($this->option('topics'))) {
-            $this->error('The [--topics option is required.');
-
-            return SymfonyCommand::SUCCESS;
-        }
-
-        $parsedOptions = array_map($this->parseOptions(...), $this->options());
-
-        $options = new Options($parsedOptions, $this->config);
-
-        $consumer = $options->getConsumer();
-        $deserializer = $options->getDeserializer();
-
-        $config = new Config(
-            broker: $options->getBroker(),
-            topics: $options->getTopics(),
-            securityProtocol: $options->getSecurityProtocol(),
-            commit: $options->getCommit(),
-            groupId: $options->getGroupId(),
-            consumer: app($consumer),
-            sasl: $options->getSasl(),
-            dlq: $options->getDlq(),
-            maxMessages: $options->getMaxMessages(),
-            maxTime: $options->getMaxTime(),
-        );
-
-        /** @var Consumer $consumer */
-        $consumer = app(Consumer::class, [
-            'config' => $config,
-            'deserializer' => app($deserializer ?? MessageDeserializer::class),
-        ]);
-
-        $consumer->consume();
+        $kafka->consumerFor($consumer)
+            ->when($this->option('max-messages'), fn (Builder $builder, string $maxMessages) => $builder->stopAfterMessages((int) $maxMessages))
+            ->when($this->option('max-time'), fn (Builder $builder, string $maxTime) => $builder->stopAfterSeconds((int) $maxTime))
+            ->when($this->option('stop-when-empty'), fn (Builder $builder) => $builder->stopWhenEmpty())
+            ->build()
+            ->consume();
 
         return SymfonyCommand::SUCCESS;
-    }
-
-    private function parseOptions(int|string|null $option): int|string|null
-    {
-        if ($option === '?') {
-            return null;
-        }
-
-        if (is_numeric($option)) {
-            return (int) $option;
-        }
-
-        return $option;
     }
 }

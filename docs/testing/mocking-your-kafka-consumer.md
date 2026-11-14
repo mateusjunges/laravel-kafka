@@ -27,12 +27,7 @@ public function test_post_is_marked_as_published()
     \Junges\Kafka\Facades\Kafka::shouldReceiveMessages([
         new \Junges\Kafka\Message\ConsumedMessage(
             topicName: 'mark-post-as-published-topic',
-            partition: 0,
-            headers: [],
             body: ['post_id' => 1],
-            key: null,
-            offset: 0,
-            timestamp: 0
         ),
     ]);
     
@@ -56,3 +51,42 @@ public function test_post_is_marked_as_published()
 }
 ```
 
+Only the topic name and the body of the messages are usually relevant. The partition and the offset default to `0`, the headers to an empty array, and the key and timestamp to `null`.
+
+### Failed messages
+
+Faked consumers handle failed messages like real ones: they are [retried](../consuming-messages/handling-failed-messages.md), with the attempt number available through `getAttempts()`, the failure callback is called, and the message is then sent to the dead letter queue, skipped, or stops the consumer with a `Junges\Kafka\Exceptions\ConsumerException`. Instead of publishing messages to the dead letter queue, faked consumers only dispatch the `MessageSentToDLQ` event, so you can assert that a message was sent to it:
+
+```php
+use Illuminate\Support\Facades\Event;
+use Junges\Kafka\Events\MessageSentToDLQ;
+
+Event::fake([MessageSentToDLQ::class]);
+
+Kafka::consumerFor(OrdersConsumer::class)->build()->consume();
+
+Event::assertDispatched(MessageSentToDLQ::class);
+```
+
+### Testing consumer classes
+
+[Consumer classes](../consuming-messages/class-structure.md) can be tested the same way, building them with the `consumerFor` method:
+
+```php
+use App\Kafka\Consumers\OrdersConsumer;
+use Junges\Kafka\Facades\Kafka;
+use Junges\Kafka\Message\ConsumedMessage;
+
+public function test_orders_are_created()
+{
+    Kafka::fake();
+
+    Kafka::shouldReceiveMessages([
+        new ConsumedMessage(topicName: 'orders', body: ['id' => 1]),
+    ]);
+
+    Kafka::consumerFor(OrdersConsumer::class)->build()->consume();
+
+    $this->assertDatabaseHas('orders', ['id' => 1]);
+}
+```

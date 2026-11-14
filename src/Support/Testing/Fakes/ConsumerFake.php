@@ -2,37 +2,69 @@
 
 namespace Junges\Kafka\Support\Testing\Fakes;
 
-use Closure;
+use Illuminate\Contracts\Events\Dispatcher;
+use Junges\Kafka\Concerns\ProcessesMessages;
 use Junges\Kafka\Config\Config;
+use Junges\Kafka\Consumers\StopReason;
+use Junges\Kafka\Contracts\Consumer;
 use Junges\Kafka\Contracts\ConsumerMessage;
-use Junges\Kafka\Contracts\MessageConsumer;
+use Junges\Kafka\Events\ConsumerStarting;
+use Junges\Kafka\Events\ConsumerStopped;
+use Junges\Kafka\Events\MessageSentToDLQ;
+use Junges\Kafka\Events\StartedConsumingMessage;
 use Junges\Kafka\MessageCounter;
-use RdKafka\Conf;
 use RdKafka\Message;
+use Throwable;
 
-class ConsumerFake implements MessageConsumer
+class ConsumerFake implements Consumer
 {
+    use ProcessesMessages;
+
     private readonly MessageCounter $messageCounter;
 
-    /** @param ConsumerMessage[] $messages  */
+    private bool $stopRequested = false;
+
+    private ?StopReason $stopReason = null;
+
+    private readonly Dispatcher $dispatcher;
+
+    /** @param ConsumerMessage[] $messages */
     public function __construct(
         private readonly Config $config,
         private readonly array $messages = [],
-        private bool $stopRequested = false,
-        private ?Closure $whenStopConsuming = null
     ) {
         $this->messageCounter = new MessageCounter($config->getMaxMessages());
-        $this->whenStopConsuming = $this->config->getWhenStopConsumingCallback();
+        $this->dispatcher = app(Dispatcher::class);
     }
 
-    /** Consume messages from a kafka topic in loop. */
+    /**
+     * Consume the messages given to the fake, in order. Once there are no messages left, the faked consumer
+     * stops as if it had no messages left in its partitions.
+     */
     public function consume(): void
     {
-        $this->doConsume();
+        $this->cancelStopConsume();
 
-        if ($this->shouldRunStopConsumingCallback()) {
-            $callback = $this->whenStopConsuming;
-            $callback(...)();
+        $exception = null;
+
+        try {
+            $this->dispatcher->dispatch(new ConsumerStarting($this));
+
+            $this->doConsume();
+
+            $this->stopReason ??= $this->maxMessagesLimitReached() ? StopReason::MessageLimit : StopReason::Empty;
+
+            $this->config->getWhenStopConsumingCallback()?->__invoke();
+        } catch (Throwable $throwable) {
+            $exception = $throwable;
+
+            throw $throwable;
+        } finally {
+            $this->dispatcher->dispatch(new ConsumerStopped(
+                $this,
+                $exception instanceof Throwable ? StopReason::Failed : $this->stopReason,
+                $exception,
+            ));
         }
     }
 
@@ -40,13 +72,14 @@ class ConsumerFake implements MessageConsumer
     public function stopConsuming(): void
     {
         $this->stopRequested = true;
+        $this->stopReason ??= StopReason::Requested;
     }
 
     /** Will cancel the stopConsume request initiated by calling the stopConsume method */
     public function cancelStopConsume(): void
     {
         $this->stopRequested = false;
-        $this->whenStopConsuming = null;
+        $this->stopReason = null;
     }
 
     /** Count the number of messages consumed by this consumer */
@@ -56,13 +89,13 @@ class ConsumerFake implements MessageConsumer
     }
 
     /** {@inheritdoc} */
-    public function commit(mixed $messageOrOffsets = null): void
+    public function commit(ConsumerMessage|Message|array|null $messageOrOffsets = null): void
     {
         //
     }
 
     /** {@inheritdoc} */
-    public function commitAsync(mixed $message_or_offsets = null): void
+    public function commitAsync(ConsumerMessage|Message|array|null $messageOrOffsets = null): void
     {
         //
     }
@@ -73,16 +106,43 @@ class ConsumerFake implements MessageConsumer
         return [];
     }
 
-    /** Set the consumer configuration. */
-    public function setConf(array $options = []): Conf
+    /** Faked consumers have no partitions to pause. */
+    public function pause(?array $partitions = null): void
     {
-        return new Conf;
+        //
     }
 
-    /**
-     * Consume messages
-     */
-    public function doConsume(): void
+    /** Faked consumers have no partitions to resume. */
+    public function resume(?array $partitions = null): void
+    {
+        //
+    }
+
+    /** {@inheritdoc} */
+    public function getName(): string
+    {
+        return $this->config->getName();
+    }
+
+    /** {@inheritdoc} */
+    public function getConnectionName(): string
+    {
+        return $this->config->getConnectionName();
+    }
+
+    /** {@inheritdoc} */
+    public function getGroupId(): ?string
+    {
+        return $this->config->getGroupId();
+    }
+
+    /** {@inheritdoc} */
+    public function getTopics(): array
+    {
+        return $this->config->getTopics();
+    }
+
+    private function doConsume(): void
     {
         foreach ($this->messages as $message) {
             if ($this->shouldStopConsuming()) {
@@ -91,11 +151,6 @@ class ConsumerFake implements MessageConsumer
 
             $this->handleMessage($message);
         }
-    }
-
-    private function shouldRunStopConsumingCallback(): bool
-    {
-        return $this->whenStopConsuming !== null;
     }
 
     /** Determine if the max message limit is reached. */
@@ -110,23 +165,37 @@ class ConsumerFake implements MessageConsumer
         return $this->maxMessagesLimitReached() || $this->stopRequested;
     }
 
-    /** Handle the message. */
     private function handleMessage(ConsumerMessage $message): void
     {
-        $this->config->getConsumer()->handle($message, $this);
+        foreach ($this->config->getBeforeConsumingCallbacks() as $callback) {
+            $callback($this);
+        }
+
         $this->messageCounter->add();
+
+        $this->dispatcher->dispatch(new StartedConsumingMessage($message, $this));
+
+        $this->processMessage($message);
+
+        foreach ($this->config->getAfterConsumingCallbacks() as $callback) {
+            $callback($this);
+        }
     }
 
-    private function getConsumerMessage(Message $message): ConsumerMessage
+    /** Faked consumers don't publish to the dead letter queue, they only dispatch the event. */
+    private function sendToDeadLetterQueue(ConsumerMessage $message, Throwable $throwable, ?Message $kafkaMessage): void
     {
-        return app(ConsumerMessage::class, [
-            'topicName' => $message->topic_name,
-            'partition' => $message->partition,
-            'headers' => $message->headers ?? [],
-            'body' => unserialize($message->payload),
-            'key' => $message->key,
-            'offset' => $message->offset,
-            'timestamp' => $message->timestamp,
-        ]);
+        $body = $message->getBody();
+        $key = $message->getKey();
+
+        $this->dispatcher->dispatch(new MessageSentToDLQ(
+            $message,
+            $throwable,
+            $this->config->getDlq(),
+            is_string($body) || $body === null ? $body : json_encode($body),
+            is_string($key) || $key === null ? $key : (string) $key,
+            $message->getHeaders(),
+            $this,
+        ));
     }
 }

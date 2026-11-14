@@ -4,5 +4,5 @@ namespace Junges\Kafka\Exceptions;
 
 class SchemaRegistryException extends LaravelKafkaException
 {
-    final public const SCHEMA_MAPPING_NOT_FOUND = 'There is no schema mapping topic: %s, type: %s';
+    final public const string SCHEMA_MAPPING_NOT_FOUND = 'There is no schema mapping topic: %s, type: %s';
 }

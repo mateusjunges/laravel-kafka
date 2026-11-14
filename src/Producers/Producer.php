@@ -2,8 +2,6 @@
 
 namespace Junges\Kafka\Producers;
 
-use Closure;
-use Exception;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Facades\App;
 use Junges\Kafka\Concerns\ManagesTransactions;
@@ -11,12 +9,19 @@ use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\MessageSerializer;
 use Junges\Kafka\Contracts\Producer as ProducerContract;
 use Junges\Kafka\Contracts\ProducerMessage;
+use Junges\Kafka\Events\CouldNotPublishMessage as CouldNotPublishMessageEvent;
+use Junges\Kafka\Events\KafkaErrorOccurred;
+use Junges\Kafka\Events\MessageDelivered;
+use Junges\Kafka\Events\MessageDeliveryFailed;
 use Junges\Kafka\Events\MessagePublished;
 use Junges\Kafka\Events\PublishingMessage;
+use Junges\Kafka\Events\StatisticsReported;
 use Junges\Kafka\Exceptions\CouldNotPublishMessage;
 use RdKafka\Conf;
+use RdKafka\Message;
 use RdKafka\Producer as KafkaProducer;
 use RdKafka\ProducerTopic;
+use Throwable;
 
 class Producer implements ProducerContract
 {
@@ -28,106 +33,111 @@ class Producer implements ProducerContract
 
     private readonly Dispatcher $dispatcher;
 
-    private array $pendingMessages;
+    /** @var array<string, ProducerTopic> Topic handles, created once per topic. */
+    private array $topics = [];
+
+    private readonly string $messageIdKey;
+
+    /** Whether messages were queued since the last flush. */
+    private bool $hasQueuedMessages = false;
 
     public function __construct(
         private readonly Config $config,
         private readonly MessageSerializer $serializer,
-        private readonly bool $async = false,
-        private readonly ?Closure $flushCallback = null,
     ) {
+        $this->dispatcher = App::make(Dispatcher::class);
+        $this->messageIdKey = config('kafka.message_id_key');
         $this->producer = app(KafkaProducer::class, [
             'conf' => $this->getConf($this->config->getProducerOptions()),
         ]);
-        $this->dispatcher = App::make(Dispatcher::class);
-        $this->pendingMessages = [];
     }
 
+    /**
+     * Messages are usually flushed when the application terminates. This is a last
+     * resort for producers that outlive it, and it can't throw because there is
+     * nothing left to handle the exception, so failures are only dispatched
+     * through the CouldNotPublishMessage event.
+     */
     public function __destruct()
     {
-        if ($this->async) {
+        try {
             $this->flush();
+        } catch (Throwable) {
         }
     }
 
     /** {@inheritDoc} */
-    public function produce(ProducerMessage $message): bool
+    public function produce(ProducerMessage $message, ?MessageSerializer $serializer = null): void
     {
-        $this->dispatcher->dispatch(new PublishingMessage($message));
+        $this->dispatcher->dispatch(new PublishingMessage($message, $this->config->getConnectionName()));
 
-        $topic = $this->producer->newTopic($message->getTopicName());
+        $topic = $this->topics[$message->getTopicName()] ??= $this->producer->newTopic($message->getTopicName());
 
-        $message = clone $message;
-
-        $message = $this->serializer->serialize($message);
+        $message = ($serializer ?? $this->serializer)->serialize(clone $message);
 
         $this->produceMessage($topic, $message);
-
-        if ($this->flushCallback) {
-            $this->pendingMessages[] = $message;
-        }
+        $this->hasQueuedMessages = true;
 
         $this->producer->poll(0);
+    }
 
-        if ($this->async) {
-            return true;
+    /** {@inheritDoc} */
+    public function flush(): void
+    {
+        if (! $this->hasQueuedMessages) {
+            return;
         }
 
-        return $this->flush();
+        try {
+            retry($this->config->flushRetries, function () {
+                $result = $this->producer->flush($this->config->flushTimeoutInMs);
+
+                if ($result !== RD_KAFKA_RESP_ERR_NO_ERROR) {
+                    throw CouldNotPublishMessage::withMessage(rd_kafka_err2str($result), $result);
+                }
+            }, $this->config->flushRetrySleepInMs);
+        } catch (CouldNotPublishMessage $exception) {
+            $this->dispatcher->dispatch(new CouldNotPublishMessageEvent(
+                $exception->getCode(),
+                $exception->getMessage(),
+                $exception,
+                $this->config->getConnectionName(),
+            ));
+
+            throw $exception;
+        }
+
+        $this->hasQueuedMessages = false;
     }
 
     /**
-     * @throws CouldNotPublishMessage
-     * @throws Exception
+     * Set the Kafka Configuration. The delivery report, statistics and error callbacks are set by the producer, to
+     * dispatch events, and call the ones registered on the connection. Setting an error callback stops librdkafka
+     * from logging errors, so it is only set when there is a callback or a listener for them.
      */
-    public function flush(): mixed
-    {
-        // Here we define the flush callback that is called shutting down a consumer.
-        // This is called after every single message sent using Producer::send
-        $flush = function () {
-            $sleepMilliseconds = config('kafka.flush_retry_sleep_in_ms', 100);
-            $retries = $this->config->flushRetries ?? config('kafka.flush_retries', 10);
-            $timeout = $this->config->flushTimeoutInMs ?? config('kafka.flush_timeout_in_ms', 1000);
-
-            try {
-                return retry($retries, function () use ($timeout) {
-                    $result = $this->producer->flush($timeout);
-
-                    if ($result === RD_KAFKA_RESP_ERR_NO_ERROR) {
-                        $this->runFlushCallback();
-
-                        return true;
-                    }
-
-                    $message = rd_kafka_err2str($result);
-
-                    throw CouldNotPublishMessage::withMessage($message, $result);
-                }, $sleepMilliseconds);
-            } catch (CouldNotPublishMessage $exception) {
-                $this->dispatcher->dispatch(new \Junges\Kafka\Events\CouldNotPublishMessage(
-                    $exception->getKafkaErrorCode(),
-                    $exception->getMessage(),
-                    $exception,
-                ));
-
-                throw $exception;
-            }
-        };
-
-        return $flush();
-    }
-
-    /** Set the Kafka Configuration. */
     private function getConf(array $options): Conf
     {
-        $conf = new Conf;
+        $callbacks = $this->config->getConfigCallbacks();
+        $conf = $this->config->makeConf($options, exceptCallbacks: ['setDrMsgCb', 'setStatsCb', 'setErrorCb']);
 
-        foreach ($options as $key => $value) {
-            $conf->set($key, (string) $value);
-        }
+        // Delivery failures of queued messages are only reported to this callback, so they are dispatched
+        // as events, before calling the delivery report callback registered on the connection, if any.
+        $conf->setDrMsgCb(function (KafkaProducer $kafka, Message $message) use ($callbacks): void {
+            $this->handleDeliveryReport($message);
 
-        foreach ($this->config->getConfigCallbacks() as $method => $callback) {
-            $conf->{$method}($callback);
+            if (isset($callbacks['setDrMsgCb'])) {
+                $callbacks['setDrMsgCb']($kafka, $message);
+            }
+        });
+
+        $conf->setStatsCb(function (mixed $kafka, string $statistics, int $length) use ($callbacks): void {
+            $this->handleStatistics($kafka, $statistics, $length, $callbacks['setStatsCb'] ?? null);
+        });
+
+        if (isset($callbacks['setErrorCb']) || $this->dispatcher->hasListeners(KafkaErrorOccurred::class)) {
+            $conf->setErrorCb(function (mixed $kafka, int $error, string $reason) use ($callbacks): void {
+                $this->handleError($kafka, $error, $reason, $callbacks['setErrorCb'] ?? null);
+            });
         }
 
         return $conf;
@@ -140,22 +150,58 @@ class Producer implements ProducerContract
             msgflags: RD_KAFKA_MSG_F_BLOCK,
             payload: $message->getBody(),
             key: $message->getKey(),
-            headers: $message->getHeaders()
+            headers: $headers = $message->getHeaders(),
+            // Delivery reports don't include the message headers, so the message
+            // id is passed along as the opaque value, to be reported on failures.
+            msg_opaque: $headers[$this->messageIdKey] ?? null,
         );
 
-        $this->dispatcher->dispatch(new MessagePublished($message));
+        $this->dispatcher->dispatch(new MessagePublished($message, $this->config->getConnectionName()));
     }
 
-    private function runFlushCallback(): void
+    private function handleStatistics(mixed $kafka, string $statistics, int $length, ?callable $callback): void
     {
-        if ($this->pendingMessages === []) {
+        if ($callback !== null) {
+            $callback($kafka, $statistics, $length);
+        }
+
+        $this->dispatcher->dispatch(new StatisticsReported((array) json_decode($statistics, true), $this->config->getConnectionName()));
+    }
+
+    private function handleError(mixed $kafka, int $error, string $reason, ?callable $callback): void
+    {
+        if ($callback !== null) {
+            $callback($kafka, $error, $reason);
+        }
+
+        $this->dispatcher->dispatch(new KafkaErrorOccurred($error, $reason, $this->config->getConnectionName()));
+    }
+
+    private function handleDeliveryReport(Message $message): void
+    {
+        if ($message->err === RD_KAFKA_RESP_ERR_NO_ERROR) {
+            $this->dispatcher->dispatch(new MessageDelivered(
+                topic: $message->topic_name,
+                partition: $message->partition,
+                offset: $message->offset,
+                key: $message->key,
+                messageIdentifier: $message->opaque ?? $message->headers[$this->messageIdKey] ?? null,
+                connection: $this->config->getConnectionName(),
+            ));
+
             return;
         }
 
-        if ($this->flushCallback !== null) {
-            ($this->flushCallback)($this->pendingMessages);
-        }
-
-        $this->pendingMessages = [];
+        $this->dispatcher->dispatch(new MessageDeliveryFailed(
+            topic: $message->topic_name,
+            partition: $message->partition,
+            key: $message->key,
+            payload: $message->payload,
+            headers: $message->headers ?? [],
+            errorCode: $message->err,
+            error: $message->errstr(),
+            messageIdentifier: $message->opaque ?? $message->headers[$this->messageIdKey] ?? null,
+            connection: $this->config->getConnectionName(),
+        ));
     }
 }

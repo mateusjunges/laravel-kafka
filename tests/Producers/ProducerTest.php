@@ -2,13 +2,24 @@
 
 namespace Junges\Kafka\Tests\Producers;
 
+use Illuminate\Support\Facades\Event;
 use Junges\Kafka\Config\Config;
-use Junges\Kafka\Contracts\ProducerMessage;
+use Junges\Kafka\Events\KafkaErrorOccurred;
+use Junges\Kafka\Events\MessageDelivered;
+use Junges\Kafka\Events\MessageDeliveryFailed;
+use Junges\Kafka\Events\MessagePublished;
+use Junges\Kafka\Events\PublishingMessage;
+use Junges\Kafka\Events\StatisticsReported;
 use Junges\Kafka\Message\Message;
 use Junges\Kafka\Message\Serializers\JsonSerializer;
 use Junges\Kafka\Producers\Producer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
+use Mockery as m;
 use PHPUnit\Framework\Attributes\Test;
+use RdKafka\Message as RdKafkaMessage;
+use RdKafka\Producer as KafkaProducer;
+use RdKafka\ProducerTopic;
+use ReflectionMethod;
 
 final class ProducerTest extends LaravelKafkaTestCase
 {
@@ -30,57 +41,128 @@ final class ProducerTest extends LaravelKafkaTestCase
     }
 
     #[Test]
-    public function it_does_not_leak_pending_messages_when_no_flush_callback_is_defined(): void
+    public function the_published_event_has_the_message_id_sent_to_kafka(): void
     {
-        $this->mockKafkaProducer();
+        Event::fake();
 
-        $producer = new Producer(
-            new Config('broker', ['test-topic']),
-            new JsonSerializer,
-        );
+        $sentHeaders = null;
 
-        $message = new Message(body: ['key' => 'value']);
-        $message->onTopic('test-topic');
+        $topic = m::mock(ProducerTopic::class);
+        $topic->shouldReceive('producev')->once()->withArgs(function (...$arguments) use (&$sentHeaders) {
+            $sentHeaders = $arguments[4];
 
-        $producer->produce($message);
-        $producer->produce($message);
-        $producer->produce($message);
+            return true;
+        });
 
-        // Reflect on pendingMessages to assert it has been cleared after each flush
-        $reflection = new \ReflectionProperty(Producer::class, 'pendingMessages');
-        $reflection->setAccessible(true);
+        $kafkaProducer = m::mock(KafkaProducer::class);
+        $kafkaProducer->shouldReceive('newTopic')->andReturn($topic);
+        $kafkaProducer->shouldReceive('poll');
+        $kafkaProducer->shouldReceive('flush')->andReturn(RD_KAFKA_RESP_ERR_NO_ERROR);
 
-        $this->assertSame([], $reflection->getValue($producer));
+        $this->app->bind(KafkaProducer::class, fn () => $kafkaProducer);
+
+        $message = Message::create('test-topic')->withBody(['key' => 'value']);
+
+        (new Producer(new Config('broker', ['test-topic'], connection: 'orders'), new JsonSerializer))->produce($message);
+
+        $id = $sentHeaders[config('kafka.message_id_key')];
+
+        $this->assertSame($message->getMessageIdentifier(), $id);
+        Event::assertDispatched(MessagePublished::class, fn (MessagePublished $event) => $event->message->getMessageIdentifier() === $id && $event->connection === 'orders');
+        Event::assertDispatched(PublishingMessage::class, fn (PublishingMessage $event) => $event->message->getMessageIdentifier() === $id && $event->connection === 'orders');
     }
 
     #[Test]
-    public function it_calls_callback_after_flushing_messages(): void
+    public function it_dispatches_an_event_when_a_message_could_not_be_delivered(): void
     {
+        Event::fake();
         $this->mockKafkaProducer();
-        $callbackCalls = 0;
-        $receivedMessages = [];
 
-        $producer = new Producer(
-            new Config('broker', ['test-topic']),
-            new JsonSerializer,
-            false,
-            function (array $messages) use (&$callbackCalls, &$receivedMessages) {
-                $callbackCalls++;
-                $receivedMessages = $messages;
-            }
-        );
+        $failed = new RdKafkaMessage;
+        $failed->err = RD_KAFKA_RESP_ERR__MSG_TIMED_OUT;
+        $failed->topic_name = 'orders';
+        $failed->partition = 2;
+        $failed->key = 'order-1';
+        $failed->payload = '{"id":1}';
+        $failed->headers = [];
+        $failed->opaque = 'message-id';
 
-        $message = new Message(
-            body: ['key' => 'value'],
-        );
-        $message->onTopic('test-topic');
+        $this->reportDelivery(new Producer(new Config('broker', ['orders']), new JsonSerializer), $failed);
 
-        $producer->produce($message);
+        Event::assertDispatched(MessageDeliveryFailed::class, fn (MessageDeliveryFailed $event) => $event->topic === 'orders'
+            && $event->partition === 2
+            && $event->key === 'order-1'
+            && $event->payload === '{"id":1}'
+            && $event->errorCode === RD_KAFKA_RESP_ERR__MSG_TIMED_OUT
+            && $event->error === rd_kafka_err2str(RD_KAFKA_RESP_ERR__MSG_TIMED_OUT)
+            && $event->getMessageIdentifier() === 'message-id'
+            && $event->connection === 'default');
+    }
 
-        $this->assertSame(1, $callbackCalls);
-        $this->assertCount(1, $receivedMessages);
-        $this->assertInstanceOf(ProducerMessage::class, $receivedMessages[0]);
-        $this->assertSame('test-topic', $receivedMessages[0]->getTopicName());
-        $this->assertSame(['key' => 'value'], json_decode((string) $receivedMessages[0]->getBody(), true));
+    #[Test]
+    public function it_dispatches_an_event_when_a_message_was_delivered(): void
+    {
+        Event::fake();
+        $this->mockKafkaProducer();
+
+        $delivered = new RdKafkaMessage;
+        $delivered->err = RD_KAFKA_RESP_ERR_NO_ERROR;
+        $delivered->topic_name = 'orders';
+        $delivered->partition = 2;
+        $delivered->offset = 42;
+        $delivered->key = 'order-1';
+        $delivered->headers = [];
+        $delivered->opaque = 'message-id';
+
+        $this->reportDelivery(new Producer(new Config('broker', ['orders']), new JsonSerializer), $delivered);
+
+        Event::assertNotDispatched(MessageDeliveryFailed::class);
+        Event::assertDispatched(MessageDelivered::class, fn (MessageDelivered $event) => $event->topic === 'orders'
+            && $event->partition === 2
+            && $event->offset === 42
+            && $event->key === 'order-1'
+            && $event->getMessageIdentifier() === 'message-id'
+            && $event->connection === 'default');
+    }
+
+    #[Test]
+    public function it_dispatches_statistics_and_calls_the_statistics_callback(): void
+    {
+        Event::fake();
+        $this->mockKafkaProducer();
+
+        $received = null;
+        $callback = function (mixed $kafka, string $json) use (&$received) {
+            $received = $json;
+        };
+
+        $producer = new Producer(new Config('broker', [], callbacks: ['setStatsCb' => $callback], connection: 'analytics'), new JsonSerializer);
+
+        (new ReflectionMethod($producer, 'handleStatistics'))->invoke($producer, null, '{"type":"producer","txmsgs":3}', 30, $callback);
+
+        $this->assertSame('{"type":"producer","txmsgs":3}', $received);
+        Event::assertDispatched(StatisticsReported::class, fn (StatisticsReported $event) => $event->statistics === ['type' => 'producer', 'txmsgs' => 3]
+            && $event->connection === 'analytics'
+            && $event->consumer === null);
+    }
+
+    #[Test]
+    public function it_dispatches_errors_reported_by_librdkafka(): void
+    {
+        Event::fake();
+        $this->mockKafkaProducer();
+
+        $producer = new Producer(new Config('broker', []), new JsonSerializer);
+
+        (new ReflectionMethod($producer, 'handleError'))->invoke($producer, null, RD_KAFKA_RESP_ERR__ALL_BROKERS_DOWN, 'All brokers are down', null);
+
+        Event::assertDispatched(KafkaErrorOccurred::class, fn (KafkaErrorOccurred $event) => $event->errorCode === RD_KAFKA_RESP_ERR__ALL_BROKERS_DOWN
+            && $event->connection === 'default'
+            && $event->consumer === null);
+    }
+
+    private function reportDelivery(Producer $producer, RdKafkaMessage $message): void
+    {
+        (new ReflectionMethod($producer, 'handleDeliveryReport'))->invoke($producer, $message);
     }
 }

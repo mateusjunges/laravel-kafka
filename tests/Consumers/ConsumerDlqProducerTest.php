@@ -2,8 +2,8 @@
 
 namespace Junges\Kafka\Tests\Consumers;
 
+use Junges\Kafka\Contracts\Consumer as ConsumerContract;
 use Junges\Kafka\Contracts\ConsumerMessage;
-use Junges\Kafka\Contracts\MessageConsumer;
 use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use Mockery as m;
@@ -46,11 +46,11 @@ final class ConsumerDlqProducerTest extends LaravelKafkaTestCase
         $this->assertSame(1, $this->producersCreated);
     }
 
-    private function buildConsumer(?string $dlq = null): MessageConsumer
+    private function buildConsumer(?string $dlq = null): ConsumerContract
     {
         $builder = Kafka::consumer(['test'])
             ->withHandler(static function (ConsumerMessage $message): void {})
-            ->withMaxMessages(1);
+            ->stopAfterMessages(1);
 
         if ($dlq !== null) {
             $builder->withDlq($dlq);

@@ -2,85 +2,104 @@
 
 return [
     /*
-     | Your kafka brokers url.
+     | The connection used when none is specified, for example by Kafka::publish() or Kafka::consumer().
      */
-    'brokers' => env('KAFKA_BROKERS', 'localhost:9092'),
+    'default' => env('KAFKA_CONNECTION', 'default'),
 
     /*
-     | Default security protocol
+     | Each connection points to a Kafka cluster. Use Kafka::connection('name') to publish or consume
+     | using a connection other than the default one. Every connection has a single producer, which
+     | is created on first use and shared by every message published through it.
      */
-    'securityProtocol' => env('KAFKA_SECURITY_PROTOCOL', 'PLAINTEXT'),
+    'connections' => [
+        'default' => [
+            'brokers' => env('KAFKA_BROKERS', 'localhost:9092'),
 
-    /*
-     | Default sasl configuration
-     */
-    'sasl' => [
-        'mechanisms' => env('KAFKA_MECHANISMS', 'PLAINTEXT'),
-        'username' => env('KAFKA_USERNAME', null),
-        'password' => env('KAFKA_PASSWORD', null),
+            'security_protocol' => env('KAFKA_SECURITY_PROTOCOL', 'PLAINTEXT'),
+
+            /*
+             | SASL is used when a username is set, with SASL_SSL when the security protocol is SSL or SASL_SSL,
+             | and SASL_PLAINTEXT otherwise.
+             */
+            'sasl' => [
+                'mechanism' => env('KAFKA_MECHANISMS', 'PLAIN'),
+                'username' => env('KAFKA_USERNAME'),
+                'password' => env('KAFKA_PASSWORD'),
+            ],
+
+            /*
+             | librdkafka options applied to both producers and consumers. See the list of available options at
+             | https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md
+             */
+            'options' => [],
+
+            'producer' => [
+                /*
+                 | How long to wait for queued messages to be delivered when flushing the producer, and how
+                 | many times to retry before giving up.
+                 */
+                'flush_timeout_ms' => 1000,
+                'flush_retries' => 10,
+                'flush_retry_sleep_ms' => 100,
+
+                /*
+                 | The class used to serialize the messages published through this connection, resolved from the
+                 | service container. When null, the MessageSerializer bound in the container is used, which is
+                 | the JSON serializer by default.
+                 */
+                'serializer' => null,
+
+                /*
+                 | librdkafka options applied only to the producer.
+                 */
+                'options' => [
+                    'compression.codec' => env('KAFKA_COMPRESSION_TYPE', 'snappy'),
+                ],
+            ],
+
+            'consumer' => [
+                /*
+                 | Consumers in the same group share the topic partitions between them, so each partition is
+                 | consumed by a single consumer of the group. The default is named after your application, so
+                 | applications consuming from the same cluster don't join each other's group by accident.
+                 */
+                'group_id' => env('KAFKA_CONSUMER_GROUP_ID', Illuminate\Support\Str::slug(env('APP_NAME', 'laravel'))),
+
+                /*
+                 | Whether the consumer commits offsets automatically after handling each message.
+                 */
+                'auto_commit' => env('KAFKA_AUTO_COMMIT', true),
+
+                /*
+                 | How long the consumer waits for a message before polling again.
+                 */
+                'timeout_ms' => env('KAFKA_CONSUMER_DEFAULT_TIMEOUT', 2000),
+
+                /*
+                 | The class used to deserialize the messages consumed through this connection, resolved from the
+                 | service container. When null, the MessageDeserializer bound in the container is used, which is
+                 | the JSON deserializer by default.
+                 */
+                'deserializer' => null,
+
+                /*
+                 | librdkafka options applied only to consumers. "auto.offset.reset" defines where a consumer
+                 | group starts reading when it has no committed offset: "latest", "earliest" or "none".
+                 */
+                'options' => [
+                    'auto.offset.reset' => env('KAFKA_OFFSET_RESET', 'latest'),
+                ],
+            ],
+        ],
     ],
 
     /*
-     | Kafka consumers belonging to the same consumer group share a group id.
-     | The consumers in a group then divides the topic partitions as fairly amongst themselves as possible by
-     | establishing that each partition is only consumed by a single consumer from the group.
-     | This config defines the consumer group id you want to use for your project.
-     */
-    'consumer_group_id' => env('KAFKA_CONSUMER_GROUP_ID', 'group'),
-
-    'consumer_timeout_ms' => env('KAFKA_CONSUMER_DEFAULT_TIMEOUT', 2000),
-
-    /*
-     | After the consumer receives its assignment from the coordinator,
-     | it must determine the initial position for each assigned partition.
-     | When the group is first created, before any messages have been consumed, the position is set according to a configurable
-     | offset reset policy (auto.offset.reset). Typically, consumption starts either at the earliest offset or the latest offset.
-     | You can choose between "latest", "earliest" or "none".
-     */
-    'offset_reset' => env('KAFKA_OFFSET_RESET', 'latest'),
-
-    /*
-     | If you set enable.auto.commit (which is the default), then the consumer will automatically commit offsets periodically at the
-     | interval set by auto.commit.interval.ms.
-     */
-    'auto_commit' => env('KAFKA_AUTO_COMMIT', true),
-
-    'sleep_on_error' => env('KAFKA_ERROR_SLEEP', 5),
-
-    'partition' => env('KAFKA_PARTITION', 0),
-
-    /*
-     | Kafka supports 4 compression codecs: none , gzip , lz4 and snappy
-     */
-    'compression' => env('KAFKA_COMPRESSION_TYPE', 'snappy'),
-
-    /*
-     | Choose if debug is enabled or not.
-     */
-    'debug' => env('KAFKA_DEBUG', false),
-
-    /*
-     | The sleep time in milliseconds that will be used when retrying flush
-     */
-    'flush_retry_sleep_in_ms' => 100,
-
-    /*
-     * The number of retries that will be used when flushing the producer
-     */
-    'flush_retries' => 10,
-
-    /**
-     * The flush timeout in milliseconds
-     */
-    'flush_timeout_in_ms' => 1000,
-
-    /*
-     | The cache driver that will be used
+     | The cache store used to signal consumers to restart when running "php artisan kafka:restart-consumers".
      */
     'cache_driver' => env('KAFKA_CACHE_DRIVER', env('CACHE_DRIVER', env('CACHE_STORE', 'database'))),
 
     /*
-     | Kafka message id key name
+     | The header used to store the message id.
      */
     'message_id_key' => env('MESSAGE_ID_KEY', 'laravel-kafka::message-id'),
 ];

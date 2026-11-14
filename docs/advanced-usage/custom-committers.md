@@ -3,137 +3,85 @@ title: Custom Committers
 weight: 4
 ---
 
-By default, the committers provided by the `DefaultCommitterFactory` are provided.
+In auto commit mode, the consumer stores the offset of each message after it is processed, and librdkafka commits the stored offsets in the background. Committers are used when handlers commit offsets themselves, by calling the `commit` or `commitAsync` methods of the consumer, usually in [manual commit](manual-commit.md) mode.
 
 ```+parse
 <x-sponsors.request-sponsor/>
 ```
 
-To set a custom committer on your consumer, add the committer via a factory that implements the `CommitterFactory` interface:
+The `Junges\Kafka\Contracts\Committer` interface has two methods:
+
+- `commit(ConsumerMessage|Message|array|null $messageOrOffsets = null): void`, used for synchronous commits.
+- `commitAsync(ConsumerMessage|Message|array|null $messageOrOffsets = null): void`, used for asynchronous commits.
+
+Both receive what the handler passed to the consumer: nothing, to commit the offsets of the current assignment, a `Junges\Kafka\Contracts\ConsumerMessage` or `RdKafka\Message`, or an array of `RdKafka\TopicPartition`.
+
+### Usage example
+
+The following committer retries synchronous commits while the consumer group is rebalancing:
+
+```php
+use Junges\Kafka\Contracts\Committer;
+use Junges\Kafka\Contracts\ConsumerMessage;
+use RdKafka\Exception;
+use RdKafka\KafkaConsumer;
+use RdKafka\Message;
+use RdKafka\TopicPartition;
+
+class RetryingCommitter implements Committer
+{
+    public function __construct(private KafkaConsumer $consumer) {}
+
+    public function commit(ConsumerMessage|Message|array|null $messageOrOffsets = null): void
+    {
+        retry(3, fn () => $this->consumer->commit($this->offsets($messageOrOffsets)), 100, function (Exception $exception) {
+            return $exception->getCode() === RD_KAFKA_RESP_ERR_REBALANCE_IN_PROGRESS;
+        });
+    }
+
+    public function commitAsync(ConsumerMessage|Message|array|null $messageOrOffsets = null): void
+    {
+        $this->consumer->commitAsync($this->offsets($messageOrOffsets));
+    }
+
+    private function offsets(mixed $messageOrOffsets): mixed
+    {
+        if (! $messageOrOffsets instanceof ConsumerMessage) {
+            return $messageOrOffsets;
+        }
+
+        return [new TopicPartition(
+            $messageOrOffsets->getTopicName(),
+            $messageOrOffsets->getPartition(),
+            $messageOrOffsets->getOffset() + 1
+        )];
+    }
+}
+```
+
+To use it, create a committer factory, which is a class that implements the `Junges\Kafka\Contracts\CommitterFactory` interface, and pass it to the consumer:
 
 ```php
 use Junges\Kafka\Config\Config;
 use Junges\Kafka\Contracts\Committer;
 use Junges\Kafka\Contracts\CommitterFactory;
-use RdKafka\KafkaConsumer;
-use RdKafka\Message;
-
-class MyCommitter implements Committer
-{
-    public function commitMessage(Message $message, bool $success) : void {
-        // ...
-    }
-    
-    public function commitDlq(Message $message) : void {
-        // ...
-    }  
-}
-
-class MyCommitterFactory implements CommitterFactory
-{
-    public function make(KafkaConsumer $kafkaConsumer, Config $config) : Committer {
-        // ...
-    }
-}
-
-$consumer = \Junges\Kafka\Facades\Kafka::consumer()
-    ->usingCommitterFactory(new MyCommitterFactory())
-    ->build();
-```
-
-### Manual commit support
-Custom committers support both automatic and manual commit operations. The `Committer` interface includes:
-
-- `commitMessage(Message $message, bool $success): void` - Used for automatic commits
-- `commitDlq(Message $message): void` - Used for dead letter queue commits  
-- `commit(mixed $messageOrOffsets = null): void` - Used for manual synchronous commits
-- `commitAsync(mixed $messageOrOffsets = null): void` - Used for manual asynchronous commits
-
-When handlers call `$consumer->commit()` or `$consumer->commitAsync()`, these calls are routed through your custom committer, ensuring consistent behavior across all commit types.
-
-### Usage example
-If you want to define a new committer for you consumer, you must start by creating a new class that implements the `Committer` interface. 
-The `commitMessage` function has a `$success` param, which is true for all messages that were consumed without throwing exceptions or messages which exceptions were handled successfully by the consumer class. So, the following committer will commit only messages that were consumed without throwing an exception.
-
-Note that skipping the commit of a failed message does not make it be consumed again. The next successful message of the same partition commits an offset past the failed one, and with auto commit enabled librdkafka also commits the offsets of fetched messages in the background. To consume failed messages again, see [handling failed messages](../consuming-messages/handling-failed-messages.md).
-
-```php
-use Junges\Kafka\Contracts\ConsumerMessage;
-use RdKafka\TopicPartition;
-
-class CustomCommitter implements CommitterContract
-{
-    public function __construct(private KafkaConsumer $consumer) {}
-
-    public function commitMessage(Message $message, bool $success): void
-    {
-        if (! $success) {
-            return;
-        }
-        
-        $this->consumer->commit($message);
-    }
-
-    public function commitDlq(Message $message): void
-    {
-        $this->consumer->commit($message);
-    }
-    
-    public function commit(mixed $messageOrOffsets = null): void
-    {
-        // Handle manual commits
-        if ($messageOrOffsets instanceof ConsumerMessage) {
-            $topicPartition = new TopicPartition(
-                $messageOrOffsets->getTopicName(),
-                $messageOrOffsets->getPartition(),
-                $messageOrOffsets->getOffset() + 1
-            );
-            $messageOrOffsets = [$topicPartition];
-        }
-
-        $this->consumer->commit($messageOrOffsets);
-    }
-
-    public function commitAsync(mixed $messageOrOffsets = null): void
-    {
-        // Handle manual async commits
-        if ($messageOrOffsets instanceof ConsumerMessage) {
-            $topicPartition = new TopicPartition(
-                $messageOrOffsets->getTopicName(),
-                $messageOrOffsets->getPartition(),
-                $messageOrOffsets->getOffset() + 1
-            );
-            $messageOrOffsets = [$topicPartition];
-        }
-
-        $this->consumer->commitAsync($messageOrOffsets);
-    }
-}
-```
-
-After creating your custom committer implementation, you must create a committer factory, which is a simples class that implements the `CommitterFactory` interface, which will be used to provide your custom committer implementation to the consumer class:
-
-```php
-class CustomCommitterFactory implements CommitterFactory
-{
-    public function make(KafkaConsumer $kafkaConsumer, Config $config): CommitterContract
-    {
-        return new RetryableCommitter(
-            new SuccessCommitter($kafkaConsumer),
-            new NativeSleeper(),
-            $config->getMaxCommitRetries()
-        );
-    }
-}
-```
-
-To use this committer implementation, you just need to inform your consumer that you want to use a custom committer class:
-
-```php
 use Junges\Kafka\Facades\Kafka;
+use RdKafka\KafkaConsumer;
 
-$consumer = Kafka::consumer()
-    ->usingCommitterFactory(new CustomCommitterFactory())
+class RetryingCommitterFactory implements CommitterFactory
+{
+    public function make(KafkaConsumer $kafkaConsumer, Config $config): Committer
+    {
+        return new RetryingCommitter($kafkaConsumer);
+    }
+}
+
+$consumer = Kafka::consumer(['orders'])
+    ->withManualCommit()
+    ->usingCommitterFactory(new RetryingCommitterFactory)
+    ->withHandler(function ($message, $consumer) {
+        // ...
+        $consumer->commit($message);
+    })
     ->build();
 ```
-

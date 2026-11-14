@@ -23,11 +23,6 @@ class Logger implements LoggerContract
 
         $this->logger = new MonologLogger('PHP-KAFKA-CONSUMER-ERROR');
         $this->logger->pushHandler($handler);
-        $this->logger->pushProcessor(function ($record) {
-            $record['datetime']->format('c');
-
-            return $record;
-        });
     }
 
     /** Log an error message. */

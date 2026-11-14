@@ -14,7 +14,7 @@ final class SaslTest extends LaravelKafkaTestCase
         $sasl = new Sasl(
             username: 'username',
             password: 'password',
-            mechanisms: 'mechanisms'
+            mechanism: 'mechanisms'
         );
 
         $this->assertEquals('username', $sasl->getUsername());
@@ -26,21 +26,21 @@ final class SaslTest extends LaravelKafkaTestCase
         $sasl = new Sasl(
             username: 'username',
             password: 'password',
-            mechanisms: 'mechanisms'
+            mechanism: 'mechanisms'
         );
 
         $this->assertEquals('password', $sasl->getPassword());
     }
 
     #[Test]
-    public function get_mechanisms(): void
+    public function get_mechanism(): void
     {
         $sasl = new Sasl(
             username: 'username',
             password: 'password',
-            mechanisms: 'mechanisms'
+            mechanism: 'mechanisms'
         );
 
-        $this->assertEquals('mechanisms', $sasl->getMechanisms());
+        $this->assertEquals('mechanisms', $sasl->getMechanism());
     }
 }

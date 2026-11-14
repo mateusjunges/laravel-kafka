@@ -13,15 +13,25 @@ use Junges\Kafka\Facades\Kafka;
 $consumer = Kafka::consumer();
 ```
 
-This method also allows you to specify the `topics` it should consume, the `broker` and the consumer `group id`:
+This method also allows you to specify the `topics` it should consume and the consumer `group id`. When no group id is given, the one defined in the connection configuration is used:
 
 ```php
 use Junges\Kafka\Facades\Kafka;
 
-$consumer = Kafka::consumer(['topic-1', 'topic-2'], 'group-id', 'broker');
+$consumer = Kafka::consumer(['topic-1', 'topic-2'], 'group-id');
 ```
 
-This method returns a `Junges\Kafka\Consumers\ConsumerBuilder::class` instance, and you can use it to configure your consumer.
+The consumer uses the brokers, authentication and options of the default connection. To consume from another connection, use the `connection` method:
+
+```php
+use Junges\Kafka\Facades\Kafka;
+
+$consumer = Kafka::connection('analytics')->consumer(['topic-1']);
+```
+
+These methods return a `Junges\Kafka\Consumers\Builder` instance, and you can use it to configure your consumer.
+
+Consumers can also be defined as classes and run with the `kafka:consume` command. See [consumer classes](class-structure.md) for details.
 
 ```+parse
 <x-sponsors.request-sponsor/>

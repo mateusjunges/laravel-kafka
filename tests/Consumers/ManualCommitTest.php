@@ -4,9 +4,11 @@ namespace Junges\Kafka\Tests\Consumers;
 
 use Exception;
 use Junges\Kafka\Config\Config;
-use Junges\Kafka\Consumers\CallableConsumer;
 use Junges\Kafka\Consumers\Consumer;
+use Junges\Kafka\Consumers\MessageHandler;
 use Junges\Kafka\Contracts\ConsumerMessage;
+use Junges\Kafka\Contracts\Logger;
+use Junges\Kafka\Exceptions\ConsumerException;
 use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
@@ -14,6 +16,7 @@ use Mockery as m;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use RdKafka\KafkaConsumer;
+use RdKafka\KafkaConsumerTopic;
 use RdKafka\Message;
 use RdKafka\TopicPartition;
 use Throwable;
@@ -70,7 +73,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $commitCalled = false;
         $committedOffsets = [];
 
-        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')
@@ -105,7 +108,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $handlerCalled = false;
         $manualCommitCalled = false;
 
-        $fakeHandler = new CallableConsumer(
+        $fakeHandler = new MessageHandler(
             function (ConsumerMessage $message, Consumer $consumer) use (&$handlerCalled, &$manualCommitCalled) {
                 $handlerCalled = true;
                 $consumer->commit($message);
@@ -117,10 +120,9 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
-            commit: 1,
+            securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: $fakeHandler,
             maxMessages: 1,
             autoCommit: false
         );
@@ -150,7 +152,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
 
         $commitAsyncCalled = false;
 
-        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')
@@ -169,7 +171,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
         $this->mockProducer();
 
-        $fakeHandler = new CallableConsumer(
+        $fakeHandler = new MessageHandler(
             function (ConsumerMessage $message, Consumer $consumer) {
                 $consumer->commitAsync($message);
             },
@@ -179,10 +181,9 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
-            commit: 1,
+            securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: $fakeHandler,
             maxMessages: 1,
             autoCommit: false
         );
@@ -207,7 +208,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
 
         $commitCalled = false;
 
-        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')
@@ -225,7 +226,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
         $this->mockProducer();
 
-        $fakeHandler = new CallableConsumer(
+        $fakeHandler = new MessageHandler(
             function (ConsumerMessage $message, Consumer $consumer) {
                 // Commit all current assignment offsets
                 $consumer->commit();
@@ -236,10 +237,9 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
-            commit: 1,
+            securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: $fakeHandler,
             maxMessages: 1,
             autoCommit: false
         );
@@ -265,7 +265,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $commitCalled = false;
         $committedMessage = null;
 
-        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')
@@ -276,7 +276,9 @@ final class ManualCommitTest extends LaravelKafkaTestCase
                 $commitCalled = true;
                 $committedMessage = $msg;
 
-                return $msg === $message;
+                return $msg->topic_name === $message->topic_name
+                    && $msg->partition === $message->partition
+                    && $msg->offset === $message->offset;
             }))
             ->andReturn()
             ->getMock();
@@ -284,7 +286,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
         $this->mockProducer();
 
-        $fakeHandler = new CallableConsumer(
+        $fakeHandler = new MessageHandler(
             function (ConsumerMessage $message, Consumer $consumer) {
                 $rdkafkaMessage = new Message;
                 $rdkafkaMessage->topic_name = $message->getTopicName();
@@ -299,10 +301,9 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
-            commit: 1,
+            securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: $fakeHandler,
             maxMessages: 1,
             autoCommit: false
         );
@@ -326,7 +327,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $message->partition = 1;
         $message->headers = [];
 
-        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')
@@ -339,7 +340,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
         $this->mockProducer();
 
-        $fakeHandler = new CallableConsumer(
+        $fakeHandler = new MessageHandler(
             function (ConsumerMessage $message, Consumer $consumer) {
                 // Process message but don't commit, with manual commit disabled, no auto-commit should happen
             },
@@ -349,10 +350,9 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
-            commit: 1,
+            securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: $fakeHandler,
             maxMessages: 1,
             autoCommit: false
         );
@@ -385,7 +385,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $dummyMessage->payload = '{}';
         $dummyMessage->headers = [];
 
-        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')
@@ -417,7 +417,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
         $this->mockProducer();
 
-        $fakeHandler = new CallableConsumer(
+        $fakeHandler = new MessageHandler(
             function (ConsumerMessage $message, Consumer $consumer) use ($consumerMessage) {
                 // Use the specific ConsumerMessage for commit
                 $consumer->commit($consumerMessage);
@@ -428,10 +428,9 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
-            commit: 1,
+            securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: $fakeHandler,
             maxMessages: 1,
             autoCommit: false
         );
@@ -459,7 +458,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
 
         $exceptionThrown = false;
 
-        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')
@@ -472,11 +471,11 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
         $this->mockProducer();
 
-        $fakeHandler = new CallableConsumer(
+        $fakeHandler = new MessageHandler(
             function (ConsumerMessage $message, Consumer $consumer) use (&$exceptionThrown) {
                 try {
                     $consumer->commit($message);
-                } catch (Throwable $e) {
+                } catch (Throwable) {
                     $exceptionThrown = true;
                 }
             },
@@ -486,10 +485,9 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
-            commit: 1,
+            securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: $fakeHandler,
             maxMessages: 1,
             autoCommit: false
         );
@@ -514,7 +512,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
 
         $noExceptionThrown = true;
 
-        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')
@@ -527,11 +525,11 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
         $this->mockProducer();
 
-        $fakeHandler = new CallableConsumer(
+        $fakeHandler = new MessageHandler(
             function (ConsumerMessage $message, Consumer $consumer) use (&$noExceptionThrown) {
                 try {
                     $consumer->commit($message);
-                } catch (\RdKafka\Exception $e) {
+                } catch (\RdKafka\Exception) {
                     $noExceptionThrown = false;
                 }
             },
@@ -541,10 +539,9 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
-            commit: 1,
+            securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: $fakeHandler,
             maxMessages: 1,
             autoCommit: false
         );
@@ -558,7 +555,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
 
     #[Test]
     #[DataProvider('commitArgumentsProvider')]
-    public function it_rethrows_the_original_commit_exception(string $method, mixed $messageOrOffsets): void
+    public function it_rethrows_the_original_commit_exception_without_logging_it(string $method, mixed $messageOrOffsets): void
     {
         $message = new Message;
         $message->err = 0;
@@ -571,7 +568,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
 
         $commitFailure = new \RdKafka\Exception('Broker: Unknown member', RD_KAFKA_RESP_ERR_UNKNOWN_MEMBER_ID);
 
-        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')
@@ -584,9 +581,12 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
         $this->mockProducer();
 
+        $logger = m::spy(Logger::class);
+        $this->app->instance(Logger::class, $logger);
+
         $caught = null;
 
-        $fakeHandler = new CallableConsumer(
+        $fakeHandler = new MessageHandler(
             function (ConsumerMessage $message, Consumer $consumer) use ($method, $messageOrOffsets, &$caught) {
                 try {
                     $consumer->{$method}($messageOrOffsets);
@@ -600,10 +600,9 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
-            commit: 1,
+            securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: $fakeHandler,
             maxMessages: 1,
             autoCommit: false
         );
@@ -612,10 +611,11 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $consumer->consume();
 
         $this->assertSame($commitFailure, $caught);
+        $logger->shouldNotHaveReceived('error');
     }
 
     #[Test]
-    public function it_auto_commits_when_auto_commit_is_enabled(): void
+    public function it_stores_offsets_instead_of_committing_each_message_when_auto_commit_is_enabled(): void
     {
         $message = new Message;
         $message->err = 0;
@@ -626,21 +626,20 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $message->partition = 1;
         $message->headers = [];
 
-        $autoCommitCalled = false;
+        $mockedTopic = m::mock(KafkaConsumerTopic::class);
+        $mockedTopic->shouldReceive('offsetStore')->once()->with(1, 0);
 
-        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')
             ->withAnyArgs()
             ->andReturn($message)
+            ->shouldReceive('newTopic')
+            ->with('test-topic')
+            ->andReturn($mockedTopic)
             ->shouldReceive('commit')
-            ->with($message) // Auto-commit should pass the original message
-            ->andReturnUsing(function () use (&$autoCommitCalled) {
-                $autoCommitCalled = true;
-
-                return null;
-            })
+            ->never() // librdkafka commits the stored offsets in the background
             ->getMock();
 
         $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
@@ -648,7 +647,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
 
         $handlerCalled = false;
 
-        $fakeHandler = new CallableConsumer(
+        $fakeHandler = new MessageHandler(
             function (ConsumerMessage $message, Consumer $consumer) use (&$handlerCalled) {
                 $handlerCalled = true;
                 // Don't manually commit, auto-commit should handle it
@@ -659,10 +658,9 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
-            commit: 1,
+            securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: $fakeHandler,
             maxMessages: 1,
             autoCommit: true
         );
@@ -671,7 +669,6 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $consumer->consume();
 
         $this->assertTrue($handlerCalled);
-        $this->assertTrue($autoCommitCalled);
     }
 
     #[Test]
@@ -688,7 +685,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
 
         $manualCommitCalled = false;
 
-        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')
@@ -708,7 +705,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
 
         $handlerCalled = false;
 
-        $fakeHandler = new CallableConsumer(
+        $fakeHandler = new MessageHandler(
             function (ConsumerMessage $message, Consumer $consumer) use (&$handlerCalled) {
                 $handlerCalled = true;
                 $consumer->commit($message);
@@ -719,10 +716,9 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
-            commit: 1,
+            securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandler,
+            handler: $fakeHandler,
             maxMessages: 1,
             autoCommit: false
         );
@@ -746,7 +742,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $message->partition = 1;
         $message->headers = [];
 
-        $mockedKafkaConsumerManualCommit = m::mock(KafkaConsumer::class)
+        $mockedKafkaConsumerManualCommit = $this->mockKafkaConsumer()
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')
@@ -763,7 +759,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
 
         $manualCommitHandlerCalled = false;
 
-        $fakeHandlerManualCommit = new CallableConsumer(
+        $fakeHandlerManualCommit = new MessageHandler(
             function (ConsumerMessage $message, Consumer $consumer) use (&$manualCommitHandlerCalled) {
                 $manualCommitHandlerCalled = true;
 
@@ -775,10 +771,9 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $manualCommitConfig = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
-            commit: 1,
+            securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $fakeHandlerManualCommit,
+            handler: $fakeHandlerManualCommit,
             maxMessages: 1,
             autoCommit: false
         );
@@ -794,7 +789,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
     }
 
     #[Test]
-    public function it_uses_same_commit_infrastructure_for_both_modes(): void
+    public function it_commits_synchronously_only_when_handlers_ask_to(): void
     {
         $message = new Message;
         $message->err = 0;
@@ -807,7 +802,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
 
         $commitCallsLog = [];
 
-        $mockedKafkaConsumer = m::mock(KafkaConsumer::class)
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
             ->shouldReceive('subscribe')
             ->andReturn(m::self())
             ->shouldReceive('consume')
@@ -828,9 +823,9 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $this->mockProducer();
 
         // Test 1: Auto-commit mode
-        $autoCommitHandler = new CallableConsumer(
+        $autoCommitHandler = new MessageHandler(
             function (ConsumerMessage $message, Consumer $consumer) {
-                // Just process, auto-commit will handle it
+                // Just process, the stored offset is committed in the background
             },
             []
         );
@@ -838,10 +833,9 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $autoCommitConfig = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
-            commit: 1,
+            securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $autoCommitHandler,
+            handler: $autoCommitHandler,
             maxMessages: 1,
             autoCommit: true
         );
@@ -849,7 +843,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $autoCommitConsumer = new Consumer($autoCommitConfig, new JsonDeserializer);
         $autoCommitConsumer->consume();
 
-        $manualCommitHandler = new CallableConsumer(
+        $manualCommitHandler = new MessageHandler(
             function (ConsumerMessage $message, Consumer $consumer) {
                 $consumer->commit($message);
             },
@@ -859,10 +853,9 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $manualCommitConfig = new Config(
             broker: 'broker',
             topics: ['test-topic'],
-            securityProtocol: 'security',
-            commit: 1,
+            securityProtocol: 'PLAINTEXT',
             groupId: 'group',
-            consumer: $manualCommitHandler,
+            handler: $manualCommitHandler,
             maxMessages: 1,
             autoCommit: false
         );
@@ -870,8 +863,53 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $manualCommitConsumer = new Consumer($manualCommitConfig, new JsonDeserializer);
         $manualCommitConsumer->consume();
 
-        $this->assertCount(2, $commitCallsLog);
-        $this->assertInstanceOf(Message::class, $commitCallsLog[0]['params']);
-        $this->assertIsArray($commitCallsLog[1]['params']);
+        $this->assertCount(1, $commitCallsLog);
+        $this->assertIsArray($commitCallsLog[0]['params']);
+    }
+
+    #[Test]
+    public function it_throws_and_logs_the_kafka_error_once_when_a_commit_failure_is_not_caught(): void
+    {
+        $message = new Message;
+        $message->err = 0;
+        $message->key = 'key';
+        $message->topic_name = 'test-topic';
+        $message->payload = '{"body": "message payload"}';
+        $message->offset = 0;
+        $message->partition = 1;
+        $message->headers = [];
+
+        $commitFailure = new \RdKafka\Exception('Commit failed', RD_KAFKA_RESP_ERR__FAIL);
+
+        $mockedKafkaConsumer = $this->mockKafkaConsumer()
+            ->shouldReceive('subscribe')->andReturn(m::self())
+            ->shouldReceive('consume')->andReturn($message)
+            ->shouldReceive('commit')->andThrow($commitFailure)
+            ->getMock();
+
+        $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
+
+        $logger = m::spy(Logger::class);
+        $this->app->instance(Logger::class, $logger);
+
+        $config = new Config(
+            broker: 'broker',
+            topics: ['test-topic'],
+            groupId: 'group',
+            handler: new MessageHandler(fn (ConsumerMessage $message, Consumer $consumer) => $consumer->commit($message)),
+            maxMessages: 1,
+            autoCommit: false,
+        );
+
+        try {
+            (new Consumer($config, new JsonDeserializer))->consume();
+
+            $this->fail('The consumer should stop when committing fails.');
+        } catch (ConsumerException $exception) {
+            $this->assertSame($commitFailure, $exception->getPrevious());
+        }
+
+        // The commit error is logged once, as the failure of the message being handled.
+        $logger->shouldHaveReceived('error')->once()->with($message, $commitFailure, 'ERROR');
     }
 }

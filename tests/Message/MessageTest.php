@@ -5,12 +5,14 @@ namespace Junges\Kafka\Tests\Message;
 use Illuminate\Support\Str;
 use Junges\Kafka\Message\Message;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
+use Override;
 use PHPUnit\Framework\Attributes\Test;
 
 final class MessageTest extends LaravelKafkaTestCase
 {
     private Message $message;
 
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -18,28 +20,11 @@ final class MessageTest extends LaravelKafkaTestCase
     }
 
     #[Test]
-    public function it_can_set_a_message_key(): void
+    public function it_can_set_the_message_body(): void
     {
-        $this->message->withBodyKey('foo', 'bar');
+        $this->message->withBody(['foo' => 'bar']);
 
-        $expected = new Message(
-            body: ['foo' => 'bar']
-        );
-
-        $this->assertEquals($expected, $this->message);
-    }
-
-    #[Test]
-    public function it_can_forget_a_message_key(): void
-    {
-        $this->message->withBodyKey('foo', 'bar');
-        $this->message->withBodyKey('bar', 'foo');
-
-        $expected = new Message(
-            body: ['bar' => 'foo']
-        );
-
-        $this->message->forgetBodyKey('foo');
+        $expected = $this->expectedMessage(body: ['foo' => 'bar']);
 
         $this->assertEquals($expected, $this->message);
     }
@@ -51,9 +36,7 @@ final class MessageTest extends LaravelKafkaTestCase
             'foo' => 'bar',
         ]);
 
-        $expected = new Message(
-            headers: ['foo' => 'bar']
-        );
+        $expected = $this->expectedMessage(headers: ['foo' => 'bar']);
 
         $this->assertEquals($expected, $this->message);
     }
@@ -63,9 +46,7 @@ final class MessageTest extends LaravelKafkaTestCase
     {
         $this->message->withKey($uuid = Str::uuid()->toString());
 
-        $expected = new Message(
-            key: $uuid
-        );
+        $expected = $this->expectedMessage(key: $uuid);
 
         $this->assertEquals($expected, $this->message);
     }
@@ -73,12 +54,9 @@ final class MessageTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_get_the_message_payload(): void
     {
-        $this->message->withBodyKey('foo', 'bar');
-        $this->message->withBodyKey('bar', 'foo');
+        $this->message->withBody(['foo' => 'bar', 'bar' => 'foo']);
 
-        $expectedMessage = new Message(
-            body: $array = ['foo' => 'bar', 'bar' => 'foo']
-        );
+        $expectedMessage = $this->expectedMessage(body: $array = ['foo' => 'bar', 'bar' => 'foo']);
 
         $this->assertEquals($expectedMessage, $this->message);
 
@@ -90,12 +68,11 @@ final class MessageTest extends LaravelKafkaTestCase
     #[Test]
     public function it_can_transform_a_message_in_array(): void
     {
-        $this->message->withBodyKey('foo', 'bar');
-        $this->message->withBodyKey('bar', 'foo');
+        $this->message->withBody(['foo' => 'bar', 'bar' => 'foo']);
         $this->message->withKey($uuid = Str::uuid()->toString());
         $this->message->withHeaders($headers = ['foo' => 'bar']);
 
-        $expectedMessage = new Message(
+        $expectedMessage = $this->expectedMessage(
             headers: $headers,
             body: $array = ['foo' => 'bar', 'bar' => 'foo'],
             key: $uuid
@@ -104,10 +81,49 @@ final class MessageTest extends LaravelKafkaTestCase
         $expectedArray = [
             'payload' => $array,
             'key' => $uuid,
-            'headers' => $headers,
+            'headers' => [...$headers, 'laravel-kafka::message-id' => $this->message->getMessageIdentifier()],
         ];
 
         $this->assertEquals($expectedMessage, $this->message);
         $this->assertEquals($expectedArray, $this->message->toArray());
+    }
+
+    #[Test]
+    public function it_keeps_the_same_id_for_the_life_of_the_message(): void
+    {
+        $id = $this->message->getMessageIdentifier();
+
+        $this->message->withBody(['foo' => 'bar'])->withHeader('foo', 'bar')->withHeaders(['bar' => 'baz']);
+
+        $this->assertSame($id, $this->message->getMessageIdentifier());
+        $this->assertSame($id, $this->message->getHeaders()['laravel-kafka::message-id']);
+        $this->assertSame($id, (clone $this->message)->getMessageIdentifier());
+    }
+
+    #[Test]
+    public function it_keeps_the_id_given_by_the_user(): void
+    {
+        $message = new Message(headers: ['laravel-kafka::message-id' => 'my-id']);
+
+        $this->assertSame('my-id', $message->getMessageIdentifier());
+
+        $message->withHeaders(['laravel-kafka::message-id' => 'other-id']);
+
+        $this->assertSame('other-id', $message->getMessageIdentifier());
+    }
+
+    #[Test]
+    public function every_message_gets_its_own_id(): void
+    {
+        $this->assertNotSame((new Message)->getMessageIdentifier(), (new Message)->getMessageIdentifier());
+    }
+
+    private function expectedMessage(array $headers = [], mixed $body = [], mixed $key = null): Message
+    {
+        return new Message(
+            headers: ['laravel-kafka::message-id' => $this->message->getMessageIdentifier(), ...$headers],
+            body: $body,
+            key: $key,
+        );
     }
 }

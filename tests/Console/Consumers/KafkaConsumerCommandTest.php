@@ -2,54 +2,65 @@
 
 namespace Junges\Kafka\Tests\Console\Consumers;
 
-use Junges\Kafka\Config\Config;
-use Junges\Kafka\Consumers\Consumer;
+use Junges\Kafka\Facades\Kafka;
 use Junges\Kafka\Message\ConsumedMessage;
-use Junges\Kafka\Message\Deserializers\JsonDeserializer;
-use Junges\Kafka\Tests\Fakes\FakeHandler;
+use Junges\Kafka\Tests\Fakes\FakeKafkaConsumer;
 use Junges\Kafka\Tests\LaravelKafkaTestCase;
 use PHPUnit\Framework\Attributes\Test;
-use RdKafka\Message;
 
 final class KafkaConsumerCommandTest extends LaravelKafkaTestCase
 {
     #[Test]
-    public function it_can_consume_messages(): void
+    public function it_consumes_messages_using_a_consumer_class(): void
     {
-        $this->mockProducer();
+        $consumer = $this->fakeConsumerReceiving(2);
 
-        $fakeHandler = new FakeHandler;
+        $this->artisan('kafka:consume', ['consumer' => FakeKafkaConsumer::class])->assertSuccessful();
 
-        $message = new Message;
-        $message->err = 0;
-        $message->key = 'key';
-        $message->topic_name = 'test-topic';
-        $message->payload = '{"body": "message payload"}';
-        $message->offset = 0;
-        $message->partition = 1;
-        $message->headers = [];
+        $this->assertCount(2, $consumer->handled);
+    }
 
-        $this->mockConsumerWithMessage($message);
+    #[Test]
+    public function it_resolves_consumers_in_the_app_kafka_consumers_namespace(): void
+    {
+        class_alias(FakeKafkaConsumer::class, 'App\\Kafka\\Consumers\\OrdersConsumer');
 
-        $config = new Config(
-            broker: 'broker',
-            topics: ['test-topic'],
-            securityProtocol: 'security',
-            commit: 1,
-            groupId: 'group',
-            consumer: $fakeHandler,
-            sasl: null,
-            dlq: null,
-            maxMessages: 1,
-            maxCommitRetries: 1
-        );
+        $consumer = $this->fakeConsumerReceiving(1);
+        $this->app->instance('App\\Kafka\\Consumers\\OrdersConsumer', $consumer);
 
-        $consumer = new Consumer($config, new JsonDeserializer);
+        $this->artisan('kafka:consume', ['consumer' => 'OrdersConsumer'])->assertSuccessful();
 
-        $this->app->bind(Consumer::class, fn () => $consumer);
+        $this->assertCount(1, $consumer->handled);
+    }
 
-        $this->artisan('kafka:consume --topics=test-topic --consumer=\\\\Junges\\\\Kafka\\\\Tests\\\\Fakes\\\\FakeHandler');
+    #[Test]
+    public function it_stops_after_the_given_number_of_messages(): void
+    {
+        $consumer = $this->fakeConsumerReceiving(3);
 
-        $this->assertInstanceOf(ConsumedMessage::class, $fakeHandler->lastMessage());
+        $this->artisan('kafka:consume', ['consumer' => FakeKafkaConsumer::class, '--max-messages' => 1])->assertSuccessful();
+
+        $this->assertCount(1, $consumer->handled);
+    }
+
+    #[Test]
+    public function it_fails_when_the_consumer_class_does_not_exist(): void
+    {
+        $this->artisan('kafka:consume', ['consumer' => 'MissingConsumer'])
+            ->expectsOutputToContain('The consumer [MissingConsumer] does not exist')
+            ->assertFailed();
+    }
+
+    private function fakeConsumerReceiving(int $messages): FakeKafkaConsumer
+    {
+        Kafka::fake();
+        Kafka::shouldReceiveMessages(array_map(
+            fn (int $offset) => new ConsumedMessage('orders', 0, [], ['offset' => $offset], null, $offset, null),
+            range(0, $messages - 1),
+        ));
+
+        $this->app->instance(FakeKafkaConsumer::class, $consumer = new FakeKafkaConsumer);
+
+        return $consumer;
     }
 }

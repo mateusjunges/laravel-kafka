@@ -6,7 +6,7 @@ weight: 3
 Kafka clients allows you to implement your own partition assignment strategies for consumers, and you can also consume messages from specific offsets.
 
 If you have a topic with multiple consumers and want to assign a consumer to a specific partition offset, you can
-use the `assignPartitions` method, available on the `ConsumerBuilder` instance:
+use the `assignPartitions` method of the consumer builder:
 
 ```php
 $partition = 1; // The partition number you want to assign.
@@ -24,11 +24,11 @@ $consumer = \Junges\Kafka\Facades\Kafka::consumer()
 
 ## Dynamic Offset Assignment
 
-If you need to assign offsets dynamically based on partition assignments (useful when you don't know partition numbers in advance), you can use the `assignPartitionsWithOffsets` method:
+If you need to assign offsets dynamically based on partition assignments (useful when you don't know partition numbers in advance), you can use the `resolveOffsetsUsing` method:
 
 ```php
 $consumer = \Junges\Kafka\Facades\Kafka::consumer(['your-topic-name'], 'your-group')
-    ->assignPartitionsWithOffsets(function ($partitions) {
+    ->resolveOffsetsUsing(function ($partitions) {
         $partitionsWithOffsets = [];
         
         foreach ($partitions as $partition) {
