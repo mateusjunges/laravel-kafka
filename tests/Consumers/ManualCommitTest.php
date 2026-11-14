@@ -7,6 +7,7 @@ use Junges\Kafka\Config\Config;
 use Junges\Kafka\Consumers\Consumer;
 use Junges\Kafka\Consumers\MessageHandler;
 use Junges\Kafka\Contracts\ConsumerMessage;
+use Junges\Kafka\Contracts\Logger;
 use Junges\Kafka\Exceptions\ConsumerException;
 use Junges\Kafka\Message\ConsumedMessage;
 use Junges\Kafka\Message\Deserializers\JsonDeserializer;
@@ -554,7 +555,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
 
     #[Test]
     #[DataProvider('commitArgumentsProvider')]
-    public function it_rethrows_the_original_commit_exception(string $method, mixed $messageOrOffsets): void
+    public function it_rethrows_the_original_commit_exception_without_logging_it(string $method, mixed $messageOrOffsets): void
     {
         $message = new Message;
         $message->err = 0;
@@ -579,6 +580,9 @@ final class ManualCommitTest extends LaravelKafkaTestCase
 
         $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
         $this->mockProducer();
+
+        $logger = m::spy(Logger::class);
+        $this->app->instance(Logger::class, $logger);
 
         $caught = null;
 
@@ -607,6 +611,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         $consumer->consume();
 
         $this->assertSame($commitFailure, $caught);
+        $logger->shouldNotHaveReceived('error');
     }
 
     #[Test]
@@ -863,7 +868,7 @@ final class ManualCommitTest extends LaravelKafkaTestCase
     }
 
     #[Test]
-    public function it_throws_the_kafka_error_when_committing_a_consumer_message_fails(): void
+    public function it_throws_and_logs_the_kafka_error_once_when_a_commit_failure_is_not_caught(): void
     {
         $message = new Message;
         $message->err = 0;
@@ -884,6 +889,9 @@ final class ManualCommitTest extends LaravelKafkaTestCase
 
         $this->app->bind(KafkaConsumer::class, fn () => $mockedKafkaConsumer);
 
+        $logger = m::spy(Logger::class);
+        $this->app->instance(Logger::class, $logger);
+
         $config = new Config(
             broker: 'broker',
             topics: ['test-topic'],
@@ -900,5 +908,8 @@ final class ManualCommitTest extends LaravelKafkaTestCase
         } catch (ConsumerException $exception) {
             $this->assertSame($commitFailure, $exception->getPrevious());
         }
+
+        // The commit error is logged once, as the failure of the message being handled.
+        $logger->shouldHaveReceived('error')->once()->with($message, $commitFailure, 'ERROR');
     }
 }

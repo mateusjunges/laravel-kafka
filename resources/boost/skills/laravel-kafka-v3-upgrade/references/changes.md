@@ -177,6 +177,7 @@ Search for: `implements Committer`, `CommitterFactory`, `commitMessage(`, `commi
 | v2 | v3 |
 | --- | --- |
 | `commitMessage()` and `commitDlq()` on custom committers | Remove them. Committers only handle `commit()` and `commitAsync()`, typed `ConsumerMessage\|Message\|array\|null $messageOrOffsets = null`. |
+| Commit errors logged with the `COMMIT_ERROR` prefix | No longer logged. `commit()` and `commitAsync()` throw the original exception, which fails the message when the handler does not catch it. Log it in the handler, or listen to `OffsetCommitFailed`. |
 | `BatchCommitter`, `RetryableCommitter`, `SeekToCurrentErrorCommitter` | Removed. Use `retryFailedMessages()` or a dead letter queue for failures. |
 | Custom `KafkaMessage` implementations | `getHeaders(): array` and `getBody(): mixed`. |
 | Custom `ConsumerMessage` implementations | Add `getAttempts(): int` and `withAttempts(int $attempts): static`. |

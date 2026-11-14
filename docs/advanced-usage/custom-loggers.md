@@ -3,7 +3,7 @@ title: Writing custom loggers
 weight: 7
 ---
 
-Consumers log the errors that happen while consuming messages, such as failed messages and commit errors. By default, they are written to the standard output, as JSON. You can replace the logger with your own implementation, to log to a different storage, or to redact information from the logs.
+Consumers log the errors that happen while consuming messages, such as failed messages and errors received from Kafka. By default, they are written to the standard output, as JSON. You can replace the logger with your own implementation, to log to a different storage, or to redact information from the logs.
 
 ```+parse
 <x-sponsors.request-sponsor/>

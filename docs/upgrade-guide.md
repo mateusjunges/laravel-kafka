@@ -239,6 +239,8 @@ As a consequence, the following were removed:
 
 The `commit()` and `commitAsync()` methods of the `Junges\Kafka\Contracts\Consumer` and `Junges\Kafka\Contracts\Committer` contracts now declare the values they accept, `ConsumerMessage|Message|array|null`, instead of `mixed`, and the parameter of `Consumer::commitAsync()` was renamed from `$message_or_offsets` to `$messageOrOffsets`, like the other ones. Custom committers must update their signatures.
 
+Errors committing offsets with `commit()` and `commitAsync()` are no longer logged with the `COMMIT_ERROR` prefix. In v2, only the errors committing an `RdKafka\Message` could be logged. Now, the consumer only throws the original exception. When the handler does not catch it, the message fails, so the exception is logged and reported like any other handler failure, see [handling failed messages](/consuming-messages/handling-failed-messages). A handler that catches it decides what to log. To monitor the commits that Kafka rejects, listen to the `Junges\Kafka\Events\OffsetCommitFailed` event, see [events](#events).
+
 The `Junges\Kafka\Commit\SeekToCurrentErrorCommitter` class, deprecated in v2.12.0, was removed. It did not make failed messages be consumed again. Use `retryFailedMessages()` or a dead letter queue instead, see [handling failed messages](/consuming-messages/handling-failed-messages).
 
 ### Removed classes and methods
